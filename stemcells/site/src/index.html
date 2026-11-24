@@ -35,41 +35,42 @@
 
     <main>
       <section id="hero" class="hero">
-        <canvas class="field" aria-hidden="true"></canvas>
-        <div class="hero-stage">
-          <form class="tell" autocomplete="off">
-            <label class="sr" for="tell">Throw a thought</label>
-            <input
-              id="tell"
-              maxlength="40"
-              placeholder="Throw a thought…"
-              spellcheck="false"
-              enterkeyhint="send"
-            />
-            <button type="submit" aria-label="Throw">↵</button>
-          </form>
-          <p class="hint" aria-hidden="true">
-            <span class="for-keys">Type one and press Return. Or pick a Cell up and throw it.</span
-            ><span class="for-touch">Type one, or flick a Cell.</span>
-          </p>
-        </div>
-        <div class="hero-copy">
-          <h1>
-            <span class="sr">Words become things.</span
-            ><span class="swap" aria-hidden="true"
-              ><span class="w a">things</span> become <span class="w b">words</span>.</span
-            >
-          </h1>
-          <p class="lede">Stemcells makes it fun and effective to work with your agents.</p>
-          <div class="ctas">
-            <a class="btn primary" href="#get">Get Stemcells</a
-            ><a class="btn" href="#arc">See how it flies</a>
+        <div class="hero-top">
+          <div class="hero-stage"></div>
+          <div class="hero-copy">
+            <h1>
+              <span class="sr">Words become things.</span
+              ><span class="swap" aria-hidden="true"
+                ><span class="w a">things</span> become <span class="w b">words</span>.</span
+              >
+            </h1>
+            <p class="lede">Stemcells makes it fun and effective to work with your agents.</p>
+            <form class="tell" autocomplete="off">
+              <label class="sr" for="tell">Throw a thought</label>
+              <input
+                id="tell"
+                maxlength="40"
+                placeholder="Throw a thought…"
+                spellcheck="false"
+                enterkeyhint="send"
+              />
+              <button type="submit" aria-label="Throw">↵</button>
+            </form>
+            <p class="hint" aria-hidden="true">
+              <span class="for-keys">Return throws it. Or pick a Cell up and throw that.</span
+              ><span class="for-touch">Send throws it. Or flick a Cell.</span>
+            </p>
+            <div class="ctas">
+              <a class="btn primary" href="#get">Get Stemcells for macOS</a
+              ><a class="btn" href="https://github.com/GitJarno/Stemcells">Read the source</a>
+            </div>
+            <p class="facts">Open source · Mac and iPhone · Claude Code, Codex, Cursor and more</p>
           </div>
-          <p class="facts">Open source · Mac and iPhone · Claude Code, Codex, Cursor and more</p>
         </div>
+        <div class="hero-app"></div>
       </section>
 
-      <section id="arc" class="scene" style="--len: 4.6">
+      <section id="arc" class="scene" style="--len: 3.6">
         <div class="pin">
           <div class="say">
             <p class="kicker">01 · The arc</p>
@@ -82,11 +83,14 @@
               <li data-stage="settled"><b>Settled</b><span>Put away. Off your mind.</span></li>
             </ol>
           </div>
-          <div class="art"></div>
+          <div class="show">
+            <div class="art"></div>
+            <div class="window"></div>
+          </div>
         </div>
       </section>
 
-      <section id="shown" class="scene" style="--len: 4">
+      <section id="shown" class="scene" style="--len: 3.6">
         <div class="pin">
           <div class="say">
             <p class="kicker">02 · Shown, not told</p>
@@ -99,11 +103,14 @@
               <li data-form="close"><b>One line</b><span>for where it stands.</span></li>
             </ol>
           </div>
-          <div class="art"></div>
+          <div class="show">
+            <p class="count" aria-hidden="true"><b></b> <span>words to read</span></p>
+            <div class="window"></div>
+          </div>
         </div>
       </section>
 
-      <section id="becomes" class="scene" style="--len: 5">
+      <section id="becomes" class="scene whole" style="--len: 3.2">
         <div class="pin">
           <div class="say">
             <p class="kicker">03 · Like a stem cell</p>
@@ -111,23 +118,26 @@
             <p>A Cell grows with the work. So does the app.</p>
             <p class="beat" aria-live="polite"></p>
           </div>
-          <div class="art"></div>
+          <div class="show">
+            <div class="art"></div>
+            <div class="window"></div>
+          </div>
         </div>
       </section>
 
-      <section id="devices" class="scene" style="--len: 5">
+      <section id="devices" class="scene" style="--len: 3.6">
         <div class="pin">
           <div class="say">
             <p class="kicker">04 · Every machine</p>
             <h2>One crew, on every machine you own.</h2>
-            <p>Throw from your phone. It flies on the Mac in the closet.</p>
+            <p>Throw from the one in your hand. It flies on the Macs in the closet.</p>
             <p class="beat" aria-live="polite"></p>
           </div>
           <div class="art"></div>
         </div>
       </section>
 
-      <section id="get" class="scene get" style="--len: 2.2">
+      <section id="get" class="scene get" style="--len: 2">
         <div class="pin">
           <div class="say">
             <p class="kicker">The shortest way from a thought to the thing</p>

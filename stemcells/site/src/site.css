@@ -1,14 +1,19 @@
-/* Ink on night, one grid of characters. A scene is pinned while the scroll
-   plays it; the words stand beside the art on a desk and under it in a hand
-   (stemcells/brand/book.md). */
+/* Night and ink. Words to read are set in the app's own type; the mark, labels
+   and anything made of characters in one monospace. What the app does is shown
+   on the app itself: real screens in a window's frame (stemcells/brand/book.md). */
 :root {
   --night: #0b0b0c;
   --ink: #ede9e0;
-  --dim: rgba(237, 233, 224, 0.68);
+  --dim: rgba(237, 233, 224, 0.66);
   --faint: rgba(237, 233, 224, 0.42);
-  --line: rgba(237, 233, 224, 0.16);
+  --line: rgba(237, 233, 224, 0.14);
   --raised: #151514;
+  /* The stages' own colours, as the app's list dots them. */
   --amber: #fdbe48;
+  --flying: #8b93f8;
+  --landed: #5fd08a;
+  --settled: #8a8a86;
+  --sans: -apple-system, BlinkMacSystemFont, "Inter Variable", "Segoe UI", system-ui, sans-serif;
   --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
   --ease: cubic-bezier(0.65, 0, 0.35, 1);
   /* The strip Aski strolls along, kept clear at the foot of every scene. */
@@ -26,7 +31,7 @@ html {
 }
 body {
   margin: 0;
-  font: 15px/1.6 var(--mono);
+  font: 16px/1.55 var(--sans);
   -webkit-font-smoothing: antialiased;
   overflow-x: clip;
 }
@@ -38,8 +43,13 @@ a {
   color: var(--ink);
   text-underline-offset: 3px;
 }
+code,
+pre,
+kbd {
+  font-family: var(--mono);
+}
 code {
-  font: inherit;
+  font-size: 0.92em;
   color: var(--ink);
 }
 .sr {
@@ -79,6 +89,8 @@ code {
   pointer-events: auto;
 }
 .mark {
+  font-family: var(--mono);
+  font-size: 15px;
   font-weight: 700;
   text-decoration: none;
   letter-spacing: -0.01em;
@@ -86,8 +98,8 @@ code {
 .top nav {
   display: flex;
   align-items: center;
-  gap: 20px;
-  font-size: 13px;
+  gap: 22px;
+  font-size: 14px;
 }
 .top nav a {
   color: var(--dim);
@@ -99,9 +111,9 @@ code {
 .top nav .pill {
   color: var(--night);
   background: var(--ink);
-  font-weight: 700;
-  padding: 0.4em 0.85em;
-  border-radius: 8px;
+  font-weight: 600;
+  padding: 0.42em 0.9em;
+  border-radius: 9px;
 }
 .top nav .pill:hover {
   color: var(--night);
@@ -118,11 +130,12 @@ code {
   display: inline-flex;
   align-items: center;
   gap: 0.5em;
-  padding: 0.72em 1.15em;
+  padding: 0.72em 1.2em;
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: 11px;
   text-decoration: none;
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: 500;
   background: var(--night);
   transition:
     background 0.2s,
@@ -136,7 +149,7 @@ code {
   background: var(--ink);
   color: var(--night);
   border-color: var(--ink);
-  font-weight: 700;
+  font-weight: 600;
 }
 .btn.primary:hover {
   background: #fff;
@@ -145,28 +158,22 @@ code {
 /* ── Hero ─────────────────────────────────────────────────────────────────── */
 .hero {
   position: relative;
-  height: 100vh;
-  height: 100svh;
-  min-height: 620px;
-  overflow: hidden;
+  padding-bottom: 12vh;
 }
-.field {
-  position: absolute;
-  top: 0;
-  left: 0;
-  opacity: 0;
-  transition: opacity 2.4s var(--ease);
-  mask-image: linear-gradient(90deg, transparent 32%, #000 64%);
+.hero-top {
+  position: relative;
+  height: 70vh;
+  height: 70svh;
+  min-height: 540px;
+  max-height: 840px;
 }
-.field.on {
-  opacity: 0.34;
-}
+/* The stage's foot is the top edge of the window under it. */
 .hero-stage {
   position: absolute;
-  top: 64px;
-  right: 2vw;
-  bottom: 4vh;
-  width: 60vw;
+  left: var(--edge);
+  right: var(--edge);
+  top: 56px;
+  bottom: 0;
   touch-action: pan-y;
   -webkit-user-select: none;
   user-select: none;
@@ -176,24 +183,34 @@ code {
 }
 .hero-stage canvas {
   position: absolute;
-  top: 0;
+  bottom: 0;
   left: 50%;
   transform: translateX(-50%);
   display: block;
 }
 .hero-copy {
   position: absolute;
+  z-index: 2;
   left: var(--edge);
-  bottom: 11vh;
-  max-width: min(36vw, 540px);
+  top: 56px;
+  bottom: 0;
+  width: min(46vw, 640px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  pointer-events: none;
+}
+.hero-copy > * {
+  pointer-events: auto;
 }
 h1 {
   display: table;
-  font-size: clamp(32px, 3.1vw, 54px);
-  line-height: 1.04;
-  font-weight: 700;
-  letter-spacing: -0.035em;
-  margin: 0 0 0.4em;
+  font-size: clamp(38px, 4.5vw, 78px);
+  line-height: 1.02;
+  font-weight: 680;
+  letter-spacing: -0.045em;
+  margin: 0 0 0.32em;
   white-space: nowrap;
 }
 .swap .w {
@@ -202,24 +219,27 @@ h1 {
 }
 .lede {
   color: var(--dim);
-  font-size: clamp(15px, 1.15vw, 18px);
-  max-width: 26em;
-  margin: 0 0 1.6em;
+  font-size: clamp(17px, 1.38vw, 22px);
+  line-height: 1.42;
+  letter-spacing: -0.01em;
+  max-width: 23em;
+  margin: 0 0 1.5em;
+  text-wrap: balance;
 }
 .facts {
   color: var(--faint);
-  font-size: 12px;
-  margin: 1.8em 0 0;
+  font: 12px var(--mono);
+  margin: 1.7em 0 0;
 }
 .tell {
-  position: absolute;
-  z-index: 2;
+  position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
+  width: min(100%, 440px);
   padding: 9px 10px 9px 16px;
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 14px;
   background: var(--raised);
   transition: border-color 0.2s;
 }
@@ -245,18 +265,18 @@ h1 {
   color: var(--night);
   background: var(--ink);
   border: 0;
-  border-radius: 7px;
-  width: 34px;
-  height: 28px;
+  border-radius: 8px;
+  width: 36px;
+  height: 30px;
   cursor: pointer;
 }
 .hint {
-  position: absolute;
-  z-index: 2;
-  margin: 0;
+  margin: 10px 0 0 4px;
   color: var(--faint);
-  font-size: 12px;
-  white-space: nowrap;
+  font: 12px var(--mono);
+}
+.hero .ctas {
+  margin-top: 1.7em;
 }
 .for-touch {
   display: none;
@@ -268,6 +288,65 @@ h1 {
   .for-touch {
     display: inline;
   }
+}
+.hero-app {
+  margin: 0 var(--edge);
+}
+
+/* ── The app, shown: real screens in a window's frame ─────────────────────── */
+.exhibit {
+  position: relative;
+  margin: 0;
+  width: 100%;
+  aspect-ratio: 1440 / 900;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #0a0a0a;
+}
+.exhibit .film {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+}
+.exhibit img {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+/* The spotlight: everything but one part of the screen steps back. */
+.exhibit .spot {
+  position: absolute;
+  border-radius: 12px;
+  box-shadow: 0 0 0 4000px rgba(8, 8, 9, var(--dim, 0));
+  outline: 1px solid rgba(237, 233, 224, var(--ring, 0));
+  opacity: 0;
+  pointer-events: none;
+}
+.exhibit .edge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--ink);
+  opacity: 0;
+}
+/* A Mac window's three lights, in the room the app leaves them. */
+.exhibit .lights {
+  position: absolute;
+  left: 20px;
+  top: 20px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(237, 233, 224, 0.2);
+  box-shadow:
+    20px 0 0 rgba(237, 233, 224, 0.2),
+    40px 0 0 rgba(237, 233, 224, 0.2);
 }
 
 /* ── Scenes ───────────────────────────────────────────────────────────────── */
@@ -283,8 +362,8 @@ h1 {
   height: 100svh;
   overflow: hidden;
   display: grid;
-  grid-template-columns: minmax(300px, 4.4fr) 7.6fr;
-  gap: 3vw;
+  grid-template-columns: minmax(300px, 4fr) 8fr;
+  gap: 4vw;
   align-items: center;
   padding: 72px var(--edge) var(--foot);
 }
@@ -298,7 +377,7 @@ h1 {
 .say {
   position: relative;
   z-index: 2;
-  max-width: 30em;
+  max-width: 27em;
 }
 .art {
   position: relative;
@@ -307,28 +386,57 @@ h1 {
   min-width: 0;
   min-height: 0;
 }
+/* What a scene shows: a band of air its creatures move in, over the app's window. */
+.show {
+  position: relative;
+  z-index: 2;
+  align-self: stretch;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  container-type: size;
+  --band: 130px;
+}
+.show .art {
+  flex: 1 1 0;
+  align-self: auto;
+  min-height: var(--band);
+  max-height: 300px;
+}
+.show .window {
+  flex: none;
+  display: flex;
+  justify-content: center;
+}
+.show .exhibit {
+  width: min(100cqw, calc((100cqh - var(--band)) * 1.6));
+}
 .kicker {
   color: var(--faint);
-  font-size: 12px;
+  font: 12px var(--mono);
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  margin: 0 0 0.9em;
+  margin: 0 0 1em;
 }
 h2 {
-  font-size: clamp(26px, 2.7vw, 44px);
-  line-height: 1.08;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  margin: 0 0 0.6em;
+  font-size: clamp(28px, 3vw, 50px);
+  line-height: 1.04;
+  font-weight: 660;
+  letter-spacing: -0.035em;
+  margin: 0 0 0.5em;
   text-wrap: balance;
 }
 .say p:not(.kicker) {
   color: var(--dim);
+  font-size: clamp(16px, 1.2vw, 19px);
+  line-height: 1.45;
   margin: 0 0 1em;
   text-wrap: pretty;
 }
 
-/* The stages, as the Mac's column lists them; the forms an answer takes. */
+/* The stages, as the app's own list dots them; the forms an answer takes. */
 .stages,
 .forms {
   list-style: none;
@@ -339,21 +447,37 @@ h2 {
 .stages li,
 .forms li {
   display: grid;
-  grid-template-columns: 6.2em 1fr;
+  grid-template-columns: 7em 1fr;
   gap: 0 1em;
   align-items: baseline;
   padding: 0.62em 0;
   border-bottom: 1px solid var(--line);
-  font-size: 13px;
+  font-size: 14px;
   color: var(--faint);
   transition: color 0.35s var(--ease);
 }
-.forms li {
-  grid-template-columns: 7em 1fr;
-}
 .stages b,
 .forms b {
-  font-weight: 700;
+  font-weight: 600;
+}
+.stages b::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 0.75em;
+  border-radius: 50%;
+  vertical-align: 1px;
+  background: var(--settled);
+}
+.stages li[data-stage="input"] b::before {
+  background: var(--amber);
+}
+.stages li[data-stage="flying"] b::before {
+  background: var(--flying);
+}
+.stages li[data-stage="landed"] b::before {
+  background: var(--landed);
 }
 .stages li.on,
 .forms li.on {
@@ -363,102 +487,126 @@ h2 {
 .forms li.on span {
   color: var(--dim);
 }
-.stages li[data-stage="input"].on b {
-  color: var(--amber);
-}
 .beat {
   min-height: 1.6em;
   color: var(--ink) !important;
-  font-size: 13px;
+  font-size: 14px !important;
   margin-top: 1.6em !important;
 }
-
-/* A Cell's one question: the question first, the options in a row, the
-   recommended one filled, a number key to pick. */
-.ask {
-  position: absolute;
-  z-index: 3;
-  width: min(340px, calc(100% - 16px));
-  padding: 14px;
-  border: 1px solid rgba(253, 190, 72, 0.5);
-  border-radius: 14px;
-  background: var(--night);
-  opacity: 0;
-  transform: translateY(8px);
-  pointer-events: none;
-  transition:
-    opacity 0.3s var(--ease),
-    transform 0.3s var(--ease);
-}
-.ask.on {
-  opacity: 1;
-  transform: none;
-  pointer-events: auto;
-}
-.ask .who {
-  margin: 0 0 0.3em;
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--amber);
-}
-.ask .q {
-  margin: 0 0 0.9em;
-  font-size: 15px;
-  line-height: 1.35;
-  font-weight: 700;
-  color: var(--ink);
-}
-.ask .options {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-.ask button {
-  display: grid;
-  gap: 8px;
-  padding: 8px;
+/* How many words are left to read. */
+.count {
+  margin: 0 0 12px;
+  color: var(--faint);
   font: 12px var(--mono);
-  text-align: left;
+}
+.count b {
   color: var(--ink);
-  background: transparent;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── The machines: each a frame round the app as it looks there ───────────── */
+.layer.over {
+  z-index: 3;
+}
+.room {
+  position: absolute;
+  inset: 0;
+}
+.machine {
+  position: absolute;
+  margin: 0;
+}
+.machine .body {
+  position: relative;
   border: 1px solid var(--line);
-  border-radius: 9px;
-  cursor: pointer;
+  background: #0e0e0e;
 }
-.ask button:hover {
-  border-color: var(--ink);
-}
-.ask button.best {
-  color: var(--night);
-  background: var(--ink);
-  border-color: var(--ink);
-}
-.ask button kbd {
-  font: inherit;
-  opacity: 0.55;
-  margin-right: 0.5em;
-}
-.ask .peek {
-  display: block;
-  height: 44px;
+.machine .exhibit {
+  border: 0;
   border-radius: 5px;
+}
+.machine.book .body {
+  padding: 1.3% 1.3% 1.7%;
+  border-radius: 11px 11px 0 0;
+}
+/* The laptop's base: a thin slab wider than its lid. */
+.machine.book .body::after {
+  content: "";
+  position: absolute;
+  left: -7%;
+  right: -7%;
+  top: 100%;
+  height: 9px;
   border: 1px solid var(--line);
+  border-radius: 1px 1px 10px 10px;
+  background: #121212;
+}
+.machine.pad .body {
+  padding: 4%;
+  border-radius: 13px;
+}
+.machine.pad .exhibit {
+  border-radius: 6px;
+}
+.machine.phone .body {
+  padding: 5%;
+  border-radius: 17px;
+}
+.machine.phone .exhibit {
+  border-radius: 11px;
+}
+.machine figcaption {
+  margin-top: 18px;
+  text-align: center;
+  white-space: nowrap;
+  color: var(--faint);
+  font: 11px var(--mono);
+}
+.machine.near figcaption {
+  color: var(--ink);
+}
+.machine figcaption b {
+  font-weight: 400;
+  color: var(--faint);
+}
+.mini {
+  position: absolute;
+  height: 20px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #121212;
+}
+.shelf {
+  position: absolute;
+  height: 1px;
+  background: var(--line);
+}
+.closet {
+  position: absolute;
+  text-align: center;
+  color: var(--faint);
+  font: 11px var(--mono);
+}
+.room[data-form="phone"] .mini {
+  height: 14px;
+  border-radius: 4px;
+}
+.room[data-form="phone"] .machine figcaption {
+  margin-top: 12px;
+  font-size: 10px;
 }
 
 /* ── Get it ───────────────────────────────────────────────────────────────── */
 .get .say {
-  max-width: 34em;
-}
-.get h2 {
-  font-size: clamp(30px, 3.4vw, 54px);
+  max-width: 30em;
 }
 .get .ctas {
   margin: 1.8em 0 1.6em;
 }
 .fine {
   color: var(--faint) !important;
-  font-size: 12px;
+  font-size: 13px !important;
 }
 .fine a {
   color: var(--faint);
@@ -476,7 +624,7 @@ h2 {
   position: absolute;
   top: 13px;
   left: 22px;
-  font-size: 11px;
+  font: 11px var(--mono);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--faint);
@@ -517,7 +665,7 @@ h2 {
   border-top: 1px solid var(--line);
   background: var(--night);
   color: var(--faint);
-  font-size: 12px;
+  font: 12px var(--mono);
 }
 .foot a {
   color: var(--faint);
@@ -540,11 +688,36 @@ h2 {
   opacity: 1;
 }
 
-/* ── iPad ─────────────────────────────────────────────────────────────────── */
+/* ── iPad: the words under the picture, the hero's words over its stage ───── */
 @media (max-width: 1099px), (hover: none) and (orientation: portrait) {
   :root {
     --foot: 84px;
     --edge: 6vw;
+  }
+  .hero-top {
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    padding: 96px 0 34vh;
+    padding-bottom: 34svh;
+  }
+  .hero-stage {
+    top: 0;
+  }
+  .hero-copy {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: auto;
+    margin: 0 var(--edge);
+    align-items: center;
+    text-align: center;
+  }
+  h1 {
+    font-size: clamp(34px, 7.4vw, 68px);
+  }
+  .hero .ctas {
+    justify-content: center;
   }
   .pin {
     grid-template-columns: 1fr;
@@ -552,17 +725,18 @@ h2 {
     gap: 18px;
     padding-top: 64px;
   }
-  .art {
+  .art,
+  .show {
     order: -1;
   }
   .say {
     max-width: 40em;
   }
   .say > p:not(.kicker):not(.beat) {
-    max-width: 34em;
+    max-width: 30em;
   }
   h2 {
-    font-size: clamp(26px, 4.4vw, 40px);
+    font-size: clamp(27px, 4.6vw, 42px);
   }
   .stages,
   .forms {
@@ -594,39 +768,15 @@ h2 {
   .forms li.on span {
     opacity: 1;
   }
-  .hero-stage {
-    top: 56px;
-    left: 0;
-    right: 0;
-    bottom: auto;
-    width: auto;
-    height: 54svh;
-  }
-  .hero-copy {
-    left: var(--edge);
-    right: var(--edge);
-    top: calc(56px + 54svh + 14px);
-    bottom: auto;
-    max-width: 40em;
-  }
-  .lede {
-    max-width: 30em;
-  }
-  h1 {
-    font-size: clamp(34px, 6vw, 56px);
-  }
-  .field {
-    mask-image: linear-gradient(#000 28%, transparent 54%);
-  }
 }
 
-/* ── Phone ────────────────────────────────────────────────────────────────── */
+/* ── Phone: the window is a frame of any shape, and the camera fills it ───── */
 @media (max-width: 699px) {
   :root {
     --foot: 64px;
   }
   body {
-    font-size: 14px;
+    font-size: 15px;
   }
   .top {
     padding: 12px var(--edge) 22px;
@@ -634,38 +784,55 @@ h2 {
   .top nav {
     gap: 14px;
   }
-  .hero {
-    min-height: 0;
-  }
-  .hero-stage {
-    top: 48px;
-    height: 50svh;
-  }
-  .hero-copy {
-    top: calc(48px + 50svh + 8px);
-  }
-  h1 {
-    font-size: 7.2vw;
-    margin-bottom: 0.35em;
+  .hero-top {
+    padding-top: 78px;
   }
   .lede {
-    font-size: 14px;
-    margin-bottom: 1.1em;
+    margin-bottom: 1.2em;
   }
   .facts {
     display: none;
   }
   .btn {
-    padding: 0.66em 0.95em;
-    font-size: 13px;
+    padding: 0.66em 1em;
+    font-size: 14px;
+  }
+  .hero-app .exhibit {
+    aspect-ratio: 393 / 560;
   }
   .pin {
     padding-top: 52px;
     gap: 12px;
   }
+  .show {
+    --band: 104px;
+  }
+  .show .art {
+    flex: 0 0 var(--band);
+  }
+  .show .window {
+    flex: 1 1 0;
+    min-height: 0;
+  }
+  .show .exhibit {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+  }
+  /* A scene about the window's whole shape keeps the window whole. */
+  .whole .show .art {
+    flex: 1 1 0;
+  }
+  .whole .show .window {
+    flex: none;
+  }
+  .whole .show .exhibit {
+    height: auto;
+    aspect-ratio: 1440 / 900;
+  }
   h2 {
-    font-size: 6.4vw;
-    margin-bottom: 0.45em;
+    font-size: 7vw;
+    margin-bottom: 0.4em;
   }
   .kicker {
     font-size: 11px;
@@ -680,7 +847,10 @@ h2 {
   }
   .stages li,
   .forms li {
-    font-size: 12px;
+    font-size: 13px;
+  }
+  .stages b::before {
+    margin-right: 0.45em;
   }
   .forms li b {
     display: block;
@@ -691,12 +861,6 @@ h2 {
   .foot {
     gap: 16px;
   }
-  .ask {
-    padding: 11px;
-  }
-  .ask .peek {
-    height: 34px;
-  }
 }
 
 /* A short phone: the picture keeps its room, so the heading speaks alone. */
@@ -705,9 +869,6 @@ h2 {
   .get .kicker,
   .get .btn:not(.primary) {
     display: none;
-  }
-  .ask .peek {
-    height: 22px;
   }
 }
 

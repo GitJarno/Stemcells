@@ -6,7 +6,7 @@
 import { CELL_PALETTE } from "./app.ts";
 import { Actor } from "./actors.ts";
 import { type Cell, crew, rasterOf } from "./cells.ts";
-import { type Hero, NARROW } from "./hero.ts";
+import type { Hero } from "./hero.ts";
 import { CH, CW } from "./stagekit.ts";
 import { reduced } from "./theater.ts";
 
@@ -51,7 +51,7 @@ export function throws(hero: Hero): void {
   let ours = "";
   let touched = -100;
 
-  const narrow = () => box.clientWidth < NARROW;
+  const { narrow } = hero;
   const width = () => stage.width / stage.d;
   const room = () => (narrow() ? 2 : width() < 760 ? 3 : 4);
   /** Where the nth Cell stands: right of Aski on a wide stage, either side of it on a narrow one. */

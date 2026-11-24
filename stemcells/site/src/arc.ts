@@ -1,9 +1,8 @@
-// 01 · The arc: thrown until it lands. One Cell is thrown at "dark mode": it
-// falls short and asks its one question, the answer throws it again, it lands,
-// is read, and is settled. The scroll is the only clock: each flight is a
-// parabola in closed form over story time, so the scene rewinds as it plays.
+// 01 · The arc: one Cell thrown along the top of the app's own window. It falls
+// short and asks, the answer throws it again, it lands and is settled; the
+// window under it shows what the app shows at each stage. The scroll is the
+// only clock: each flight is a parabola in closed form, so the scene rewinds.
 
-import "./arc.css";
 import { TONES } from "./actors.ts";
 import {
   type Hit,
@@ -16,9 +15,19 @@ import {
 } from "./app-cells.ts";
 import { BELOW, type Cell, crew, drawCell, frameAt, lengthOf } from "./cells.ts";
 import { type Body, drawBody, type Mark, Morph, textBody } from "./kit/bodies.ts";
+import { around, between, Exhibit } from "./kit/exhibit.ts";
 import { clamp, density, ease, lerp, reduced, span, touch } from "./kit/form.ts";
 import { Glyphs, INK } from "./kit/glyphs.ts";
+import {
+  feetAt,
+  type Flight,
+  flightOver,
+  GRAVITY,
+  trailOf,
+  type TrailDot as Dot,
+} from "./kit/flight.ts";
 import { layerIn, scene, type SceneFrame } from "./kit/scenes.ts";
+import { type Box as Part, part } from "./shots.ts";
 
 type Stage = "flying" | "input" | "landed" | "settled";
 const TONE: Readonly<Record<Stage, string>> = {
@@ -34,8 +43,6 @@ const HINT_INK = "rgba(237, 233, 224, 0.42)";
 
 const WORDS = "add dark mode";
 const GOAL = "dark mode";
-/** The closing line, by the answer taken. */
-const DONE = ["Done: dark mode follows the system.", "Done: dark mode is always on."] as const;
 const SETTLE_BY = touch ? "swipe to settle" : "close it to settle";
 const FONT =
   'ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace';
@@ -62,8 +69,6 @@ const STILL = 0.786;
 /** Where an answer scrolls to: the second throw, just off the ground. */
 const ANSWERED = AT.thrownAgain + 0.012;
 
-/** A toss falls this fast, CSS px a second², as the app's own (`cell/toss.ts`). */
-const GRAVITY = 1400;
 /** Story seconds a landing's springs and faces play before its scene takes over, as an `Actor`'s. */
 const SPRINGS = 0.7;
 /** The wind-up before a throw: a press the toss's own springs turn into a dip and a rise. Story seconds, and CSS px a second. */
@@ -71,57 +76,6 @@ const CROUCH = 0.16;
 const PRESS = 640;
 /** How far it leans back as it winds up, in its throw's own speed along the ground. */
 const LEAN_BACK = 1.6;
-
-interface Flight {
-  readonly x0: number;
-  readonly y0: number;
-  readonly x1: number;
-  readonly y1: number;
-  readonly vx: number;
-  readonly vy: number;
-  readonly time: number;
-}
-
-/** The throw from one place to another whose feet pass `apex` at the top. */
-function flightOver(x0: number, y0: number, x1: number, y1: number, apex: number): Flight {
-  const up = Math.sqrt((2 * (y0 - apex)) / GRAVITY),
-    down = Math.sqrt((2 * (y1 - apex)) / GRAVITY);
-  const time = up + down;
-  return { x0, y0, x1, y1, vx: (x1 - x0) / time, vy: -GRAVITY * up, time };
-}
-
-/** Where its feet are `s` seconds into `flight`. */
-const feetAt = (flight: Flight, s: number): readonly [number, number] => [
-  flight.x0 + flight.vx * s,
-  flight.y0 + flight.vy * s + 0.5 * GRAVITY * s * s,
-];
-
-interface Dot {
-  readonly x: number;
-  readonly y: number;
-  /** Seconds into the flight when the feet pass it. */
-  readonly s: number;
-}
-
-/** A flight's path as dots `gap` apart along it. */
-function trailOf(flight: Flight, gap: number): Dot[] {
-  const dots: Dot[] = [];
-  let [px, py] = feetAt(flight, 0);
-  let far = 0,
-    next = gap * 0.75;
-  const steps = Math.ceil(flight.time * 600);
-  for (let n = 1; n <= steps; n++) {
-    const s = (n / steps) * flight.time;
-    const [x, y] = feetAt(flight, s);
-    far += Math.hypot(x - px, y - py);
-    [px, py] = [x, y];
-    if (far >= next) {
-      dots.push({ x, y, s });
-      next += gap;
-    }
-  }
-  return dots;
-}
 
 /** The story's clock: story seconds at each beat of the scroll, straight between them. */
 function clockOf(first: Flight, second: Flight, cheer: number) {
@@ -211,23 +165,12 @@ interface Layout {
   /** CSS pixels an art pixel of the Cell. */
   readonly scale: number;
   readonly ground: number;
-  /** The ground's dots, left to right. */
-  readonly dots: readonly number[];
   readonly words: Body;
-  readonly caption: Body;
   readonly goal: Body;
   readonly first: Flight;
   readonly second: Flight;
   readonly trails: readonly [readonly Dot[], readonly Dot[]];
   readonly clock: ReturnType<typeof clockOf>;
-  /** The closing line: under the goal's middle, kept between two edges; its own middle and size. */
-  readonly done: {
-    readonly x: number;
-    readonly left: number;
-    readonly right: number;
-    readonly y: number;
-    readonly h: number;
-  };
   readonly settle: Morph;
   /** The label: its size, a character's width, how far over the feet its baseline is at rest, and the rest's rise. */
   readonly label: {
@@ -246,40 +189,34 @@ export function arc(root: HTMLElement): void {
   const [cell] = crew([["Otter", "claude"]]) as [Cell];
   const stages = [...root.querySelectorAll<HTMLElement>(".stages li")];
 
-  const ask = document.createElement("div");
-  ask.className = "ask";
-  ask.inert = true;
-  ask.innerHTML = `<p class="who">${cell.name} asks</p>
-    <p class="q">Follow the system, or always dark?</p>
-    <div class="options">
-      <button type="button" class="best"><span class="peek"><i class="day"></i><i class="night"></i></span><span><kbd>1</kbd>Follow the system</span></button>
-      <button type="button"><span class="peek"><i class="night"></i></span><span><kbd>2</kbd>Always dark</span></button>
-    </div>`;
-  root.querySelector(".art")!.append(ask);
-  const options = [...ask.querySelectorAll("button")];
+  // The window's screens in the story's order: before the throw, in the air, asking, in the air again, landed, settled.
+  const app = new Exhibit(
+    root.querySelector<HTMLElement>(".window")!,
+    ["shape-one", "arc-flying", "arc-input", "arc-flying", "arc-landed", "arc-settled"],
+    { lights: true },
+  );
+  const whole: Part = { x: 0, y: 0, w: app.screen.w, h: app.screen.h };
 
   /** The answer taken by hand, until the question is asked again. */
-  let picked: number | null = null;
   let asking = false;
   let lit: Stage | null | undefined;
-  let card = "";
   let lay: Layout | null = null;
 
-  const answer = (pick: number) => {
+  // An answer is the next throw: the page scrolls on to it.
+  const answer = () => {
     if (!asking) return;
-    picked = pick;
     const travel = root.offsetHeight - pin.offsetHeight;
     scrollTo({
       top: root.getBoundingClientRect().top + scrollY + travel * ANSWERED,
       behavior: "smooth",
     });
   };
-  options.forEach((option, n) => option.addEventListener("click", () => answer(n)));
+  app.frame.addEventListener("click", answer);
   addEventListener("keydown", (event) => {
     if (event.metaKey || event.ctrlKey || event.altKey || event.repeat) return;
     const on = event.target instanceof HTMLElement ? event.target : null;
     if (on?.isContentEditable || on?.matches("input, textarea, select")) return;
-    if (event.key === "1" || event.key === "2") answer(Number(event.key) - 1);
+    if (event.key === "1" || event.key === "2") answer();
   });
 
   const points = (scale: number) => scale * 2;
@@ -296,30 +233,18 @@ export function arc(root: HTMLElement): void {
     const scale = phone || ah < 420 ? 2 : 3;
     const small = phone ? 12 : 13;
     const goalH = phone ? 24 : 32;
-    // Low in the box; on a desk, level with the foot of the stages listed beside it.
-    const lowest = ay + ah - small - 32;
-    const last = stages.at(-1);
-    const listed =
-      last === undefined
-        ? lowest
-        : last.getBoundingClientRect().bottom - pin.getBoundingClientRect().top;
-    const ground = Math.round(f.form === "desk" ? clamp(listed, ay + ah * 0.7, lowest) : lowest);
+    // The ground is the window's top edge.
+    const ground = Math.round(ay + ah) - 2;
     /** The top of a word written `h` tall on the ground, and where feet stand on it: just over its ascenders. */
     const topOf = (h: number) => Math.round(ground - 4 - 0.76 * h);
     const standOn = (h: number) => topOf(h) + Math.round(0.1 * h);
 
-    const settledH = phone ? 12 : 14,
-      settledW = (7 * settledH) / 2;
-    const wordsLeft = ax + (phone ? 2 : 12),
+    const wordsLeft = ax + (phone ? 6 : 18),
       wordsW = (WORDS.length * 16) / 2;
-    // A phone has no room past the goal: there the ground runs the box's width and `settled` lines up under its end.
     const goalW = (GOAL.length * goalH) / 2,
-      goalLeft = Math.round(ax + aw - goalW - (phone ? 4 : settledW + 30));
+      goalLeft = Math.round(ax + aw - goalW - (phone ? 8 : 26));
     const words = textBody(WORDS, { x: wordsLeft, y: topOf(16) });
-    const caption = textBody("your words", { x: wordsLeft, y: ground + 14, h: small, a: 0.42 });
     const goal = textBody(GOAL, { x: goalLeft, y: topOf(goalH), h: goalH });
-    const dots: number[] = [];
-    for (let x = ax + 4; x < ax + aw - (phone ? 0 : settledW + 10); x += 16) dots.push(x);
 
     const rest = tossFrame(
       cell.look,
@@ -348,35 +273,21 @@ export function arc(root: HTMLElement): void {
     const first = flightOver(x0, standOn(16), x1, floor, floor - Math.max(30, apex * 0.58));
     const second = flightOver(x1, floor, x2, standOn(goalH), floor - apex);
 
-    const settled = textBody("settled", {
-      x: ax + aw - settledW - (phone ? 2 : 0),
-      y: phone ? ground + 14 : ground - settledH / 2,
-      h: settledH,
-      a: 0.42,
-    });
+    // Settled, its letters go where the app keeps a settled Cell: the Settled row of its list.
+    const row = part("arc-settled", "settled");
+    const [rowX, rowY] = app.point(row.x + 34, row.y + row.h / 2, pin);
+    const settled = textBody("settled", { x: rowX, y: rowY - small / 2, h: small, a: 0 });
     const apart = lettersOf(cell, frameAt(cell, "idle", 0), x2, second.y1, scale);
-
-    // The question stands over the Cell that asks it, clear of the way it came, inside the art.
-    // A box too short for that puts it beside the Cell, over the goal.
-    const over = floor - ay - label.over - size - 14 - ask.offsetHeight;
-    const left =
-      over < 0 ? x1 - ax + 7 * label.wide + 12 : phone ? (aw - ask.offsetWidth) / 2 : x1 - ax - 34;
-    const top = over < 0 ? topOf(goalH) - ay - 12 - ask.offsetHeight : over;
-    ask.style.left = `${clamp(left, 8, aw - ask.offsetWidth - 8)}px`;
-    ask.style.top = `${Math.max(0, top)}px`;
 
     return {
       scale,
       ground,
-      dots,
       words,
-      caption,
       goal,
       first,
       second,
       trails: [trailOf(first, phone ? 11 : 13), trailOf(second, phone ? 11 : 13)],
       clock: clockOf(first, second, lengthOf(cell, "happy")),
-      done: { x: x2, left: ax + 2, right: ax + aw - 2, y: ground + 14 + small / 2, h: small },
       settle: new Morph(apart, settled, { lift: 44, stagger: 0.4, seed: 5 }),
       label,
     };
@@ -482,17 +393,37 @@ export function arc(root: HTMLElement): void {
         for (const li of stages) li.classList.toggle("on", li.dataset.stage === stage);
       }
 
-      // The question: up while it waits, the answer shown as taken before it leaves.
-      if (p < AT.asks) picked = null;
+      // The window under it: what the app shows at each stage, one screen turning into the next.
       asking = p >= AT.asks && p < AT.answered;
-      const taken = picked ?? (p >= AT.taken ? 0 : null);
-      if (card !== `${asking} ${taken}`) {
-        card = `${asking} ${taken}`;
-        ask.classList.toggle("on", asking);
-        ask.classList.toggle("answered", taken !== null);
-        ask.inert = !asking;
-        options.forEach((option, n) => option.classList.toggle("taken", n === taken));
-      }
+      app.frame.classList.toggle("asks", asking);
+      app.turn(
+        span(p, AT.thrown, AT.thrown + 0.03) +
+          span(p, AT.short + 0.01, AT.asks) +
+          span(p, AT.answered, AT.thrownAgain) +
+          span(p, AT.landed, AT.landed + 0.03) +
+          span(p, AT.settles, AT.settles + 0.05),
+      );
+      // The spotlight says where to look: the question, the closing line, then the list it is settled in.
+      const lights: readonly (readonly [Part, number])[] = [
+        [
+          part("arc-input", "ask"),
+          span(p, AT.asks, AT.asks + 0.03) * (1 - span(p, AT.taken, AT.answered)),
+        ],
+        [
+          part("arc-landed", "closeOut"),
+          span(p, AT.landed + 0.03, AT.cheers) * (1 - span(p, AT.hint, AT.settles)),
+        ],
+        [part("arc-settled", "stages"), span(p, AT.settles + 0.05, AT.settled)],
+      ];
+      const [spot, much] = lights.reduce((a, b) => (b[1] > a[1] ? b : a));
+      app.spot(much > 0 ? spot : null, ease.inOut(much));
+      // A desk shows the whole window and leans in; a hand goes to the part that matters.
+      const near = around(spot, f.form === "phone" ? 16 : 220);
+      app.look(
+        f.form === "phone"
+          ? between(part("arc-flying", "column"), near, ease.inOut(much))
+          : between(whole, near, 0.16 * ease.inOut(much)),
+      );
 
       // Settling: it comes apart where it stands, then its letters go and line up.
       const going = span(p, AT.settles, AT.settles + 0.02),
@@ -539,10 +470,8 @@ export function arc(root: HTMLElement): void {
       };
       const round = (x: number, y: number) => 1 - asked * (1 - clearOf(mark, x, y, 5));
       glyphs.clear();
-      for (const x of lay.dots) glyphs.put("·", x, ground, 16, INK, 0.34 * round(x, ground));
-      glyphs.put("?", first.x1, ground, 16, INK, 0.6 * asked);
+      glyphs.put("?", first.x1, ground - 9, 16, INK, 0.6 * asked);
       drawBody(glyphs, lay.words);
-      drawBody(glyphs, lay.caption);
       drawBody(glyphs, lay.goal);
       lay.trails.forEach((trail, n) => {
         const began = n === 0 ? clock.thrown : clock.thrownAgain;
@@ -553,16 +482,6 @@ export function arc(root: HTMLElement): void {
           glyphs.put("·", dot.x, dot.y, 24, INK, fresh * shows(dot.x, dot.y) * round(dot.x, dot.y));
         }
       });
-      const line = DONE[picked ?? 0]!,
-        lineWide = (line.length * lay.done.h) / 2;
-      glyphs.text(
-        line,
-        clamp(lay.done.x - lineWide / 2, lay.done.left, lay.done.right - lineWide),
-        lay.done.y,
-        lay.done.h,
-        INK,
-        span(p, AT.landed + 0.02, AT.cheers) * 0.85 * (1 - span(p, AT.settles, AT.settles + 0.04)),
-      );
       if (going > 0) {
         if (gone <= 0) drawBody(glyphs, lay.settle.from, going);
         else lay.settle.draw(glyphs, gone);
