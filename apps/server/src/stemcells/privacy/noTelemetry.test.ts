@@ -70,6 +70,11 @@ describe("no Stemcells build reports on the person", () => {
     const ours = "apps/web/src/stemcells/privacy/";
     const web = code.filter((file) => file.startsWith("apps/web/src/") && !file.startsWith(ours));
     expect(filesMatching(web, /t3code:analytics-device-id/)).toEqual([]);
+    // The phone's id is made on first asking; only upstream's own storage may name the asker.
+    const phone = code.filter((file) => file.startsWith("apps/mobile/src/"));
+    expect(filesMatching(phone, /\bloadOrCreateAnalyticsDeviceId\b/)).toEqual([
+      "apps/mobile/src/persistence/mobile-storage.ts",
+    ]);
     const words = code.filter((file) => /^apps\/(?:web|desktop)\/src\//.test(file));
     // Upstream's privacy row keeps its words in its own panel, drawn hidden
     // and never searched (the web's settingsSearch substitute,
@@ -109,7 +114,7 @@ describe("nothing leaves the machine that stemcells/outbound.txt doesn't name", 
   const NEVER_CONTACTED =
     /(?:^|\.)(?:localhost|example|invalid|test|local)$|(?:^|\.)example\.(?:com|net|org)$|^(?:\d+\.){3}\d+$/;
   const ID =
-    "anonymousId|anonymous_id|installationId|installation_id|installId|install_id|distinctId|distinct_id|machineId|telemetryId|analytics-device-id|crashReporter|setFeedURL|autoUpdater";
+    "anonymousId|anonymous_id|installationId|installation_id|installId|install_id|distinctId|distinct_id|machineId|telemetryId|analytics[.-]device-id|[A-Za-z]*AnalyticsDevice[A-Za-z]*|ANALYTICS_DEVICE[A-Z_]*|crashReporter|setFeedURL|autoUpdater";
   const REPORTS_ON_THE_PERSON =
     /^(?:posthog.*|@posthog\/.*|@sentry\/.*|sentry-.*|@datadog\/.*|dd-trace|mixpanel.*|@amplitude\/.*|amplitude-js|@segment\/.*|analytics-node|@bugsnag\/.*|bugsnag.*|rollbar|logrocket.*|@vercel\/analytics|@vercel\/speed-insights|newrelic|@newrelic\/.*|@honeycombio\/.*|@opentelemetry\/.*|@effect\/opentelemetry|@grafana\/faro.*|@highlight-run\/.*|@axiomhq\/.*|applicationinsights|@microsoft\/applicationinsights.*|firebase|@react-native-firebase\/.*|expo-insights)$/;
 

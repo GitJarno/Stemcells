@@ -1,4 +1,5 @@
 // @effect-diagnostics nodeBuiltinImport:off - reads upstream's .env.example and the entry points on disk.
+import * as NodeDns from "node:dns";
 import * as NodeFS from "node:fs";
 import * as NodeOS from "node:os";
 import * as NodePath from "node:path";
@@ -124,7 +125,7 @@ describe("no Stemcells process reaches T3's services", () => {
     closeToT3(env);
     expect(env).toEqual({ T3CODE_TELEMETRY_ENABLED: "false" });
 
-    const NodeDns = process.getBuiltinModule("node:dns");
+    // Through a module's own import of node:dns, as upstream's webhook transport asks.
     const failure = await new Promise<NodeJS.ErrnoException | null>((resolve) =>
       NodeDns.lookup("ingest.t3.codes", (error) => resolve(error)),
     );

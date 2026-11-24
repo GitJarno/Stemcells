@@ -74,6 +74,8 @@ export function refuseLookups(): void {
     say(hostname);
     return Promise.reject(refusal(hostname));
   } as typeof NodeDns.promises.lookup;
+  // An `import * as NodeDns` holds the lookup it was loaded with until told of the new one.
+  process.getBuiltinModule("node:module").syncBuiltinESMExports();
 }
 
 /** A Stemcells process's first act: no cloud switch in its environment, no way to T3. */

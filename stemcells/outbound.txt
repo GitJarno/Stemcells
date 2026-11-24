@@ -53,6 +53,7 @@ host cursor.com the Origin repository page, a link the person opens
 host git.cafe the sign-in command shown for a git.cafe repository, for the person to run
 host schemas.openxmlformats.org Office XML namespaces the document preview matches
 host www.idpf.org the EPUB package namespace the document preview matches
+host purl.oclc.org the strict Office XML relationships namespace the document text reader matches
 host json-schema.org the $schema id of t3.json
 host www.apple.com the plist DTD id in a generated plist
 host tailwindcss.com the license comment in generated CSS
@@ -154,10 +155,14 @@ host api.axiom.co the default trace url, unused: the dataset and token a build w
 # Files that may name an install, anonymous or analytics id, a feed or a crash reporter.
 id apps/server/src/telemetry/ upstream's analytics service, a no-op in Stemcells (No telemetry, seams.md; analytics.contract.test.ts)
 id apps/server/src/ws.ts reads the hashed owner ids a client sends, for upstream's analytics, which records nothing
-id apps/server/src/provider/CodexChatGptAuth.ts hashes the Codex account for upstream's analytics, which sends nothing
 id packages/client-runtime/src/authorization/remote.ts sends its own server hashed owner ids for that analytics; the web keeps no device id (analyticsDevice.ts)
 id packages/effect-codex-app-server/src/_generated/schema.gen.ts the Codex protocol's own field names
 id apps/web/src/stemcells/privacy/analyticsDevice.ts ours: deletes upstream's stored browser analytics id
+id apps/web/src/connection/platform.ts provides ours, which answers that there is no analytics id (seams/web.md)
+id apps/mobile/src/stemcells/privacy/analyticsDevice.ts ours: the phone has no analytics id, so none is ever made
+id apps/mobile/src/connection/platform.ts provides ours in place of upstream's stored id (seams/mobile.md)
+id apps/mobile/src/persistence/mobile-storage.ts upstream's maker of the phone's analytics id, which nothing asks (noTelemetry.test.ts)
+id packages/client-runtime/src/platform/capabilities.ts the capability a client answers with its analytics id; ours answer none
 id apps/desktop/src/electron/ElectronApp.ts the desktop updater, whose feed is a build's own app-update.yml: install-app's names the person's own origin there, and electron-updater never reads it, as SourceUpdater takes its place (seams.md, Updates from the repository; updater.contract.test.ts)
 id apps/desktop/src/electron/ElectronUpdater.ts same
 id apps/desktop/src/updates/DesktopUpdates.ts same; its own setFeedURL is the local mock server
@@ -168,6 +173,11 @@ id apps/desktop/src/stemcells/upstream/updater.ts ours: electron-updater's place
 env T3CODE_TELEMETRY_ upstream's analytics switch, forced to false in every build and process (switches.ts), and its channel and buffer sizes, read only by the analytics service Stemcells replaces with a no-op
 env T3CODE_OTEL_SDK_DISABLED turns tracing off; nothing turns on with it
 env OTEL_ the standard OpenTelemetry variables: traces go only where the person's own shell points them, and none is set on a Mac that sets none; never to T3, whose trace store no lookup reaches (stemcells/privacy/closed.ts)
+
+# No literal host: an outside MCP client the person signed in may subscribe to a Cell's
+# milestones and name an address to post them to (apps/server/src/mcp/McpWebhookTransport.ts,
+# upstream's, since 2026-11-24). It posts only to that client's address, only after the person
+# connected the client, and to T3's hosts never (stemcells/privacy/closed.ts).
 
 # Forbidden: nothing fetches from these. The model list is the one bundled at
 # build time, which each upstream sync refreshes (seams.md, No model list from T3).
