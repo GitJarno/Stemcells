@@ -27,6 +27,7 @@ import { canShareWithGuestAtom } from "../../components/chat/guestShareAvailabil
 import { openThreadFind } from "../../components/chat/threadFindStore";
 import type { ProjectFaviconProject } from "../../components/ProjectFavicon";
 import { isTrailingDoubleClick } from "../../components/Sidebar.logic";
+import { contextMenuSourceOf } from "../../contextMenuSource";
 import { toastManager } from "../../components/ui/toast";
 import { useLogicalProjectEnvironments } from "../../hooks/useLogicalProjectEnvironments";
 import { useNewThreadHandler } from "../../hooks/useHandleNewThread";
@@ -137,7 +138,7 @@ export function useCellThreadMenu(cell: CellRef | null) {
   const onClick = (event: ReactMouseEvent<HTMLElement>) => {
     if (isTrailingDoubleClick(event.detail)) return;
     const rect = event.currentTarget.getBoundingClientRect();
-    openMenu({ x: rect.left, y: rect.bottom + 4 });
+    openMenu({ x: rect.left, y: rect.bottom + 4 }, contextMenuSourceOf(event));
   };
   // A native menu takes the second click, so only the in-page menu lets a double-click reach here.
   const onDoubleClick = (event: ReactMouseEvent<HTMLElement>) => {
@@ -148,7 +149,7 @@ export function useCellThreadMenu(cell: CellRef | null) {
   const onContextMenu = (event: ReactMouseEvent<HTMLElement>) => {
     if (renaming || !shell) return;
     event.preventDefault();
-    openMenu({ x: event.clientX, y: event.clientY });
+    openMenu({ x: event.clientX, y: event.clientY }, contextMenuSourceOf(event));
   };
 
   return {

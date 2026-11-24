@@ -93,7 +93,7 @@ describe("Subcells in upstream's views", () => {
       lifecycleRow.match(/formatSubagentDisplayTitle\(\w+\.title \?\? gt\("Subagent"\)\)/g),
     ).toHaveLength(2);
     expect(messagesTimeline).toMatch(
-      /<TimelineSystemDivider\s+label=\{\s*parentThreadLink\.sideChat\s*\?\s*gt\("Context from",[^)]*\)\s*:\s*gt\("Subagent of",/,
+      /<TimelineSystemDivider\s+label=\{\s*parentThreadLink\.relation\?\.label \?\?\s*\(parentThreadLink\.sideChat\s*\?\s*gt\("Context from",[^)]*\)\s*:\s*gt\("Subagent of",/,
     );
   });
 

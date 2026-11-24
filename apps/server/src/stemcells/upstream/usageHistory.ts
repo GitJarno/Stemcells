@@ -89,13 +89,13 @@ export const usageHistory = Effect.fn("UsageHistory.sources")(function* (input: 
       readonly files: ReadonlyArray<{
         readonly path: string;
         readonly records: readonly UsageRecord[];
-        readonly malformedRecords: number;
+        readonly malformedRecords: readonly number[];
       }>;
     } => ({
       provider,
       dir,
       volumeId: "stemcells-usage-history",
-      files: files.map((file) => ({ ...file, malformedRecords: 0 })),
+      files: files.map((file) => ({ ...file, malformedRecords: [] })),
     }),
   );
 });

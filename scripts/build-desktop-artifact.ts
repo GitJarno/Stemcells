@@ -384,7 +384,7 @@ export class LinuxDesktopBuildPrerequisitesMissingError extends Schema.TaggedErr
         ? ["Add the requested Rust target with:", `  rustup target add ${this.rustTarget}`]
         : []),
       "",
-      "For other distributions, see docs/operations/development.md#linux-appimage-prerequisites.",
+      "For other distributions, see docs/operations/00_development.md#linux-appimage-prerequisites.",
       "Then rerun `vp run dist:desktop:linux`.",
     ].join("\n");
   }
@@ -456,7 +456,7 @@ export class WindowsDesktopBuildPrerequisitesMissingError extends Schema.TaggedE
       "Install Rust from https://rustup.rs and add the requested target:",
       `  rustup target add ${this.rustTarget}`,
       "Install Python 3 and the Visual Studio Build Tools components listed in",
-      "docs/operations/development.md#windows-installer-prerequisites.",
+      "docs/operations/00_development.md#windows-installer-prerequisites.",
       "",
       "Then rerun the desktop artifact command.",
     ].join("\n");
@@ -1395,6 +1395,8 @@ ${associatedDomains}
     <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
     <true/>
     <key>com.apple.security.cs.disable-library-validation</key>
+    <true/>
+    <key>com.apple.security.automation.apple-events</key>
     <true/>
     <!-- The hardened runtime denies camera and microphone to the app and every
          child process, with no prompt, unless the app claims these. Terminals
@@ -2882,6 +2884,7 @@ export const createBuildConfig = Effect.fn("createBuildConfig")(function* (
         NSScreenCaptureUsageDescription: `${APP_NAME} captures the active window when you use the window capture shortcut.`,
         NSCameraUsageDescription: `${APP_NAME} lets commands run by terminals and coding agents use the camera.`,
         NSMicrophoneUsageDescription: `${APP_NAME} lets commands run by terminals and coding agents use the microphone.`,
+        NSAppleEventsUsageDescription: `${APP_NAME} lets commands run by terminals and coding agents control other apps.`,
         NSSpeechRecognitionUsageDescription: `${APP_NAME} transcribes your dictation on this Mac when you choose Apple Speech.`,
         // macOS lists an app under Default web browser only when it opens web
         // pages as documents as well as http and https links (see protocols).

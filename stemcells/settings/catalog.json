@@ -198,6 +198,11 @@
       "page": "/settings/appearance"
     },
     {
+      "id": "html-preview-width",
+      "title": "HTML preview width",
+      "page": "/settings/appearance"
+    },
+    {
       "id": "thread-details-items",
       "title": "Thread details",
       "page": "/settings/appearance"
@@ -327,6 +332,11 @@
     {
       "id": "linked-environments-beta",
       "title": "Linked environments",
+      "page": "/settings/labs"
+    },
+    {
+      "id": "workflows-beta",
+      "title": "Workflows",
       "page": "/settings/labs"
     },
     {

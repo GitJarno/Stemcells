@@ -358,3 +358,20 @@ limit holds it until the limit lifts.
   end it. Here `needs/stream` reached itself through the needs adapter's
   `ChatMarkdown`. Find the file with `DEBUG=vitest:browser*` (the session
   left busy), then break the cycle.
+- 2026-11-24 (503 commits): the first sync under the closed switches and
+  refused hosts (`seams.md`, No telemetry). It brought upstream's own fix
+  that stops reading Codex and Claude account ids (#42299), and a new phone
+  analytics id (#42394) under a name the id words missed: the words now
+  match `analytics.device-id` and `AnalyticsDevice`, and the phone answers
+  that it has none, as the web does. Upstream's webhook transport asks
+  `node:dns` through its own import, which holds the lookup it was loaded
+  with: a patch of a built-in needs `syncBuiltinESMExports()`, or an
+  `import * as` walks past it. Upstream split `BackgroundThreadContext`
+  (now also a side chat) from `HiddenThreadContext`, and the stash shortcut
+  went from the first to the second: a context we set for one meaning
+  changed meaning under us while every type still matched. Only the
+  contract test that pins the source's own line caught it, so pin the line
+  that reads a context, not only the context's name. A count that became a
+  list (`malformedRecords`) crashed our usage history at runtime; the
+  per-package typecheck passed from its cache and only the gate's own run
+  showed it, so trust the gate's typecheck, not a filtered rerun.
