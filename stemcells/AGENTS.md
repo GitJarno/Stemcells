@@ -82,7 +82,11 @@ The fork exists to keep taking upstream's work for free. The reasoning is in
   adds that reports on the person.
 - No `.env` made from `.env.example`, and none of the `T3CODE_RELAY_URL`,
   `T3CODE_CLERK_*` or `T3CODE_*OTLP*` variables set: they connect to
-  upstream's hosted services.
+  upstream's hosted services. Set anyway, they do nothing: every build and
+  process closes them (`stemcells/privacy/switches.ts`), and no process
+  resolves T3's hosts (`stemcells/privacy/closed.ts`). Never loosen either
+  to make something work; a new switch a sync brings is closed or listed
+  in `stemcells/outbound.txt` with why.
 - Stemcells has its own identity and runs beside T3 Code: bundle id
   `sh.stemcells.app`, state in `~/.stemcells`, app data in
   `~/Library/Application Support/sh.stemcells.app`. Never touch `~/.t3`.

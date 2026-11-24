@@ -4,6 +4,8 @@ import * as NodePath from "node:path";
 import * as NodeURL from "node:url";
 import * as NodeUtil from "node:util";
 
+import { closedBuildEnv } from "../../stemcells/privacy/buildEnv.ts";
+
 export interface T3CodePublicConfig {
   readonly clerkPublishableKey: string | undefined;
   readonly clerkJwtTemplate: string | undefined;
@@ -32,7 +34,7 @@ export function loadRepoEnv({
   const localEnv = readEnvFile(NodePath.join(repoRoot, ".env.local"));
   const config = resolvePublicConfig(baseEnv, localEnv, rootEnv);
 
-  return {
+  return closedBuildEnv({
     ...rootEnv,
     ...localEnv,
     ...baseEnv,
@@ -98,7 +100,7 @@ export function loadRepoEnv({
           VITE_RELAY_OTLP_TRACES_TOKEN: config.relayClientOtlpTracesToken,
         }
       : {}),
-  };
+  });
 }
 
 function resolvePublicConfig(...sources: readonly Environment[]): T3CodePublicConfig {

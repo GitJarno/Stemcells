@@ -6,6 +6,8 @@ import * as NodeURL from "node:url";
 
 import { describe, expect, it } from "vite-plus/test";
 
+import { isCloudSwitch } from "../../../../../stemcells/privacy/switches.ts";
+
 /**
  * Stemcells sends no telemetry or usage data. No folder a build is made from may carry T3's
  * analytics endpoint, a PostHog project key or a PostHog client. If this fails after a sync,
@@ -134,6 +136,7 @@ describe("nothing leaves the machine that stemcells/outbound.txt doesn't name", 
     idFiles: [] as string[],
     forbidden: [] as string[],
     cutFiles: [] as string[],
+    env: [] as string[],
   };
   for (const line of NodeFS.readFileSync(
     NodePath.join(repoRoot, "stemcells/outbound.txt"),
@@ -146,6 +149,7 @@ describe("nothing leaves the machine that stemcells/outbound.txt doesn't name", 
     else if (kind === "id") listed.idFiles.push(name);
     else if (kind === "forbid") listed.forbidden.push(name.toLowerCase());
     else if (kind === "cut") listed.cutFiles.push(name);
+    else if (kind === "env") listed.env.push(name);
     // `live` lines are the running app's, read by stemcells/lab/outbound-live.mjs.
     else if (kind !== "live") throw new Error(`stemcells/outbound.txt: unknown kind "${kind}"`);
   }
@@ -192,6 +196,28 @@ describe("nothing leaves the machine that stemcells/outbound.txt doesn't name", 
     );
   });
 
+  // A variable that could turn reporting on is one Stemcells closes (switches.ts), or is listed
+  // with why it reaches no one: a sync that brings a new switch fails here until it is read.
+  it("reads no variable that switches reporting on, but a closed or a listed one", () => {
+    const REPORTING =
+      /RELAY_URL|CLERK|OTLP|OTEL|POSTHOG|TELEMETRY|ANALYTICS|SENTRY|DSN|AXIOM|CRASH|UPDATES_ENABLED/;
+    const named = new Set([
+      ...grep("(T3CODE|OTEL|VITE|EXPO_PUBLIC)_[A-Z0-9_]+", []).map(([, match]) => match),
+      ...grep(
+        '(process\\.env\\.|import\\.meta\\.env\\.|Config\\.[A-Za-z]+\\(")[A-Z][A-Z0-9_]+',
+        [],
+      ).map(([, match]) => match.replace(/^.*[."]/, "")),
+    ]);
+    const reporting = [...named].filter((name) => REPORTING.test(name));
+    expect(reporting.length).toBeGreaterThan(40);
+    // An entry ending in `_` covers every name that starts with it.
+    const covers = (entry: string, name: string) =>
+      entry.endsWith("_") ? name.startsWith(entry) : name === entry;
+    const open = reporting.filter((name) => !isCloudSwitch(name));
+    expect(open.filter((name) => !listed.env.some((entry) => covers(entry, name)))).toEqual([]);
+    expect(listed.env.filter((entry) => !open.some((name) => covers(entry, name)))).toEqual([]);
+  });
+
   it("depends on no analytics, crash-reporting or tracing package", () => {
     const manifests = NodeChildProcess.execFileSync(
       "git",
@@ -209,6 +235,14 @@ describe("nothing leaves the machine that stemcells/outbound.txt doesn't name", 
         .map((name) => `${file}: ${name}`);
     });
     expect(found).toEqual([]);
+    // Nor installs one a dependency brings along: every package the lockfile resolves.
+    const resolved = [
+      ...NodeFS.readFileSync(NodePath.join(repoRoot, "pnpm-lock.yaml"), "utf8").matchAll(
+        /^ {2}'?((?:@[^/@\s]+\/)?[^@\s'/]+)@\d[^:]*'?:$/gm,
+      ),
+    ].map((match) => match[1]!);
+    expect(new Set(resolved).size).toBeGreaterThan(1000);
+    expect([...new Set(resolved)].filter((name) => REPORTS_ON_THE_PERSON.test(name))).toEqual([]);
   });
 });
 

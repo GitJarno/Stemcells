@@ -38,6 +38,13 @@ runs before any other, and a failure stops the sync. Nothing merges past it.
    - reporting switched on by an environment variable (`*_OTLP_*`,
      `*_TELEMETRY_*`, `*_DSN`).
 
+   A variable that could turn reporting on fails the gate until it is
+   closed (`stemcells/privacy/switches.ts` takes it out of every build and
+   process) or listed as `env` with why it reaches no one. A new host of
+   T3's own, or a new vendor upstream reports to, also goes in
+   `stemcells/privacy/closed.ts`'s `REFUSED`, so no process resolves it
+   even if code that asks slips through.
+
    Each finding ends one of two ways:
    - **Substituted out** (preferred): a substitute or one-import seam turns
      it off (`seams.md`, No telemetry).

@@ -1,12 +1,13 @@
 // Whether a built Stemcells says "T3 Code" only inside words stemcells/brand/nameTransform.ts
-// keeps, in what an install ships: a folder whole, or the server, web and desktop main inside
-// an archive. Exits 0 when it does, 1 with each unexplained line when not.
+// keeps, and holds none of T3's own identifiers (stemcells/privacy/built.ts), in what an install
+// ships: a folder whole, or the server, web and desktop main inside an archive. Exits 1 on either.
 //
 //   node stemcells/scripts/check-app-name.ts <app.asar | folder>...
 import * as NodeFS from "node:fs";
 import * as NodePath from "node:path";
 
 import { unexplainedNames } from "../brand/nameTransform.ts";
+import { heldIdentifiers, t3Identifiers } from "../privacy/built.ts";
 
 const CHECKED = /\.(?:js|mjs|cjs|html|json|webmanifest)$/;
 const IN_ARCHIVE = /^apps\/(?:server\/dist|desktop\/dist-electron)\//;
@@ -68,13 +69,18 @@ if (targets.length === 0) {
   process.exit(2);
 }
 
+const identifiers = t3Identifiers(
+  NodeFS.readFileSync(NodePath.resolve(import.meta.dirname, "../../.env.example"), "utf8"),
+);
 let checked = 0;
 const unexplained: string[] = [];
+const held: string[] = [];
 for (const target of targets) {
   const files = NodeFS.statSync(target).isDirectory() ? folderFiles(target) : archiveFiles(target);
   for (const [file, text] of files) {
     checked += 1;
     for (const words of unexplainedNames(text)) unexplained.push(`${file}: ${words}`);
+    for (const what of heldIdentifiers(text, identifiers)) held.push(`${file}: ${what}`);
   }
 }
 
@@ -88,4 +94,12 @@ if (unexplained.length > 0) {
   );
   process.exit(1);
 }
-console.log(`check-app-name: ${checked} built files say T3's name only where it's kept.`);
+if (held.length > 0) {
+  console.error(
+    `check-app-name: the build holds T3's own identifiers, so it was built with T3 Connect or its tracing on (stemcells/seams.md, No telemetry):\n  ${held.join("\n  ")}`,
+  );
+  process.exit(1);
+}
+console.log(
+  `check-app-name: ${checked} built files say T3's name only where it's kept, and hold none of T3's ${identifiers.length} identifiers.`,
+);

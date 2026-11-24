@@ -13,8 +13,15 @@
 #                                   address, and why it's never fetched
 #   live <host>[/<path>] <why>      a host, or the URLs under a path, the
 #                                   running app may contact
+#   env <NAME or PREFIX_> <why>     a variable that could turn reporting on
+#                                   and stays readable, with why it reaches
+#                                   no one; every other such variable is one
+#                                   `stemcells/privacy/switches.ts` closes
 #
 # Loopback, an IP address and the reserved example names need no line.
+#
+# Under all of it, no Stemcells process resolves T3's own hosts or the vendors
+# upstream reports to (`stemcells/privacy/closed.ts`), listed here or not.
 #
 # `live` is the runtime half: a host the running app contacts with no one
 # asking, which `stemcells/lab/outbound-live.mjs` (the outbound-live gate)
@@ -141,8 +148,8 @@ host api.push.apple.com pushes to the person's phone from a release build
 host api.sandbox.push.apple.com pushes to the person's phone from a development build
 
 # The phone app's config: off unless a build turns it on.
-host u.expo.dev T3's over-the-air updates, only with T3CODE_MOBILE_UPDATES_ENABLED=1 (outbound.contract.test.ts)
-host api.axiom.co the default trace url, unused unless a build sets a dataset and token
+host u.expo.dev T3's over-the-air updates, off: T3CODE_MOBILE_UPDATES_ENABLED is a closed switch (switches.ts; outbound.contract.test.ts)
+host api.axiom.co the default trace url, unused: the dataset and token a build would set are closed switches (switches.ts)
 
 # Files that may name an install, anonymous or analytics id, a feed or a crash reporter.
 id apps/server/src/telemetry/ upstream's analytics service, a no-op in Stemcells (No telemetry, seams.md; analytics.contract.test.ts)
@@ -156,6 +163,12 @@ id apps/desktop/src/electron/ElectronUpdater.ts same
 id apps/desktop/src/updates/DesktopUpdates.ts same; its own setFeedURL is the local mock server
 id apps/desktop/src/updates/updatesTestHarness.ts the updater's test harness, on a local mock feed
 id apps/desktop/src/stemcells/upstream/updater.ts ours: electron-updater's place, where setFeedURL does nothing; SourceUpdater fetches with git from the repository's own origin
+# Variables that could turn reporting on and stay readable. Every other one is closed: taken
+# out of every build's and process's environment before anything reads it (switches.ts).
+env T3CODE_TELEMETRY_ upstream's analytics switch, forced to false in every build and process (switches.ts), and its channel and buffer sizes, read only by the analytics service Stemcells replaces with a no-op
+env T3CODE_OTEL_SDK_DISABLED turns tracing off; nothing turns on with it
+env OTEL_ the standard OpenTelemetry variables: traces go only where the person's own shell points them, and none is set on a Mac that sets none; never to T3, whose trace store no lookup reaches (stemcells/privacy/closed.ts)
+
 # Forbidden: nothing fetches from these. The model list is the one bundled at
 # build time, which each upstream sync refreshes (seams.md, No model list from T3).
 forbid raw.githubusercontent.com/pingdotgg/ T3's repository on GitHub, read raw: upstream's server fetched its model list from it every hour

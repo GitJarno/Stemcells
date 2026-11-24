@@ -7,6 +7,8 @@ import { sharedBoundaryOf } from "./check.ts";
 const KNOWN = [
   // Pins our seams in upstream's build script, which no app's folder of ours holds.
   'brand/releaseNames.test.ts imports "../../scripts/build-desktop-artifact.ts": upstream app code (relative path)',
+  // Pins our seam in the loader every build reads its public configuration through.
+  'privacy/closed.test.ts imports "../../scripts/lib/public-config.ts": upstream app code (relative path)',
 ];
 
 describe("Stemcells' boundary with upstream, at the repository's root", () => {
