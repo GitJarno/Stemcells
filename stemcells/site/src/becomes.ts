@@ -12,9 +12,10 @@ import {
   tossFrame,
 } from "./app-cells.ts";
 import { type Cell, crew, drawCell, frameAt } from "./cells.ts";
-import { Exhibit } from "./kit/exhibit.ts";
+import { between, Exhibit } from "./kit/exhibit.ts";
 import { density, ease, lerp, span } from "./kit/form.ts";
 import { layerIn, scene } from "./kit/scenes.ts";
+import { VIEW } from "./shots.ts";
 
 const CREW = [
   ["Otter", "claude"],
@@ -61,11 +62,11 @@ export function becomes(root: HTMLElement): void {
   const cells = layerIn(root, "cells");
   const context = cells.getContext("2d")!;
   const beat = root.querySelector<HTMLElement>(".beat")!;
-  const app = new Exhibit(
-    root.querySelector<HTMLElement>(".window")!,
-    ["shape-one", "shape-two", "shape-four"],
-    { lights: true },
-  );
+  const app = new Exhibit(root.querySelector<HTMLElement>(".window")!, [
+    "shape-one",
+    "shape-two",
+    "shape-four",
+  ]);
   // One deal for the whole scene, so the Cell that grew is the Cell that leads the crew.
   const cast: Cell[] = crew(CREW);
   const otter = cast[0]!;
@@ -102,11 +103,17 @@ export function becomes(root: HTMLElement): void {
         cells.style.height = `${f.height}px`;
       }
       app.turn(TURNS.reduce((sum, at) => sum + ease.inOut(span(p, at, at + 0.05)), 0));
-      app.look(null);
+      // Close on the one fresh Cell while it grows, then back for the whole window as it fills.
+      app.look(
+        between(VIEW.fresh, VIEW.whole, ease.inOut(span(p, TURNS[0] - 0.1, TURNS[0] + 0.02))),
+      );
 
       // The ledge: the window's top edge, and a place on it for each of the crew.
-      const [left, top] = app.point(0, 0, pin),
-        [right] = app.point(app.screen.w, 0, pin);
+      const frame = app.frame.getBoundingClientRect(),
+        box = pin.getBoundingClientRect();
+      const left = frame.left - box.left,
+        right = frame.right - box.left,
+        top = frame.top - box.top;
       const scale = f.form === "phone" ? 2 : 3;
       const crowd = JOINS.filter((at) => p >= at).length;
       const spread = ease.inOut(span(p, TURNS[0], TURNS[0] + 0.06)),

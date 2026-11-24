@@ -120,11 +120,13 @@ export function get(root: HTMLElement): void {
         cells.style.height = `${f.height}px`;
       }
       context.clearRect(0, 0, cells.width, cells.height);
-      const latest = Math.min(BROUGHT.length - 1, Math.floor((f.p - LANDS.from) / LANDS.every));
-      cast.forEach((cell, n) => {
+      const latest = Math.floor((f.p - LANDS.from) / LANDS.every);
+      // A narrow terminal has room for four of them.
+      const room = Math.min(cast.length, Math.floor(ledge.wide / 62));
+      cast.slice(0, room).forEach((cell, n) => {
         const since = (f.p - LANDS.from - n * LANDS.every) / LANDS.springs;
         if (since < 0) return;
-        const x = ledge.left + (ledge.wide * (n + 0.5)) / cast.length;
+        const x = ledge.left + (ledge.wide * (n + 0.5)) / room;
         const frame: MiniFrame =
           since < 1
             ? tossFrame(
@@ -146,7 +148,7 @@ export function get(root: HTMLElement): void {
           px: 2 * d,
           alpha: ease.out(span(since, 0, 0.3)),
         });
-        if (n !== latest || f.p >= 0.985) return;
+        if (n !== Math.min(room - 1, latest) || f.p >= 0.985) return;
         context.font = `500 ${11 * d}px ${FONT}`;
         context.textAlign = "center";
         context.fillStyle = "rgba(237, 233, 224, 0.8)";

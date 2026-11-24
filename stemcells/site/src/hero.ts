@@ -68,9 +68,11 @@ export function hero(root: HTMLElement): Hero {
   const app = new Exhibit(
     root.querySelector<HTMLElement>(".hero-app")!,
     [form_ === "phone" ? "narrow-phone" : form_ === "tablet" ? "narrow-tablet" : "crew"],
-    { eager: true, lights: form_ === "desk" },
+    { eager: true },
   );
-  app.look(null);
+  // In a hand the window is the app at that width, from its top: its own shape, cut where the fold would cut it.
+  if (form_ !== "desk") app.frame.style.aspectRatio = form_ === "phone" ? "393 / 620" : "834 / 940";
+  app.look(form_ === "desk" ? null : { x: 0, y: 0, w: app.screen.w, h: 10 });
 
   let clock = 0;
   let nextBlink = 2.5;

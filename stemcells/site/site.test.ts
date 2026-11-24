@@ -11,7 +11,7 @@ import * as NodePath from "node:path";
 import * as NodeURL from "node:url";
 import { afterAll, describe, expect, it } from "vite-plus/test";
 
-import { shots } from "./src/shots.ts";
+import { SHOTS } from "./src/shots.data.ts";
 
 const site = NodePath.dirname(NodeURL.fileURLToPath(import.meta.url));
 const root = NodePath.resolve(site, "../..");
@@ -39,7 +39,7 @@ describe("stemcells.sh", () => {
     );
     // Every screen of the app the page shows ships with it, with its half-size copy where one is named.
     const shipped = new Set(NodeFS.readdirSync(NodePath.join(out, "app")));
-    const named = Object.entries(shots).flatMap(([name, shot]) =>
+    const named = Object.entries(SHOTS).flatMap(([name, shot]) =>
       shot.small ? [`${name}.webp`, `${name}-1440.webp`] : [`${name}.webp`],
     );
     expect(named.filter((file) => !shipped.has(file))).toEqual([]);

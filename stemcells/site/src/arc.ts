@@ -15,7 +15,7 @@ import {
 } from "./app-cells.ts";
 import { BELOW, type Cell, crew, drawCell, frameAt, lengthOf } from "./cells.ts";
 import { type Body, drawBody, type Mark, Morph, textBody } from "./kit/bodies.ts";
-import { around, between, Exhibit } from "./kit/exhibit.ts";
+import { along, around, Exhibit } from "./kit/exhibit.ts";
 import { clamp, density, ease, lerp, reduced, span, touch } from "./kit/form.ts";
 import { Glyphs, INK } from "./kit/glyphs.ts";
 import {
@@ -27,7 +27,7 @@ import {
   type TrailDot as Dot,
 } from "./kit/flight.ts";
 import { layerIn, scene, type SceneFrame } from "./kit/scenes.ts";
-import { type Box as Part, part } from "./shots.ts";
+import { type Box as Part, part, VIEW } from "./shots.ts";
 
 type Stage = "flying" | "input" | "landed" | "settled";
 const TONE: Readonly<Record<Stage, string>> = {
@@ -189,13 +189,31 @@ export function arc(root: HTMLElement): void {
   const [cell] = crew([["Otter", "claude"]]) as [Cell];
   const stages = [...root.querySelectorAll<HTMLElement>(".stages li")];
 
-  // The window's screens in the story's order: before the throw, in the air, asking, in the air again, landed, settled.
-  const app = new Exhibit(
-    root.querySelector<HTMLElement>(".window")!,
-    ["shape-one", "arc-flying", "arc-input", "arc-flying", "arc-landed", "arc-settled"],
-    { lights: true },
-  );
-  const whole: Part = { x: 0, y: 0, w: app.screen.w, h: app.screen.h };
+  // The window's screens in the story's order: in the air, asking, in the air again, landed, settled.
+  const app = new Exhibit(root.querySelector<HTMLElement>(".window")!, [
+    "arc-flying",
+    "arc-input",
+    "arc-flying",
+    "arc-landed",
+    "arc-settled",
+  ]);
+  /** The camera's framings, on a desk and in a hand: at work, asking, landed, settled. */
+  const views = (hand: boolean) =>
+    hand
+      ? {
+          whole: VIEW.answer,
+          work: { x: 476, y: 118, w: 420, h: 150 },
+          ask: around(part("arc-input", "askCard"), 10),
+          landed: { x: 476, y: 150, w: 430, h: 140 },
+          settled: around(part("arc-settled", "stageList"), 10),
+        }
+      : {
+          whole: VIEW.whole,
+          work: VIEW.answer,
+          ask: VIEW.ask,
+          landed: VIEW.answer,
+          settled: VIEW.stages,
+        };
 
   /** The answer taken by hand, until the question is asked again. */
   let asking = false;
@@ -274,8 +292,8 @@ export function arc(root: HTMLElement): void {
     const second = flightOver(x1, floor, x2, standOn(goalH), floor - apex);
 
     // Settled, its letters go where the app keeps a settled Cell: the Settled row of its list.
-    const row = part("arc-settled", "settled");
-    const [rowX, rowY] = app.point(row.x + 34, row.y + row.h / 2, pin);
+    const row = part("arc-settled", "stage.settled");
+    const [rowX, rowY] = app.point(row.x + 44, row.y + row.h / 2, pin, views(phone).settled);
     const settled = textBody("settled", { x: rowX, y: rowY - small / 2, h: small, a: 0 });
     const apart = lettersOf(cell, frameAt(cell, "idle", 0), x2, second.y1, scale);
 
@@ -393,37 +411,49 @@ export function arc(root: HTMLElement): void {
         for (const li of stages) li.classList.toggle("on", li.dataset.stage === stage);
       }
 
-      // The window under it: what the app shows at each stage, one screen turning into the next.
+      // The window under it: asleep until the throw, then what the app shows at each stage.
       asking = p >= AT.asks && p < AT.answered;
       app.frame.classList.toggle("asks", asking);
+      app.frame.style.opacity = `${lerp(0.4, 1, span(p, AT.crouch, AT.thrown + 0.02))}`;
       app.turn(
-        span(p, AT.thrown, AT.thrown + 0.03) +
-          span(p, AT.short + 0.01, AT.asks) +
+        span(p, AT.short + 0.01, AT.asks) +
           span(p, AT.answered, AT.thrownAgain) +
           span(p, AT.landed, AT.landed + 0.03) +
           span(p, AT.settles, AT.settles + 0.05),
       );
-      // The spotlight says where to look: the question, the closing line, then the list it is settled in.
+      // The camera goes where the app answers each stage: the list, the question, the closing line, the list.
+      const view = views(f.form === "phone");
+      app.look(
+        along(
+          [
+            [AT.thrown, view.whole],
+            [AT.thrown + 0.07, view.work],
+            [AT.short, view.work],
+            [AT.asks + 0.03, view.ask],
+            [AT.answered, view.ask],
+            [AT.thrownAgain + 0.05, view.work],
+            [AT.landed, view.work],
+            [AT.landed + 0.05, view.landed],
+            [AT.hint, view.landed],
+            [AT.settles + 0.07, view.settled],
+          ],
+          p,
+        ),
+      );
+      // And a spotlight says which part: the question, the closing line, the row it is settled in.
       const lights: readonly (readonly [Part, number])[] = [
         [
-          part("arc-input", "ask"),
-          span(p, AT.asks, AT.asks + 0.03) * (1 - span(p, AT.taken, AT.answered)),
+          part("arc-input", "askCard"),
+          span(p, AT.asks + 0.01, AT.asks + 0.04) * (1 - span(p, AT.taken, AT.answered)),
         ],
         [
           part("arc-landed", "closeOut"),
-          span(p, AT.landed + 0.03, AT.cheers) * (1 - span(p, AT.hint, AT.settles)),
+          span(p, AT.landed + 0.04, AT.cheers + 0.02) * (1 - span(p, AT.hint, AT.settles)),
         ],
-        [part("arc-settled", "stages"), span(p, AT.settles + 0.05, AT.settled)],
+        [part("arc-settled", "stage.settled"), span(p, AT.settles + 0.06, AT.settled)],
       ];
       const [spot, much] = lights.reduce((a, b) => (b[1] > a[1] ? b : a));
       app.spot(much > 0 ? spot : null, ease.inOut(much));
-      // A desk shows the whole window and leans in; a hand goes to the part that matters.
-      const near = around(spot, f.form === "phone" ? 16 : 220);
-      app.look(
-        f.form === "phone"
-          ? between(part("arc-flying", "column"), near, ease.inOut(much))
-          : between(whole, near, 0.16 * ease.inOut(much)),
-      );
 
       // Settling: it comes apart where it stands, then its letters go and line up.
       const going = span(p, AT.settles, AT.settles + 0.02),

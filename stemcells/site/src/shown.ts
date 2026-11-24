@@ -3,17 +3,17 @@
 // app draws it, then shows the other forms an answer takes. The count is the
 // words left to read.
 
-import { around, between, Exhibit } from "./kit/exhibit.ts";
+import { between, Exhibit } from "./kit/exhibit.ts";
 import { ease, lerp, span } from "./kit/form.ts";
 import { scene } from "./kit/scenes.ts";
-import { type Box, part, type ShotName, WORDS } from "./shots.ts";
+import { type Box, type ShotName, VIEW, WORDS } from "./shots.ts";
 
-/** The forms, in the order the page lists them: the screen, and the part of it that is the form. */
-const FORMS: readonly { shot: ShotName; part: string }[] = [
-  { shot: "shown-chart", part: "chart" },
-  { shot: "shown-diagram", part: "diagram" },
-  { shot: "shown-choice", part: "question" },
-  { shot: "shown-closeout", part: "closeOut" },
+/** The forms, in the order the page lists them: the screen, and where on it the camera rests. */
+const FORMS: readonly { shot: ShotName; view: Box }[] = [
+  { shot: "shown-chart", view: VIEW.answer },
+  { shot: "shown-diagram", view: VIEW.answer },
+  { shot: "shown-choice", view: VIEW.foot },
+  { shot: "shown-closeout", view: VIEW.answer },
 ];
 const WALL: ShotName = "shown-wall";
 
@@ -28,7 +28,8 @@ export function shown(root: HTMLElement): void {
     ...FORMS.map((form) => form.shot),
   ]);
   const listed = [...root.querySelectorAll<HTMLElement>(".forms li")];
-  const count = root.querySelector<HTMLElement>(".count b")!;
+  const tally = root.querySelector<HTMLElement>(".count")!;
+  const count = tally.querySelector<HTMLElement>("b")!;
   let lit = -2,
     said = -1;
 
@@ -41,33 +42,24 @@ export function shown(root: HTMLElement): void {
       if (turned <= 0) app.wipe(1, wiped);
       else app.turn(1 + turned);
 
-      // The camera: the whole reply while it is a wall, then in on each form.
-      const hand = f.form === "phone";
-      const focus = (n: number): Box => {
-        const form = FORMS[Math.min(n, FORMS.length - 1)]!;
-        return around(part(form.shot, form.part), hand ? 14 : 110);
-      };
+      // The camera rests on the answer, and goes down to the question when the form is a choice.
+      const viewOf = (n: number): Box => FORMS[Math.min(n, FORMS.length - 1)]!.view;
       const from = Math.floor(turned);
-      const on = between(focus(from), focus(from + 1), turned - from);
-      const lean = ease.inOut(span(p, AT.wiped, AT.wiped + 0.08)) * (hand ? 1 : 0.45);
-      app.look(between(part(WALL, "reply"), on, lean));
+      app.look(between(viewOf(from), viewOf(from + 1), turned - from));
 
       const now = wiped < 0.5 ? -1 : Math.round(turned);
       if (now !== lit) {
         lit = now;
         listed.forEach((item, n) => item.classList.toggle("on", n === now));
       }
-      const read =
-        turned > 0
-          ? lerp(WORDS[FORMS[from]!.shot]!, WORDS[focusShot(from + 1)]!, turned - from)
-          : lerp(WORDS[WALL]!, WORDS[FORMS[0]!.shot]!, wiped);
-      if (Math.round(read) !== said) {
-        said = Math.round(read);
-        count.textContent = `${said}`;
+      // The count holds for the one answer told two ways: the wall, then its chart.
+      const read = Math.round(lerp(WORDS[WALL]!, WORDS[FORMS[0]!.shot]!, wiped));
+      if (read !== said) {
+        said = read;
+        count.textContent = `${read}`;
       }
+      tally.style.opacity = `${1 - span(p, AT.turns[0] - 0.04, AT.turns[0])}`;
     },
     { still: STILL },
   );
 }
-
-const focusShot = (n: number): ShotName => FORMS[Math.min(n, FORMS.length - 1)]!.shot;

@@ -37,14 +37,14 @@ const ROOMS: Readonly<
   >
 > = {
   desk: {
-    at: { phone: [0.065, 0.11], book: [0.43, 0.56], pad: [0.88, 0.21] },
-    floor: 0.93,
-    shelf: [0.17, 0.56, 0.98],
+    at: { phone: [0.07, 0.125], book: [0.445, 0.6], pad: [0.89, 0.2] },
+    floor: 0.95,
+    shelf: [0.13, 0.58, 0.99],
   },
   tablet: {
-    at: { book: [0.23, 0.4], pad: [0.66, 0.32], phone: [0.93, 0.13] },
-    floor: 0.94,
-    shelf: [0.17, 0.5, 0.98],
+    at: { book: [0.24, 0.44], pad: [0.685, 0.32], phone: [0.93, 0.13] },
+    floor: 0.95,
+    shelf: [0.14, 0.5, 0.98],
   },
   phone: {
     at: { book: [0.2, 0.36], phone: [0.57, 0.26], pad: [0.87, 0.2] },
@@ -72,7 +72,7 @@ const AT = {
 const ASKER = 2;
 const BEATS = [
   [0, "Six machines. One room."],
-  [0.16, "Thrown from the one in your hand."],
+  [0.16, "Thrown from the one in front of you."],
   [0.48, "Flying on the Macs in the closet."],
   [0.58, "One asks. Every screen says so."],
   [0.76, "Answered from whichever is closest."],
@@ -149,7 +149,8 @@ export function devices(root: HTMLElement): void {
       box.style.left = `${Math.round(aw * cx - wide / 2)}px`;
       box.style.bottom = `${Math.round(ah * (1 - where.floor))}px`;
       box.classList.toggle("near", kind === near);
-      box.querySelector("b")!.textContent = kind === near ? " · in your hand" : "";
+      box.querySelector("b")!.textContent =
+        kind !== near ? "" : kind === "book" ? " · on your desk" : " · in your hand";
       app.look(null);
     }
     const [sy, from, to] = where.shelf;
@@ -224,8 +225,11 @@ export function devices(root: HTMLElement): void {
       // Every screen says the same: calm, then asked, then calm again once it is answered.
       const asked = ease.inOut(span(p, AT.asks, AT.asks + 0.04)),
         answered = ease.inOut(span(p, AT.answered, AT.answered + 0.04));
-      for (const { app, kind } of machines)
+      for (const { app, kind, box } of machines) {
         app.turn(MACHINES[kind].shots.length > 1 ? asked + answered : 0);
+        // Amber means Input: every machine's outline wears it while the question stands.
+        box.style.setProperty("--asked", `${asked * (1 - answered)}`);
+      }
 
       glyphs.clear();
       context.clearRect(0, 0, cells.width, cells.height);

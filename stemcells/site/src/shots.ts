@@ -1,5 +1,8 @@
-// The app's own screens the page shows (`public/app/`), and where things are
-// on each, in the screen's CSS pixels. `shots/README.md` says how they are made.
+// The app's own screens the page shows (`public/app/`): what each is, where
+// things are on it (`shots.data.ts`, measured in the app), and the framings
+// the camera takes. `shots/README.md` says how they are made.
+
+import { SHOTS } from "./shots.data.ts";
 
 export interface Box {
   readonly x: number;
@@ -8,99 +11,56 @@ export interface Box {
   readonly h: number;
 }
 
-interface Shot {
-  readonly w: number;
-  readonly h: number;
-  /** A half-size copy exists beside it. */
-  readonly small: boolean;
-  readonly alt: string;
-  readonly rects: Readonly<Record<string, Box>>;
-}
+export type ShotName = keyof typeof SHOTS;
 
-const mac = (alt: string, rects: Readonly<Record<string, Box>> = {}): Shot => ({
-  w: 1440,
-  h: 900,
-  small: true,
-  alt,
-  rects,
-});
-
-const COLUMN: Box = { x: 0, y: 0, w: 346, h: 900 };
-const STAGES: Box = { x: 8, y: 668, w: 330, h: 160 };
-const PANE: Box = { x: 358, y: 58, w: 1070, h: 830 };
-
-export const shots = {
-  crew: mac("Stemcells on a Mac: Cells listed by stage beside two chats at work.", {
-    column: COLUMN,
-    stages: STAGES,
-    pane: PANE,
-  }),
-  "arc-flying": mac("A Cell at work: it is listed under Flying.", {
-    column: COLUMN,
-    stages: STAGES,
-    pane: PANE,
-  }),
-  "arc-input": mac("The Cell asks one question, with a preview of each answer.", {
-    column: COLUMN,
-    stages: STAGES,
-    pane: PANE,
-    ask: { x: 12, y: 150, w: 322, h: 200 },
-  }),
-  "arc-landed": mac("The Cell has landed: one closing line says what is done.", {
-    column: COLUMN,
-    stages: STAGES,
-    pane: PANE,
-    closeOut: { x: 620, y: 600, w: 560, h: 120 },
-  }),
-  "arc-settled": mac("The Cell is settled: nothing needs you.", {
-    column: COLUMN,
-    stages: STAGES,
-    pane: PANE,
-    settled: { x: 8, y: 790, w: 330, h: 34 },
-  }),
-  "shown-wall": mac("A reply written as a wall of text.", { reply: PANE }),
-  "shown-chart": mac("The same reply as a chart.", { chart: { x: 620, y: 300, w: 560, h: 300 } }),
-  "shown-diagram": mac("A flow drawn as a diagram.", {
-    diagram: { x: 620, y: 300, w: 560, h: 300 },
-  }),
-  "shown-choice": mac("A question with a preview of each option.", {
-    question: { x: 620, y: 400, w: 560, h: 260 },
-  }),
-  "shown-closeout": mac("One closing line: what is done and what is left.", {
-    closeOut: { x: 620, y: 560, w: 560, h: 140 },
-  }),
-  "shape-one": mac("One Cell in one window."),
-  "shape-two": mac("Two Cells side by side."),
-  "shape-four": mac("Four tabs, and four Cells in the open one."),
-  "narrow-tablet": {
-    w: 834,
-    h: 1194,
-    small: false,
-    alt: "Stemcells in a browser on a tablet.",
-    rects: {},
-  },
-  "narrow-phone": {
-    w: 393,
-    h: 852,
-    small: false,
-    alt: "Stemcells in a browser on a phone.",
-    rects: {},
-  },
-} as const satisfies Record<string, Shot>;
-
-export type ShotName = keyof typeof shots;
-
-/** The words a person reads on a screen of a reply, counted from what the Cell said. */
-export const WORDS: Partial<Record<ShotName, number>> = {
-  "shown-wall": 220,
-  "shown-chart": 9,
-  "shown-diagram": 5,
-  "shown-choice": 14,
-  "shown-closeout": 12,
+/** What each screen shows, for someone who cannot see it. */
+export const ALT: Readonly<Record<ShotName, string>> = {
+  crew: "Stemcells on a Mac: Cells listed by stage, one question waiting, two chats at work.",
+  "arc-flying": "A Cell at work on dark mode: it is listed under Flying.",
+  "arc-input": "The Cell asks one question, with a preview of each answer.",
+  "arc-landed": "The Cell has landed: one closing line says what is done.",
+  "arc-settled": "The Cell is settled: it is listed under Settled and nothing needs you.",
+  "shown-wall": "A reply written as a wall of text about search speed.",
+  "shown-chart": "The same reply as a chart of search latency.",
+  "shown-diagram": "How a search query travels, drawn as a diagram.",
+  "shown-choice": "A question with a preview of each option.",
+  "shown-closeout": "One closing card: what is done and what is left, by owner.",
+  "shape-one": "One Cell in one window, Aski over the composer.",
+  "shape-two": "Two Cells side by side.",
+  "shape-four": "Four tabs, and four Cells at work in the open one.",
+  "narrow-tablet": "Stemcells in a browser on a tablet.",
+  "narrow-phone": "Stemcells in a browser on a phone.",
 };
 
-/** Where `part` is on `shot`; the whole screen when it has no such part. */
+export const sizeOf = (shot: ShotName): { readonly w: number; readonly h: number } => SHOTS[shot];
+export const hasSmall = (shot: ShotName): boolean => SHOTS[shot].small;
+
+/** Where `name` is on `shot`; the whole screen when it has no such part. */
 export function part(shot: ShotName, name: string): Box {
-  const s: Shot = shots[shot];
-  return s.rects[name] ?? { x: 0, y: 0, w: s.w, h: s.h };
+  const rects: Readonly<Record<string, Box>> = SHOTS[shot].rects;
+  return rects[name] ?? { x: 0, y: 0, w: SHOTS[shot].w, h: SHOTS[shot].h };
 }
+
+/** A framing: a part of a Mac's screen in the screen's own shape, so a window's frame shows it edge to edge. */
+const framed = (x: number, y: number, w: number): Box => ({ x, y, w, h: (w * 900) / 1440 });
+
+/** The framings the camera takes on a Mac's screen. */
+export const VIEW = {
+  whole: framed(0, 0, 1440),
+  /** The question in the column, with its previews, and the head of the chat. */
+  ask: framed(0, 78, 770),
+  /** The open Cell's answer, from the person's message down. */
+  answer: framed(450, 46, 796),
+  /** The foot of the open Cell: its question or its composer. */
+  foot: framed(450, 388, 796),
+  /** The stages' list at the foot of the column, and the line that says it is settled. */
+  stages: framed(0, 346, 800),
+  /** A fresh Cell: Aski over the composer. */
+  fresh: framed(388, 318, 920),
+} as const;
+
+/** The words a person reads in one answer told two ways: as the Cell's prose, and as its sentence with a chart's labels. */
+export const WORDS: Partial<Record<ShotName, number>> = {
+  "shown-wall": 227,
+  "shown-chart": 24,
+};
