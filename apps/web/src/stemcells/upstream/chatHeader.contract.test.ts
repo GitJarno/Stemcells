@@ -33,7 +33,7 @@ describe("the line's contracts with upstream's chat header", () => {
     );
     // A click opens the menu at once, past a double-click's trailing click; `useCellThreadMenu` too.
     expect(chatHeader).toMatch(
-      /const openMenuFromTitle = \(event: ReactMouseEvent<HTMLButtonElement>\) => \{\s*if \(isTrailingDoubleClick\(event\.detail\)\) return;\s*const rect = event\.currentTarget\.getBoundingClientRect\(\);\s*openMenu\(\{ x: rect\.left, y: rect\.bottom \+ 4 \}\);\s*\};/,
+      /const openMenuFromTitle = \(event: ReactMouseEvent<HTMLButtonElement>\) => \{\s*if \(isTrailingDoubleClick\(event\.detail\)\) return;\s*const rect = event\.currentTarget\.getBoundingClientRect\(\);\s*openMenu\(\{ x: rect\.left, y: rect\.bottom \+ 4 \}, contextMenuSourceOf\(event\)\);\s*\};/,
     );
     expect(chatHeader).not.toContain("setTimeout");
     expect(chatHeader).toContain("threadEnvironment.updateMetadata");

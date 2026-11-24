@@ -202,8 +202,16 @@ describe("a composer's global shortcuts", () => {
   });
 
   it("are the stash shortcut and the question's digit keys, which upstream gates on it", () => {
+    // The stash takes a side chat's keys by where they were pressed, which a second pane's
+    // composer would match too: ours stands down with the hidden ones (seams/web.md).
     expect(upstreamComposerStashSource).toMatch(
-      /if \(backgroundThread\) return;\s*return registerCommands\(\s*\{ "composer\.stash": handleStashShortcut \}/,
+      /const ownsWindowInput = useOwnsChatWindowInput\(\);\s*const hiddenThread = use\(HiddenThreadContext\) \|\| !ownsWindowInput;/,
+    );
+    expect(upstreamComposerStashSource).toMatch(
+      /if \(hiddenThread\) return;\s*return registerCommands\(\s*\{ "composer\.stash": handleStashShortcut \}/,
+    );
+    expect(upstreamComposerStashSource).toContain(
+      "when: (event) => isInSideChatPane(event.target) === embedded,",
     );
     expect(upstreamPendingInputSource).toContain(
       "const backgroundThread = use(BackgroundThreadContext);",

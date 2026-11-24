@@ -68,6 +68,7 @@ import {
   useState,
 } from "react";
 import { BackgroundThreadContext, HiddenThreadContext } from "./backgroundThread";
+import { useOwnsChatWindowInput } from "./chatWindowInput";
 import { isInSideChatPane } from "../../lib/sideChatPane";
 import { useStableCallback } from "../../hooks/useStableCallback";
 
@@ -785,7 +786,8 @@ export function useComposerStash(input: {
   // Capture phase while the composer is mounted, so Mod+S never reaches the browser's save
   // dialog even when a focused widget (the model picker search) stops the key.
   const embedded = use(BackgroundThreadContext);
-  const hiddenThread = use(HiddenThreadContext);
+  const ownsWindowInput = useOwnsChatWindowInput();
+  const hiddenThread = use(HiddenThreadContext) || !ownsWindowInput;
   const readShortcutContext = useStableCallback(() => ({
     terminalOpen: Boolean(
       selectThreadTerminalUiState(

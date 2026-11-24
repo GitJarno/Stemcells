@@ -10,6 +10,7 @@ import { describe, expect, it } from "vite-plus/test";
 
 import chatView from "../../components/ChatView.tsx?raw";
 import composerEditor from "../../components/ComposerPromptEditorTiptap.tsx?raw";
+import tokenPaste from "../../components/composerInlineTokenPaste.ts?raw";
 import chatComposer from "../../components/chat/ChatComposer.tsx?raw";
 import composerMentionDrag from "../../components/chat/composerMentionDrag.ts?raw";
 import composerStash from "../../components/chat/useComposerStash.ts?raw";
@@ -93,11 +94,19 @@ describe("a carry's contracts with upstream's drop", () => {
     );
   });
 
-  it("the composer's editor takes no drop of its own, so a carry with no text passes through", () => {
-    // A carry clears a picture's own address and markup; an editor that took drops itself
-    // would still claim one, and a drop cursor would promise text where a file lands.
+  it("the composer's editor takes a drop of plain text only, so a carry, which has none, passes through", () => {
+    // A carry clears a picture's own address and markup (`carry.ts`, `clearData`); an editor
+    // that took any drop would claim one, and a drop cursor would promise text where a file lands.
     expect(composerEditor).toContain("dropcursor: false,");
-    expect(composerEditor).not.toMatch(/handleDrop|\b(?:drop|dragover|dragenter)\s*[:(]/);
+    expect(composerEditor).toMatch(
+      /handleDrop: \(view, event, _slice, moved\) => \{\s*const data = event\.dataTransfer;[\s\S]{0,160}?if \(moved \|\| view\.dragging \|\| !data \|\| data\.files\.length > 0\) return false;[\s\S]{0,160}?if \(!target \|\| !readPastedPlainText\(data\)\) return false;/,
+    );
+    expect(composerEditor.match(/handleDrop|\b(?:drop|dragover|dragenter)\s*[:(]/g)).toHaveLength(
+      1,
+    );
+    expect(tokenPaste).toMatch(
+      /export function readPastedPlainText\(clipboardData: Pick<DataTransfer, "getData">\): string \{\s*return clipboardData\.getData\("text\/plain"\)/,
+    );
   });
 
   it("a sidebar row takes a drop on the element that names its chat by its key", () => {

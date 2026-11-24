@@ -6,6 +6,7 @@
  */
 import { describe, expect, it } from "vite-plus/test";
 
+import branchToolbarLogic from "../../components/BranchToolbar.logic.ts?raw";
 import branchToolbar from "../../components/BranchToolbar.tsx?raw";
 import branchSelector from "../../components/BranchToolbarBranchSelector.tsx?raw";
 import chatView from "../../components/ChatView.tsx?raw";
@@ -116,7 +117,15 @@ describe("a Cell's env on its ledge", () => {
       /const showComposerContextStrip =\s*!embedded &&\s*shouldShowComposerContextStrip\(\{\s*isDraftHeroState,\s*persistInActiveThreads: settings\.persistComposerContextStrip,/,
     );
     expect(chatView).toMatch(
-      /\{showComposerContextStrip && \(\s*<div className="pointer-events-auto">\s*<BranchToolbar\b[\s\S]{0,200}?ref=\{branchToolbarRef\}\s*environmentId=\{activeThread\.environmentId\}[\s\S]{0,100}?projectId=\{activeThread\.projectId\}\s*worktreePath=\{activeThread\.worktreePath\}\s*isServerThread=\{isServerThread\}\s*showGitControls=\{\s*isGitRepo \|\| worktreeRepositoryChoices\.tracksGitRepositories\s*\}\s*showBranchControls=\{isGitRepo\}/,
+      /\{showComposerContextStrip && \(\s*<div className="pointer-events-auto">\s*<BranchToolbar\b[\s\S]{0,200}?ref=\{branchToolbarRef\}\s*environmentId=\{activeThread\.environmentId\}[\s\S]{0,100}?projectId=\{activeThread\.projectId\}\s*worktreePath=\{activeThread\.worktreePath\}\s*isServerThread=\{isServerThread\}\s*showGitControls=\{workspaceModesOffered\}\s*showBranchControls=\{isGitRepo\}/,
+    );
+    // What it offers them for: a git checkout or a folder of repositories, never a chat with no
+    // project (`envOfferOf` reads the two props as that).
+    expect(chatView).toMatch(
+      /const workspaceModesOffered = offersWorkspaceModes\(\{\s*isScratchProject: activeProjectIsScratch,\s*isGitRepo,\s*tracksGitRepositories: worktreeRepositoryChoices\.tracksGitRepositories,\s*\}\);/,
+    );
+    expect(branchToolbarLogic).toContain(
+      "return !input.isScratchProject && (input.isGitRepo || input.tracksGitRepositories);",
     );
   });
 
