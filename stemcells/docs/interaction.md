@@ -32,6 +32,11 @@ Aski and its copies (`aski/`), and the Cell forming (`cell/`).
 - **From Aski's room**, each Cell Aski launches gets a copy from Aski to
   its tab's chip as it lands (`aski/copies.ts`). Aski's tab holds Aski
   alone, so the chip is where the person sees it went.
+- **On the phone**, a Cell forming in its card on the home gets a copy
+  that buds off the Aski over the list (`home/copies.ts`). Where Aski's
+  chat stands beside the home (an unfolded iPhone Duo, an iPad), the copy
+  buds off the Aski heading that chat and flies over to the card, above
+  both columns.
 - **The hand-off** is one call, `formAt(threadId, at)` (`cell/forming.ts`),
   with `at` a `performance.now()` time: before `at` the Cell's box is the
   copy's, and from `at` the Cell plays its blocks and its hop. Call it as
@@ -50,6 +55,19 @@ Aski and its copies (`aski/`), and the Cell forming (`cell/`).
   appear and each Cell stands.
 - `form-step` is one beat of the sprite clock (12 a second), so the glyphs,
   the blocks and the Cell's own frames keep one rhythm.
+
+## The phone's stages
+
+A sideways swipe over Aski turns the home's stage, as two fingers turn the
+Mac's column: left to the next, right to the one before
+(`home/state.ts`, `stageAfterSwipe`).
+
+- **Under the finger** the list is drawn along a little, less past either
+  end, where nothing turns.
+- **Let go** past 48 points, or on a flick, the stage turns as a tap on its
+  segment turns it, with one selection tick. Short of that, the list
+  settles back on `settle`.
+- **Reduce Motion**: the list isn't drawn along; the turn is still.
 
 ## The toss
 

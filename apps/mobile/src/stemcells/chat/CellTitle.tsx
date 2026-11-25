@@ -22,6 +22,7 @@ import {
 } from "../cell/kit";
 import { ThreadCell } from "../cell/ThreadCell";
 import { tellDeed } from "../collection/read";
+import { askiChatStandsIn } from "../home/copies";
 import { ProjectMark } from "../home/RowCell";
 import {
   AppText,
@@ -44,21 +45,34 @@ const MARK = 14;
 const BESIDE_BUTTONS = 152;
 
 /** Reads its chat itself: the header keeps the element it was handed until the chat changes. */
-export function CellTitle(props: { readonly threadId: string }) {
+export function CellTitle(props: {
+  readonly threadId: string;
+  /** Its column's width, beside the home or an inspector; the window's where there's none. */
+  readonly width: number | null;
+  /** The home stands beside the chat: Aski's copies bud off the Aski heading it. */
+  readonly besideHome: boolean;
+}) {
   const thread = useThreadShellsSelected((threads) =>
     threads.find((one) => one.id === props.threadId),
   );
-  return thread === undefined ? null : <Title thread={thread} />;
+  return thread === undefined ? null : (
+    <Title thread={thread} width={props.width} besideHome={props.besideHome} />
+  );
 }
 
-function Title(props: { readonly thread: EnvironmentThreadShell }) {
+function Title(props: {
+  readonly thread: EnvironmentThreadShell;
+  readonly width: number | null;
+  readonly besideHome: boolean;
+}) {
   const { thread } = props;
   const aski = useIsAskiChat(thread.id);
   const project = useProject({ environmentId: thread.environmentId, projectId: thread.projectId });
   const saved = useSavedConnection(thread.environmentId);
   const ink = useResolveClassNames("text-foreground").color;
   const ground = useResolveClassNames("bg-screen").backgroundColor;
-  const { width } = useWindowDimensions();
+  const { width: windowWidth } = useWindowDimensions();
+  const width = props.width ?? windowWidth;
   const buttons = use(HeaderItemsWidthContext) ?? BESIDE_BUTTONS;
   const reduced = useReducedMotion();
   /** The finger's travel over the Cell, and whether this touch soothed it: then it is no poke. */
@@ -78,7 +92,9 @@ function Title(props: { readonly thread: EnvironmentThreadShell }) {
       style={{ maxWidth: Math.max(0, width - buttons) }}
     >
       {aski ? (
-        <AskiFigure height={POINTS * 14} ink={ink} ground={ground} />
+        <View ref={props.besideHome ? askiChatStandsIn : undefined}>
+          <AskiFigure height={POINTS * 14} ink={ink} ground={ground} />
+        </View>
       ) : (
         // A tap on the Cell is a poke: it answers in the state it is in (`cell/acting.ts`).
         <Pressable

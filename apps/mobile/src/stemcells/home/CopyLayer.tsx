@@ -1,10 +1,10 @@
-// The copies of Aski in flight over the home (`copies.ts`): each buds off
-// Aski at half its height, flies along a bow to its Cell's card, shrinking
-// to the Cell's size, and fades as it lands and the Cell's glyphs start. A
-// layer over the list that no touch meets.
+// The copies of Aski in flight (`copies.ts`): each buds off Aski at half its height, flies along
+// a bow to its Cell's card, shrinking to the Cell's size, and fades as the Cell's glyphs start. A
+// layer over the window that no touch meets, so a copy from Aski's chat crosses to the home beside
+// it; there only while one flies.
 
 import { useEffect, useRef, useState } from "react";
-import { StyleSheet, View, type ViewInstance } from "react-native";
+import { Platform, StyleSheet, View, type ViewInstance } from "react-native";
 import Animated, {
   Easing,
   runOnJS,
@@ -12,6 +12,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+import { FullWindowOverlay } from "react-native-screens";
 import { useResolveClassNames } from "uniwind";
 
 import { AskiFigure } from "../aski/AskiFigure";
@@ -71,6 +72,18 @@ function Copy(props: { readonly flight: Flight; readonly origin: { x: number; y:
 
 export function CopyLayer() {
   const copies = useCopies();
+  if (copies.length === 0) return null;
+  // iOS: over both columns and the bars, where the window's points are the layer's own.
+  return Platform.OS === "ios" ? (
+    <FullWindowOverlay>
+      <Copies copies={copies} />
+    </FullWindowOverlay>
+  ) : (
+    <Copies copies={copies} />
+  );
+}
+
+function Copies(props: { readonly copies: readonly Flight[] }) {
   const layer = useRef<ViewInstance>(null);
   const [origin, setOrigin] = useState({ x: 0, y: 0 });
   return (
@@ -80,7 +93,7 @@ export function CopyLayer() {
       style={StyleSheet.absoluteFill}
       onLayout={() => layer.current?.measureInWindow((x, y) => setOrigin({ x, y }))}
     >
-      {copies.map((flight) => (
+      {props.copies.map((flight) => (
         <Copy key={flight.threadId} flight={flight} origin={origin} />
       ))}
     </View>
