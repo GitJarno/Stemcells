@@ -1,7 +1,7 @@
-// Aski divides on the home, as on the Mac (`apps/web/src/stemcells/aski/
-// copies.ts`): a Cell forming in its card (`cell/forming.ts`) gets a small
-// copy of Aski that buds off Aski over the list and flies to the card,
-// landing as the Cell's glyphs start. Boxes are in the window's points.
+// Aski divides on the home, as on the Mac (`apps/web/src/stemcells/aski/copies.ts`): a Cell
+// forming in its card (`cell/forming.ts`) gets a small copy of Aski that flies to the card, landing
+// as the Cell's glyphs start. It buds off the Aski heading Aski's chat where that chat stands beside
+// the home (the unfolded Duo, an iPad), else the Aski over the list. Boxes are window points.
 
 import { useSyncExternalStore } from "react";
 import type { ViewInstance } from "react-native";
@@ -22,6 +22,8 @@ export interface Flight {
 }
 
 let aski: ViewInstance | null = null;
+/** Aski heading its chat, in the order they came: a chat pushed over another heads the list. */
+const inChats = new Set<ViewInstance>();
 const flights = new Map<string, Flight>();
 /** Cells whose copy has left: one copy a Cell, however often its card shows. */
 const sent = new Set<string>();
@@ -38,11 +40,25 @@ export function askiStandsIn(view: ViewInstance | null): void {
   aski = view;
 }
 
-/** Sends a copy from Aski to the Cell of `threadId`, standing in `to`, to land at `lands`; none while Aski isn't on the home. */
+/** Where Aski stands heading its own chat, while that chat stands beside the home: a ref. */
+export function askiChatStandsIn(view: ViewInstance | null): (() => void) | undefined {
+  if (view === null) return undefined;
+  inChats.add(view);
+  return () => void inChats.delete(view);
+}
+
+function origin(): ViewInstance | null {
+  let last: ViewInstance | null = null;
+  for (const view of inChats) last = view;
+  return last ?? aski;
+}
+
+/** Sends a copy from Aski to the Cell of `threadId`, standing in `to`, to land at `lands`; none while no Aski stands in view. */
 export function sendCopy(threadId: string, to: Box, lands: number): void {
-  if (sent.has(threadId) || aski === null) return;
+  const from = origin();
+  if (sent.has(threadId) || from === null) return;
   sent.add(threadId);
-  aski.measureInWindow((x, y, width, height) => {
+  from.measureInWindow((x, y, width, height) => {
     if (width === 0) return;
     flights.set(threadId, { threadId, from: { x, y, width, height }, to, lands });
     changed();

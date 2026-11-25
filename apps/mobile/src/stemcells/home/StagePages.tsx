@@ -40,7 +40,6 @@ const SHIFT = 20;
 
 type Page = Omit<StagePage, "active" | "minHeight" | "inset"> & {
   readonly opacity: SharedValue<number>;
-  readonly x: SharedValue<number>;
 };
 
 function usePage(shown: boolean, top: number): Page {
@@ -178,7 +177,7 @@ export function StagePages<Stage extends string>(props: {
         </View>
       </Animated.View>
       {primaryColumn ? null : <ScreenVeils night={props.night} bottom />}
-      <CopyLayer />
+      <CopyLayer shown={inFront} />
     </View>
   );
 }
@@ -196,7 +195,7 @@ function Stage(props: {
 }) {
   const { page, active, minHeight, inset } = props;
   const value = useMemo(
-    () => ({ ...page, active, minHeight, inset }),
+    () => ({ ref: page.ref, offset: page.offset, x: page.x, active, minHeight, inset }),
     [page, active, minHeight, inset],
   );
   const style = useAnimatedStyle(() => ({

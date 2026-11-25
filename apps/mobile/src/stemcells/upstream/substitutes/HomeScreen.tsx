@@ -2,7 +2,6 @@
 // list handed each segment's Cells, a list per segment. In the iOS workspace our picks narrow it
 // (`home/scope.tsx`) and T3's own pick stays unset. Where it has no header (Android, outside the
 // workspace) and searching, T3's.
-import { useIsFocused } from "@react-navigation/native";
 import { type ReactNode } from "react";
 import { Platform } from "react-native";
 
@@ -29,7 +28,8 @@ type Place = { readonly environmentId: string; readonly projectId: string };
 
 export function HomeScreen(props: Props) {
   const workspace = useWorkspaceTabs();
-  const inFront = useIsFocused();
+  // T3's own word for its list on screen: a sidebar beside a chat counts (`useHomeRouteVisible`).
+  const inFront = props.visible;
   const now = useMinute();
   const readings = useReadings();
   const picked = usePicks();

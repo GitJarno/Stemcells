@@ -48,6 +48,8 @@ export interface StagePage {
   readonly offset: SharedValue<number>;
   /** That inset, set by hand on every stage's scroll view: each rests at minus this. */
   readonly inset: number;
+  /** How far it stands aside, points: a swipe over Aski draws it along (`AskiHome.tsx`). */
+  readonly x: SharedValue<number>;
   /** Tall enough to scroll the shared header out of sight: a short list keeps it put too. */
   readonly minHeight: number;
 }
@@ -55,10 +57,9 @@ export interface StagePage {
 export const StagePageContext = createContext<StagePage | null>(null);
 
 /**
- * Whether the home is the screen in front. T3's home stays mounted under a
- * chat and keeps drawing its rows; a Cell forms only where it's seen
- * (`cell/forming.ts`), so one Aski starts meanwhile forms on the way back.
- * Rows outside the home (the iPad's sidebar) leave forming to the chat.
+ * Whether the home is on screen: in front, or in a sidebar column beside a chat (T3's `visible`).
+ * A Cell forms only where it's seen (`cell/forming.ts`), on one clock wherever it shows, so one
+ * Aski starts behind a chat forms on the way back. Rows outside the home leave forming to the chat.
  */
 export const HomeInFront = createContext(false);
 
@@ -120,6 +121,38 @@ export function enteringX(
 ): number {
   "worklet";
   return opacity > 0 ? x : Math.sign(to - from) * shift;
+}
+
+/** How far a swipe over Aski goes, points, to turn the stage; a flick turns it sooner. */
+const TURN = 48;
+const FLICK = 500;
+
+/**
+ * The stage a sideways swipe over Aski turns the home to, as two fingers turn the Mac's column:
+ * left to the next, right to the one before. Null short of a turn or past either end.
+ */
+export function stageAfterSwipe(
+  stages: readonly string[],
+  current: string,
+  dx: number,
+  vx: number,
+): string | null {
+  "worklet";
+  const flicked = Math.abs(vx) > FLICK && Math.sign(vx) === Math.sign(dx);
+  return Math.abs(dx) < TURN && !flicked ? null : stageToward(stages, current, dx);
+}
+
+/** The stage on the side a swipe goes, however far: null past either end. */
+export function stageToward(stages: readonly string[], current: string, dx: number): string | null {
+  "worklet";
+  if (dx === 0) return null;
+  return stages[stages.indexOf(current) + (dx < 0 ? 1 : -1)] ?? null;
+}
+
+/** Where a list stands as the finger draws it: along a little, less past either end. */
+export function drawnX(dx: number, turns: boolean): number {
+  "worklet";
+  return dx * (turns ? 0.3 : 0.1);
 }
 
 let footRoom = 0;
