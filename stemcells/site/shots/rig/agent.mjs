@@ -3,6 +3,7 @@
 // turns in world.mjs instead of a recorded transcript. It streams words, tool rows, plans and
 // questions through the real adapter, and can hold a turn open so a Cell stays in the air
 // while a picture is taken. It runs no model and no CLI. (Shape: apps/server/scripts/dev-replay-agent.ts.)
+import * as NodeChildProcess from "node:child_process";
 import * as NodeCrypto from "node:crypto";
 import * as NodeFS from "node:fs";
 import * as NodePath from "node:path";
@@ -10,6 +11,8 @@ import * as NodeReadline from "node:readline";
 
 const LAB = process.env.SC_SITE_LAB ?? "/tmp/stemcells-shots/lab";
 const { TURNS, MODEL } = await import(new URL("./world.mjs", import.meta.url).href);
+
+const { pageHtml } = await import(new URL("./pages.mjs", import.meta.url).href);
 
 const CHUNK_MS = 30;
 const WORDS_PER_CHUNK = 3;
@@ -45,6 +48,45 @@ const sleep = (ms, signal) =>
 /** Waits until `$LAB/go/<name>` exists: the rig's way to say "carry on". */
 async function hold(name, signal) {
   while (!signal.aborted && !NodeFS.existsSync(`${LAB}/go/${name}`)) await sleep(150, signal);
+}
+
+/** Calls a tool of the server's own MCP, over the stdio bridge the session was given. */
+function callTool(session, name, args) {
+  const server = session.mcpServers.find((each) => each.command !== undefined);
+  if (server === undefined) return Promise.reject(new Error("the session has no MCP server"));
+  const bridge = NodeChildProcess.spawn(server.command, server.args ?? [], {
+    env: {
+      ...process.env,
+      ...Object.fromEntries((server.env ?? []).map((each) => [each.name, each.value])),
+    },
+    stdio: ["pipe", "pipe", "ignore"],
+  });
+  const ask = (message) =>
+    bridge.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", ...message })}\n`);
+  return new Promise((resolve, reject) => {
+    bridge.on("error", reject);
+    bridge.on("exit", () => reject(new Error("the MCP bridge stopped")));
+    NodeReadline.createInterface({ input: bridge.stdout }).on("line", (line) => {
+      const message = JSON.parse(line);
+      if (message.id === 1) {
+        ask({ method: "notifications/initialized" });
+        ask({ id: 2, method: "tools/call", params: { name, arguments: args } });
+      }
+      if (message.id !== 2) return;
+      if (message.error) reject(new Error(message.error.message));
+      else resolve(message.result);
+      bridge.kill();
+    });
+    ask({
+      id: 1,
+      method: "initialize",
+      params: {
+        protocolVersion: "2025-06-18",
+        capabilities: {},
+        clientInfo: { name: "site-lab-agent", version: "1" },
+      },
+    });
+  });
 }
 
 function chunks(text) {
@@ -121,6 +163,23 @@ async function play(sessionId, steps, signal) {
         status: "completed",
         content: diff ?? [{ type: "content", content: { type: "text", text: tool.output ?? "" } }],
       });
+    } else if (step.page !== undefined) {
+      const args = {
+        html: pageHtml(step.page.name),
+        title: step.page.title,
+        height: 468,
+      };
+      const toolCallId = `${turnKey}-${tools++}`;
+      const call = { toolCallId, title: "mcp__t3-code__html_render", kind: "other" };
+      update({ sessionUpdate: "tool_call", ...call, status: "in_progress", rawInput: args });
+      const result = await callTool(session, "html_render", args);
+      log(`page ${step.page.name} ${JSON.stringify(result).slice(0, 300)}`);
+      update({
+        sessionUpdate: "tool_call_update",
+        toolCallId,
+        status: "completed",
+        rawOutput: result.structuredContent ?? result,
+      });
     } else if (step.ask !== undefined) {
       const ask = step.ask;
       await sleep(250, signal);
@@ -186,7 +245,7 @@ async function handle(message) {
       const sessionId =
         message.method === "session/load" ? String(params.sessionId) : NodeCrypto.randomUUID();
       const cwd = typeof params.cwd === "string" ? params.cwd : process.cwd();
-      sessions.set(sessionId, { cwd, cancel: undefined });
+      sessions.set(sessionId, { cwd, mcpServers: params.mcpServers ?? [], cancel: undefined });
       return {
         ...(message.method === "session/new" ? { sessionId } : {}),
         models: {
