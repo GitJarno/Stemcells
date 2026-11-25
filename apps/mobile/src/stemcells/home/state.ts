@@ -57,10 +57,9 @@ export interface StagePage {
 export const StagePageContext = createContext<StagePage | null>(null);
 
 /**
- * Whether the home is the screen in front. T3's home stays mounted under a
- * chat and keeps drawing its rows; a Cell forms only where it's seen
- * (`cell/forming.ts`), so one Aski starts meanwhile forms on the way back.
- * Rows outside the home (the iPad's sidebar) leave forming to the chat.
+ * Whether the home is on screen: in front, or in a sidebar column beside a chat (T3's `visible`).
+ * A Cell forms only where it's seen (`cell/forming.ts`), on one clock wherever it shows, so one
+ * Aski starts behind a chat forms on the way back. Rows outside the home leave forming to the chat.
  */
 export const HomeInFront = createContext(false);
 

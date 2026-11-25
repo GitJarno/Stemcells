@@ -177,7 +177,7 @@ export function StagePages<Stage extends string>(props: {
         </View>
       </Animated.View>
       {primaryColumn ? null : <ScreenVeils night={props.night} bottom />}
-      <CopyLayer />
+      <CopyLayer shown={inFront} />
     </View>
   );
 }

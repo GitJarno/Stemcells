@@ -22,6 +22,7 @@ import {
 } from "../cell/kit";
 import { ThreadCell } from "../cell/ThreadCell";
 import { tellDeed } from "../collection/read";
+import { useColumnWidth } from "./header";
 import { askiChatStandsIn } from "../home/copies";
 import { ProjectMark } from "../home/RowCell";
 import {
@@ -47,16 +48,16 @@ const BESIDE_BUTTONS = 152;
 /** Reads its chat itself: the header keeps the element it was handed until the chat changes. */
 export function CellTitle(props: {
   readonly threadId: string;
-  /** Its column's width, beside the home or an inspector; the window's where there's none. */
-  readonly width: number | null;
-  /** The home stands beside the chat: Aski's copies bud off the Aski heading it. */
+  /** The chat is on top beside the home: Aski's copies bud off the Aski heading it. */
   readonly besideHome: boolean;
 }) {
   const thread = useThreadShellsSelected((threads) =>
     threads.find((one) => one.id === props.threadId),
   );
+  // Its column's, beside the home or an inspector; the window's where there's no column.
+  const width = useColumnWidth(props.threadId);
   return thread === undefined ? null : (
-    <Title thread={thread} width={props.width} besideHome={props.besideHome} />
+    <Title thread={thread} width={width} besideHome={props.besideHome} />
   );
 }
 
