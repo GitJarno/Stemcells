@@ -153,7 +153,7 @@ Lead with the idea, then the proof. One claim per sentence.
 | The arc         | Thrown until it lands.                                         | The four stages, on the Mac's column and the phone's tabs                                                 |
 | Falling short   | One clear question. Your answer is the next throw.             | One ask at a time, the question first, options with previews, a number key to answer                      |
 | Settling        | Landed is its finish. Settled is yours.                        | Settle from anywhere; a swipe on the phone; write to it and it flies again                                |
-| Shown, not told | Agents write walls. Stemcells answers in pictures.             | Charts, diagrams, previews and the closing line, drawn on the Mac and the phone                           |
+| Shown, not told | Agents write walls. Stemcells answers in pictures.             | Living pages a Cell draws in its answer, on the Mac and the phone; charts, diagrams and previews too      |
 | Becoming        | It becomes what you need.                                      | Cells grow with the time they fly alone; tabs, panes and windows; Mac and phone                           |
 | Every machine   | One crew, on every machine you own.                            | Phone, tablet and other Macs reach your Mac over your own network; a settle or an answer shows everywhere |
 | Yours           | Bring your own agents.                                         | Claude Code, Codex, Cursor, OpenCode and more, on your accounts and your machine                          |

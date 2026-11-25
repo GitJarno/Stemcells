@@ -21,10 +21,12 @@ export const ALT: Readonly<Record<ShotName, string>> = {
   "arc-landed": "The Cell has landed: one closing line says what is done.",
   "arc-settled": "The Cell is settled: it is listed under Settled and nothing needs you.",
   "shown-wall": "A reply written as a wall of text about search speed.",
-  "shown-chart": "The same reply as a chart of search latency.",
-  "shown-diagram": "How a search query travels, drawn as a diagram.",
-  "shown-choice": "A question with a preview of each option.",
-  "shown-closeout": "One closing card: what is done and what is left, by owner.",
+  "shown-queries":
+    "Every search as a 3D landscape in the chat, fallen nearly flat: 18 ms, and eight typos still tall.",
+  "shown-flow":
+    "A search's way through the system as streams in the chat: most through the index, four in ten from the cache.",
+  "shown-code": "The codebase as a galaxy in the chat: the nine changed files alight.",
+  "shown-page": "The results page in the chat, pulled apart into its five layers.",
   "shape-one": "One Cell in one window, Aski over the composer.",
   "shape-two": "Two Cells side by side.",
   "shape-four": "Four tabs, and four Cells at work in the open one.",
@@ -37,10 +39,14 @@ export const ALT: Readonly<Record<ShotName, string>> = {
   "arc-landed-phone": "On a phone: the Cell has landed, and one closing line says what is done.",
   "arc-settled-phone": "On a phone: the Cell is settled.",
   "shown-wall-phone": "On a phone: a reply written as a wall of text about search speed.",
-  "shown-chart-phone": "On a phone: the same reply as a chart of search latency.",
-  "shown-diagram-phone": "On a phone: how a search query travels, drawn as a diagram.",
-  "shown-choice-phone": "On a phone: a question with a preview of its first option.",
-  "shown-closeout-phone": "On a phone: one closing card, what is done and what is left.",
+  "shown-queries-phone":
+    "On a phone: every search as a 3D landscape in the chat, fallen nearly flat: 18 ms, and eight typos still tall.",
+  "shown-flow-phone":
+    "On a phone: a search's way through the system as streams in the chat: most through the index, four in ten from the cache.",
+  "shown-code-phone":
+    "On a phone: the codebase as a galaxy in the chat: the nine changed files alight.",
+  "shown-page-phone":
+    "On a phone: the results page in the chat, pulled apart into its five layers.",
 };
 
 export const sizeOf = (shot: ShotName): { readonly w: number; readonly h: number } => SHOTS[shot];
@@ -62,8 +68,8 @@ export const VIEW = {
   ask: framed(0, 78, 770),
   /** The open Cell's answer, from the person's message down. */
   answer: framed(450, 46, 796),
-  /** The foot of the open Cell: its question or its composer. */
-  foot: framed(450, 388, 796),
+  /** The open Cell's answer with a page in it: the person's message, the page and the line under it. */
+  page: framed(328, 45, 992),
   /** The stages' list at the foot of the column, and the line that says it is settled. */
   stages: framed(0, 376, 800),
   /** A fresh Cell: Aski over the composer. */
@@ -73,8 +79,11 @@ export const VIEW = {
 /** A framing on a phone's screen: a phone's frame shows the screen at its full width, so a framing is how far down it looks. */
 export const band = (y: number, h: number): Box => ({ x: 0, y, w: 393, h });
 
-/** The words a person reads in one answer told two ways: as the Cell's prose, and as its sentence with a chart's labels. */
-export const WORDS: Partial<Record<ShotName, number>> = {
+/** The words in one answer told, and in each shown (`shots/rig/words.mjs`). */
+export const WORDS = {
   "shown-wall": 227,
-  "shown-chart": 24,
-};
+  "shown-queries": 8,
+  "shown-flow": 7,
+  "shown-code": 7,
+  "shown-page": 9,
+} as const;

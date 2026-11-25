@@ -42,15 +42,7 @@ bar: Search latency
 | p99 | 540 | 80 |
 \`\`\``;
 
-const WALL = `I measured search before and after the change, over 2,000 queries taken from last week's logs, on the same machine and the same data. Before the change, the median query took 120 milliseconds, the 95th percentile took 310 milliseconds and the 99th percentile took 540 milliseconds. Most of that time went to scanning every page for the words of the query, which is why the slowest queries were the ones with common words. After the change, search reads from an index that is built once at deploy. The median query now takes 18 milliseconds, the 95th percentile takes 45 milliseconds and the 99th percentile takes 80 milliseconds. That is about 6.7 times faster at the median, 6.9 times faster at the 95th percentile and 6.8 times faster at the 99th. The index adds 1.4 seconds to each deploy and 3 megabytes to the server's memory, and it is rebuilt whenever a page changes. Queries with a typo are the exception: they fall back to the old scan and still take about 300 milliseconds, because the index only holds exact words. They are 4 percent of all queries. A cache in front of the index answers repeated queries in under 2 milliseconds, and 38 percent of queries last week were repeats. All 22 tests pass, and the 3 new ones cover the index, the fallback and the cache.`;
-
-const DIAGRAM = `\`\`\`mermaid
-flowchart LR
-  request([Request]) --> cache{Cache}
-  cache -- hit --> result([Result])
-  cache -- miss --> index[Index]
-  index --> result
-\`\`\``;
+export const WALL = `I measured search before and after the change, over 2,000 queries taken from last week's logs, on the same machine and the same data. Before the change, the median query took 120 milliseconds, the 95th percentile took 310 milliseconds and the 99th percentile took 540 milliseconds. Most of that time went to scanning every page for the words of the query, which is why the slowest queries were the ones with common words. After the change, search reads from an index that is built once at deploy. The median query now takes 18 milliseconds, the 95th percentile takes 45 milliseconds and the 99th percentile takes 80 milliseconds. That is about 6.7 times faster at the median, 6.9 times faster at the 95th percentile and 6.8 times faster at the 99th. The index adds 1.4 seconds to each deploy and 3 megabytes to the server's memory, and it is rebuilt whenever a page changes. Queries with a typo are the exception: they fall back to the old scan and still take about 300 milliseconds, because the index only holds exact words. They are 8 of the 2,000 queries. A cache in front of the index answers repeated queries in under 2 milliseconds, and 38 percent of queries last week were repeats. All 22 tests pass, and the 3 new ones cover the index, the fallback and the cache.`;
 
 const passed = (file, count, ms) =>
   ` ✓ ${file} (${count} tests) ${ms}ms\n\n Test Files  1 passed (1)\n      Tests  ${count} passed (${count})`;
@@ -72,6 +64,9 @@ const landed = (match, { read, lead, test, tests, done }) => ({
     { say: `${lead}\n\n**Done:** ${done}` },
   ],
 });
+
+/** A page in a chat (`html_render`), once its frame is there. */
+const PAGE = ".html-preview-lane iframe";
 
 export const CELLS = [
   // Settled by the rig once they land.
@@ -404,63 +399,34 @@ export const TURNS = [
     ],
   },
 
-  // Shown, not told: the same numbers told, then shown. Longer matches first.
+  // Shown, not told: the same numbers told, then shown, each as a page the Cell draws. Longer matches first.
   {
     match: "How much faster is search now? Show me",
-    steps: [{ say: `Search is about seven times faster at every percentile.\n\n${CHART}` }],
+    steps: [
+      { page: { name: "queries", title: "Every search, before and after" } },
+      { say: "Nearly seven times faster. Only typos still climb." },
+    ],
   },
   { match: "How much faster is search now?", steps: [{ say: WALL }] },
   {
-    match: "How does a search query travel",
+    match: "How does a search travel",
     steps: [
-      {
-        say: `A repeat is answered from the cache; anything else goes to the index.\n\n${DIAGRAM}`,
-      },
+      { page: { name: "flow", title: "How a search travels" } },
+      { say: "Four in ten never leave the cache." },
     ],
   },
   {
-    match: "Ship the search index",
+    match: "What did this touch",
     steps: [
-      {
-        tool: {
-          kind: "read",
-          title: "Read config/flags.yml",
-          input: { path: "config/flags.yml" },
-          output: "",
-          ms: 300,
-        },
-      },
-      {
-        ask: {
-          id: "ship",
-          header: "Shipping",
-          question: "Ship the index now, or behind a flag?",
-          options: [
-            {
-              label: "Behind a flag (Recommended)",
-              description: "On for 10% of visitors first, then everyone.",
-              preview: "# config/flags.yml\nsearch-index:\n  on: true\n  share: 10%",
-            },
-            {
-              label: "Ship it now",
-              description: "On for everyone with this deploy.",
-              preview: "# config/flags.yml\nsearch-index:\n  on: true\n  share: 100%",
-            },
-          ],
-        },
-      },
-      {
-        tool: {
-          kind: "execute",
-          title: "pnpm test search",
-          input: { command: "pnpm test search" },
-          output: passed("src/search/query.test.ts", 22, 340),
-          ms: 400,
-        },
-      },
-      {
-        say: "The index is live behind the `search-index` flag, on for 10% of visitors.\n\n**Done:** search answers in 45 ms at p95, down from 310; 22 tests pass.\n**Left:**\n- waiting: a day of numbers at 10%\n- me: turn the flag on for everyone",
-      },
+      { page: { name: "code", title: "What this touched" } },
+      { say: "Nine files, seven of them in search." },
+    ],
+  },
+  {
+    match: "Show me the results page first",
+    steps: [
+      { page: { name: "page", title: "The results page, in layers" } },
+      { say: "Five layers. Say the word and I build it." },
     ],
   },
 ];
@@ -481,40 +447,43 @@ export const SHOWN = [
     message: "How much faster is search now? Show me.",
     shots: [
       {
-        name: "shown-chart",
-        selector: "[data-stemcells-chart]",
-        until: "seven times faster",
-        note: "The same numbers shown: a chart fence drawn as a chart, and one sentence.",
+        name: "shown-queries",
+        selector: PAGE,
+        until: "typos still climb",
+        note: "The same numbers shown: a page the Cell drew, all 2,000 searches as a landscape that falls.",
       },
     ],
   },
   {
-    message: "How does a search query travel now?",
+    message: "How does a search travel now?",
     shots: [
       {
-        name: "shown-diagram",
-        selector: "[data-markdown-mermaid] svg",
-        until: "goes to the index",
-        note: "A flow shown: a mermaid fence drawn as a diagram.",
+        name: "shown-flow",
+        selector: PAGE,
+        until: "never leave the cache",
+        note: "A flow shown: a page the Cell drew, the searches streaming through the system in their true shares.",
       },
     ],
   },
   {
-    message: "Ship the search index.",
+    message: "What did this touch?",
     shots: [
       {
-        name: "shown-choice",
-        asks: true,
-        selector: "[data-pending-user-input-toggle]",
-        until: "Input requested",
-        note: "A choice shown: one question, each option with a preview of what it does.",
+        name: "shown-code",
+        selector: PAGE,
+        until: "seven of them in search",
+        note: "A change shown: a page the Cell drew, the codebase as a galaxy with the changed files alight.",
       },
+    ],
+  },
+  {
+    message: "Show me the results page first.",
+    shots: [
       {
-        answer: "Behind a flag (Recommended)",
-        name: "shown-closeout",
-        selector: "[data-stemcells-close-out]",
-        until: "turn the flag on for everyone",
-        note: "Where it stands, shown: the closing card with its Done line and its Left lines by owner.",
+        name: "shown-page",
+        selector: PAGE,
+        until: "Say the word",
+        note: "A design shown: a page the Cell drew, the results page apart in its layers.",
       },
     ],
   },

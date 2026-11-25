@@ -38,10 +38,10 @@ const ORDER = [
   "arc-landed",
   "arc-settled",
   "shown-wall",
-  "shown-chart",
-  "shown-diagram",
-  "shown-choice",
-  "shown-closeout",
+  "shown-queries",
+  "shown-flow",
+  "shown-code",
+  "shown-page",
   "shape-one",
   "shape-two",
   "shape-four",
@@ -55,10 +55,10 @@ const ORDER = [
   "arc-landed-phone",
   "arc-settled-phone",
   "shown-wall-phone",
-  "shown-chart-phone",
-  "shown-diagram-phone",
-  "shown-choice-phone",
-  "shown-closeout-phone",
+  "shown-queries-phone",
+  "shown-flow-phone",
+  "shown-code-phone",
+  "shown-page-phone",
 ];
 /** The Cell's own messages in a transcript; the last one is its answer. */
 const REPLY = '[data-timeline-row-id][data-message-role="assistant"]';
@@ -467,32 +467,23 @@ const PHASES = {
         message: shown.message,
         title: "Speed up search",
       });
+      // The Cell's own tab alone: the fresh one it was thrown from stays out of the picture.
+      await layout(page, { tabs: [tab("shown", [[threadId]])], stage: "needs" });
       for (const shot of shown.shots) {
-        if (shot.answer) {
-          const option = await inView(page, `[data-stemcells-pane] :text("${shot.answer}")`);
-          if (!option) throw new Error(`no option "${shot.answer}" in the pane`);
-          await page.mouse.click(option.box.x + 10, option.box.y + option.box.height / 2);
-          await sleep(600);
-          const submit = await inView(page, '[data-stemcells-pane] button:has-text("Submit")');
-          if (submit)
-            await page.mouse.click(
-              submit.box.x + submit.box.width / 2,
-              submit.box.y + submit.box.height / 2,
-            );
-        }
         if (shot.selector)
           await page.waitForSelector(shot.selector, { state: "attached", timeout: 60000 });
         await said(page, shot.until);
-        await sleep(3500);
+        // A page plays its opening once; the picture is of it at rest.
+        await sleep(shot.selector ? 8000 : 3500);
         await capture(page, shot.name, shot.note);
         await at("phone", async (phone) => {
           await layout(phone, { tabs: [tab("shown", [[threadId]])], stage: "needs" });
           if (shot.selector)
             await phone.waitForSelector(shot.selector, { state: "attached", timeout: 60000 });
           await said(phone, shot.until);
-          await sleep(3500);
-          // The answer starts at the top of the pane; a question sits over the composer as it is.
-          if (!shot.asks) await bringUp(phone, REPLY);
+          await sleep(shot.selector ? 8000 : 3500);
+          // The answer starts at the top of the pane: its page, or its words.
+          await bringUp(phone, shot.selector ?? REPLY);
           await sleep(1000);
           await capture(
             phone,

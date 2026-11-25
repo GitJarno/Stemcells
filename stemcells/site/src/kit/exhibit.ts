@@ -43,7 +43,6 @@ export class Exhibit {
   readonly screen: { readonly w: number; readonly h: number };
   readonly #film = document.createElement("div");
   readonly #spot = document.createElement("i");
-  readonly #edge = document.createElement("i");
   readonly #layers: (readonly [ShotName, HTMLImageElement])[] = [];
   #view = { s: 1, x: 0, y: 0 };
 
@@ -71,8 +70,7 @@ export class Exhibit {
       this.#film.append(image);
     });
     this.#spot.className = "spot";
-    this.#edge.className = "edge";
-    this.#film.append(this.#spot, this.#edge);
+    this.#film.append(this.#spot);
     this.frame.append(this.#film);
     host.append(this.frame);
     new ResizeObserver(() => {
@@ -100,23 +98,13 @@ export class Exhibit {
       const alpha = n === under ? 1 : n === under + 1 ? at - under : 0;
       image.style.opacity = `${alpha}`;
       image.style.visibility = alpha <= 0 ? "hidden" : "visible";
-      image.style.clipPath = "";
     });
-    this.#edge.style.opacity = "0";
     this.#say(Math.round(clamp(at, 0, this.#layers.length - 1)));
   }
 
-  /** The screen at `over` drawn across the one before it from the left, up to `to` of the screen's width. */
-  wipe(over: number, to: number): void {
-    this.#layers.forEach(([, image], n) => {
-      const shown = n === over - 1 || n === over;
-      image.style.opacity = shown ? "1" : "0";
-      image.style.visibility = shown ? "visible" : "hidden";
-      image.style.clipPath = n === over ? `inset(0 ${(1 - to) * 100}% 0 0)` : "";
-    });
-    this.#edge.style.opacity = to <= 0 || to >= 1 ? "0" : "1";
-    this.#edge.style.left = `${to * this.screen.w}px`;
-    this.#say(to < 0.5 ? over - 1 : over);
+  /** Lays `element` over the screens, in the screen's own CSS pixels: it moves with the camera. */
+  over(element: HTMLElement): void {
+    this.#film.insertBefore(element, this.#spot);
   }
 
   /** The camera: the part of the screen the frame shows, whole, and never past the screen's edge. Null shows all of it. */

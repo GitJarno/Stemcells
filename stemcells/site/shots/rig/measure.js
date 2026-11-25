@@ -91,8 +91,8 @@
   // or a closing card it wrote is part of it), as far as the window shows it.
   if (panes[0])
     put("reply", all('[data-message-role="assistant"] [data-thread-find-text]', panes[0]).at(-1));
-  put("chart", all("[data-stemcells-chart]")[0]);
-  put("diagram", all("[data-markdown-mermaid]")[0]);
+  // A page the Cell drew in the first pane (`html_render`): the frame it is shown in.
+  if (panes[0]) put("page", all(".html-preview-lane iframe", panes[0]).at(-1));
   put("closeOut", all("[data-stemcells-close-out]")[0]);
   put("aski", all("[data-stemcells-aski-perch]")[0]);
   const toggle = all("[data-pending-user-input-toggle]")[0];

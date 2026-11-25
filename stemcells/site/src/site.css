@@ -332,13 +332,21 @@ h1 {
   opacity: 0;
   pointer-events: none;
 }
-.exhibit .edge {
+/* What the pages are drawn on, over the screens; under it, the pane's own surface covers what it replaces. */
+.exhibit .dust {
+  --pane: #0d0d0d;
   position: absolute;
+  overflow: hidden;
+  pointer-events: none;
+}
+.exhibit .dust > * {
+  position: absolute;
+  left: 0;
   top: 0;
-  bottom: 0;
-  width: 1px;
-  background: var(--ink);
-  opacity: 0;
+}
+.exhibit .dust i {
+  width: 100%;
+  background: var(--pane);
 }
 
 /* ── Scenes ───────────────────────────────────────────────────────────────── */
@@ -485,15 +493,20 @@ h2 {
   font-size: 14px !important;
   margin-top: 1.6em !important;
 }
-/* How many words are left to read. */
+/* How many words the answer is: the one number the scene is about. */
 .count {
-  margin: 0 0 12px;
+  display: flex;
+  align-items: baseline;
+  gap: 0.7em;
+  margin: 0 0 14px;
   color: var(--faint);
   font: 12px var(--mono);
 }
 .count b {
+  min-width: 2.1em;
   color: var(--ink);
-  font-weight: 500;
+  font: 640 34px/1 var(--sans);
+  letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
 }
 

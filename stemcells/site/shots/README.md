@@ -32,7 +32,11 @@ node stemcells/site/shots/place.mjs /tmp/stemcells-shots/app
   fresh`), so a full retake starts from `down.sh --wipe`. `shoot.sh shown`
   and `shoot.sh fresh` can run again on a finished world;
   `ONLY=shown-wall bash …/shoot.sh shown` retakes one picture at both widths.
-- `place.mjs` needs `cwebp`. It writes each picture as WebP (and at half
+- The pages in the "shown" answers are real ones: `rig/pages.mjs` bundles
+  `src/worlds/` into one page each, the scripted agent hands it to the
+  server's own `html_render`, and the site plays the same shapes live where
+  the app showed them. A change to a shape needs its picture retaken.
+- `place.mjs` needs `cwebp`, and keeps the pictures a run did not take. It writes each picture as WebP (and at half
   size where it is a Mac's screen) and `src/shots.data.ts`: each picture's
   size and where things are on it, in CSS pixels.
 - It starts no model and no provider CLI. Every provider in the lab home is
@@ -68,8 +72,6 @@ node stemcells/site/shots/place.mjs /tmp/stemcells-shots/app
   column shut.
 - A short reply cannot be scrolled higher than the app lays it: on a phone
   it starts 140 to 220px down the pane (`reply` in the manifest says where).
-- A closing card with a "me" line keeps its Cell in the air, so
-  `shown-closeout` has no Settle button and counts under Flying.
 - The free-disk figure in the column is routed to a round disk, and the
   environment's name is set to "Mac".
 

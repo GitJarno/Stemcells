@@ -29,7 +29,13 @@ const webp = (png, to, args = []) =>
     to,
   ]);
 
-const data = {};
+// A run of some pictures keeps the rest as they were placed. The formatter rewrites that file's
+// JSON as an object literal, so it is read as one.
+const placed = NodePath.join(site, "src", "shots.data.ts");
+const before = NodeFS.readFileSync(placed, "utf8");
+const data = new Function(
+  `return (${before.slice(before.indexOf("{"), before.lastIndexOf("}") + 1)})`,
+)();
 for (const shot of shots) {
   // A picture with nothing measured on it is not one the page places.
   if (Object.keys(shot.rects ?? {}).length === 0) continue;
@@ -48,7 +54,7 @@ for (const shot of shots) {
   data[shot.name] = { w: shot.width, h: shot.height, small, rects };
 }
 NodeFS.writeFileSync(
-  NodePath.join(site, "src", "shots.data.ts"),
+  placed,
   `// Written by shots/place.mjs from a capture run's manifest: do not edit by hand.\nexport const SHOTS = ${JSON.stringify(data, null, 2)} as const;\n`,
 );
-console.log(`${Object.keys(data).length} screens placed`);
+console.log(`${shots.length} screens placed of ${Object.keys(data).length}`);
