@@ -1,7 +1,7 @@
-// The Cells' line and its asks: the web's own plain TypeScript, imported here and nowhere
-// else, as the creature is (`cell/kit.ts`). What a card says and offers, the commands a choice
-// sends, the line's stages and their words, Awake's order and its rows' light, the filter's words
-// and a Cell's latest settle by hand are the Mac's, so the two never disagree.
+// The Cells' line, its asks and the ask a Cell's chat docks: the web's own plain TypeScript,
+// imported here and nowhere else, as the creature is (`cell/kit.ts`). What a card says and
+// offers, the commands a choice sends, the line's stages and their words, Awake's order and its
+// rows' light, the filter's words and a Cell's latest settle by hand are the Mac's, so the two never disagree.
 
 export {
   type CellStanding,
@@ -11,6 +11,12 @@ export {
   type NeedsList,
   needsListOf,
 } from "../../../../web/src/stemcells/needs/wire.ts";
+export {
+  askAnchorOf,
+  chatAskOf,
+  type ChatMessage,
+} from "../../../../web/src/stemcells/needs/inChat.ts";
+export { dockedButtonsOf } from "../../../../web/src/stemcells/needs/docked.ts";
 export { handSettledAtFrom } from "../../../../web/src/stemcells/tabs/handSettles.ts";
 export {
   cardOf,

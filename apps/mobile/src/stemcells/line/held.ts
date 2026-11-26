@@ -28,7 +28,8 @@ export interface Done {
 export type UndoLine =
   | { readonly kind: "held"; readonly act: Act }
   | ({ readonly kind: "done" } & Done)
-  | { readonly kind: "said"; readonly words: string };
+  /** What became of an act (`about`), or of a settle (null). */
+  | { readonly kind: "said"; readonly words: string; readonly about: Act | null };
 
 export interface HeldDeps {
   readonly send: (
@@ -82,21 +83,21 @@ export function createHeld(deps: HeldDeps) {
     const asks = await deps.stillAsks(act);
     if (asks === null) {
       set({ answered: without(act.key) });
-      return say(`Couldn't reach ${act.who}'s machine. Nothing was sent.`);
+      return say(`Couldn't reach ${act.who}'s machine. Nothing was sent.`, act);
     }
-    if (!asks) return say(`${act.who} already had an answer. Yours wasn't sent.`);
+    if (!asks) return say(`${act.who} already had an answer. Yours wasn't sent.`, act);
     for (const [index, command] of act.commands.entries()) {
       const outcome = await deps.send(act.environmentId, act.threadId, command);
       if (outcome.ok) continue;
       // Nothing went: the ask comes back. Part went: it stays with its chat.
       if (index === 0) set({ answered: without(act.key) });
-      return say(`Couldn't send to ${act.who}: ${outcome.why}`);
+      return say(`Couldn't send to ${act.who}: ${outcome.why}`, act);
     }
   }
 
   /** A line of what became of an act, unless a newer act's line stands. */
-  function say(words: string) {
-    if (state.line === null || state.line.kind === "said") show({ kind: "said", words });
+  function say(words: string, about: Act | null) {
+    if (state.line === null || state.line.kind === "said") show({ kind: "said", words, about });
   }
 
   /** The line goes now; a held act with it is sent. Resolves once what it sent is in. */
@@ -140,7 +141,7 @@ export function createHeld(deps: HeldDeps) {
     /** The ask comes back, with a line saying why when `why` does. */
     back(key: string, why: string | null = null) {
       set({ answered: without(key) });
-      if (why !== null) say(why);
+      if (why !== null) say(why, null);
     },
     /**
      * Forgets answered asks their machines no longer ask, so a new ask under the same key

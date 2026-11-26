@@ -1,8 +1,7 @@
-// What the phone's asks take from upstream (stemcells/tasks/phone-line.md): its own thread
-// commands, run as its chat runs them, a shell's mode for a message, the settle a Cell at work
-// stops for first, T3's notice, which steps aside for an answer's undo line, and the views an
-// ask is drawn with. Only `respond` with an allow decision can approve, and only a tap reaches it.
-// The ask a chat docks (stemcells/tasks/the-ask.md) reads its chat's messages and jumps to one.
+// What the phone's asks take from upstream (stemcells/tasks/phone-line.md): its thread commands,
+// run as its chat runs them, the settle a Cell at work stops for first, T3's notice, the views an
+// ask is drawn with, and a chat's messages and jump for the ask it docks. Only `respond` with an
+// allow decision can approve, and only a tap reaches it.
 
 import { scopeThreadRef } from "@t3tools/client-runtime/environment";
 import {

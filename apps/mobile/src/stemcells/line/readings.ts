@@ -147,9 +147,14 @@ export function useKeepReading(
  * Keeps a chat's machine read while the chat shows, for the ask it docks: the home reads none
  * behind a chat. `cell` is the chat's Cell as T3 holds it, `minute` the clock a stall asks by.
  */
-export function useKeepReadingChat(environmentId: string, cell: unknown, minute: string): void {
+export function useKeepReadingChat(
+  environmentId: string | null,
+  cell: unknown,
+  minute: string,
+): void {
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Read the chat's machine on opening it, once its Cell changed in T3's live data, and each minute.
   useEffect(() => {
-    readSoon(environmentId);
+    if (environmentId !== null) readSoon(environmentId);
+    // oxlint-disable-next-line react/exhaustive-effect-dependencies -- The Cell and the minute say when to read, not what.
   }, [environmentId, cell, minute]);
 }
