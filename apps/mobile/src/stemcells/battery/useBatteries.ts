@@ -2,11 +2,9 @@ import { useSyncExternalStore } from "react";
 import { AppState } from "react-native";
 
 import { useMinute } from "../home/state";
-import type { Reading } from "../line/read";
-import { useReadings } from "../line/readings";
 import { useDeadlinePassed, useMachineSnapshots } from "../upstream/battery";
 import { useMachines } from "../upstream/disk";
-import { AWAY_AFTER_MS, batterySays, isAway, keptCharges, type MachineBattery } from "./marks";
+import { AWAY_AFTER_MS, isAway, keptCharges, type MachineBattery } from "./marks";
 
 const kept = keptCharges();
 
@@ -47,17 +45,4 @@ export function useBatteries(): ReadonlyArray<MachineBattery> {
       return [{ ...heard, environmentId, label: machine.label, away }];
     })
     .sort((a, b) => a.label.localeCompare(b.label));
-}
-
-const flyingIn = (reading: Reading | undefined): number =>
-  reading === undefined || reading.state === "none"
-    ? 0
-    : (reading.list?.cells ?? []).filter((cell) => cell.stage === "working" && cell.holds == null)
-        .length;
-
-/** What Aski says of the machines' batteries, when something is at stake. */
-export function useBatteryLine(): string | null {
-  const batteries = useBatteries();
-  const readings = useReadings();
-  return batterySays(batteries, (environmentId) => flyingIn(readings.get(environmentId)));
 }

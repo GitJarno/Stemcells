@@ -22,6 +22,7 @@ import {
   readProjects,
   readThreadShells,
   useProjects,
+  useQuietThreadShell,
   useThreadShells,
   waitForThreadShell,
 } from "../../state/entities";
@@ -47,6 +48,7 @@ import {
 import type { CellRef } from "../tabs/layout";
 import { chatFactsOf } from "./askiChats";
 import { useCellPresence } from "./chat";
+import { threadRefOf } from "./routes";
 import { useCellPlace } from "./thread";
 
 export type AskiChat =
@@ -144,7 +146,12 @@ export function useAskiChat(setsUp = true): AskiChat {
     sameInstance(config.settings.providerInstances[askiInstanceId], wanted);
   const instanceLive =
     instanceStored && config.providers.some((provider) => provider.instanceId === askiInstanceId);
-  const needsThread = cell === null || presence.liveness === "gone";
+  // New Aski settles and unpins the chat before and pins the next, which this then adopts.
+  const shell = useQuietThreadShell(
+    presence.liveness === "alive" && cell ? threadRefOf(cell) : null,
+  );
+  const putAway = shell?.settledOverride === "settled" && shell.pinnedAt === null;
+  const needsThread = cell === null || presence.liveness === "gone" || putAway;
   // A browser that hasn't met Aski's chat, or remembers one since deleted,
   // takes the server's; the server's chats are read only while it looks.
   const serverChats = useThreadShells(needsThread && chatsLoaded);

@@ -33,7 +33,7 @@ Aski and its copies (`aski/`), and the Cell forming (`cell/`).
   its tab's chip as it lands (`aski/copies.ts`). Aski's tab holds Aski
   alone, so the chip is where the person sees it went.
 - **On the phone**, a Cell forming in its card on the home gets a copy
-  that buds off the Aski over the list (`home/copies.ts`). Where Aski's
+  that buds off Aski's button (`home/copies.ts`). Where Aski's
   chat stands beside the home (an unfolded iPhone Duo, an iPad), the copy
   buds off the Aski heading that chat and flies over to the card, above
   both columns.
@@ -58,7 +58,7 @@ Aski and its copies (`aski/`), and the Cell forming (`cell/`).
 
 ## The phone's stages
 
-A sideways swipe over Aski turns the home's stage, as two fingers turn the
+A sideways swipe over the stages turns the home's stage, as two fingers turn the
 Mac's column: left to the next, right to the one before
 (`home/state.ts`, `stageAfterSwipe`).
 
@@ -68,6 +68,28 @@ Mac's column: left to the next, right to the one before
   segment turns it, with one selection tick. Short of that, the list
   settles back on `settle`.
 - **Reduce Motion**: the list isn't drawn along; the turn is still.
+
+## Aski's button
+
+Aski is the other side of every chat (`stemcells/tasks/aski-side.md`). One
+button turns the chat in front over to Aski, and back to where it came from.
+
+- **Where it stands.** On the phone, over the composer at the lower right
+  (the search field's, on the home); where the bars run down the side (an
+  unfolded Duo held sideways), in the rail's open middle. It hides while the
+  keyboard is up.
+- **What it shows** is where it goes: Aski from a Cell or the home, the
+  Cell it came from (or a house) from Aski. A dot, still, while Aski has
+  answered and the person hasn't looked.
+- **The turn.** A tap squashes the button (`flick`) and the ground spreads
+  from it over the pane that changes; the chat turns under it, and the
+  ground clears off the new one. Reduce Motion: the chat just turns.
+- **The chip.** From a Cell, Aski's composer gets that Cell's chip, only
+  into a draft that holds nothing of the person's.
+- **Held**, it opens a menu under the finger: New Aski, New Cell, and the
+  next Cell on Input when one waits.
+- **A show** (Aski taking the person to a Cell, a Settings place or a
+  stage) turns the device the person is talking from, as a tap would.
 
 ## The toss
 

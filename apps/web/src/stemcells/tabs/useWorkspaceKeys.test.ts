@@ -19,6 +19,7 @@ const handlers = () => ({
   splitRight: vi.fn(() => true),
   splitDown: vi.fn(() => true),
   closePane: vi.fn(() => true),
+  toggleAski: vi.fn(() => true),
 });
 
 /** What ran for one key pressed with focus on `activeElement`. */

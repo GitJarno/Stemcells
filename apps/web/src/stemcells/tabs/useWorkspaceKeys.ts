@@ -10,18 +10,24 @@ export interface WorkspaceKeyHandlers {
   readonly splitRight: () => boolean;
   readonly splitDown: () => boolean;
   readonly closePane: () => boolean;
+  /** Aski's button: to Aski and back (`ASKI_SHORTCUT`). */
+  readonly toggleAski: () => boolean;
 }
+
+/** Free in upstream's defaults, and no composer mark (⌘B, ⌘I, ⌘E are). */
+export const ASKI_SHORTCUT = "mod+.";
 
 /**
  * Keys that win over upstream's: ⌘T, a new Cell in the tab (upstream's "new
- * right-panel tab"), ⌘D (upstream's "toggle diff") and ⌘⇧D. Inside a
- * terminal they stay the terminal's (new tab there, split).
+ * right-panel tab"), ⌘D (upstream's "toggle diff"), ⌘⇧D, and ⌘. for Aski.
+ * Inside a terminal they stay the terminal's (new tab there, split).
  */
 const WINNING_KEYS = [
   { matches: shortcutMatcher("mod+t"), run: "newCell" },
   { matches: shortcutMatcher("mod+shift+w"), run: "closeTab" },
   { matches: shortcutMatcher("mod+d"), run: "splitRight" },
   { matches: shortcutMatcher("mod+shift+d"), run: "splitDown" },
+  { matches: shortcutMatcher(ASKI_SHORTCUT), run: "toggleAski" },
 ] as const;
 
 /**
@@ -66,6 +72,7 @@ const STOOD_DOWN: WorkspaceKeyHandlers = {
   splitRight: () => false,
   splitDown: () => false,
   closePane: () => false,
+  toggleAski: () => false,
 };
 
 export function useWorkspaceKeys(handlers: WorkspaceKeyHandlers, heard: boolean) {

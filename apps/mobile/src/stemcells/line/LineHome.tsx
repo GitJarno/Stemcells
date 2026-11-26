@@ -6,6 +6,7 @@
 import { useEffect, useSyncExternalStore, useState, type ReactNode } from "react";
 import { AppState, Pressable, View } from "react-native";
 
+import { takeAskedStage, useAskedStage } from "../aski/turn";
 import { DiskFoot } from "../disk/DiskPlate";
 import { useAppBadge } from "../push/badge";
 import { EmptyTab, HomePage } from "../home/EmptyTab";
@@ -189,6 +190,13 @@ export function LineHome(props: {
     },
     environmentId: props.environmentId,
   };
+  const asked = useAskedStage();
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- turns to the stage Aski showed, which its button's store holds until a home takes it
+  useEffect(() => {
+    if (asked === null) return;
+    const stage = takeAskedStage();
+    if (stage !== null) home.choose(stage);
+  }, [asked, home]);
   return (
     <HomeTabsContext value={home}>
       <View style={{ flex: 1 }}>

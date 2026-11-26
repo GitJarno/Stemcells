@@ -129,7 +129,7 @@ import {
 } from "./features/settings/ScheduledTaskPickerScreens";
 import { SettingsKeyboardRouteScreen } from "./features/settings/SettingsKeyboardRouteScreen";
 import { SettingsLegalRouteScreen } from "./features/settings/SettingsLegalRouteScreen";
-import { stemcellsSettingsScreens } from "./stemcells/pages";
+import { AskiButton, stemcellsSettingsScreens } from "./stemcells/pages";
 import { SettingsVoiceRouteScreen } from "./features/settings/SettingsVoiceRouteScreen";
 import { SettingsVoiceModelsRouteScreen } from "./features/settings/SettingsVoiceModelsRouteScreen";
 import {
@@ -507,6 +507,7 @@ function RootStackLayout(props: {
                 workspaceRouteName={workspaceLocation.routeName}
               >
                 {props.children}
+                <AskiButton {...workspaceLocation} />
                 <HardwareKeyboardCommandOverlay />
               </AdaptiveWorkspaceLayout>
             </AndroidWorkspaceTabsProvider>
