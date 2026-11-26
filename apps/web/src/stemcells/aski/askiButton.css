@@ -61,9 +61,9 @@
   }
 }
 
-/* The turn (AskiButton.tsx, `playTurn`): only the slate takes part. Aski's page opens out of
-   the button while the chat steps back and dims (`open`); back, it folds into the button while
-   the chat steps forward (`fold`); under Reduce Motion the two cross-fade (`fade`). */
+/* The turn (AskiButton.tsx, `playTurn`): Aski and the chat swap places through the button, as
+   down a pipe. The chat fades out and the other fades in; in the button, what stood there sinks
+   below its rim and what comes next rises. Under Reduce Motion the two cross-fade (`fade`). */
 html[data-stemcells-aski-turn] [data-stemcells-slate] {
   view-transition-name: sc-aski-turn;
 }
@@ -74,49 +74,64 @@ html[data-stemcells-aski-turn]
   *:not([data-stemcells-aski-button]):not([data-stemcells-aski-button] *) {
   view-transition-name: none !important;
 }
+/* The button's whole box, whatever stands in it, so the two pictures of a turn match in size and
+   what sinks leaves by the button's own rim. */
+[data-stemcells-aski-occupant] {
+  display: grid;
+  place-items: center;
+  inline-size: 100%;
+  block-size: 100%;
+}
+html[data-stemcells-aski-turn] [data-stemcells-aski-occupant] {
+  view-transition-name: sc-aski-occupant;
+}
 html[data-stemcells-aski-turn]::view-transition-group(sc-aski-turn) {
   animation-duration: var(--sc-motion-fade-duration);
   animation-timing-function: var(--sc-motion-fade-easing);
 }
-html[data-stemcells-aski-turn="open"]::view-transition-group(sc-aski-turn),
-html[data-stemcells-aski-turn="fold"]::view-transition-group(sc-aski-turn) {
+html[data-stemcells-aski-turn="pipe"]::view-transition-group(sc-aski-turn),
+html[data-stemcells-aski-turn="pipe"]::view-transition-group(sc-aski-occupant) {
   animation: none;
 }
-html[data-stemcells-aski-turn="open"]::view-transition-old(sc-aski-turn),
-html[data-stemcells-aski-turn="open"]::view-transition-new(sc-aski-turn),
-html[data-stemcells-aski-turn="fold"]::view-transition-old(sc-aski-turn),
-html[data-stemcells-aski-turn="fold"]::view-transition-new(sc-aski-turn) {
+html[data-stemcells-aski-turn="pipe"]::view-transition-old(*),
+html[data-stemcells-aski-turn="pipe"]::view-transition-new(*) {
   mix-blend-mode: normal;
-  animation-duration: var(--sc-motion-fade-duration);
-  animation-timing-function: var(--sc-motion-fade-easing);
-  animation-fill-mode: both;
 }
-html[data-stemcells-aski-turn="open"]::view-transition-old(sc-aski-turn) {
-  animation-name: sc-aski-step-back;
+html[data-stemcells-aski-turn="pipe"]::view-transition-old(sc-aski-turn) {
+  animation: sc-aski-fade-out 140ms cubic-bezier(0.42, 0, 1, 1) both;
 }
-html[data-stemcells-aski-turn="open"]::view-transition-new(sc-aski-turn) {
-  animation-name: sc-aski-open;
+html[data-stemcells-aski-turn="pipe"]::view-transition-new(sc-aski-turn) {
+  animation: sc-aski-fade-in 200ms var(--sc-motion-fade-easing) 120ms both;
 }
-html[data-stemcells-aski-turn="fold"]::view-transition-old(sc-aski-turn) {
-  z-index: 1;
-  animation-name: sc-aski-open;
-  animation-direction: reverse;
+html[data-stemcells-aski-turn="pipe"]::view-transition-old(sc-aski-occupant) {
+  animation: sc-aski-sink 180ms cubic-bezier(0.55, 0, 0.75, 0.2) both;
 }
-html[data-stemcells-aski-turn="fold"]::view-transition-new(sc-aski-turn) {
-  animation-name: sc-aski-step-back;
-  animation-direction: reverse;
+html[data-stemcells-aski-turn="pipe"]::view-transition-new(sc-aski-occupant) {
+  animation: sc-aski-rise 260ms cubic-bezier(0.25, 1.15, 0.45, 1) 120ms both;
 }
-@keyframes sc-aski-open {
+@keyframes sc-aski-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes sc-aski-fade-in {
   from {
-    clip-path: circle(0 at var(--sc-aski-turn-at));
-  }
-  to {
-    clip-path: circle(var(--sc-aski-turn-reach) at var(--sc-aski-turn-at));
+    opacity: 0;
   }
 }
-@keyframes sc-aski-step-back {
+/* Down past the rim: the picture moves down as much as its foot is cut, so what shows of it
+   never leaves the button. The next one comes up the same way. */
+@keyframes sc-aski-sink {
   to {
-    transform: scale(0.97);
-    opacity: 0.6;
+    transform: translateY(80%);
+    clip-path: inset(0 0 80% 0);
+    opacity: 0.3;
+  }
+}
+@keyframes sc-aski-rise {
+  from {
+    transform: translateY(80%);
+    clip-path: inset(0 0 80% 0);
+    opacity: 0.3;
   }
 }
