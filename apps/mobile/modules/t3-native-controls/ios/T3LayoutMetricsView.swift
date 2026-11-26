@@ -14,6 +14,9 @@ final class T3LayoutMetricsView: ExpoView {
     registerForTraitChanges([UITraitHorizontalSizeClass.self, UITraitVerticalSizeClass.self]) { (view: T3LayoutMetricsView, _: UITraitCollection) in
       view.publishMetrics()
     }
+    // A Duo folded while the app was away can come back on the other screen without a layout
+    // pass JS hears of, and the workspace kept the unfolded size; republish on every return.
+    NotificationCenter.default.addObserver(self, selector: #selector(republishMetrics), name: UIApplication.didBecomeActiveNotification, object: nil)
     // The hinge and vertical-bar APIs ship in the iOS 27.1 SDK, whose UIKit is 9127.0.85.
     // Xcode 27.0 has Swift 6.4 but the 27.0 SDK (UIKit 9127.0.84), so gate on the SDK.
     #if canImport(UIKit, _version: 9127.0.85)
@@ -50,6 +53,11 @@ final class T3LayoutMetricsView: ExpoView {
       self.hasHinge = false
       self.publishMetrics()
     }
+  }
+
+  @objc private func republishMetrics() {
+    lastMetrics = nil
+    publishMetrics()
   }
 
   override func layoutSubviews() {
