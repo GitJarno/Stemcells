@@ -1,17 +1,13 @@
-// The home's stages, a list each, kept mounted under one header (`AskiHome.tsx`) that never mounts
-// again, so UIKit's segment slides whole; a tap brings the chosen list in on the UI thread. The
-// header stands where the front list's own offset puts its room, and on nothing else, so it can't
-// drift from the list. Lists out of sight render nothing new and keep their place.
+// The home's stages, a list each, all kept mounted under the stages' pill at the home's foot
+// (`StagePill.tsx`), so UIKit's segment slides whole; a tap brings the chosen list in on the UI
+// thread. Lists out of sight render nothing new and keep their place.
 
-import { memo, use, useLayoutEffect, useMemo, useState, type ReactNode, type Ref } from "react";
-import { type ScrollViewInstance, StyleSheet, View } from "react-native";
+import { memo, use, useLayoutEffect, useMemo, useState, type ReactNode } from "react";
+import { StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
-  scrollTo,
   type SharedValue,
-  useAnimatedRef,
   useAnimatedStyle,
-  useEvent,
   useReducedMotion,
   useSharedValue,
   withTiming,
@@ -20,33 +16,26 @@ import { scheduleOnUI } from "react-native-worklets";
 
 import { ScreenVeils } from "../edge/ScreenVeils";
 import { NativePrimaryColumnContext, useContentTopInset } from "../upstream/home";
-import { AskiHome, headerHeight, useHeaderRoom } from "./AskiHome";
 import { CopyLayer } from "./CopyLayer";
-import {
-  carriedOffset,
-  enteringX,
-  HomeCellsHeld,
-  HomeInFront,
-  HomeStageContext,
-  type StagePage,
-  StagePageContext,
-} from "./state";
+import { enteringX, HomeCellsHeld, HomeInFront, HomeStageContext, StagePageContext } from "./state";
+import { StagePill } from "./StagePill";
+import { useNight } from "./useNight";
 
 /** As UIKit's segment slides: one short ease-out, whatever the distance. */
 const SWITCH = { duration: 200, easing: Easing.out(Easing.cubic) };
 /** How far a list comes in from the side it lies on, points. */
 const SHIFT = 20;
 
-type Page = Omit<StagePage, "active" | "minHeight" | "inset"> & {
+interface Page {
   readonly opacity: SharedValue<number>;
-};
+  /** How far it stands aside as it comes in, points. */
+  readonly x: SharedValue<number>;
+}
 
-function usePage(shown: boolean, top: number): Page {
-  const ref = useAnimatedRef();
-  const offset = useSharedValue(top);
+function usePage(shown: boolean): Page {
   const opacity = useSharedValue(shown ? 1 : 0);
   const x = useSharedValue(0);
-  return useMemo(() => ({ ref, offset, opacity, x }), [ref, offset, opacity, x]);
+  return useMemo(() => ({ opacity, x }), [opacity, x]);
 }
 
 /** Turns the home to the stage at `next`, on the UI thread. */
@@ -55,18 +44,10 @@ function turn(
   front: SharedValue<number>,
   next: number,
   still: boolean,
-  top: number,
 ) {
   "worklet";
   const from = front.get();
-  const to = pages[next];
-  if (from === next || to === undefined) return;
-  const leaving = pages[from];
-  if (leaving !== undefined) {
-    const at = carriedOffset(leaving.offset.get(), to.offset.get(), top, headerHeight.get());
-    to.offset.set(at);
-    scrollTo(to.ref, 0, at, false);
-  }
+  if (from === next || pages[next] === undefined) return;
   front.set(next);
   for (let index = 0; index < pages.length; index++) {
     const page = pages[index]!;
@@ -88,11 +69,9 @@ export function useStagePages<Stage extends string>(
   opening: Stage,
 ) {
   const at = stages.indexOf(opening);
-  // Where a list rests: under the inset T3's list rests under, at the native header's foot.
-  const top = -useContentTopInset();
-  const a = usePage(at === 0, top);
-  const b = usePage(at === 1, top);
-  const c = usePage(at === 2, top);
+  const a = usePage(at === 0);
+  const b = usePage(at === 1);
+  const c = usePage(at === 2);
   const front = useSharedValue(at);
   const reduced = useReducedMotion();
   return useMemo(() => {
@@ -100,13 +79,11 @@ export function useStagePages<Stage extends string>(
     return {
       stages,
       pages,
-      front,
-      top,
       /** Called in the tap's own frame, before React renders the chosen stage; `still` at once. */
       show: (stage: Stage, still = reduced) =>
-        scheduleOnUI(turn, pages, front, stages.indexOf(stage), still, top),
+        scheduleOnUI(turn, pages, front, stages.indexOf(stage), still),
     };
-  }, [stages, a, b, c, front, reduced, top]);
+  }, [stages, a, b, c, front, reduced]);
 }
 
 export function StagePages<Stage extends string>(props: {
@@ -119,8 +96,10 @@ export function StagePages<Stage extends string>(props: {
   const primaryColumn = use(NativePrimaryColumnContext);
   const inFront = use(HomeInFront);
   const held = use(HomeCellsHeld);
-  const { height } = useHeaderRoom();
-  const [viewport, setViewport] = useState(0);
+  // Where a list rests: under the inset T3's list rests under, at the native header's foot.
+  const inset = useContentTopInset();
+  // Night falls over Asleep's sky (`StagePill.tsx`, `StageTop`), wherever the veils are drawn.
+  useNight(props.night);
   // The rest mount once the first has shown, so a switch only ever shows a list.
   const [warm, setWarm] = useState(false);
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Follow a stage chosen without a tap (where the home opens) at once; a tap has turned already.
@@ -133,28 +112,18 @@ export function StagePages<Stage extends string>(props: {
     const frame = requestAnimationFrame(() => setWarm(true));
     return () => cancelAnimationFrame(frame);
   }, [warm]);
-  const header = useAnimatedStyle(() => ({
-    transform: [{ translateY: -(home.pages[home.front.get()]?.offset.get() ?? home.top) }],
-  }));
-  // A list can scroll the header out of sight however short, so the header never has to move.
-  const minHeight = viewport + height + home.top;
   return (
-    <View
-      className={primaryColumn ? "flex-1 bg-drawer" : "flex-1 bg-screen"}
-      onLayout={({ nativeEvent }) => setViewport(nativeEvent.layout.height)}
-    >
+    <View className={primaryColumn ? "flex-1 bg-drawer" : "flex-1 bg-screen"}>
       {home.stages.map((stage, index) => {
         const active = stage === tab;
-        const page = home.pages[index]!;
         return (
           <Stage
             key={stage}
             stage={stage}
-            page={page}
+            page={home.pages[index]!}
             active={active}
             mounted={active || warm}
-            minHeight={minHeight}
-            inset={-home.top}
+            inset={inset}
             inFront={inFront && active}
             held={held || !active}
           >
@@ -162,14 +131,8 @@ export function StagePages<Stage extends string>(props: {
           </Stage>
         );
       })}
-      <Animated.View
-        pointerEvents="box-none"
-        style={[{ position: "absolute", left: 0, right: 0, top: 0 }, header]}
-      >
-        {/* The column already keeps its pages off the Duo's rail and a notch. */}
-        <AskiHome />
-      </Animated.View>
       {primaryColumn ? null : <ScreenVeils night={props.night} bottom />}
+      <StagePill />
       <CopyLayer shown={inFront} />
     </View>
   );
@@ -180,17 +143,13 @@ function Stage(props: {
   readonly page: Page;
   readonly active: boolean;
   readonly mounted: boolean;
-  readonly minHeight: number;
   readonly inset: number;
   readonly inFront: boolean;
   readonly held: boolean;
   readonly children: ReactNode;
 }) {
-  const { page, active, minHeight, inset } = props;
-  const value = useMemo(
-    () => ({ ref: page.ref, offset: page.offset, x: page.x, active, minHeight, inset }),
-    [page, active, minHeight, inset],
-  );
+  const { page, active, inset } = props;
+  const value = useMemo(() => ({ active, inset }), [active, inset]);
   const style = useAnimatedStyle(() => ({
     opacity: page.opacity.get(),
     transform: [{ translateX: page.x.get() }],
@@ -223,55 +182,3 @@ const Kept = memo(
     props.mounted ? props.children : null,
   (before, after) => !after.active && before.mounted === after.mounted,
 );
-
-/** Scroll views mounted into a stage, each stood where its stage stands once. */
-const stood = new WeakSet<ScrollViewInstance>();
-
-function handOn(own: Ref<ScrollViewInstance> | undefined, node: ScrollViewInstance | null) {
-  if (typeof own === "function") own(node);
-  else if (own) own.current = node;
-}
-
-/**
- * A stage's scroll view hands its offset to the stage on the UI thread, for the header to follow,
- * and stands where the stage does as it mounts: a list swapped for an empty line keeps Aski put.
- */
-export function useStageScrollView(
-  page: StagePage | null,
-  own: Ref<ScrollViewInstance> | undefined,
-) {
-  const offset = page?.offset ?? null;
-  const handler = useEvent<{ contentOffset: { y: number } }>(
-    (event) => {
-      "worklet";
-      offset?.set(event.contentOffset.y);
-    },
-    ["onScroll", "onScrollEndDrag", "onMomentumScrollEnd"],
-  ) as unknown as {
-    workletEventHandler: {
-      registerForEvents: (tag: number) => void;
-      unregisterFromEvents: (tag: number) => void;
-    };
-  };
-  const ref = page?.ref ?? null;
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Listen to the native scroll view's scroll on the UI thread, as Reanimated's own useScrollOffset does.
-  useLayoutEffect(() => {
-    if (ref === null) return;
-    return ref.observe((tag) => {
-      if (typeof tag !== "number") return;
-      handler.workletEventHandler.registerForEvents(tag);
-      return () => handler.workletEventHandler.unregisterFromEvents(tag);
-    });
-  }, [ref, handler]);
-  return useMemo(() => {
-    if (ref === null) return own;
-    return (node: ScrollViewInstance | null) => {
-      handOn(own, node);
-      if (node === null) return;
-      ref?.(node as never);
-      if (stood.has(node) || offset === null) return;
-      stood.add(node);
-      node.scrollTo({ y: offset.get(), animated: false });
-    };
-  }, [own, ref, offset]);
-}

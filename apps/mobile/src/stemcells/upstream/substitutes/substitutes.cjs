@@ -35,10 +35,12 @@ const SUBSTITUTES = {
   // The home's header floats over what scrolls, no band behind it; what
   // scrolls fades into the ground under it.
   "apps/mobile/src/native/NativeScrollViewMarker.tsx": "NativeScrollViewMarker.tsx",
-  // The home: one tab of Cells at a time under Aski, in cards, each tab's
-  // shelves open.
+  // The home: one stage of Cells at a time, its pill at the foot, each
+  // stage's shelves open.
   "apps/mobile/src/features/home/HomeScreen.tsx": "HomeScreen.tsx",
   "apps/mobile/src/features/home/ThreadListFilters.tsx": "ThreadListFilters.tsx",
+  // T3's undo notice stands over the stages' pill, which stands over the home's search.
+  "apps/mobile/src/features/home/ThreadUndoNotice.tsx": "ThreadUndoNotice.tsx",
   // The header says Cells while the phone loads or syncs them.
   "apps/mobile/src/features/home/workspace-connection-status.ts": "workspace-connection-status.ts",
   "apps/mobile/src/features/threads/thread-list-v2-row-appearance.ts":

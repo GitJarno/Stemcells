@@ -221,7 +221,8 @@
   align-items: center;
   gap: var(--sc-space-sm);
   width: 100%;
-  padding: 0.25rem var(--sc-space-md);
+  /* Room between rows, so each glow ends before the next begins. */
+  padding: 0.4375rem var(--sc-space-md);
   border-radius: var(--sc-radius-card);
   text-align: start;
   cursor: pointer;
@@ -308,6 +309,8 @@
   initial-value: transparent;
 }
 [data-cells-open][data-light] {
+  /* The Cell's middle: the row's padding and half the Cell's width. */
+  --cells-row-cell-x: calc(var(--sc-space-md) + 0.6rem);
   position: relative;
   isolation: isolate;
   transition: --cells-row-tone var(--sc-motion-fade-duration) var(--sc-motion-fade-easing);
@@ -319,11 +322,13 @@
   z-index: -1;
   overflow: clip;
   border-radius: inherit;
-  background: linear-gradient(
-    to right,
-    color-mix(in srgb, color-mix(in srgb, var(--cells-row-tone), white 12%) 15%, transparent),
-    color-mix(in srgb, color-mix(in srgb, var(--cells-row-tone), white 4%) 8%, transparent) 55%,
-    color-mix(in srgb, color-mix(in srgb, var(--cells-row-tone), white 6%) 10%, transparent)
+  /* A glow from the Cell, gone before the row's middle and its edges: the
+     Cell is the light, so the rows read as a list, not as tinted cards. */
+  background: radial-gradient(
+    ellipse 7.5rem 42% at var(--cells-row-cell-x) 50%,
+    color-mix(in srgb, color-mix(in srgb, var(--cells-row-tone), white 12%) 30%, transparent),
+    color-mix(in srgb, var(--cells-row-tone) 9%, transparent) 55%,
+    transparent
   );
   pointer-events: none;
   transition: opacity var(--sc-motion-fade-duration) var(--sc-motion-fade-easing);

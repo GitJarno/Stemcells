@@ -151,11 +151,12 @@ export function CellBesideRow(props: {
   );
 }
 
-/**
- * The card's padding, `pl-3 pr-4 py-3` (`upstream/substitutes/thread-list-v2-row-appearance.ts`),
- * less the 4 points an awake row takes back to stand as tall as Asleep's: its light fills the card.
- */
-const AWAKE_FILL = { position: "absolute", top: -8, right: -16, bottom: -8, left: -12 } as const;
+/** The card's padding, `pl-3 pr-4 py-3` (`upstream/substitutes/thread-list-v2-row-appearance.ts`): its light fills the card. */
+const AWAKE_FILL = { position: "absolute", top: -12, right: -16, bottom: -12, left: -12 } as const;
+/** Every row on the home's tabs, Awake's and Asleep's: room to tap one, and dark between their glows. */
+const ROW_HEIGHT = 52;
+/** What a row's own padding takes of that: a card's `py-3`, a slim row's `py-2`. */
+const PADDED = { card: 24, slim: 16 } as const;
 /** The Cell's middle from the card's left edge. */
 const AWAKE_ANCHOR = 12 + BOX.width;
 
@@ -169,7 +170,7 @@ function AwakeRow(props: {
   const state = use(CellStates).get(key);
   const light = ROW_LIGHT[rowStateOf(state?.stage, threadHasUnseenCompletion(thread))];
   return (
-    <View className="-my-1 min-h-[28px] flex-row items-center gap-2">
+    <View className="flex-row items-center gap-2" style={{ minHeight: ROW_HEIGHT - PADDED.card }}>
       <RowLight key={key} thread={thread} light={light} fill={AWAKE_FILL} anchorX={AWAKE_ANCHOR} />
       <Figure thread={thread} points={2} />
       <View className="min-w-0 flex-1">{props.children}</View>
@@ -287,12 +288,21 @@ export function useCardLines(beside: boolean, error: boolean, marks: CardMarks) 
   };
 }
 
-/** A slim row's Cell; none in the iPad's sidebar, whose rows stay T3's. */
+/** A slim row's Cell, standing as tall as an awake row on the home's tabs; none in the iPad's sidebar, whose rows stay T3's. */
 export function SlimRowCell(props: {
   readonly thread: EnvironmentThreadShell;
   readonly sidebar: boolean;
 }) {
-  return props.sidebar ? null : <Figure thread={props.thread} points={2} />;
+  const tabs = use(HomeStageContext) !== null;
+  if (props.sidebar) return null;
+  return (
+    <View
+      className="justify-center"
+      style={tabs ? { minHeight: ROW_HEIGHT - PADDED.slim } : undefined}
+    >
+      <Figure thread={props.thread} points={2} />
+    </View>
+  );
 }
 
 /** A slim row's project, leading its title, faint as the row is, as a card's leads its. */

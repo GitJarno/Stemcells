@@ -520,9 +520,9 @@ library's dependency (above); the rest are substitutes:
   Duo's columns (`edge/headerEdge.ts`), and a scroll the code makes may reach the
   list's rest under the header (React Native stops one at the scroll
   view's own inset, 0 under UIKit's `automatic` one, which left Aski under
-  the header). Every list on the home's stages takes T3's `automatic`
-  inset there, so the one header over them stands at minus the front
-  list's offset (`home/StagePages.tsx`). Where we take the band away, the marker's
+  the header). Every list on the home's stages takes one inset by hand,
+  as T3's list does, rests under it, and scrolls clear of the stages'
+  pill at its foot (`home/StagePages.tsx`). Where we take the band away, the marker's
   substitute fades the edge into the ground instead (`edge/Scrim.tsx`),
   and a substitute of `ThreadComposer` fades the feed under the composer.
 - **Cell words.** A substitute of `Dialog` (iOS; Android's stays T3's)
@@ -538,8 +538,9 @@ library's dependency (above); the rest are substitutes:
   phone-line.md`); a machine that hasn't answered, or has no line, stands
   its Cells where their records do (`stemcells/tasks/phone-one-home.md`);
   everything the list does stays T3's. Each segment is a list of its own, all
-  kept mounted under one header that never mounts again, so UIKit's segment
-  slides whole and a switch only shows a list (`home/StagePages.tsx`); each
+  kept mounted under one pill of the stages at the home's foot, over its
+  search, so UIKit's segment slides whole and a switch only shows a list
+  (`home/StagePages.tsx`, `home/StagePill.tsx`); each
   opens at its top: the list is handed a workspace whose Threads offset stays
   0, as T3's one offset per workspace tab opened each segment where another
   was scrolled. In the iOS workspace the header's picks narrow it,
@@ -547,9 +548,10 @@ library's dependency (above); the rest are substitutes:
   and T3's own single pick is handed to its list unset. Input is the asks themselves, sent as T3's own
   thread commands (`upstream/needs.ts`, which takes the web's
   `proposedPlan.ts` for a plan's build), and an answer's undo line stands
-  in T3's notice, one at a time. The list's header (`ThreadListFilters`,
-  substituted) keeps the room Aski, its line and the tabs stand in over the
-  list, and takes the taps on Aski and its line; on iOS T3's filter chips leave it for the workspace
+  in T3's notice, one at a time; a substitute of `ThreadUndoNotice` stands
+  T3's notice over the pill. The list's header (`ThreadListFilters`,
+  substituted) is its stage's top, Asleep's night sky, which scrolls away
+  with it; on iOS T3's filter chips leave it for the workspace
   header's top right, where the seam in `WorkspaceToolbar.tsx` hands
   its trailing items a projects menu and, with two machines or more, a
   machines menu, each staying open while you tick (`home/scope.tsx`). Where the list has no header (Android, outside the

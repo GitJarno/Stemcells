@@ -1,6 +1,6 @@
-// An awake Cell's row light (`Wave.tsx`, stemcells/tasks/awake-asleep.md): the wash from the
-// row's Cell in its provider's tone, or Input's amber while it asks; the band only while it flies;
-// faint once its landing has been seen.
+// An awake Cell's row light (`Wave.tsx`, stemcells/tasks/awake-asleep.md): a glow round the row's
+// Cell in its provider's tone, or Input's amber while it asks; the band only while it flies; faint
+// once its landing has been seen.
 
 import { use } from "react";
 import type { ViewStyle } from "react-native";
@@ -38,6 +38,7 @@ export function RowLight(props: {
       inSight={inFront}
       band={light.band}
       faint={light.strength === "faint"}
+      glow
     />
   );
 }

@@ -24,7 +24,7 @@ import Animated, {
   withSequence,
   withTiming,
 } from "react-native-reanimated";
-import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
+import Svg, { Defs, LinearGradient, RadialGradient, Rect, Stop } from "react-native-svg";
 
 import { GLOW } from "../tokens";
 import { stopOf } from "./colour";
@@ -45,6 +45,11 @@ import {
 const BEAT_EASING = Easing.bezier(...BEAT_POINTS);
 /** A faint light: a landing already seen. */
 const FAINT = 0.4;
+/**
+ * A row's glow, as the Mac's (`apps/web/src/stemcells/rail/cells.css`, `[data-cells-light]`): its
+ * reach across, gone before the row's middle, and down, of the row's height, gone before its edges.
+ */
+const ROW_GLOW = { reach: 120, height: 0.4, heart: 0.3, rim: 0.09, lift: 0.12 } as const;
 /** A landing ends the band: it fades as the light comes to rest. */
 const BAND_ENDS = FadeOut.duration(400);
 
@@ -66,6 +71,8 @@ export function Wave(props: {
   readonly band?: boolean;
   /** At a clearly lower strength. */
   readonly faint?: boolean;
+  /** A glow round the anchor, a row's, where the wash would reach across what it fills. */
+  readonly glow?: boolean;
 }) {
   // react-native-svg reads a gradient's `url(#…)` by id: no colons in it.
   const id = useId().replaceAll(":", "");
@@ -84,13 +91,23 @@ export function Wave(props: {
     >
       {size === null || size.width === 0 ? null : (
         <>
-          <Wash
-            id={`${id}-wash`}
-            tone={props.tone}
-            size={size}
-            anchorX={props.anchorX}
-            faint={props.faint === true}
-          />
+          {props.glow === true ? (
+            <Glow
+              id={`${id}-wash`}
+              tone={props.tone}
+              size={size}
+              anchorX={props.anchorX}
+              faint={props.faint === true}
+            />
+          ) : (
+            <Wash
+              id={`${id}-wash`}
+              tone={props.tone}
+              size={size}
+              anchorX={props.anchorX}
+              faint={props.faint === true}
+            />
+          )}
           {props.band === false ? null : (
             <Crossing
               id={`${id}-band`}
@@ -211,6 +228,45 @@ function Wash(props: {
             return <Stop key={stop.at} offset={stop.at} stopColor={color} stopOpacity={opacity} />;
           })}
         </LinearGradient>
+      </Defs>
+      <Rect width={width} height={height} fill={`url(#${props.id})`} />
+    </Svg>
+  );
+}
+
+/** The tone round the anchor, lifted toward white at its heart, clear before the middle and the edges. */
+function Glow(props: {
+  readonly id: string;
+  readonly tone: Rgb;
+  readonly size: Size;
+  readonly anchorX: number;
+  readonly faint: boolean;
+}) {
+  const { width, height } = props.size;
+  const tone = `rgb(${props.tone.join(", ")})`;
+  const heart = `rgb(${props.tone.map((c) => Math.round(c + (255 - c) * ROW_GLOW.lift)).join(", ")})`;
+  const y = height / 2;
+  return (
+    <Svg
+      width={width}
+      height={height}
+      style={{ position: "absolute", opacity: props.faint ? FAINT : 1 }}
+    >
+      <Defs>
+        <RadialGradient
+          id={props.id}
+          gradientUnits="userSpaceOnUse"
+          cx={props.anchorX}
+          cy={y}
+          fx={props.anchorX}
+          fy={y}
+          rx={ROW_GLOW.reach}
+          ry={height * ROW_GLOW.height}
+        >
+          <Stop offset={0} stopColor={heart} stopOpacity={ROW_GLOW.heart} />
+          <Stop offset={0.55} stopColor={tone} stopOpacity={ROW_GLOW.rim} />
+          <Stop offset={1} stopColor={tone} stopOpacity={0} />
+        </RadialGradient>
       </Defs>
       <Rect width={width} height={height} fill={`url(#${props.id})`} />
     </Svg>

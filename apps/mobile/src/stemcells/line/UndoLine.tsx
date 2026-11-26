@@ -5,22 +5,17 @@
 
 import { useEffect, useSyncExternalStore } from "react";
 import { View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import {
-  dismissThreadUndoNotice,
-  Toast,
-  useThreadUndoNotice,
-  useWorkspaceTabs,
-} from "../upstream/needs";
+import { PILL_ROOM } from "../home/state";
+import { useOverSearch } from "../upstream/home";
+import { dismissThreadUndoNotice, Toast, useThreadUndoNotice } from "../upstream/needs";
 import type { HeldStore } from "./held";
 
 export function UndoLine(props: { readonly held: HeldStore }) {
   const { held } = props;
   const { line } = useSyncExternalStore(held.subscribe, held.read);
   const notice = useThreadUndoNotice();
-  const insets = useSafeAreaInsets();
-  const workspace = useWorkspaceTabs();
+  const place = useOverSearch();
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Keep one undo line: T3's notice lets ours go.
   useEffect(() => {
     if (notice !== null) void held.letGo();
@@ -30,13 +25,13 @@ export function UndoLine(props: { readonly held: HeldStore }) {
     if (line !== null && line.kind !== "said") dismissThreadUndoNotice();
   }, [line]);
   if (line === null) return null;
-  // Where T3's own notice stands over the home's search bar.
-  const bottom = Math.max(insets.bottom, (workspace?.bottomClearance ?? 0) - 32) + 8;
+  // Where T3's own notice stands, over the stages' pill (`home/StagePill.tsx`).
+  const bottom = place.pill + PILL_ROOM;
   return (
     <View
       collapsable={false}
       className="absolute z-[100]"
-      style={{ bottom, left: 29, right: 23 }}
+      style={{ bottom, left: place.left, right: place.right }}
       pointerEvents="box-none"
     >
       {line.kind !== "said" ? (
