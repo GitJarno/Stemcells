@@ -265,6 +265,7 @@ describe("keys while the viewer is up", () => {
     splitRight: vi.fn(() => true),
     splitDown: vi.fn(() => true),
     closePane: vi.fn(() => true),
+    toggleAski: vi.fn(() => true),
   });
 
   it("reach the viewer before the app's shortcuts, which stand down (⌘T opened a tab behind it)", () => {

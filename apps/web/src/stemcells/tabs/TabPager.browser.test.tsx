@@ -1,11 +1,13 @@
 import "../tokens/stemcells.css";
 import "./workspace.css";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
+import { flushSync } from "react-dom";
 import { describe, expect, it, vi } from "vite-plus/test";
 import { cdp, userEvent } from "vite-plus/test/browser";
 
-import { render } from "../upstream/testRender";
+import { act, render } from "../upstream/testRender";
+import { cutTurn } from "./pageStrip";
 import { REST_SLOT } from "./proxy";
 import { PagerPage, TabPager } from "./TabPager";
 
@@ -51,6 +53,13 @@ function Pages(props: {
       </TabPager>
     </div>
   );
+}
+
+/** The pages, turned as the workspace turns them: a change of its state. */
+function Steered(props: { steer: (turn: (activeId: string) => void) => void }) {
+  const [activeId, setActiveId] = useState("one");
+  props.steer(setActiveId);
+  return <Pages activeId={activeId} onTurn={() => undefined} />;
 }
 
 const proxyOf = (container: HTMLElement) =>
@@ -337,6 +346,18 @@ describe("TabPager data-moving", () => {
       timeout: 3000,
     });
     expect(first.style.transform).toMatch(/^translate3d\(0%,/);
+  });
+
+  it("never comes on for a far turn made inside `cutTurn`, which lands at once", async () => {
+    let steer = (_activeId: string) => {};
+    await using screen = await render(<Steered steer={(turn) => (steer = turn)} />);
+    const pages = proxyOf(screen.container);
+    const strip = screen.container.querySelector<HTMLElement>("[data-stemcells-strip]")!;
+    await act(() => cutTurn(() => flushSync(() => steer("four"))));
+    // Aski's turn draws its own motion over the strip: a slide under it would show through.
+    expect(strip.getAnimations()).toHaveLength(0);
+    expect(pages.hasAttribute("data-moving")).toBe(false);
+    expect(shown(screen.container)).toBeCloseTo(3, 5);
   });
 
   it("is on from the swipe's first move until the proxy rests", async () => {

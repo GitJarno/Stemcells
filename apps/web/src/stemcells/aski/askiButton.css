@@ -1,0 +1,115 @@
+/* Aski's button (AskiButton.tsx): round and quiet, at the slate's lower right, just over the
+   focused chat's composer. Where anchors work it follows that composer as a draft grows and
+   keeps left of an open workbench; elsewhere it stands at a fixed height. No backdrop blur:
+   a chat streams under it, and a blur would be painted again every frame. */
+[data-stemcells-aski-button] {
+  position: absolute;
+  right: var(--sc-space-xl);
+  bottom: calc(var(--sc-pane-button) * 4);
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  width: calc(var(--sc-pane-button) + var(--sc-space-sm));
+  height: calc(var(--sc-pane-button) + var(--sc-space-sm));
+  padding: 0;
+  border: 1px solid var(--sc-pane-button-edge);
+  border-radius: 9999px;
+  background: var(--popover);
+  box-shadow: var(--sc-glass-shadow);
+  cursor: pointer;
+  -webkit-touch-callout: none;
+  user-select: none;
+  /* Its own picture in every view transition, so the slate's never covers it. */
+  view-transition-name: sc-aski-button;
+}
+[data-stemcells-aski-button]:hover {
+  background: var(--sc-pane-button-lit);
+}
+[data-stemcells-aski-button]:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+[data-stemcells-aski-button] .aski-figure {
+  block-size: calc(var(--sc-pane-button) - var(--sc-space-sm));
+}
+/* Aski answered while elsewhere: a still dot until the person turns to it. */
+[data-stemcells-aski-dot] {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: var(--sc-space-md);
+  height: var(--sc-space-md);
+  border-radius: 9999px;
+  background: var(--sc-notification);
+  box-shadow: 0 0 0 2px var(--popover);
+}
+
+@supports (anchor-name: --sc-aski-composer) {
+  [data-stemcells-page][data-on-stage="true"] [data-stemcells-grid] {
+    anchor-name: --sc-aski-grid;
+  }
+  [data-stemcells-page][data-on-stage="true"]
+    [data-stemcells-pane][data-focused="true"]
+    [data-chat-composer-stack="true"] {
+    anchor-name: --sc-aski-composer;
+  }
+  [data-stemcells-aski-button] {
+    right: calc(anchor(--sc-aski-grid right, 0px) + var(--sc-space-xl));
+    bottom: calc(
+      anchor(--sc-aski-composer top, calc(var(--sc-pane-button) * 3)) + var(--sc-space-md)
+    );
+  }
+}
+
+/* The turn (AskiButton.tsx, `playTurn`): only the slate takes part. Aski's page opens out of
+   the button while the chat steps back and dims (`open`); back, it folds into the button while
+   the chat steps forward (`fold`); under Reduce Motion the two cross-fade (`fade`). */
+html[data-stemcells-aski-turn] [data-stemcells-slate] {
+  view-transition-name: sc-aski-turn;
+}
+html[data-stemcells-aski-turn]::view-transition-group(sc-aski-turn) {
+  animation-duration: var(--sc-motion-fade-duration);
+  animation-timing-function: var(--sc-motion-fade-easing);
+}
+html[data-stemcells-aski-turn="open"]::view-transition-group(sc-aski-turn),
+html[data-stemcells-aski-turn="fold"]::view-transition-group(sc-aski-turn) {
+  animation: none;
+}
+html[data-stemcells-aski-turn="open"]::view-transition-old(sc-aski-turn),
+html[data-stemcells-aski-turn="open"]::view-transition-new(sc-aski-turn),
+html[data-stemcells-aski-turn="fold"]::view-transition-old(sc-aski-turn),
+html[data-stemcells-aski-turn="fold"]::view-transition-new(sc-aski-turn) {
+  mix-blend-mode: normal;
+  animation-duration: var(--sc-motion-fade-duration);
+  animation-timing-function: var(--sc-motion-fade-easing);
+  animation-fill-mode: both;
+}
+html[data-stemcells-aski-turn="open"]::view-transition-old(sc-aski-turn) {
+  animation-name: sc-aski-step-back;
+}
+html[data-stemcells-aski-turn="open"]::view-transition-new(sc-aski-turn) {
+  animation-name: sc-aski-open;
+}
+html[data-stemcells-aski-turn="fold"]::view-transition-old(sc-aski-turn) {
+  z-index: 1;
+  animation-name: sc-aski-open;
+  animation-direction: reverse;
+}
+html[data-stemcells-aski-turn="fold"]::view-transition-new(sc-aski-turn) {
+  animation-name: sc-aski-step-back;
+  animation-direction: reverse;
+}
+@keyframes sc-aski-open {
+  from {
+    clip-path: circle(0 at var(--sc-aski-turn-at));
+  }
+  to {
+    clip-path: circle(var(--sc-aski-turn-reach) at var(--sc-aski-turn-at));
+  }
+}
+@keyframes sc-aski-step-back {
+  to {
+    transform: scale(0.97);
+    opacity: 0.6;
+  }
+}

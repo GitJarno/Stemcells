@@ -58,9 +58,14 @@ can't approve its own requests.
   `askiChatAmong`, `askiThreadOf`). Every Cell, an earlier Aski and every
   client outside the app are refused, server side. Cells can't run on
   Aski's instance (`askiInstance.ts`), so no Cell becomes Aski.
+- **The show rides in Aski's chat.** It is the `stemcells_show` call
+  itself, which every client of that chat already receives by every route
+  (local, Tailscale, relay); no new channel. A client acts only on calls
+  in the Aski chat it has in front, only from T3's own MCP server (another
+  server's tool of the same name never counts, `isShowTool`), each once.
 - **A device obeys only when you're at it**: Aski in front there, the app
-  shown, touched in the last two minutes, the show under 15 s old
-  (`stemcells/aski/show.ts`, `mayShow`). A show is never replayed.
+  shown, touched in the last two minutes (on the phone, the app in front),
+  the show under 15 s old (`stemcells/aski/show.ts`, `mayShow`).
 - **Showing is all it does**: open a Cell, a Settings place, a stage. The
   targets are checked (the Cell exists, the place is in the catalog).
 - **Context stays the person's**: New Aski starts clean, so what Aski read
@@ -70,12 +75,12 @@ can't approve its own requests.
 
 ## Steps
 
-- [ ] Shared: the show's wire and gate (`stemcells/aski/show.ts`), the words
+- [x] Shared: the show's wire and gate (`stemcells/aski/show.ts`), the words
       (`stemcells/words/aski.ts`)
-- [ ] Server: `stemcells_show`, its stream, `POST fresh`; contract tests
+- [ ] Server: `stemcells_show`, `POST fresh`; contract tests
 - [ ] Persona: showing, reminders (`schedule_task`), sums across Cells, a
       fresh Aski, Cells' text as material
-- [ ] Phone: the home without Aski; the button in each posture; the turn;
+- [x] Phone: the home without Aski; the button in each posture; the turn;
       the chip; the long press; shows; the dot; copies off the button
 - [ ] Mac: the button and shortcut; the turn; the chip; the long press;
       shows; the dot

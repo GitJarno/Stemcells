@@ -21,6 +21,18 @@ export const NO_NEW_CELL: NewCellPage = {
   onMotion: () => undefined,
 };
 
+let cutting = false;
+
+/** A turn made inside `turn` cuts to its page, for a turn that draws its own motion over it. */
+export function cutTurn(turn: () => void): void {
+  cutting = true;
+  try {
+    turn();
+  } finally {
+    cutting = false;
+  }
+}
+
 /** The strip at `position` (in pages): page `i` is on stage at `i`. */
 const stripAt = (position: number): string => `translate3d(${-position * 100}%, 0, 0)`;
 /** A page in its place on the strip. */
@@ -292,7 +304,8 @@ export class PageStrip {
       // eye has it, and what the proxy does until it rests shows nothing.
       this.#turns.spend();
       this.#writeKnots();
-      this.#travelTo(active, here, stage, speed);
+      if (cutting) this.#cut(this.#order.indexOf(active));
+      else this.#travelTo(active, here, stage, speed);
       return;
     }
     // A swipe's own turn landing, or tabs that moved under the strip: the

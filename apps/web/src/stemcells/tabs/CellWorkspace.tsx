@@ -11,6 +11,7 @@ import {
 } from "react";
 import { flushSync } from "react-dom";
 
+import { AskiButton, useAskiSide } from "../aski/AskiButton";
 import { AskiKeeper, AskiPane } from "../aski/AskiPane";
 import { AskiMomentWatch } from "../aski/moments/AskiMomentWatch";
 import { CollectionWatch } from "../collection/CollectionWatch";
@@ -50,6 +51,7 @@ import { keepLeft, leaveSlate, settlesOnClose, type Left } from "./settled";
 import {
   addPaneOutsideAski,
   ASKI_TAB_ID,
+  askiCellOf,
   withoutAski,
   closeTabUnlessAski,
   isAskiTab,
@@ -405,7 +407,10 @@ export function CellWorkspace(props: {
       const before = readWorkspace();
       const acted = swiped.current || (navigator.userActivation?.hasBeenActive ?? false);
       updateWorkspace((current) => seatAski(current, chat.cell, newIds(), acted));
-      if (!isAskiTab(activeTab(before)) && isAskiTab(activeTab(readWorkspace()))) routeToFocused();
+      // Turned to, or a new chat in front (New Aski): the route names Aski's chat.
+      const was = askiCellOf(before);
+      const changed = !isAskiTab(activeTab(before)) || !was || !sameChat(was, chat.cell);
+      if (changed && isAskiTab(activeTab(readWorkspace()))) routeToFocused();
     });
   };
 
@@ -443,8 +448,18 @@ export function CellWorkspace(props: {
     routeToFocused();
   };
 
+  // Aski's button and ⌘.: the chat in front turned over to Aski and back.
+  const askiSide = useAskiSide({
+    on: askiOn && (workspace.tabs.some(isAskiTab) || askiAway !== null),
+    aski: askiChat.status === "ready" ? askiChat.cell : null,
+    workspace,
+    background: props.background === true,
+    onTurn: activateTabAndRoute,
+  });
+
   useWorkspaceKeys(
     {
+      toggleAski: askiSide.toggle,
       newCell: () => {
         openNewPane();
         return true;
@@ -637,6 +652,9 @@ export function CellWorkspace(props: {
           )}
           <DropWash />
           <ChatCarry onOpenTab={activateTabAndRoute} />
+          {tab !== null && askiSide.on ? (
+            <AskiButton side={askiSide} onNewCell={() => openNewPane()} onOpenCell={openBeside} />
+          ) : null}
         </div>
       </ChatsInBackground>
     </SidebarInset>

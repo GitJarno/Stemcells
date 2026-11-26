@@ -1,7 +1,7 @@
 // A place in Settings a reply names, as a link that opens it (stemcells/tasks/settings-in-chat.md):
 // a row scrolls into view and pulses as a search jump does, a provider opens on its own card.
 // It reads as Settings titles its steps, and copies as the reply's own words.
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { SettingsIcon } from "lucide-react";
 import { Fragment, type ReactNode } from "react";
 
@@ -24,6 +24,31 @@ export const PLACE_LINK_KIND = "stemcells-place";
 
 export const placeHref = (place: SettingsPlace) =>
   `t3-context://v1/${PLACE_LINK_KIND}/${placeKey(place)}`;
+
+/** Opens a place by its key as its link does; false when the catalog no longer has it. */
+export function useOpenPlace(): (key: string, environmentId?: string) => boolean {
+  const navigate = useNavigate();
+  return (key, environmentId) => {
+    const place = placeOf(key);
+    if (place === null) return false;
+    if (place.kind === "provider") {
+      void navigate({
+        to: "/settings/providers",
+        search: providerCardSearch(place.driver, environmentId),
+      });
+    } else if (place.kind === "row") {
+      revealSettingsSearchTarget(place.anchor);
+      void navigate({
+        to: place.page as SettingsPath,
+        hash: place.anchor,
+        hashScrollIntoView: false,
+      });
+    } else {
+      void navigate({ to: place.page as SettingsPath });
+    }
+    return true;
+  };
+}
 
 export function PlaceLink(props: {
   readonly placeKey: string;
