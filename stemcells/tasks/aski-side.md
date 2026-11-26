@@ -77,13 +77,32 @@ can't approve its own requests.
 
 - [x] Shared: the show's wire and gate (`stemcells/aski/show.ts`), the words
       (`stemcells/words/aski.ts`)
-- [ ] Server: `stemcells_show`, `POST fresh`; contract tests
-- [ ] Persona: showing, reminders (`schedule_task`), sums across Cells, a
+- [x] Server: `stemcells_show`, `POST fresh`; contract tests
+- [x] Persona: showing, reminders (`schedule_task`), sums across Cells, a
       fresh Aski, Cells' text as material
 - [x] Phone: the home without Aski; the button in each posture; the turn;
       the chip; the long press; shows; the dot; copies off the button
-- [ ] Mac: the button and shortcut; the turn; the chip; the long press;
+- [x] Mac: the button and ⌘.; the turn; the chip; the long press;
       shows; the dot
-- [ ] Docs: `stemcells/docs/interaction.md`
+- [x] Docs: `stemcells/docs/interaction.md`
 - [ ] Seen on the Duo itself, each posture
 - [ ] Checks, pull request, merge
+
+## Review
+
+- The show rides in Aski's own chat as its tool call, not a stream of its
+  own: every client already holds that chat's items by every route, and a
+  stream would have needed a phone SSE client upstream's fetch can't read.
+- The Mac's turn is a view transition on the slate. Upstream's draft
+  headline names its own picture in each draft, and two drafts on the
+  strip repeat the name, which cancels the whole transition; the turn
+  switches every other name inside the slate off while it plays. Seen in a
+  headless lab: the circle opens from the button, ⌘. turns back, a right
+  click holds New Aski and New Cell.
+- On the Mac, Aski is still off until Settings › Aski turns it on; the
+  button stands only then. Its tab stays in the strip beside the button.
+- A launch in Aski's chat is still upstream's "Launched a Cell" row; the
+  Cells Aski names in its reply are pills with their creatures, and on the
+  unfolded Duo each Cell's copy flies from the Aski heading its chat.
+- The phone home's battery line (what a low Mac battery means for its
+  flying Cells) went with Aski's line; the header's battery mark stays.

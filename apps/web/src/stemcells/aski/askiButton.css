@@ -67,6 +67,13 @@
 html[data-stemcells-aski-turn] [data-stemcells-slate] {
   view-transition-name: sc-aski-turn;
 }
+/* Pictures of their own inside the slate (upstream's draft headline, in each draft) would
+   repeat a name across the strip's pages, which cancels the whole transition. */
+html[data-stemcells-aski-turn]
+  [data-stemcells-slate]
+  *:not([data-stemcells-aski-button]):not([data-stemcells-aski-button] *) {
+  view-transition-name: none !important;
+}
 html[data-stemcells-aski-turn]::view-transition-group(sc-aski-turn) {
   animation-duration: var(--sc-motion-fade-duration);
   animation-timing-function: var(--sc-motion-fade-easing);
