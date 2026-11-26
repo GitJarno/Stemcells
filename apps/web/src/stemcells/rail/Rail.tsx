@@ -14,6 +14,7 @@ import { useNavigateToMainApp } from "../upstream/settings";
 import { cn, useSidebar } from "../upstream/ui";
 import { useColumnStore } from "./column";
 import { DiskPlate } from "./DiskPlate";
+import { ListButtons } from "./ListButtons";
 import { litFor } from "./lit";
 import { PlanRing } from "./PlanRing";
 import { RailButton } from "./RailParts";
@@ -77,6 +78,7 @@ export function Rail() {
         >
           <SettingsIcon />
         </RailButton>
+        <ListButtons />
         <RailButton label="Usage" on={onUsage} onClick={() => void navigate({ to: "/usage" })}>
           <ChartNoAxesColumnIcon />
         </RailButton>

@@ -227,8 +227,9 @@ any agent here able to read our state could use.
 - **Broadcasts.** N sends; in the original app, the noisiest kind.
 - **Unread and read states.** The card sits in the chat that received it;
   upstream's queue shows a message still waiting.
-- **The phone** keeps upstream's folded row for a message from another
-  agent (#23135).
+- **The phone** folds a message from another Cell under Cell Mail
+  (`apps/mobile/src/stemcells/chat/MailFold.tsx`), with upstream's folded
+  row (#23135) as its fallback.
 - **Claude's native peer origin** (`SDKMessageOrigin` `{ kind: "peer" }`)
   and steering a peer's message at the next tool call (priority `next`
   rather than `now`) belong in upstream's Claude adapter, a hot file.

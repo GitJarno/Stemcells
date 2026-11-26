@@ -20,6 +20,17 @@ describe("the rail's seams", () => {
   it("the wide sidebar's foot carries the control back to the rail, after the disk", () => {
     expect(sidebarChrome).toMatch(/<DiskFoot \/>\s*<NarrowColumnButton \/>/);
   });
+
+  it("the sidebar's foot opens the lists the column's foot opens (lists.ts), with their last filters", () => {
+    expect(sidebarChrome).toContain(
+      'to: "/pull-requests",\n      search: readPullRequestListPreferences(),',
+    );
+    expect(sidebarChrome).toContain(
+      'void navigate({ to: "/issues", search: readIssueListPreferences() });',
+    );
+    expect(sidebarChrome).toMatch(/pullRequestsSupported \? \(\s*<SidebarUtilityItem/);
+    expect(sidebarChrome).toMatch(/issuesSupported \? \(\s*<SidebarUtilityItem/);
+  });
 });
 
 describe("upstream's sidebar, as rail.css reads it", () => {

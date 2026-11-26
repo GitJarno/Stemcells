@@ -1,6 +1,6 @@
 /**
  * Upstream's thread row, in the parts the column's rows draw (`rail/Cells.tsx`): a chat's age,
- * its project, its pull request badge and the thread's hover card. The layout is ours; each part
+ * its project, its pull request and issue badges and the thread's hover card. The layout is ours; each part
  * is the sidebar's own, so a sync brings its changes.
  */
 import { scopeProjectRef } from "@t3tools/client-runtime/environment";
@@ -14,6 +14,7 @@ import { GitBranchIcon } from "lucide-react";
 import type { MouseEvent, ReactElement, ReactNode } from "react";
 
 import { ProjectFavicon } from "../../components/ProjectFavicon";
+import { IssueGlyph, issueStatePresentation } from "../../components/issue/issuePresentation";
 import { useRightPanelStore } from "../../rightPanelStore";
 import { ThreadHoverCard, ThreadHoverCardPopup } from "../../components/ThreadHoverCard";
 import {
@@ -29,7 +30,9 @@ import { Tooltip, TooltipTrigger } from "../../components/ui/tooltip";
 import { useNowMinute } from "../../hooks/useNowMinute";
 import { useSupportsMultiplePullRequests } from "../../hooks/useSupportsMultiplePullRequests";
 import { useOpenPrLink } from "../../lib/openPullRequestLink";
+import { cn } from "../../lib/utils";
 import { useProject, useQuietThreadShell } from "../../state/entities";
+import { useSidebarLinkedIssueState } from "../../state/issues";
 import { formatRelativeTimeLabel } from "../../timestampFormat";
 import type { CellRef } from "../tabs/layout";
 import { threadRefOf } from "./routes";
@@ -124,6 +127,47 @@ export function CellPullRequest(props: { shell: CellShell; onOpenCell: () => voi
       }}
       onOpenPullRequest={openPullRequest}
     />
+  );
+}
+
+/**
+ * The chat's linked issues as the sidebar shows them: the state's icon and colour, and the
+ * issue's key, or how many. It opens the chat's linked items beside it.
+ */
+export function CellIssue(props: { shell: CellShell; onOpenCell: () => void }) {
+  const { shell, onOpenCell } = props;
+  const state = useSidebarLinkedIssueState(shell.environmentId, shell.issues);
+  const issues = shell.issues ?? [];
+  const first = issues[0];
+  if (first === undefined) return null;
+  const status = state === null ? null : issueStatePresentation(state);
+  const Icon = status?.Icon ?? IssueGlyph.issue;
+  const label =
+    issues.length > 1
+      ? `${issues.length} linked issues`
+      : `Issue ${first.displayKey}: ${first.title}${status === null ? "" : `, ${status.label}`}`;
+  return (
+    <InlineButton
+      tone="muted"
+      aria-label={label}
+      data-cells-row-issue=""
+      onPointerDown={(event) => event.stopPropagation()}
+      onClick={(event) => {
+        event.stopPropagation();
+        const threadRef = threadRefOf({
+          environmentId: shell.environmentId,
+          threadId: shell.id,
+          draftId: null,
+        });
+        useRightPanelStore.getState().open(threadRef, "pull-requests");
+        onOpenCell();
+      }}
+    >
+      <Icon aria-hidden className={cn("size-3 shrink-0", status?.toneClassName)} />
+      <span className="max-w-16 truncate text-xs font-normal text-secondary-label tabular-nums">
+        {issues.length > 1 ? issues.length : first.displayKey}
+      </span>
+    </InlineButton>
   );
 }
 
