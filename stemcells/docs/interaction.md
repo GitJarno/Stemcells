@@ -82,6 +82,17 @@ when they act (`stemcells/tasks/awake-asleep.md`).
   Cell hops into the other stage's count on `travel` (`rail/Hops.tsx`).
 - **Reduce Motion**: no band, and the row fades without folding.
 
+## The work log
+
+A run's tool calls are its means, not its results. While a Cell flies, the
+chat shows what it says and thinks, a live line naming what it runs now
+("Running python3"), and the images it looks at, which the person steers
+by. Finished, successful commands, reads, searches and edits step aside; a
+failed one stays. This is upstream's "Hide successful", which Stemcells sets
+once per install on the Mac and the phone (`apps/web/src/stemcells/work/`,
+`apps/mobile/src/stemcells/work/`), with one change of ours: what the agent
+looked at stays. Settings › Appearance › Tool calls shows everything again.
+
 ## Aski's button
 
 Aski is the other side of every chat (`stemcells/tasks/aski-side.md`). One

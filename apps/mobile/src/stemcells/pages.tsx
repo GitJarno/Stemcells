@@ -4,9 +4,10 @@ import type { ComponentProps } from "react";
 import { Platform } from "react-native";
 
 import { COLLECTION } from "../../../../stemcells/words/feats.ts";
-export { AskiButton } from "./aski/AskiButton";
+import { AskiButton } from "./aski/AskiButton";
 import { CollectionScreen } from "./collection/CollectionScreen";
 import { DiskScreen } from "./disk/DiskScreen";
+import { QuietWorkOnce } from "./work/QuietWork";
 import { allowPushes, usePushState } from "./push/PushCoordinator";
 import { openSettings, type SettingsRow } from "./upstream/disk";
 import { useSavedRemoteConnections } from "./upstream/push";
@@ -74,4 +75,17 @@ function usePushRow(): Row | null {
     value,
     onPress: () => void allowPushes(Object.values(savedConnectionsById)),
   };
+}
+
+/**
+ * What stands over the workspace beside its pages, mounted once (`Stack.tsx`): Aski's button, and
+ * the chat's quieter work log set once.
+ */
+export function OverWorkspace(props: ComponentProps<typeof AskiButton>) {
+  return (
+    <>
+      <AskiButton {...props} />
+      <QuietWorkOnce />
+    </>
+  );
 }
