@@ -1130,7 +1130,10 @@ public final class T3ComposerEditorView: ExpoView, UITextViewDelegate, UITextDro
     if availableWidth <= 0 {
       chipsNeedMeasuredWidth = true
     }
-    let maximumLabelWidth = max(font.pointSize * 3, availableWidth - padding * 2 - iconSlot)
+    // Stemcells: a chip leaves room on its line for the caret and a tap beside it; one as wide
+    // as the line left the person nowhere to start typing.
+    let maximumChipWidth = min(240, availableWidth * 2 / 3)
+    let maximumLabelWidth = max(font.pointSize * 3, maximumChipWidth - padding * 2 - iconSlot)
     let labelWidth = min(attributedLabel.size().width, maximumLabelWidth)
     let width = ceil(padding * 2 + iconSlot + labelWidth)
     let format = UIGraphicsImageRendererFormat.preferred()
