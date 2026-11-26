@@ -91,7 +91,7 @@ it.effect("Aski reads where every Cell stands through upstream's MCP server", ()
       report: [
         "Nothing needs you.",
         "",
-        "Done, not settled (1):",
+        "Landed, awake (1):",
         "[Otter](t3-thread://v1/thread-otter) · Harbor · #281 merged",
       ].join("\n"),
     });

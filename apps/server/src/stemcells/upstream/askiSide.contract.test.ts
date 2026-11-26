@@ -211,8 +211,8 @@ it.effect("stemcells_show answers Aski's own chat and refuses every other caller
     expect(yield* show(fromThread(aski), { settings: "provider-codex" })).toEqual({
       shown: "Shown: Settings › Providers › Codex.",
     });
-    expect(yield* show(fromThread(aski), { stage: "Flying" })).toEqual({
-      shown: "Shown: the home's Flying stage.",
+    expect(yield* show(fromThread(aski), { stage: "Awake" })).toEqual({
+      shown: "Shown: the home's Awake stage.",
     });
 
     for (const caller of [fromThread(cell), fromThread(earlier)]) {

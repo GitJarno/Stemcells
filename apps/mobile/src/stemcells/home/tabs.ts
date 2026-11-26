@@ -13,8 +13,6 @@ import {
 
 type HomeTab = "asleep" | "active" | "working" | "input";
 
-export type TabCounts = Readonly<Record<HomeTab, number>>;
-
 /** What a tab reads of a chat: its face's fields, its snooze and whether it is settled. */
 type TabShell = Parameters<typeof faceOf>[0] &
   Parameters<typeof resolveThreadListV2Status>[0] &

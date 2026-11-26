@@ -3,9 +3,8 @@
 // one, the home opens where `opens` says, and holds it from there.
 
 import { createContext, useEffect, useSyncExternalStore } from "react";
-import type { AnimatedRef, SharedValue } from "react-native-reanimated";
 
-import type { TabCounts } from "./tabs";
+import type { CellState } from "../line/line";
 
 export interface HomeTabs {
   readonly tab: string;
@@ -14,9 +13,7 @@ export interface HomeTabs {
     readonly label: string;
     readonly count: number;
   }>;
-  /** The home in Aski's terms. */
-  readonly counts: TabCounts;
-  /** The night comes over Aski: the tab of Cells put away. */
+  /** Night falls over Asleep's sky (`StagePill.tsx`, `StageTop`). */
   readonly night: boolean;
   readonly choose: (tab: string) => void;
   /** The machine the list is narrowed to, whose Aski the header opens. */
@@ -35,23 +32,15 @@ export const HomeTabsContext = createContext<HomeTabs | null>(null);
  */
 export const HomeStageContext = createContext<string | null>(null);
 
+/** Each awake Cell's state on the line, by `environmentId:id`, for its row's light and time. */
+export const CellStates = createContext<ReadonlyMap<string, CellState>>(new Map());
+
 /** One stage's list as the home switches between them (`StagePages.tsx`). */
 export interface StagePage {
   /** The stage in front: it takes touches and the status bar's tap to the top. */
   readonly active: boolean;
-  /** Its scroll view, for the switch to scroll on the UI thread. */
-  readonly ref: AnimatedRef;
-  /**
-   * Its scroll view's own offset, as it last said. Every stage's scroll view rests under the same
-   * inset with its room at its top, so this alone says where the header stands over it.
-   */
-  readonly offset: SharedValue<number>;
-  /** That inset, set by hand on every stage's scroll view: each rests at minus this. */
+  /** The inset every stage's scroll view rests under, set by hand: each rests at minus this. */
   readonly inset: number;
-  /** How far it stands aside, points: a swipe over Aski draws it along (`AskiHome.tsx`). */
-  readonly x: SharedValue<number>;
-  /** Tall enough to scroll the shared header out of sight: a short list keeps it put too. */
-  readonly minHeight: number;
 }
 
 export const StagePageContext = createContext<StagePage | null>(null);
@@ -98,17 +87,6 @@ export function tabChoice<Tab extends string>() {
 }
 
 /**
- * Where a stage's list stands as it shows, so the header shared over the lists stays put: where
- * the last one stood while any of the header shows (never pulled past the top, `top` its rest),
- * else its own place, the header just gone.
- */
-export function carriedOffset(from: number, own: number, top: number, headerEnd: number): number {
-  "worklet";
-  const gone = top + headerEnd;
-  return from < gone ? Math.max(top, from) : Math.max(gone, own);
-}
-
-/**
  * Where a stage's list starts across as it is chosen: from the side it travels from, `shift`
  * away, unless it still shows (a tap back mid-switch), when it carries on from where it stands.
  */
@@ -121,38 +99,6 @@ export function enteringX(
 ): number {
   "worklet";
   return opacity > 0 ? x : Math.sign(to - from) * shift;
-}
-
-/** How far a swipe over Aski goes, points, to turn the stage; a flick turns it sooner. */
-const TURN = 48;
-const FLICK = 500;
-
-/**
- * The stage a sideways swipe over Aski turns the home to, as two fingers turn the Mac's column:
- * left to the next, right to the one before. Null short of a turn or past either end.
- */
-export function stageAfterSwipe(
-  stages: readonly string[],
-  current: string,
-  dx: number,
-  vx: number,
-): string | null {
-  "worklet";
-  const flicked = Math.abs(vx) > FLICK && Math.sign(vx) === Math.sign(dx);
-  return Math.abs(dx) < TURN && !flicked ? null : stageToward(stages, current, dx);
-}
-
-/** The stage on the side a swipe goes, however far: null past either end. */
-export function stageToward(stages: readonly string[], current: string, dx: number): string | null {
-  "worklet";
-  if (dx === 0) return null;
-  return stages[stages.indexOf(current) + (dx < 0 ? 1 : -1)] ?? null;
-}
-
-/** Where a list stands as the finger draws it: along a little, less past either end. */
-export function drawnX(dx: number, turns: boolean): number {
-  "worklet";
-  return dx * (turns ? 0.3 : 0.1);
 }
 
 let footRoom = 0;
@@ -172,6 +118,38 @@ export function useFootRoom(): number {
       return () => void footListeners.delete(listener);
     },
     () => footRoom,
+  );
+}
+
+/** What the stages' pill takes of the home's foot (`StagePill.tsx`): its 36 points and a gap. */
+export const PILL_ROOM = 36 + 8;
+
+const lifts = new Map<object, number>();
+let lift = 0;
+const liftListeners = new Set<() => void>();
+const tellLift = () => {
+  lift = Math.max(0, ...lifts.values());
+  for (const listener of liftListeners) listener();
+};
+
+/** The stages' pill stands where T3's notice would, so the notice stands `by` higher. */
+export function liftNotices(by: number): () => void {
+  const key = {};
+  lifts.set(key, by);
+  tellLift();
+  return () => {
+    lifts.delete(key);
+    tellLift();
+  };
+}
+
+export function useNoticeLift(): number {
+  return useSyncExternalStore(
+    (listener) => {
+      liftListeners.add(listener);
+      return () => void liftListeners.delete(listener);
+    },
+    () => lift,
   );
 }
 

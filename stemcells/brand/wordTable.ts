@@ -1,9 +1,10 @@
 /**
- * The word table: where upstream's views say thread, subagent or Working, the builds say Cell,
- * Subcell or Flying, and upstream's files keep their text (`stemcells/docs/fork.md`, "The name
- * transform"). A build fails when a file says an entry's words fewer or more times than the
- * entry does (`nameTransform.ts`). Only builds and tests read this file, never an app.
+ * The word table: where upstream's views say thread, subagent, Working or Settle, the builds say
+ * Cell, Subcell, Flying or Sleep, and upstream's files keep their text (`stemcells/docs/fork.md`,
+ * "The name transform"). A build fails when a file says an entry's words fewer or more times than
+ * the entry does (`nameTransform.ts`). Only builds and tests read this file, never an app.
  */
+import { SLEEP, SLEEP_UNTIL, sleptWords, WAKE } from "../words/awake.ts";
 import { CASUAL_CHAT } from "../words/casualChat.ts";
 import { CELL, FLYING } from "../words/cells.ts";
 import { COPY_CELL } from "../words/copyCell.ts";
@@ -44,6 +45,9 @@ const CHAT = "apps/web/src/components/chat";
 
 const OPENS_AGENT = "agent's thread";
 
+/** The undo notice once one Cell sleeps, as our column's says it. */
+const ONE_ASLEEP = sleptWords(`A ${CELL.one}`);
+
 export const WORD_TABLE: ReadonlyArray<Swap> = [
   // The phone.
   ...inFile(
@@ -62,8 +66,8 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
   ),
   ...inFile(
     `${PHONE}/home/ThreadUndoNotice.tsx`,
-    within('gt("Settled thread")', "thread", `1 ${CELL.one}`),
-    within('gt("Snoozed thread")', "thread", `1 ${CELL.one}`),
+    within('gt("Settled thread")', "Settled thread", ONE_ASLEEP),
+    within('gt("Snoozed thread")', "Snoozed thread", ONE_ASLEEP),
     within('gt("Unpinned thread")', "thread", `1 ${CELL.one}`),
   ),
   ...inFile(
@@ -162,8 +166,24 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
     within(`accessibilityHint={gt("Opens this turn's subagents")}`, "subagents", SUBCELL.many),
   ),
   ...inFile(
+    `${PHONE}/threads/threadOrder.ts`,
+    // What a drag onto or off the Settled shelf says it does.
+    within('resolve(msg("Settle", { $context: "verb, thread action" }))', "Settle", SLEEP),
+    within('resolve(msg("Unsettle", { $context: "verb, thread action" }))', "Unsettle", WAKE),
+  ),
+  ...inFile(
     `${PHONE}/threads/thread-list-v2-items.tsx`,
     within('title: msg("Wake thread")', "thread", CELL.one),
+    // The card's menu and swipe: Settle sleeps a Cell, Un-settle wakes it, Snooze is a timed sleep.
+    within('title: msg("Settle", { $context: "verb, thread action" })', "Settle", SLEEP),
+    within('title: msg("Un-settle", { $context: "verb, thread action" })', "Un-settle", WAKE),
+    within('label: gt("Settle", { $context: "verb, thread action" })', "Settle", SLEEP),
+    within('label: gt("Un-settle", { $context: "verb, thread action" })', "Un-settle", WAKE),
+    within('gt("Settle {title}"', "Settle", SLEEP),
+    within('gt("Un-settle {title}"', "Un-settle", WAKE),
+    within('label: gt("Snooze", { $context: "verb, thread action" })', "Snooze", SLEEP_UNTIL),
+    within('title: gt("Snooze", { $context: "verb, thread action" })', "Snooze", SLEEP_UNTIL),
+    within('title: gt("Snooze until")', "Snooze until", "Sleep until"),
     within('title: gt("Arrange threads…")', "threads", CELL.many),
     within('title: gt("Copy thread"),', "Copy thread", COPY_CELL.action),
     within('title: gt("Copy thread ID")', "thread ID", COPY_CELL.menuId),
@@ -204,6 +224,34 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
   ...inFile(
     "apps/web/src/components/NoProjectsHero.tsx",
     whole("Start without a project", CASUAL_CHAT.start),
+  ),
+  ...inFile(
+    "apps/web/src/components/threadActionMenu.logic.ts",
+    // A Cell's menu: Settle sleeps it, Un-settle and Wake wake it, Snooze is a timed sleep.
+    within('resolve(msg("Settle thread"))', "Settle thread", SLEEP),
+    within('resolve(msg("Un-settle thread"))', "Un-settle thread", WAKE),
+    within('resolve(msg("Wake thread"))', "Wake thread", WAKE),
+    within(
+      'resolve(msg("Snooze", { $context: "verb, snooze the thread" }))',
+      "Snooze",
+      SLEEP_UNTIL,
+    ),
+  ),
+  ...inFile(
+    "apps/web/src/components/sidebar/SidebarThreadUndoNotice.tsx",
+    within("=1 {Settled,}", "Settled", "Asleep"),
+    within("other {Settled {count},}", "Settled", "Asleep"),
+  ),
+  ...inFile(
+    "apps/web/src/hooks/showThreadUndoNotice.ts",
+    // What a screen reader hears once Cells sleep: "Asleep: 2 Cells".
+    within('msg("Settled {count', "Settled", "Asleep:"),
+    within('msg("Settled {count, plural, one {{count} thread}', "thread", CELL.one),
+    within(
+      'msg("Settled {count, plural, one {{count} thread} other {{count} threads}}")',
+      "threads",
+      CELL.many,
+    ),
   ),
   ...inFile(
     "apps/web/src/components/WorktreeRepositoriesControl.tsx",

@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 
+import { SLEEP } from "../../../../../stemcells/words/awake.ts";
 import { keepCard, useAutonomy } from "../autonomy/autonomy";
 import { TakingFuse } from "../autonomy/Cards";
 import { cellNameOf } from "../cell/name";
@@ -200,7 +201,7 @@ function Card(props: NeedCardProps & { disk: DiskFailure; freeSpace: (() => void
     land(section.current);
   }, [collapsed]);
 
-  // Later, Settle and Open chat stand in the age's place while the person is on the ask.
+  // Later, Sleep and Open chat stand in the age's place while the person is on the ask.
   const tail = (
     <span data-need-tail="">
       {card.later && answerable ? (
@@ -218,7 +219,7 @@ function Card(props: NeedCardProps & { disk: DiskFailure; freeSpace: (() => void
         </button>
       ) : null}
       {environmentId !== null ? (
-        // Done with it, asked or not: it stops, then settles (upstream/settle.ts). Words that
+        // Done with it, asked or not: it stops, then sleeps (upstream/settle.ts). Words that
         // say "nothing to do" light it.
         <button
           type="button"
@@ -228,7 +229,7 @@ function Card(props: NeedCardProps & { disk: DiskFailure; freeSpace: (() => void
             void settle({ environmentId, threadId: need.threadId });
           }}
         >
-          Settle
+          {SLEEP}
         </button>
       ) : null}
       <button
@@ -398,7 +399,7 @@ function Card(props: NeedCardProps & { disk: DiskFailure; freeSpace: (() => void
   );
 }
 
-/** The options a card lists: "Nothing to do" is the head's Settle, which words still light. */
+/** The options a card lists: "Nothing to do" is the head's Sleep, which words still light. */
 const shownOptions = (card: Card): ReadonlyArray<CardOption> =>
   card.options.filter((option) => option.id !== NOTHING_TO_DO);
 

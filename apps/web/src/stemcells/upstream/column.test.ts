@@ -16,6 +16,8 @@ function shell(
     parent: string;
     archived: boolean;
     instance: string;
+    snoozedAt: string;
+    snoozedUntil: string;
   }> = {},
 ): EnvironmentThreadShell {
   return {
@@ -31,22 +33,39 @@ function shell(
     updatedAt: "2026-10-01T10:00:00.000Z",
     pinnedAt: facts.pinnedAt ?? null,
     pinOrderKey: facts.pinOrderKey ?? null,
+    snoozedAt: facts.snoozedAt ?? null,
+    snoozedUntil: facts.snoozedUntil ?? null,
+    hasPendingApprovals: false,
+    hasPendingUserInput: false,
   } as unknown as EnvironmentThreadShell;
 }
 
 const ids = (cells: ReadonlyArray<{ threadId: string }>) => cells.map((cell) => cell.threadId);
 
-describe("the column's settled and pinned Cells", () => {
-  it("lists the latest settled first", () => {
-    const { settled } = shelvesOf(
+const NOW = "2026-10-26T10:00:00.000Z";
+
+describe("the column's asleep and pinned Cells", () => {
+  it("lists the settled and the snoozed, the latest asleep first, each timed one with its wake", () => {
+    const { asleep } = shelvesOf(
       [
         shell("a", { settled: "2026-10-20T10:00:00.000Z" }),
         shell("b", { settled: "2026-10-25T10:00:00.000Z" }),
         shell("c"),
+        shell("timed", {
+          snoozedAt: "2026-10-22T10:00:00.000Z",
+          snoozedUntil: "2026-10-27T09:00:00.000Z",
+        }),
+        // Its alarm went: it's awake again.
+        shell("woke", {
+          snoozedAt: "2026-10-23T10:00:00.000Z",
+          snoozedUntil: "2026-10-26T09:00:00.000Z",
+        }),
       ],
       "env",
+      NOW,
     );
-    expect(ids(settled)).toEqual(["b", "a"]);
+    expect(ids(asleep)).toEqual(["b", "timed", "a"]);
+    expect(asleep.map((cell) => cell.wakesAt)).toEqual([null, "2026-10-27T09:00:00.000Z", null]);
   });
 
   it("keeps pins in the order the person set, then the oldest pin first", () => {
@@ -58,13 +77,14 @@ describe("the column's settled and pinned Cells", () => {
         shell("early", { pinnedAt: "2026-10-02T10:00:00.000Z" }),
       ],
       "env",
+      NOW,
     );
     expect(ids(pinned)).toEqual(["first", "second", "early", "late"]);
   });
 
   it("leaves out Aski's chats, subagents, archived chats and other servers'", () => {
     const settled = "2026-10-20T10:00:00.000Z";
-    const { settled: shown } = shelvesOf(
+    const { asleep: shown } = shelvesOf(
       [
         shell("aski", { settled, instance: "aski" }),
         shell("sub", { settled, parent: "a" }),
@@ -73,6 +93,7 @@ describe("the column's settled and pinned Cells", () => {
         shell("cell", { settled }),
       ],
       "env",
+      NOW,
     );
     expect(ids(shown)).toEqual(["cell"]);
   });

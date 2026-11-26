@@ -6,7 +6,7 @@ import { motionTiming, reducedMotion } from "../tokens/motion";
 import { CellMini } from "./CellMini";
 import { hopsOf, type Hop, type Standings } from "./moves";
 
-/** More Cells than this moving at once (Settle all) hop the first few; the rest just arrive. */
+/** More Cells than this moving at once hop the first few; the rest just arrive. */
 const MOST_AT_ONCE = 4;
 /** Between one hop's start and the next's, so a few read as a line of them. */
 const STAGGER_MS = 70;

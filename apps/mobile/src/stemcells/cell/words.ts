@@ -1,33 +1,34 @@
 /**
- * Upstream's alerts about a thread, as a person reads them on the phone: a thread is a Cell, and
- * one at work is flying (`stemcells/AGENTS.md`, Words). Whole sentences only, so a title quoted
- * inside one is never reworded; the `Dialog` substitute says them in T3's place.
+ * Upstream's alerts about a thread, as a person reads them on the phone: a thread is a Cell, one
+ * at work is flying, and a settled one sleeps (`stemcells/AGENTS.md`, Words). Whole sentences
+ * only, so a title quoted inside one is never reworded; the `Dialog` substitute says them in T3's
+ * place.
  */
 export const CELL_ALERTS: Readonly<Record<string, string>> = {
   "Could not archive thread": "Could not archive Cell",
   "Could not unarchive thread": "Could not unarchive Cell",
-  "Could not settle thread": "Could not settle Cell",
-  "Could not un-settle thread": "Could not un-settle Cell",
+  "Could not settle thread": "The Cell could not sleep",
+  "Could not un-settle thread": "Could not wake Cell",
   "Could not delete thread": "Could not delete Cell",
   "The thread could not be archived.": "The Cell could not be archived.",
   "The thread could not be unarchived.": "The Cell could not be unarchived.",
   "The thread could not be deleted.": "The Cell could not be deleted.",
-  "The thread could not be settled.": "The Cell could not be settled.",
-  "The thread could not be un-settled.": "The Cell could not be un-settled.",
+  "The thread could not be settled.": "The Cell could not go to sleep.",
+  "The thread could not be un-settled.": "The Cell could not be woken.",
   "This connection cannot change threads.": "This connection cannot change Cells.",
   "This thread is working. Interrupt it first, then try again.":
     "This Cell is flying. Interrupt it first, then try again.",
   "Delete thread?": "Delete Cell?",
   "Could not undo thread action": "Could not undo Cell action",
-  "Could not snooze thread": "Could not snooze Cell",
-  "The thread could not be snoozed.": "The Cell could not be snoozed.",
+  "Could not snooze thread": "The Cell could not sleep",
+  "The thread could not be snoozed.": "The Cell could not go to sleep until then.",
   "This thread is waiting on you. Respond to the pending request before snoozing it.":
-    "This Cell is waiting on you. Respond to the pending request before snoozing it.",
+    "This Cell is waiting on you. Respond to the pending request before it sleeps.",
   "This thread is still starting a turn. Try again once it's running.":
     "This Cell is still starting a turn. Try again once it's flying.",
   "Could not wake thread": "Could not wake Cell",
   "This environment's server does not support snoozing yet. Update the server to wake this thread.":
-    "This environment's server does not support snoozing yet. Update the server to wake this Cell.",
+    "This environment's server does not support Sleep until… yet. Update the server to wake this Cell.",
   "The thread could not be woken.": "The Cell could not be woken.",
   "Could not pin thread": "Could not pin Cell",
   "The thread could not be pinned.": "The Cell could not be pinned.",

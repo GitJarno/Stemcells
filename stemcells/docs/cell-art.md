@@ -517,7 +517,7 @@ its name (`cell/manner.ts`), apart from its look; the design is in
 - **`beats`** name the scenes it enters a moment with, each played once:
   - `onIt` when a send is taken up;
   - `landed` when a turn lands and its look has no cheer of its own;
-  - `wake` and `sleep` when it wakes and when it goes cold.
+  - `wake` and `sleep` when it wakes and when it falls asleep.
   - `needsYou` is the loop it waits on you in (the body only: the plea's face
     and the caret blink are every Cell's).
 

@@ -20,7 +20,7 @@ export const CODE_FONT = "Menlo";
  */
 export const INK = { reply: 0.9, interface: 0.83 } as const;
 
-/** A working Cell's light (`glow/CardLight.tsx`): the band's crossing and the rest after it, ms. */
+/** A working Cell's light (`glow/RowLight.tsx`): the band's crossing and the rest after it, ms. */
 export const GLOW = { pass: 3200, rest: 1000 } as const;
 
 /** The light's colour by the web's token for it (`toneTokenOf`): a provider's own, else the accent. */

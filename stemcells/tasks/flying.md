@@ -1,5 +1,7 @@
 # Flying: the stage word for a Cell at work
 
+The stages moved to `awake-asleep.md`: Flying and Landed are an awake Cell's own states now.
+
 A Cell is thrown at a problem. It flies an arc until it lands, or falls
 short and needs the person; their word throws it again, until it sticks
 the landing. The column already said Landed; the stage before it said

@@ -1,4 +1,4 @@
-// An ask (stemcells/tasks/aski-asks.md, unblocking.md), in Flying's and Landed's card: the Cell
+// An ask (stemcells/tasks/aski-asks.md, unblocking.md), in a Cell's card on the home: the Cell
 // and its name left, its project's mark leading its one-liner, its age top right, what to do under
 // them. Open, it grows under that head: what the Cell did, what waits on it, the options, Reply…
 // last, which opens a full-width field. A Cell's own choices to a question stay rows.
@@ -26,6 +26,7 @@ import {
   type Need,
   NOTHING_TO_DO,
   repositoryUrlOf,
+  SLEEP,
   spansOf,
 } from "./kit";
 import type { Ask } from "./line";
@@ -42,7 +43,7 @@ export const whoOf = (need: Need): string =>
 export interface AskActs {
   readonly choose: (option: CardOption, given?: Given) => void;
   readonly later: () => void;
-  /** Absent when the phone can't settle it (its chat isn't on the phone). */
+  /** Sleep; absent when the phone can't settle it (its chat isn't on the phone). */
   readonly settle: (() => void) | null;
   readonly openChat: () => void;
 }
@@ -131,7 +132,7 @@ function AskBody(
         {head}
       </Pressable>
     );
-  // "Nothing to do" is the foot's Settle; a reply comes last.
+  // "Nothing to do" is the foot's Sleep; a reply comes last.
   const options = card.options.filter((option) => option.id !== NOTHING_TO_DO);
   const rows = [
     ...options.filter((option) => option.choice.kind !== "reply"),
@@ -176,7 +177,7 @@ function AskBody(
       {rows.length > 0 ? <Options options={rows} onChoose={choose} /> : null}
       <View className="flex-row gap-5 pt-1">
         {card.later ? <Quiet label={LATER.title} onPress={props.acts.later} /> : null}
-        {props.acts.settle ? <Quiet label="Settle" onPress={props.acts.settle} /> : null}
+        {props.acts.settle ? <Quiet label={SLEEP} onPress={props.acts.settle} /> : null}
         <Quiet label="Open chat" onPress={props.acts.openChat} />
       </View>
     </View>

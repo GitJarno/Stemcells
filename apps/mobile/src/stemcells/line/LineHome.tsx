@@ -1,7 +1,7 @@
-// The phone's home on the Cells' line (stemcells/tasks/phone-line.md), under Aski, narrowed by
-// the header's picks. Input is the asks themselves, one open at a time; Flying, Landed and
-// Settled hand T3's list their Cells, a list each, all mounted (`home/StagePages.tsx`). Asks never
-// hide: Input counts every one, and says where those the picks leave out are.
+// The phone's home on the Cells' line (stemcells/tasks/awake-asleep.md), under Aski, narrowed by
+// the header's picks. Input is the asks themselves, one open at a time; Awake and Asleep hand
+// T3's list their Cells, a list each, all mounted (`home/StagePages.tsx`). Asks never hide: Input
+// counts every one, and says where those the picks leave out are.
 
 import { useEffect, useSyncExternalStore, useState, type ReactNode } from "react";
 import { AppState, Pressable, View } from "react-native";
@@ -11,42 +11,59 @@ import { DiskFoot } from "../disk/DiskPlate";
 import { useAppBadge } from "../push/badge";
 import { EmptyTab, HomePage } from "../home/EmptyTab";
 import { StagePages, useStagePages } from "../home/StagePages";
-import { HomeTabsContext, tabChoice } from "../home/state";
+import { CellStates, HomeTabsContext, tabChoice } from "../home/state";
 import { inTab } from "../home/tabs";
-import { AppText, type EnvironmentThreadShell } from "../upstream/cells";
+import {
+  AppText,
+  type EnvironmentThreadShell,
+  resolveThreadWorkingStartedAt,
+} from "../upstream/cells";
 import { useHomeThreadSelection } from "../upstream/home";
 import { settleFromAnyStage } from "../upstream/needs";
 import type { Act } from "./held";
 import { held } from "./heldLine";
 import { AskCard, type AskActs, AskHead, AskLine, whoOf } from "./Ask";
-import { commandsFor, elsewhereWords, type FilterProject, type LineStage } from "./kit";
-import { type Ask, countsOf, elsewhereOf, lineOf, opensOn, SEGMENTS } from "./line";
+import {
+  commandsFor,
+  elsewhereWords,
+  EMPTY_WORDS,
+  type FilterProject,
+  type LineStage,
+  sleptWords,
+} from "./kit";
+import { type Ask, type CellState, countsOf, elsewhereOf, lineOf, opensOn, SEGMENTS } from "./line";
 import type { Reading } from "./read";
 import { UndoLine } from "./UndoLine";
 
 const segments = tabChoice<LineStage>();
-const STAGES = [
-  "needs",
-  "working",
-  "landed",
-  "settled",
-] as const satisfies ReadonlyArray<LineStage>;
-
-const EMPTY: Readonly<Record<Exclude<LineStage, "needs">, string>> = {
-  working: "No Cells flying.",
-  landed: "Nothing waits to be settled.",
-  settled: "No Cells settled.",
-};
+const STAGES = ["needs", "awake", "asleep"] as const satisfies ReadonlyArray<LineStage>;
 
 type Place = { readonly environmentId: string; readonly projectId: string };
 
-/** Where a Cell's own record stands it, as T3's tabs read it, while its machine hasn't said. */
+/** How a Cell's own record has it, as T3's tabs read it, while its machine hasn't said. */
 const byRecord =
   (now: string) =>
-  (cell: EnvironmentThreadShell): "needs" | "working" | "landed" =>
-    inTab(cell, "input", now) ? "needs" : inTab(cell, "working", now) ? "working" : "landed";
+  (cell: EnvironmentThreadShell): CellState =>
+    inTab(cell, "input", now)
+      ? { stage: "needs-you", since: cell.pendingUserInputAt ?? null }
+      : inTab(cell, "working", now)
+        ? { stage: "working", since: resolveThreadWorkingStartedAt(cell) }
+        : { stage: "done", since: cell.latestRun?.completedAt ?? null };
 
-const UNSTOPPED = "Couldn't stop it to settle it. Settle it once it has stopped.";
+const UNSTOPPED = "Couldn't stop it, so it's still awake. Try Sleep again once it lands.";
+
+/** The same states while no awake Cell's changed, so a list's rows draw again only for a change. */
+function useSteadyStates(states: ReadonlyMap<string, CellState>) {
+  const [kept, keep] = useState(states);
+  const same =
+    kept.size === states.size &&
+    [...states].every(([key, state]) => {
+      const before = kept.get(key);
+      return before?.stage === state.stage && before.since === state.since;
+    });
+  if (!same) keep(states);
+  return same ? kept : states;
+}
 
 export function LineHome(props: {
   /** The Cells the home lists: T3's chats but Aski's, archived ones and Subcells. */
@@ -65,9 +82,9 @@ export function LineHome(props: {
   readonly connecting: boolean;
   readonly onShowAll: () => void;
   readonly settle: (cell: EnvironmentThreadShell) => Promise<boolean>;
-  /** New chats on their way, which Working lists first. */
+  /** New chats on their way, which Awake lists first. */
   readonly pending: number;
-  /** Settled Cells in view that the servers keep back from the phone. */
+  /** Asleep Cells in view that the servers keep back from the phone: settled ones. */
   readonly olderSettled: number;
   /** T3's list, handed these Cells, and the new chats on their way with `pending`. */
   readonly renderList: (
@@ -77,8 +94,9 @@ export function LineHome(props: {
 }) {
   const { answered } = useSyncExternalStore(held.subscribe, held.read);
   const line = lineOf(props.cells, props.readings, props.now, answered, byRecord(props.now));
+  const states = useSteadyStates(line.states);
   const onPhone = countsOf(line, props.inView);
-  const counts = { ...onPhone, settled: onPhone.settled + props.olderSettled };
+  const counts = { ...onPhone, asleep: onPhone.asleep + props.olderSettled };
   const tab = segments.useTab(opensOn(counts), props.known);
   const stages = useStagePages(STAGES, tab);
   // Only once every machine has answered: a cold start would clear the icon a closed app was given.
@@ -122,9 +140,9 @@ export function LineHome(props: {
       choose: (option, given = {}) =>
         hold(
           commandsFor(need, option.choice, given, Date.now()),
-          option.choice.kind === "wait" ? `Snoozed ${who}` : `Answered ${who}`,
+          option.choice.kind === "wait" ? sleptWords(who) : `Answered ${who}`,
         ),
-      later: () => hold(commandsFor(need, { kind: "later" }, {}, Date.now()), `Snoozed ${who}`),
+      later: () => hold(commandsFor(need, { kind: "later" }, {}, Date.now()), sleptWords(who)),
       settle:
         cell === undefined
           ? null
@@ -160,30 +178,22 @@ export function LineHome(props: {
           actsFor={actsFor}
         />
       );
-    const shown = (stage === "settled" ? [...line.settled, ...line.snoozed] : line[stage]).filter(
-      props.inView,
-    );
+    const shown = line[stage].filter(props.inView);
     const listed =
       shown.length > 0 ||
-      (stage === "working" && props.pending > 0) ||
-      (stage === "settled" && props.olderSettled > 0);
-    return listed ? (
-      props.renderList(shown, stage === "working")
+      (stage === "awake" && props.pending > 0) ||
+      (stage === "asleep" && props.olderSettled > 0);
+    if (!listed) return <EmptyTab words={EMPTY_WORDS[stage]} />;
+    return stage === "awake" ? (
+      <CellStates value={states}>{props.renderList(shown, true)}</CellStates>
     ) : (
-      <EmptyTab words={EMPTY[stage]} />
+      props.renderList(shown, false)
     );
-  };
-  const greet = {
-    input: counts.needs,
-    working: counts.working,
-    active: counts.needs + counts.working + counts.landed,
-    asleep: counts.settled,
   };
   const home = {
     tab,
     options: SEGMENTS.map((segment) => ({ ...segment, count: counts[segment.id] })),
-    counts: greet,
-    night: tab === "settled",
+    night: tab === "asleep",
     choose: (id: string) => {
       stages.show(id as LineStage);
       segments.choose(id as LineStage);
@@ -235,7 +245,7 @@ function NeedsYou(props: {
             <AppText className="text-center text-base text-foreground">
               {props.waiting > 0 && props.narrowedTo !== null
                 ? `Nothing ${props.narrowedTo} needs you.`
-                : "Nothing needs you."}
+                : EMPTY_WORDS.needs}
             </AppText>
             {props.waiting === 0 ? (
               <AppText className="text-center text-sm text-foreground-muted">

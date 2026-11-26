@@ -1,39 +1,31 @@
 /**
  * Upstream's thread row, in the parts the column's rows draw (`rail/Cells.tsx`): a chat's age,
- * its project, its pull request badge and the thread's hover card. The layout is ours; each part
+ * its project's mark and the thread's hover card. The layout is ours; each part
  * is the sidebar's own, so a sync brings its changes.
  */
 import { scopeProjectRef } from "@t3tools/client-runtime/environment";
 import type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/shell";
+import { snoozeWakeLabel } from "@t3tools/client-runtime/state/thread-settled";
 import {
   resolveSettledThreadTimestamp,
   resolveThreadActivityTimestamp,
 } from "@t3tools/client-runtime/state/thread-sort";
-import { resolveThreadCurrentPullRequestLink } from "@t3tools/client-runtime/thread-pull-requests";
 import { GitBranchIcon } from "lucide-react";
-import type { MouseEvent, ReactElement, ReactNode } from "react";
+import type { ReactElement, ReactNode } from "react";
 
 import { ProjectFavicon } from "../../components/ProjectFavicon";
-import { useRightPanelStore } from "../../rightPanelStore";
 import { ThreadHoverCard, ThreadHoverCardPopup } from "../../components/ThreadHoverCard";
-import {
-  prStatusIndicator,
-  resolveThreadPullRequestBadge,
-  ThreadPullRequestBadgeControl,
-  ThreadPullRequestsMiniList,
-  useLinkedThreadPullRequest,
-} from "../../components/ThreadStatusIndicators";
-import { InlineButton } from "../../components/ui/button";
+import { ThreadPullRequestsMiniList } from "../../components/ThreadStatusIndicators";
 import { MiddleTruncate } from "../../components/ui/middle-truncate";
 import { Tooltip, TooltipTrigger } from "../../components/ui/tooltip";
 import { useNowMinute } from "../../hooks/useNowMinute";
 import { useSupportsMultiplePullRequests } from "../../hooks/useSupportsMultiplePullRequests";
-import { useOpenPrLink } from "../../lib/openPullRequestLink";
 import { useProject, useQuietThreadShell } from "../../state/entities";
 import { formatRelativeTimeLabel } from "../../timestampFormat";
 import type { CellRef } from "../tabs/layout";
+import { useCellDriver } from "./providers";
 import { threadRefOf } from "./routes";
-import { isSettingUp } from "./status";
+import { isSettingUp, useCellUnseen } from "./status";
 
 export type CellShell = EnvironmentThreadShell;
 
@@ -41,10 +33,23 @@ export function useCellShell(cell: CellRef): CellShell | null {
   return useQuietThreadShell(threadRefOf(cell));
 }
 
+/** What an awake row's light reads of its chat: its provider, and whether its last landing is unseen. */
+export function useCellLightFacts(cell: CellRef): {
+  readonly driver: string | null;
+  readonly unseen: boolean;
+} {
+  return { driver: useCellDriver(cell), unseen: useCellUnseen(cell) };
+}
+
 /** "now", "5m", "3h": an age as the sidebar's rows shorten upstream's label. */
 export function compactAge(at: string, nowMs: number): string {
   const label = formatRelativeTimeLabel(at, nowMs);
   return label === "just now" ? "now" : label.endsWith(" ago") ? label.slice(0, -4) : label;
+}
+
+/** How long until a timed sleep wakes, as upstream's snoozed rows say it: "40m", "3h", "2d". */
+export function wakeIn(at: string, nowMs: number): string {
+  return snoozeWakeLabel(at, { now: new Date(nowMs).toISOString() });
 }
 
 /** What a Cell's age counts from: its latest message or reply, as the sidebar's, or its settle. */
@@ -68,62 +73,14 @@ function useShellProject(shell: CellShell) {
   return useProject(scopeProjectRef(shell.environmentId, shell.projectId));
 }
 
-/** The project's icon and name, or upstream's words for a chat without one. */
-export function CellProject(props: { shell: CellShell }) {
+/** The project's icon alone, as a one-line row marks it; none for a chat without a project. */
+export function CellProjectMark(props: { shell: CellShell }) {
   const project = useShellProject(props.shell);
-  if (project === null) return null;
-  if (project.isScratch) return <span data-cells-row-project="">No project</span>;
+  if (project === null || project.isScratch) return null;
   return (
     <span data-cells-row-project="">
       <ProjectFavicon project={project} className="size-3.5 shrink-0" />
-      <span>{project.title}</span>
     </span>
-  );
-}
-
-/**
- * The chat's pull request as the sidebar shows it: its state's icon and colour, and its number.
- * It opens beside the chat, and a stack opens the chat's list of them.
- */
-export function CellPullRequest(props: { shell: CellShell; onOpenCell: () => void }) {
-  const { shell, onOpenCell } = props;
-  const threadRef = threadRefOf({
-    environmentId: shell.environmentId,
-    threadId: shell.id,
-    draftId: null,
-  });
-  const linked = useLinkedThreadPullRequest(
-    shell.environmentId,
-    shell.linkedPullRequest,
-    true,
-    shell.pullRequests,
-    shell.branchPullRequest,
-  );
-  const multiple = useSupportsMultiplePullRequests(shell.environmentId);
-  const openPrLink = useOpenPrLink(threadRef);
-  const pr = linked?.pr ?? null;
-  const current = multiple ? resolveThreadCurrentPullRequestLink(shell.pullRequests) : null;
-  const badge = multiple ? resolveThreadPullRequestBadge(shell.pullRequests) : null;
-  if (badge?.kind !== "stack" && pr === null && current === null) return null;
-  const openPullRequest = (event: MouseEvent<HTMLElement>, targetUrl?: string) => {
-    const url = targetUrl ?? pr?.url ?? current?.url;
-    if (url === undefined) return;
-    if (openPrLink(event, url, threadRef)) onOpenCell();
-  };
-  return (
-    <ThreadPullRequestBadgeControl
-      render={<InlineButton />}
-      badge={badge}
-      pullRequests={shell.pullRequests}
-      number={pr?.number ?? current?.number}
-      url={pr?.url ?? current?.url}
-      status={prStatusIndicator(pr, linked?.sourceControlProvider)}
-      onOpenList={() => {
-        useRightPanelStore.getState().open(threadRef, "pull-requests");
-        onOpenCell();
-      }}
-      onOpenPullRequest={openPullRequest}
-    />
   );
 }
 

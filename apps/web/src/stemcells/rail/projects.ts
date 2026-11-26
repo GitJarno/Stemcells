@@ -82,12 +82,12 @@ export function railTiles(
   });
 }
 
-/** "2 need you · 1 flying · 3 done", leaving out what is none. */
+/** "2 need you · 1 flying · 3 landed", leaving out what is none. */
 export function tileSummary(tile: Pick<RailTile, "needsYou" | "working" | "done">): string {
   return [
     tile.needsYou > 0 ? `${tile.needsYou} need${tile.needsYou === 1 ? "s" : ""} you` : null,
     tile.working > 0 ? `${tile.working} flying` : null,
-    tile.done > 0 ? `${tile.done} done` : null,
+    tile.done > 0 ? `${tile.done} landed` : null,
   ]
     .filter((part) => part !== null)
     .join(" · ");

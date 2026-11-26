@@ -58,16 +58,29 @@ Aski and its copies (`aski/`), and the Cell forming (`cell/`).
 
 ## The phone's stages
 
-A sideways swipe over the stages turns the home's stage, as two fingers turn the
-Mac's column: left to the next, right to the one before
-(`home/state.ts`, `stageAfterSwipe`).
+The stage pill stands at the foot of the home, above Search Cells, where a
+thumb rests, as the Mac keeps its stages at its column's foot
+(`home/StagePill.tsx`). A tap on a segment turns the stage, and so does a drag
+along the pill. It rides the keyboard with the search field, and leaves while
+a search is typed, when the list is the search's.
 
-- **Under the finger** the list is drawn along a little, less past either
-  end, where nothing turns.
-- **Let go** past 48 points, or on a flick, the stage turns as a tap on its
-  segment turns it, with one selection tick. Short of that, the list
-  settles back on `settle`.
-- **Reduce Motion**: the list isn't drawn along; the turn is still.
+- **Asleep** opens on the night sky and its moon, the top of its list, so it
+  scrolls away with the Cells under it; nightfall and dawn play as the stage
+  turns (`home/nightfall.ts`).
+
+## The column's rows
+
+A Cell's row stands where the person last brought it forward and moves only
+when they act (`stemcells/tasks/awake-asleep.md`).
+
+- **Its light** is a glow from the Cell in its provider's tone, Input's amber
+  while it asks, faint once its landing is seen. A flying Cell's band crosses
+  its row on the composer's beat (`glow-pass`, `glow-rest`), stepped beside
+  another app and held off screen. A landing lets the pass under way finish,
+  and the glow stays.
+- **Sleep and Wake** fold the row away on `leave` as its light fades, and the
+  Cell hops into the other stage's count on `travel` (`rail/Hops.tsx`).
+- **Reduce Motion**: no band, and the row fades without folding.
 
 ## Aski's button
 

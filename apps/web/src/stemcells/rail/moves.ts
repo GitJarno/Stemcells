@@ -1,12 +1,11 @@
 /**
  * Which Cells moved along the column's line between two readings: each the
- * person moved hops from where it stood into its new stage's count. Pinned
- * is a bookmark, not a stage, so it takes no hops.
+ * person moved hops from where it stood into its new stage's count.
  */
 import type { CellStanding } from "../needs/wire";
 import type { ColumnStage } from "./column";
 
-export type LineStage = Exclude<ColumnStage, "pinned">;
+export type LineStage = ColumnStage;
 
 /** The stage each Cell in the column stands at, by its thread. */
 export type Standings = ReadonlyMap<string, LineStage>;
@@ -19,11 +18,11 @@ export interface Hop {
 
 const STAGE: Record<CellStanding["stage"], LineStage> = {
   "needs-you": "needs",
-  working: "working",
-  done: "landed",
+  working: "awake",
+  done: "awake",
 };
 
-/** Where each Cell stands: its stage from the needs stream, else Settled when it is on that shelf. */
+/** Where each Cell stands: its stage from the needs stream, else Asleep when it is on that shelf. */
 export function standingsOf(
   cells: ReadonlyArray<CellStanding>,
   settled: ReadonlyArray<{ readonly threadId: string }>,
@@ -31,7 +30,7 @@ export function standingsOf(
   const standings = new Map<string, LineStage>();
   for (const cell of cells) standings.set(cell.threadId, STAGE[cell.stage]);
   for (const cell of settled) {
-    if (!standings.has(cell.threadId)) standings.set(cell.threadId, "settled");
+    if (!standings.has(cell.threadId)) standings.set(cell.threadId, "asleep");
   }
   return standings;
 }

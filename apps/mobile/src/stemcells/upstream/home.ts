@@ -1,16 +1,25 @@
 // What the phone's home takes from upstream's: its tabs, how it opens a chat and comes back,
 // which column it stands in, whether it stands in the workspace, the top inset its list rests
-// under, the header's items, the machines and projects its list is narrowed to, how many older
-// settled chats the servers keep, and where the phone keeps its picks.
+// under, where its search stands, the header's items, the machines and projects its list is
+// narrowed to, how many older settled chats the servers keep, and where the phone keeps its picks.
 
 import { useAtomValue } from "@effect/atom-react";
 import { Directory, File, Paths } from "expo-file-system";
 import { Keyboard } from "react-native";
+import { useKeyboardState } from "react-native-keyboard-controller";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAdaptiveWorkspaceLayout } from "../../features/layout/adaptive-workspace-context";
 import { useWorkspaceTabs } from "../../features/layout/workspace/WorkspaceTabsContext";
 import { useSelectWorkspaceDetail } from "../../features/layout/workspace/useSelectWorkspaceDetail";
+import { workspaceSearchBottomClearance } from "../../features/layout/workspace/workspace-tabs-state";
 import { writeFileAtomically } from "../../lib/atomic-file";
+import {
+  useDeviceType,
+  useDuoBottomBarInset,
+  useNativeColumnLayoutMetrics,
+  useNativeLayoutMetrics,
+} from "../../native/native-layout-metrics";
 import { threadListEnvironmentsAtom } from "../../state/presentation";
 
 export type { EnvironmentMachineKind } from "@t3tools/contracts";
@@ -77,4 +86,53 @@ export function readKept(name: string): string | null {
 /** Writes a small file of ours whole, so a crash mid-write leaves the last one. */
 export function writeKept(name: string, text: string): Promise<void> {
   return writeFileAtomically(keptFile(name), text).catch(() => undefined);
+}
+
+/**
+ * The home's foot on iOS. `notice` is where T3's undo notice stands (`features/home/
+ * ThreadUndoNotice.tsx`, its placement copied): over the search, riding the keyboard, or level with
+ * the folded Duo's tab pill while its search rests. `pill` is the same, but over that tab pill.
+ */
+export function useOverSearch(): {
+  readonly notice: number;
+  readonly pill: number;
+  readonly left: number;
+  readonly right: number;
+} {
+  const insets = useSafeAreaInsets();
+  const columnMetrics = useNativeColumnLayoutMetrics();
+  const rootMetrics = useNativeLayoutMetrics();
+  const workspace = useWorkspaceTabs();
+  const deviceType = useDeviceType();
+  const keyboardHeight = useKeyboardState((keyboard) => keyboard.height);
+  const sides = deviceType === "phone" ? { left: 29, right: 23 } : { left: 20, right: 20 };
+  // The Duo's native tab pill extends above the 48-point toolbar reservation.
+  const padding =
+    useDuoBottomBarInset() === undefined
+      ? deviceType === "phone" && keyboardHeight === 0
+        ? 32
+        : 16
+      : 8;
+  const foldedResting =
+    rootMetrics?.hasHinge &&
+    rootMetrics.horizontalSizeClass === "compact" &&
+    workspace?.state.tabs.threads.searchMode === "resting";
+  const overBar =
+    rootMetrics?.hasHinge === true
+      ? workspaceSearchBottomClearance({
+          bottomInset: rootMetrics.safeArea.bottom,
+          bottomBarInset: rootMetrics.bottomBarInset,
+          keyboardHeight,
+        }) - 8
+      : 0;
+  const notice = foldedResting
+    ? Math.max(rootMetrics.bottomBarInset ?? rootMetrics.safeArea.bottom + 8, keyboardHeight + 8)
+    : rootMetrics?.hasHinge && rootMetrics.verticalBarEdge !== "none"
+      ? overBar
+      : Math.max(
+          insets.bottom,
+          columnMetrics?.safeArea.bottom ?? 0,
+          (workspace?.bottomClearance ?? 0) - padding,
+        ) + 8;
+  return { notice, pill: foldedResting ? overBar : notice, ...sides };
 }

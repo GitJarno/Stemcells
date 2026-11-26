@@ -10,13 +10,13 @@ import {
   useCellBuds,
   useCellCalls,
   useCellDeep,
+  useCellLandedAt,
   useCellLanding,
-  useCellRest,
   useCellSubagentsAway,
 } from "../upstream/cellWork";
 import { useCellLineDown } from "../upstream/lineDown";
 import { useCellDriver } from "../upstream/providers";
-import { useCellStatus } from "../upstream/status";
+import { useCellStatus, useCellWakesAt } from "../upstream/status";
 import { activityOfStatus, moodAt, moodTurnsAt, thinkingQuietly } from "./cellMood";
 import type { CellRef } from "./layout";
 import { useRosterLook } from "./roster";
@@ -42,13 +42,14 @@ export function CellMark(props: { cell: CellRef | null; points?: number; stage?:
   const activity = shown ?? activityOfStatus(status, away);
   const deep = useCellDeep(props.cell, working, thinkingQuietly(raw, shown));
   const buds = useCellBuds(props.cell, working);
-  const { landedAt, coldAt } = useCellRest(props.cell, provider);
+  const landedAt = useCellLandedAt(props.cell);
+  const wakesAt = useCellWakesAt(props.cell);
   const { strength, flexes, diff } = useCellLanding(props.cell);
   const look = useRosterLook(props.cell?.threadId);
   const forming = useForming(props.stage ? props.cell?.threadId : undefined);
   const [now, setNow] = useState(Date.now);
-  const turnsAt = moodTurnsAt(status, landedAt, coldAt, now);
-  const mood = moodAt(status, landedAt, coldAt, now, useCellLineDown(props.cell));
+  const turnsAt = moodTurnsAt(status, landedAt, now, wakesAt);
+  const mood = moodAt(status, landedAt, now, useCellLineDown(props.cell), wakesAt);
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Rerender when the mood next turns; clear the timer on change.
   useEffect(() => {
     if (turnsAt === undefined) return;

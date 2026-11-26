@@ -520,9 +520,9 @@ library's dependency (above); the rest are substitutes:
   Duo's columns (`edge/headerEdge.ts`), and a scroll the code makes may reach the
   list's rest under the header (React Native stops one at the scroll
   view's own inset, 0 under UIKit's `automatic` one, which left Aski under
-  the header). Every list on the home's stages takes T3's `automatic`
-  inset there, so the one header over them stands at minus the front
-  list's offset (`home/StagePages.tsx`). Where we take the band away, the marker's
+  the header). Every list on the home's stages takes one inset by hand,
+  as T3's list does, rests under it, and scrolls clear of the stages'
+  pill at its foot (`home/StagePages.tsx`). Where we take the band away, the marker's
   substitute fades the edge into the ground instead (`edge/Scrim.tsx`),
   and a substitute of `ThreadComposer` fades the feed under the composer.
 - **Cell words.** A substitute of `Dialog` (iOS; Android's stays T3's)
@@ -538,8 +538,9 @@ library's dependency (above); the rest are substitutes:
   phone-line.md`); a machine that hasn't answered, or has no line, stands
   its Cells where their records do (`stemcells/tasks/phone-one-home.md`);
   everything the list does stays T3's. Each segment is a list of its own, all
-  kept mounted under one header that never mounts again, so UIKit's segment
-  slides whole and a switch only shows a list (`home/StagePages.tsx`); each
+  kept mounted under one pill of the stages at the home's foot, over its
+  search, so UIKit's segment slides whole and a switch only shows a list
+  (`home/StagePages.tsx`, `home/StagePill.tsx`); each
   opens at its top: the list is handed a workspace whose Threads offset stays
   0, as T3's one offset per workspace tab opened each segment where another
   was scrolled. In the iOS workspace the header's picks narrow it,
@@ -547,27 +548,28 @@ library's dependency (above); the rest are substitutes:
   and T3's own single pick is handed to its list unset. Input is the asks themselves, sent as T3's own
   thread commands (`upstream/needs.ts`, which takes the web's
   `proposedPlan.ts` for a plan's build), and an answer's undo line stands
-  in T3's notice, one at a time. The list's header (`ThreadListFilters`,
-  substituted) keeps the room Aski, its line and the tabs stand in over the
-  list, and takes the taps on Aski and its line; on iOS T3's filter chips leave it for the workspace
+  in T3's notice, one at a time; a substitute of `ThreadUndoNotice` stands
+  T3's notice over the pill. The list's header (`ThreadListFilters`,
+  substituted) is its stage's top, Asleep's night sky, which scrolls away
+  with it; on iOS T3's filter chips leave it for the workspace
   header's top right, where the seam in `WorkspaceToolbar.tsx` hands
   its trailing items a projects menu and, with two machines or more, a
   machines menu, each staying open while you tick (`home/scope.tsx`). Where the list has no header (Android, outside the
   workspace) and while searching, the home is T3's own. Two more substitutes: the row tokens make cards on the
   phone's own screen (`thread-list-v2-row-appearance.ts`; Android's file
   and the iPad's sidebar stay T3's), no row recedes (`thread-row-emphasis.ts`: T3 fades a
-  working Cell's card to 55%, where Flying is a segment of its own and the card's light says it
-  flies), and on the home's tabs every shelf stays open,
-  Settled's only on its own tab (`use-thread-list-v2-shelf-preferences.ts`:
-  open, it reads the older settled Cells page by page, and elsewhere showed
-  "Loading" and grew the home's Cells), and, at the row's seam, draws
-  no header: the tab is the shelf. Settled counts the older settled Cells
+  working Cell's card to 55%, where an awake row's light says it flies), and on the home's tabs
+  every shelf stays open, the settled one only on Asleep, and T3's arranging by hand stays off
+  (`use-thread-list-v2-shelf-preferences.ts`: open, the settled shelf reads the older settled
+  Cells page by page, and elsewhere showed "Loading" and grew the home's Cells), and, at the
+  row's seam, draws no header: the tab is the shelf. Asleep counts the older settled Cells
   the servers keep back with those the phone holds (T3's own count,
   `useOlderSettledShelf`), and reads them a page at a time as the person
   scrolls near its end, where T3's list has a Show more button (a seam in
-  `HomeScreen.tsx`, `home/SettledPages.tsx`). One of `useThreadListV2.ts` keeps Flying in T3's
-  one order, so a Cell between two turns holds its place (`stemcells/tasks/home-holds-still-3.md`;
-  `useThreadListV2.contract.test.ts` pins that order). One of `workspace-connection-status.ts`
+  `HomeScreen.tsx`, `home/SettledPages.tsx`). One of `useThreadListV2.ts` stands each tab in its
+  own order (`upstream/listOrder.ts`): Awake's pins, then the latest the person brought forward,
+  so a landing, an ask or a flight moves no row (`stemcells/tasks/awake-asleep.md`;
+  `useThreadListV2.contract.test.ts` pins it), and Asleep's latest asleep first. One of `workspace-connection-status.ts`
   has the header say Cells while the phone loads or syncs them; upstream's
   own test of a module still gets upstream's (`substitutes.cjs`). The seam in the row puts the
   Cell beside its card's content and keeps the card to two lines, its

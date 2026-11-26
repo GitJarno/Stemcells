@@ -22,7 +22,7 @@ const WORD: Readonly<Record<Shown, string>> = {
   working: "Flying",
   "needs-you": "Input",
   done: "Landed",
-  settled: "Settled",
+  settled: "Asleep",
 };
 
 export function CellToken(props: {

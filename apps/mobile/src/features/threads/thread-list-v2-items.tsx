@@ -2,12 +2,12 @@ import { inDoneColour, inStageColours } from "../../stemcells/home/stages";
 import * as Dialog from "../../components/ui/Dialog";
 import { FailureWords } from "../../stemcells/disk/FailureWords";
 import {
-  cardLines,
   CellBesideRow,
   SlimRowCell,
   SlimRowProject,
   swipeEdgeOf,
   swipeHint,
+  useCardLines,
   useSaysNothing,
   useShelfHeadersShown,
 } from "../../stemcells/home/RowCell";
@@ -1387,7 +1387,7 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
     onOpenPullRequests: handleOpenPullRequests,
     project: props.project,
   };
-  const card = cardLines(
+  const card = useCardLines(
     variant === "card" && !sidebarPane,
     Boolean((status === "failed" || status === "limited") && thread.runtime?.lastError),
     marks,

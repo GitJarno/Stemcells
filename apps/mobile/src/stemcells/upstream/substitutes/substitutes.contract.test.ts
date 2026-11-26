@@ -280,6 +280,19 @@ const CASES: Readonly<Record<string, Case>> = {
       ],
     },
   },
+  "apps/mobile/src/features/home/ThreadUndoNotice.tsx": {
+    exports: view("apps/mobile/src/features/home/ThreadUndoNotice.tsx", "ThreadUndoNotice.tsx"),
+    importers: {
+      "apps/mobile/src/features/home/HomeRouteScreen.tsx": [
+        "./ThreadUndoNotice",
+        ["ThreadUndoNotice"],
+      ],
+      "apps/mobile/src/features/threads/ThreadNavigationSidebar.tsx": [
+        "../home/ThreadUndoNotice",
+        ["ThreadUndoNotice"],
+      ],
+    },
+  },
   "apps/mobile/src/features/home/workspace-connection-status.ts": {
     exports: view(
       "apps/mobile/src/features/home/workspace-connection-status.ts",
@@ -700,6 +713,9 @@ describe("the phone's substitutes for upstream modules", () => {
     >();
     expectTypeOf<typeof import("./ThreadListFilters")>().toEqualTypeOf<
       typeof import("../../../features/home/ThreadListFilters")
+    >();
+    expectTypeOf<typeof import("./ThreadUndoNotice")>().toEqualTypeOf<
+      typeof import("../../../features/home/ThreadUndoNotice")
     >();
     expectTypeOf<typeof import("./workspace-connection-status")>().toEqualTypeOf<
       typeof import("../../../features/home/workspace-connection-status")

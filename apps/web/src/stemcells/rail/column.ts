@@ -10,8 +10,8 @@ import { windowsBridge } from "../windows/bridge";
 
 export type ColumnWidth = "cells" | "rail" | "list";
 
-/** A stage of the line every Cell travels (stemcells/tasks/left-column.md), or the pins beside it. */
-export type ColumnStage = "needs" | "working" | "landed" | "settled" | "pinned";
+/** A stage of the line (stemcells/tasks/awake-asleep.md): what needs you, Cells awake, Cells asleep. */
+export type ColumnStage = "needs" | "awake" | "asleep";
 
 const COLUMN_STORAGE_KEY = "stemcells.leftColumn";
 const STAGE_STORAGE_KEY = "stemcells.leftColumn.stage";
@@ -32,17 +32,21 @@ export function startingWidth(stored: string | null, leads: boolean): ColumnWidt
 
 const leadsAtStart = windowsBridge()?.boot.lead ?? true;
 
-/** The stages in the line's order, the pins last: the order a swipe goes through them. */
-export const COLUMN_STAGES: ReadonlyArray<ColumnStage> = [
-  "needs",
-  "working",
-  "landed",
-  "settled",
-  "pinned",
-];
+/** The stages in the line's order: the order a swipe goes through them. */
+export const COLUMN_STAGES: ReadonlyArray<ColumnStage> = ["needs", "awake", "asleep"];
+
+/** A stage remembered from the four-stage line, Pinned beside it, reads as its stage now. */
+const WAS: Readonly<Record<string, ColumnStage>> = {
+  working: "awake",
+  landed: "awake",
+  pinned: "awake",
+  settled: "asleep",
+};
 
 export function parseColumnStage(raw: string | null): ColumnStage {
-  return COLUMN_STAGES.find((stage) => stage === raw) ?? "needs";
+  return (
+    COLUMN_STAGES.find((stage) => stage === raw) ?? (raw === null ? undefined : WAS[raw]) ?? "needs"
+  );
 }
 
 function readStored(key: string): string | null {

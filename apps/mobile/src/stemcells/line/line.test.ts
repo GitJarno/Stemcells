@@ -18,20 +18,25 @@ const cell = (id: string, patch: { environmentId?: string; projectId?: string } 
   pendingSubagentRequest: null,
 });
 
-const standing = (threadId: string, stage: CellStanding["stage"]): CellStanding => ({
+const standing = (
+  threadId: string,
+  stage: CellStanding["stage"],
+  since: string | null = null,
+): CellStanding => ({
   threadId,
   projectId: "shop",
   title: threadId,
   stage,
   line: null,
   createdAt: NOW,
+  since,
 });
 
 const need = (threadId: string, since: string, projectId = "shop"): Need =>
   ({ key: `${threadId}:ask`, number: 1, threadId, projectId, since }) as Need;
 
-/** Where a Cell's own record stands it; these tests' machines all answered. */
-const byRecord = () => "landed" as const;
+/** How a Cell's own record has it; these tests' machines all answered. */
+const byRecord = () => ({ stage: "done", since: null }) as const;
 
 const read = (needs: Need[], cells: CellStanding[]): Reading => ({
   state: "read",
@@ -39,17 +44,17 @@ const read = (needs: Need[], cells: CellStanding[]): Reading => ({
 });
 
 describe("the phone's home on the Cells' line", () => {
-  it("stands each Cell where its machine says, settled and snoozed ones where T3's shells say", () => {
+  it("stands each Cell where its machine says, an asking one on Awake, sleeping ones where T3's shells say", () => {
     const settled = { ...cell("done-with"), settledOverride: "settled" as const };
     const snoozed = { ...cell("later"), snoozedUntil: "2026-10-28T09:00:00.000Z", snoozedAt: NOW };
     const readings = new Map([
       [
         "mac",
         read(
-          [need("asking", NOW)],
+          [need("asking", "2026-10-27T11:50:00.000Z")],
           [
             standing("asking", "needs-you"),
-            standing("busy", "working"),
+            standing("busy", "working", "2026-10-27T11:00:00.000Z"),
             standing("finished", "done"),
             // A stale reading still has it at work; its shell says it settled since.
             standing("done-with", "working"),
@@ -66,10 +71,17 @@ describe("the phone's home on the Cells' line", () => {
       cell("never-ran"),
     ];
     const line = lineOf(cells, readings, NOW, new Set(), byRecord);
-    expect(line.working.map((each) => each.id)).toEqual(["busy"]);
-    expect(line.landed.map((each) => each.id)).toEqual(["finished"]);
-    expect(line.settled.map((each) => each.id)).toEqual(["done-with"]);
-    expect(line.snoozed.map((each) => each.id)).toEqual(["later"]);
+    expect(line.awake.map((each) => each.id)).toEqual(["asking", "busy", "finished"]);
+    expect(line.asleep.map((each) => each.id)).toEqual(["done-with", "later"]);
+    // How long it's been like this: an ask's since its oldest ask, a flight since it began.
+    expect(line.states.get("mac:asking")).toEqual({
+      stage: "needs-you",
+      since: "2026-10-27T11:50:00.000Z",
+    });
+    expect(line.states.get("mac:busy")).toEqual({
+      stage: "working",
+      since: "2026-10-27T11:00:00.000Z",
+    });
   });
 
   it("stands a machine's Cells by their own records until it answers, so none drops off", () => {
@@ -79,7 +91,7 @@ describe("the phone's home on the Cells' line", () => {
       ["mini", { state: "unreachable", list: null }],
       ["t3", { state: "none" }],
     ]);
-    const own = { "m-asks": "needs", "m-works": "working", "m-done": "landed" } as const;
+    const own = { "m-asks": "needs-you", "m-works": "working", "m-done": "done" } as const;
     const line = lineOf(
       [
         cell("busy"),
@@ -89,10 +101,19 @@ describe("the phone's home on the Cells' line", () => {
       readings,
       NOW,
       new Set(),
-      (each) => (each.id === "t-works" ? "working" : own[each.id as keyof typeof own]),
+      (each) => ({
+        stage: each.id === "t-works" ? "working" : own[each.id as keyof typeof own],
+        since: null,
+      }),
     );
-    expect(line.working.map((each) => each.id)).toEqual(["busy", "m-works", "t-works"]);
-    expect(line.landed.map((each) => each.id)).toEqual(["m-done"]);
+    expect(line.awake.map((each) => each.id)).toEqual([
+      "busy",
+      "m-asks",
+      "m-works",
+      "m-done",
+      "t-works",
+    ]);
+    expect(line.states.get("mini:m-done")?.stage).toBe("done");
     expect(line.unread.map((each) => each.id)).toEqual(["m-asks"]);
     expect(countsOf(line, () => true).needs).toBe(1);
   });
@@ -121,7 +142,7 @@ describe("the phone's home on the Cells' line", () => {
     const cells = [cell("w1", { projectId: "shop" }), cell("w2", { projectId: "blog" })];
     const line = lineOf(cells, readings, NOW, new Set(), byRecord);
     const onlyShop = (place: { projectId: string }) => place.projectId === "shop";
-    expect(countsOf(line, onlyShop)).toEqual({ needs: 2, working: 1, landed: 0, settled: 0 });
+    expect(countsOf(line, onlyShop)).toEqual({ needs: 2, awake: 1, asleep: 0 });
   });
 
   it("says where the asks the pickers leave out are, as the Mac's column words it", () => {
@@ -146,14 +167,12 @@ describe("the phone's home on the Cells' line", () => {
     expect(elsewhereWords(elsewhereOf(asks, () => true, [shop, blog]))).toBeNull();
   });
 
-  it("opens on Input when anything waits, else where Cells are", () => {
-    expect(opensOn({ needs: 1, working: 3, landed: 2, settled: 0 })).toBe("needs");
-    expect(opensOn({ needs: 0, working: 3, landed: 2, settled: 0 })).toBe("working");
-    expect(opensOn({ needs: 0, working: 0, landed: 2, settled: 9 })).toBe("landed");
-    expect(opensOn({ needs: 0, working: 0, landed: 0, settled: 9 })).toBe("working");
+  it("opens on Input when anything waits, else on Awake", () => {
+    expect(opensOn({ needs: 1, awake: 3, asleep: 0 })).toBe("needs");
+    expect(opensOn({ needs: 0, awake: 0, asleep: 9 })).toBe("awake");
   });
 
-  it("reads Settled's next page only while Cells are left and none is on its way", () => {
+  it("reads Asleep's next page only while Cells are left and none is on its way", () => {
     expect(readsNextPage({ hidden: 408, loading: false, failed: false })).toBe(true);
     expect(readsNextPage({ hidden: 0, loading: false, failed: false })).toBe(false);
     expect(readsNextPage({ hidden: 408, loading: true, failed: false })).toBe(false);

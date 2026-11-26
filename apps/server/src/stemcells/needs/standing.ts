@@ -1,6 +1,6 @@
 /**
  * The room in words, for Aski (`stemcells_standing`): what needs the person under its cards'
- * numbers, then the Cells at work and the done ones not yet settled, every Cell linked. One
+ * numbers, then the Cells at work and the landed ones still awake, every Cell linked. One
  * read answers "what needs me?" instead of the persona listing each project's chats
  * (stemcells/tasks/aski-forward.md, Move 1). Pure.
  */
@@ -148,7 +148,7 @@ export function standingOf(list: NeedsList, projectTitles: ReadonlyMap<string, s
     }
   }
   if (done.length > 0) {
-    lines.push("", `Done, not settled (${done.length}):`);
+    lines.push("", `Landed, awake (${done.length}):`);
     for (const cell of done) {
       lines.push(`${link(cell.title, cell.threadId)} · ${project(cell.projectId)}${landed(cell)}`);
     }

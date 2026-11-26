@@ -1,6 +1,6 @@
 /**
  * What a chat's Cell acts out from upstream's thread: the run's tool calls, its latest news and
- * landing, when its cache goes cold, how long it worked alone, and its lines. Turn items are
+ * landing, how long it worked alone, and its lines. Turn items are
  * read only while the chat works, its detail once the server lists the thread. In a browser
  * this keeps a working chat live while its Cell is mounted (desktop: `RunningThreadKeepAlive`).
  */
@@ -12,14 +12,12 @@ import type {
   OrchestrationV2ProjectedTurnItem,
   OrchestrationV2Run,
   OrchestrationV2RuntimeRequest,
-  OrchestrationV2ThreadProjection,
   OrchestrationV2TurnItem,
 } from "@t3tools/contracts";
 import type { ThreadStructureVisibleTurnItem } from "@t3tools/client-runtime/state/shell";
 import { DateTime } from "effect";
 import { useEffect, useState } from "react";
 
-import { latestProviderTurnTokenUsage } from "@t3tools/client-runtime/state/context-window";
 import { appAtomRegistry } from "../../rpc/atomRegistry";
 import {
   useQuietThreadShell,
@@ -233,81 +231,14 @@ export function useCellDeep(cell: CellRef | null, working: boolean, quiet: boole
   return working && quiet && silence !== null && !silence.compacting;
 }
 
-/**
- * How long a Codex chat's prompt cache stays warm after its turn: OpenAI's
- * documented floor. Caches measured live longer, so this errs warm.
- */
-export const CODEX_CACHE_MS = 30 * 60_000;
-
-/**
- * When run `runId`'s prompt cache goes cold: the expiry upstream's Claude adapter stamps on the
- * turn's usage (an hour or five minutes from the last request's start, by its tier). Undefined
- * when the usage names none, as for a fully cached request; null until the detail saw it land.
- */
-export function coldAtOf(
-  projection: OrchestrationV2ThreadProjection,
-  runId: string,
-): number | undefined | null {
-  if (!projection.runs.some((run) => run.id === runId && run.status === "completed")) return null;
-  const providerThread = projection.providerThreads.find(
-    (candidate) => candidate.id === projection.thread.activeProviderThreadId,
-  );
-  const expiresAt = latestProviderTurnTokenUsage(
-    projection.providerTurns,
-    projection,
-    providerThread,
-  )?.promptCacheExpiresAt;
-  const at = expiresAt === undefined ? Number.NaN : Date.parse(expiresAt);
-  return Number.isFinite(at) ? at : undefined;
-}
-
-/**
- * When a chat on `driver` whose turn landed at `landedAt` goes cold: Claude's
- * as read from its turn (`claude`), Codex's `CODEX_CACHE_MS` after the
- * landing. Any other provider makes no claim, so its Cell stays awake.
- */
-export function coldAtFor(
-  driver: string | null,
-  landedAt: number,
-  claude: number | undefined,
-): number | undefined {
-  switch (driver) {
-    case "claudeAgent":
-      return claude;
-    case "codex":
-      return landedAt + CODEX_CACHE_MS;
-    default:
-      return undefined;
-  }
-}
-
-/**
- * When the chat's last turn landed and its prompt cache goes cold, in epoch ms. `landedAt` is
- * null before a landing or while a run is on; `coldAt` is undefined when the Cell claims none
- * (`coldAtFor`). Claude's expiry is read from the thread's detail once per landing.
- */
-export function useCellRest(
-  cell: CellRef | null,
-  driver: string | null,
-): { readonly landedAt: number | null; readonly coldAt: number | undefined } {
-  const ref = cell ? threadRefOf(cell) : null;
-  const run = useQuietThreadShell(ref)?.latestRun;
+/** When the chat's last turn landed, in epoch ms: null before a landing or while a run is on. */
+export function useCellLandedAt(cell: CellRef | null): number | null {
+  const run = useQuietThreadShell(cell ? threadRefOf(cell) : null)?.latestRun;
   const parsed =
     run?.status === "completed" && run.completedAt !== null
       ? Date.parse(run.completedAt)
       : Number.NaN;
-  const landedAt = Number.isFinite(parsed) ? parsed : null;
-  const landing = landedAt === null || run == null ? null : `${cell?.threadId}|${run.runId}`;
-  const [read, setRead] = useState<{ landing: string; coldAt: number | undefined } | null>(null);
-  const reading = driver === "claudeAgent" && landing !== null && read?.landing !== landing;
-  const thread = useThreadProjection(reading ? ref : null);
-  if (reading && thread !== null && run != null) {
-    const coldAt = coldAtOf(thread.projection, run.runId);
-    if (coldAt !== null) setRead({ landing, coldAt });
-  }
-  if (landedAt === null) return { landedAt, coldAt: undefined };
-  const claude = read !== null && read.landing === landing ? read.coldAt : undefined;
-  return { landedAt, coldAt: coldAtFor(driver, landedAt, claude) };
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 /**

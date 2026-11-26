@@ -182,13 +182,13 @@ const goAhead = (recommended: boolean) =>
     { kind: "goAhead" },
     { consequence: `Sends “${PHRASES.goAhead}”`, recommended },
   );
-/** The id of "Nothing to do", which the card shows as its Settle. */
+/** The id of "Nothing to do", which the card shows as its Sleep. */
 export const NOTHING_TO_DO = "nothing-to-do";
 const nothingToDo = option(
   NOTHING_TO_DO,
   "Nothing to do",
   { kind: "nothingToDo" },
-  { consequence: "Settles the Cell. Nothing is sent." },
+  { consequence: "The Cell sleeps. Nothing is sent." },
 );
 const reply = (placeholder: string) =>
   option("reply", "Reply…", { kind: "reply" }, { words: placeholder });
@@ -437,7 +437,7 @@ export function cardOf(need: Need, now: number, disk: DiskFailure = null): Card 
                 "carry-on",
                 "Carry on at the reset",
                 { kind: "carryOn" },
-                { consequence: `Snoozes it until ${when}, then it goes on by itself.` },
+                { consequence: `It sleeps until ${when}, then goes on by itself.` },
               ),
             ],
           }

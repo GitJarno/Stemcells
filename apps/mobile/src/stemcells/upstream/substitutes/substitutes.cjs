@@ -35,19 +35,21 @@ const SUBSTITUTES = {
   // The home's header floats over what scrolls, no band behind it; what
   // scrolls fades into the ground under it.
   "apps/mobile/src/native/NativeScrollViewMarker.tsx": "NativeScrollViewMarker.tsx",
-  // The home: one tab of Cells at a time under Aski, in cards, each tab's
-  // shelves open.
+  // The home: one stage of Cells at a time, its pill at the foot, each
+  // stage's shelves open.
   "apps/mobile/src/features/home/HomeScreen.tsx": "HomeScreen.tsx",
   "apps/mobile/src/features/home/ThreadListFilters.tsx": "ThreadListFilters.tsx",
+  // T3's undo notice stands over the stages' pill, which stands over the home's search.
+  "apps/mobile/src/features/home/ThreadUndoNotice.tsx": "ThreadUndoNotice.tsx",
   // The header says Cells while the phone loads or syncs them.
   "apps/mobile/src/features/home/workspace-connection-status.ts": "workspace-connection-status.ts",
   "apps/mobile/src/features/threads/thread-list-v2-row-appearance.ts":
     "thread-list-v2-row-appearance.ts",
-  // A flying Cell's card reads at full contrast: its segment and its light say it flies.
+  // A flying Cell's row reads at full contrast: its light says it flies.
   "apps/mobile/src/features/threads/thread-row-emphasis.ts": "thread-row-emphasis.ts",
   "apps/mobile/src/features/threads/use-thread-list-v2-shelf-preferences.ts":
     "use-thread-list-v2-shelf-preferences.ts",
-  // On Flying a Cell keeps its place between two turns: T3's list parts them from the rest.
+  // Awake holds still and Asleep lists the latest asleep first: T3's list moves a Cell by its runs.
   "apps/mobile/src/features/threads/useThreadListV2.ts": "useThreadListV2.ts",
   // The usage chart is the Mac's, a smoothed line per agent over a faint fill,
   // and an agent whose Cells wear a body of their own is drawn in its colour.

@@ -19,6 +19,7 @@ import { UpdateDriver } from "./UpdateBanner";
 
 const spies = vi.hoisted(() => ({
   settle: vi.fn(),
+  wake: vi.fn(),
   open: vi.fn(),
   openChat: vi.fn(),
   download: vi.fn(async () => true),
@@ -120,6 +121,19 @@ const cells: CellStanding[] = [
   standing("thread-l2", "done", "Done: #309 merged"),
 ];
 
+/** When the person last brought each Cell forward: Awake's order, after the pin (`rail/awake.ts`). */
+const launches = new Map(
+  (
+    [
+      ["thread-a", "10:00"],
+      ["thread-b", "10:01"],
+      ["thread-w", "10:05"],
+      ["thread-l1", "10:02"],
+      ["thread-l2", "10:08"],
+    ] as const
+  ).map(([id, at]) => [id, { id, createdAt: `2026-10-26T${at}:00.000Z`, latestRun: null }]),
+);
+
 let stream:
   | { needs: Need[]; cells: CellStanding[]; conditions?: Condition[]; live: boolean }
   | undefined;
@@ -159,17 +173,29 @@ vi.mock("../upstream/needs", () => ({
 
 vi.mock("../upstream/column", () => ({
   useShelves: () => ({
-    settled: [
+    asleep: [
+      {
+        environmentId: "env",
+        threadId: "thread-z",
+        projectId: "project-shop",
+        title: "Nightly report",
+        since: "2026-10-26T09:00:00.000Z",
+        wakesAt: "2026-10-26T15:00:00.000Z",
+      },
       {
         environmentId: "env",
         threadId: "thread-s",
         projectId: "project-shop",
         title: "Bump dependencies",
+        since: "2026-10-25T09:00:00.000Z",
+        wakesAt: null,
       },
     ],
     pinned: [
+      { environmentId: "env", threadId: "thread-l1", projectId: "project-shop", title: "Chat l1" },
       { environmentId: "env", threadId: "thread-p", projectId: "project-harbor", title: "Roadmap" },
     ],
+    launches,
   }),
   // Harbor's older settled Cells, which the server keeps back.
   useSettledKeptBack: (shown: (projectId: string) => boolean) => (shown("project-harbor") ? 40 : 0),
@@ -177,21 +203,29 @@ vi.mock("../upstream/column", () => ({
 }));
 
 vi.mock("../aski/inFront", () => ({ useAskiRoomInFront: () => room.inFront }));
-vi.mock("../upstream/settle", () => ({ useSettleCell: () => spies.settle }));
+vi.mock("../upstream/settle", () => ({
+  useSettleCell: () => spies.settle,
+  useWakeCell: () => spies.wake,
+}));
 vi.mock("../upstream/thread", () => ({
   useCellPlace: () => ({ name: "shop", isProject: true }),
   useCellTitle: () => null,
 }));
 vi.mock("../tabs/CellMark", () => ({ CellMark: () => <span data-testid="sprite" /> }));
-// A row's parts read upstream's thread store; here each says a fixed age and project.
+// A row's parts read upstream's thread store; here each says a fixed age and project, and the
+// Cells are Claude's, the last to land not yet opened.
 vi.mock("../upstream/cellRow", async () => {
   const { cloneElement } = await import("react");
   return {
     useCellShell: (cell: { threadId: string }) => ({ id: cell.threadId }),
+    useCellLightFacts: (cell: { threadId: string }) => ({
+      driver: "claudeAgent",
+      unseen: cell.threadId === "thread-l2",
+    }),
     CellAge: () => "5m",
     compactAge: () => "12m",
-    CellProject: () => <span data-cells-row-project="">shop</span>,
-    CellPullRequest: () => null,
+    wakeIn: () => "3h",
+    CellProjectMark: () => <span data-cells-row-project="">shop</span>,
     CellCard: (props: { trigger: ReactElement; children: ReactNode }) =>
       cloneElement(props.trigger, undefined, props.children),
   };
@@ -431,63 +465,108 @@ describe("the Cells' column", () => {
     );
   });
 
-  it("shows a stage's Cells when its row is chosen, each with its age and project", async () => {
+  it("shows every Cell awake, pins first then the latest brought forward, each lit by its state", async () => {
     setup(null);
     await using screen = await render(<Column />);
-    await userEvent.click(screen.getByRole("button", { name: /Flying\s*1/ }));
-    const working = screen.getByRole("list", { name: "Flying" });
-    await expect.element(working.getByText("Chat thread-w")).toBeInViewport();
-    await expect.element(working.getByText("5m")).toBeVisible();
-    await expect.element(working.getByText("shop")).toBeVisible();
+    await userEvent.click(screen.getByRole("button", { name: /Awake\s*5/ }));
+    const awake = screen.getByRole("list", { name: "Awake" });
+    await expect.element(awake.getByText("Chat thread-w")).toBeInViewport();
+    await expect.element(awake.getByText("5m").first()).toBeVisible();
+    await expect.element(awake.getByText("shop").first()).toBeVisible();
     // What needs you slid off beside it, a swipe away.
     await expect
       .element(screen.getByText("Delete the 214 original PNGs once the WebP copies are in?"))
       .not.toBeInViewport();
-    await userEvent.click(screen.getByRole("button", { name: /Settled\s*41/ }));
-    await expect.element(screen.getByText("Bump dependencies")).toBeVisible();
+    const rows = [...awake.element().querySelectorAll<HTMLElement>("[data-cells-row]")];
+    expect(rows.map((row) => row.dataset.cellsThread)).toEqual([
+      "thread-l1",
+      "thread-l2",
+      "thread-w",
+      "thread-b",
+      "thread-a",
+    ]);
+    const light = (id: string) => {
+      const plate = awake
+        .element()
+        .querySelector<HTMLElement>(`[data-cells-thread="${id}"] [data-cells-open]`)!;
+      return [plate.dataset.light, plate.style.getPropertyValue("--cells-row-tone")];
+    };
+    expect(light("thread-w")).toEqual(["flying", "var(--sc-provider-claude)"]);
+    expect(light("thread-a")).toEqual(["needs", "var(--sc-needs-you)"]);
+    expect(light("thread-l2")).toEqual(["news", "var(--sc-provider-claude)"]);
+    expect(light("thread-l1")).toEqual(["seen", "var(--sc-provider-claude)"]);
+    // Only a flying Cell's band crosses.
+    await vi.waitFor(() =>
+      expect(
+        awake
+          .element()
+          .querySelector("[data-cells-thread='thread-w'] [data-cells-band]")
+          ?.getAnimations().length,
+      ).toBe(1),
+    );
+    expect(
+      awake
+        .element()
+        .querySelector("[data-cells-thread='thread-l2'] [data-cells-band]")
+        ?.getAnimations().length,
+    ).toBe(0);
+  });
+
+  it("shows the Cells asleep, the latest first, a timed one by when it wakes", async () => {
+    setup(null);
+    await using screen = await render(<Column />);
+    await userEvent.click(screen.getByRole("button", { name: /Asleep\s*42/ }));
+    const asleep = screen.getByRole("list", { name: "Asleep" });
+    await expect.element(asleep.getByText("Nightly report")).toBeVisible();
+    await expect.element(asleep.getByText("Wakes in 3h")).toBeVisible();
+    await expect.element(asleep.getByText("Bump dependencies")).toBeVisible();
     await expect.element(screen.getByText("40 more · search finds them")).toBeVisible();
   });
 
-  it("settles a landed Cell from its row, and all of them, each off the line at once", async () => {
+  it("sleeps an awake Cell from its row, folding it away at once, and wakes an asleep one", async () => {
     setup(null);
     spies.open.mockClear();
-    // Each settle runs until the test says how it ended.
-    const settling: Array<(settled: boolean) => void> = [];
+    // Each sleep runs until the test says how it ended.
+    const sleeping: Array<(slept: boolean) => void> = [];
     spies.settle
       .mockReset()
-      .mockImplementation(() => new Promise<boolean>((resolve) => settling.push(resolve)));
-    const refuse = () =>
-      act(async () => {
-        for (const end of settling.splice(0)) end(false);
-      });
+      .mockImplementation(() => new Promise<boolean>((resolve) => sleeping.push(resolve)));
+    spies.wake.mockReset().mockResolvedValue(true);
     await using screen = await render(<Column />);
-    await userEvent.click(screen.getByRole("button", { name: /Landed\s*2/ }));
-    const landed = screen.getByRole("list", { name: "Landed" });
-    await userEvent.hover(landed.getByText("Chat thread-l1"));
-    await userEvent.click(landed.getByRole("button", { name: "Settle", exact: true }).first());
+    await userEvent.click(screen.getByRole("button", { name: /Awake\s*5/ }));
+    const awake = screen.getByRole("list", { name: "Awake" });
+    await userEvent.hover(awake.getByText("Chat thread-l1"));
+    await userEvent.click(awake.getByRole("button", { name: "Sleep", exact: true }).first());
     expect(spies.settle).toHaveBeenCalledWith({ environmentId: "env", threadId: "thread-l1" });
-    // Settling isn't opening: the row's own click stays put.
+    // Sleeping isn't opening: the row's own click stays put.
     expect(spies.open).not.toHaveBeenCalled();
-    await expect.element(screen.getByText("Chat thread-l1")).not.toBeInTheDocument();
-    await expect.element(screen.getByRole("button", { name: /Landed\s*1/ })).toBeVisible();
+    await expect.element(screen.getByRole("button", { name: /Awake\s*4/ })).toBeVisible();
+    await vi.waitFor(() =>
+      expect(document.querySelector('[data-cells-thread="thread-l1"]')?.clientHeight).toBe(0),
+    );
 
-    // A settle that fails puts its Cell back.
-    await refuse();
-    await expect.element(screen.getByText("Chat thread-l1")).toBeVisible();
+    // A sleep that fails puts its Cell back.
+    await act(async () => {
+      for (const end of sleeping.splice(0)) end(false);
+    });
+    await expect.element(screen.getByRole("button", { name: /Awake\s*5/ })).toBeVisible();
+    await expect.element(awake.getByText("Chat thread-l1")).toBeVisible();
 
-    await userEvent.click(screen.getByRole("button", { name: "Settle all" }));
-    expect(spies.settle).toHaveBeenCalledTimes(3);
-    await expect.element(screen.getByText("Nothing waits to be settled.")).toBeVisible();
-    await refuse();
+    await userEvent.click(screen.getByRole("button", { name: /Asleep\s*42/ }));
+    const asleep = screen.getByRole("list", { name: "Asleep" });
+    await userEvent.hover(asleep.getByText("Nightly report"));
+    await userEvent.click(asleep.getByRole("button", { name: "Wake", exact: true }).first());
+    // A timed sleep wakes with upstream's unsnooze.
+    expect(spies.wake).toHaveBeenCalledWith({ environmentId: "env", threadId: "thread-z" }, true);
   });
 
   it("opens a Cell's chat from its row", async () => {
     setup(null);
     spies.open.mockClear();
     await using screen = await render(<Column />);
-    await userEvent.click(screen.getByRole("button", { name: /Pinned\s*1/ }));
-    await userEvent.click(screen.getByText("Roadmap"));
-    expect(spies.open).toHaveBeenCalledWith({ environmentId: "env", threadId: "thread-p" });
+    await userEvent.click(screen.getByRole("button", { name: /Asleep\s*42/ }));
+    await userEvent.click(screen.getByText("Bump dependencies"));
+    expect(spies.open).toHaveBeenCalledWith({ environmentId: "env", threadId: "thread-s" });
   });
 });
 
@@ -516,9 +595,8 @@ describe("the column's project filter", () => {
       .element(screen.getByText("Delete the 214 original PNGs once the WebP copies are in?"))
       .not.toBeInTheDocument();
     await expect.element(screen.getByRole("button", { name: /Input\s*2/ })).toBeVisible();
-    await expect.element(screen.getByRole("button", { name: /Flying\s*1/ })).toBeVisible();
-    await expect.element(screen.getByRole("button", { name: /Settled\s*1/ })).toBeVisible();
-    await expect.element(screen.getByRole("button", { name: /Pinned\s*0/ })).toBeVisible();
+    await expect.element(screen.getByRole("button", { name: /Awake\s*5/ })).toBeVisible();
+    await expect.element(screen.getByRole("button", { name: /Asleep\s*2/ })).toBeVisible();
     await userEvent.click(screen.getByRole("button", { name: "New Cell" }));
     expect(spies.newCellPane).toHaveBeenLastCalledWith({ id: "project-shop" });
 
@@ -527,7 +605,7 @@ describe("the column's project filter", () => {
       .element(screen.getByText("Delete the 214 original PNGs once the WebP copies are in?"))
       .toBeVisible();
     await expect.element(screen.getByRole("button", { name: "All projects" })).toBeVisible();
-    await expect.element(screen.getByRole("button", { name: /Pinned\s*1/ })).toBeVisible();
+    await expect.element(screen.getByRole("button", { name: /Asleep\s*42/ })).toBeVisible();
     await userEvent.click(screen.getByRole("button", { name: "New Cell" }));
     expect(spies.newCellPane).toHaveBeenLastCalledWith(null);
   });
@@ -571,12 +649,12 @@ describe("swiping the column", () => {
       expect.element(screen.getByRole("button", { name })).toHaveAttribute("aria-pressed", "true");
 
     await swipe(column, 1);
-    await open(/Flying\s*1/);
+    await open(/Awake\s*5/);
     await expect.element(screen.getByText("Chat thread-w")).toBeInViewport();
     await swipe(column, 1);
-    await open(/Landed\s*2/);
+    await open(/Asleep\s*42/);
     await swipe(column, -1);
-    await open(/Flying\s*1/);
+    await open(/Awake\s*5/);
     await swipe(column, -1);
     await open(/Input\s*2/);
 
@@ -707,7 +785,7 @@ describe("a Cell moving along the line", () => {
     ),
   });
 
-  it("counts a Cell a usage limit holds beside Flying, and lists it under what holds it", async () => {
+  it("counts a Cell a usage limit holds in Awake, in its place, under a head saying what holds it", async () => {
     setup(null);
     await using screen = await render(<Column />);
     await using stack = new AsyncDisposableStack();
@@ -747,26 +825,44 @@ describe("a Cell moving along the line", () => {
       };
       changes.tell();
     });
-    await userEvent.click(screen.getByRole("button", { name: /Flying\s*1 holding\s*0/ }));
-    const holding = screen.getByRole("list", { name: "Holding" });
-    await expect.element(holding.getByText("Chat thread-w")).toBeInViewport();
+    await userEvent.click(screen.getByRole("button", { name: /Awake\s*1 holding\s*5/ }));
     await expect.element(screen.getByText("no reset stated")).toBeVisible();
-    await expect.element(screen.getByRole("list", { name: "Flying" })).toHaveTextContent("None");
+    const awake = screen.getByRole("list", { name: "Awake" });
+    await expect.element(awake.getByText("Chat thread-w")).toBeInViewport();
+    // Held, it isn't flying: no band, a resting light.
+    expect(
+      awake.element().querySelector<HTMLElement>('[data-cells-thread="thread-w"] [data-cells-open]')
+        ?.dataset.light,
+    ).toBe("seen");
   });
 
-  it("only changes the count when the person didn't move it", async () => {
+  it("moves no row when a Cell lands or asks: only its light changes", async () => {
+    setup(null);
+    useColumnStore.setState({ stage: "awake" });
     await using screen = await render(<Column />);
     await using stack = new AsyncDisposableStack();
     const before = streamState();
     stack.defer(() => {
       stream = before;
+      useColumnStore.setState({ stage: "needs" });
     });
-    await expect.element(screen.getByRole("button", { name: /Landed\s*2/ })).toBeVisible();
+    const order = () =>
+      [...document.querySelectorAll<HTMLElement>('[aria-label="Awake"] [data-cells-row]')].map(
+        (row) => row.dataset.cellsThread,
+      );
+    await expect.element(screen.getByRole("button", { name: /Awake\s*5/ })).toBeVisible();
+    const was = order();
     await act(() => {
-      stream = moved(before, { "thread-w": "done" });
+      stream = moved(before, { "thread-w": "done", "thread-l2": "needs-you" });
       changes.tell();
     });
-    await expect.element(screen.getByRole("button", { name: /Landed\s*3/ })).toBeVisible();
+    await vi.waitFor(() =>
+      expect(
+        document.querySelector<HTMLElement>('[data-cells-thread="thread-w"] [data-cells-open]')
+          ?.dataset.light,
+      ).toBe("seen"),
+    );
+    expect(order()).toEqual(was);
     expect(document.querySelector("[data-cells-hop]")).toBeNull();
   });
 
@@ -782,7 +878,7 @@ describe("a Cell moving along the line", () => {
       stream = moved(before, { "thread-a": "working" });
       changes.tell();
     });
-    await expect.element(screen.getByRole("button", { name: /Flying\s*2/ })).toBeVisible();
+    await expect.element(screen.getByRole("button", { name: /Input\s*1/ })).toBeVisible();
     await vi.waitFor(() => expect(document.querySelector("[data-cells-hop]")).not.toBeNull());
     await vi.waitFor(() => expect(document.querySelector("[data-cells-hop]")).toBeNull());
   });
