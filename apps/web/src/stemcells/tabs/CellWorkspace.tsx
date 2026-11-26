@@ -30,6 +30,7 @@ import { ChatPaneView, ChatsInBackground, useCellPresence, useOpenNewCell } from
 import { PanelMaximizedContext } from "../upstream/chatPanel";
 import { dropLeftDraft, fileDraftUnderPane, useCellForRoute } from "../upstream/drafts";
 import "../upstream/firstProjectFacts";
+import "../work/startQuietWork";
 import { usePrimaryEnvironmentId } from "../upstream/needs";
 import type { NewCellScope } from "../upstream/newCellProject";
 import { useIsIndexRoute, useNavigateToCell, type ThreadRouteTarget } from "../upstream/routes";
