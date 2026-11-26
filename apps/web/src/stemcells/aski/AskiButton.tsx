@@ -55,26 +55,16 @@ const TURNING = "stemcellsAskiTurn";
 let latestTurn = 0;
 
 /**
- * Makes `turn` and plays it as Aski's turn: Aski's page opens out of the button over the chat,
- * which steps back (`open`), or folds back into it (`fold`). A view transition, so the compositor
- * moves two pictures and the chats lay out once; the strip cuts rather than slides beneath it.
+ * Plays `turn` as Aski's turn (askiButton.css): Aski and the chat swap places through the button,
+ * as down a pipe. A view transition, so the chats lay out once and the strip cuts beneath it.
  * Under Reduce Motion a crossfade; without view transitions the turn just happens.
  */
-function playTurn(button: HTMLElement | null, way: "open" | "fold", turn: () => void): void {
+function playTurn(button: HTMLElement | null, turn: () => void): void {
   const run = () => cutTurn(() => flushSync(turn));
   const slate = button?.closest<HTMLElement>("[data-stemcells-slate]");
   if (!button || !slate || typeof document.startViewTransition !== "function") return run();
-  const from = button.getBoundingClientRect();
-  const box = slate.getBoundingClientRect();
-  const x = from.left + from.width / 2 - box.left;
-  const y = from.top + from.height / 2 - box.top;
   const root = document.documentElement;
-  root.style.setProperty("--sc-aski-turn-at", `${x}px ${y}px`);
-  root.style.setProperty(
-    "--sc-aski-turn-reach",
-    `${Math.hypot(Math.max(x, box.width - x), Math.max(y, box.height - y))}px`,
-  );
-  root.dataset[TURNING] = reducedMotion() ? "fade" : way;
+  root.dataset[TURNING] = reducedMotion() ? "fade" : "pipe";
   const mine = ++latestTurn;
   const transition = document.startViewTransition(run);
   // A turn started over this one skips it: its promises reject, which is no error.
@@ -82,10 +72,7 @@ function playTurn(button: HTMLElement | null, way: "open" | "fold", turn: () => 
   void transition.finished
     .catch(() => undefined)
     .then(() => {
-      if (mine !== latestTurn) return;
-      delete root.dataset[TURNING];
-      root.style.removeProperty("--sc-aski-turn-at");
-      root.style.removeProperty("--sc-aski-turn-reach");
+      if (mine === latestTurn) delete root.dataset[TURNING];
     });
 }
 
@@ -121,8 +108,7 @@ export function useAskiSide(props: {
   if (active !== null && active !== ASKI_TAB_ID && active !== cameFrom) setCameFrom(active);
   const targetId = askiTurnTarget(workspace, cameFrom);
   const target = workspace.tabs.find((tab) => tab.id === targetId) ?? null;
-  const turn = (to: string) =>
-    playTurn(buttonRef.current, to === ASKI_TAB_ID ? "open" : "fold", () => props.onTurn(to));
+  const turn = (to: string) => playTurn(buttonRef.current, () => props.onTurn(to));
   const toggle = () => {
     if (!props.on || targetId === null) return false;
     // "This" carries over: the Cell turned from is a chip in Aski's composer.
@@ -230,7 +216,9 @@ export function AskiButton(props: {
               />
             }
           >
-            {backTo ? <CellMark cell={backTo} /> : <AskiFigure aski={aski} />}
+            <span data-stemcells-aski-occupant="">
+              {backTo ? <CellMark cell={backTo} /> : <AskiFigure aski={aski} />}
+            </span>
             {dot ? <span data-stemcells-aski-dot="" aria-hidden /> : null}
           </TooltipTrigger>
           <TooltipPopup side="left">
