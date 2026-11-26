@@ -71,6 +71,8 @@ const SUBSTITUTES = {
   // Claude for it.
   "apps/mobile/src/lib/modelOptions.ts": "modelOptions.ts",
   "apps/mobile/src/components/ui/Dialog.tsx": "Dialog.tsx",
+  // A picture tapped in a chat pages through every picture in the chat, not its message's alone.
+  "apps/mobile/src/components/ui/FilePreviewGallery.tsx": "FilePreviewGallery.tsx",
 };
 
 /** Package upstream's code imports, by name, to its substitute in this folder. */

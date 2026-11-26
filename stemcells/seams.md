@@ -601,6 +601,16 @@ library's dependency (above); the rest are substitutes:
   and a Cell settled by hand on another device meanwhile gives way to the
   home, the Threads tab opened without columns (`chat/useClosesOnReturn.ts`,
   `stemcells/tasks/settle-everywhere.md`).
+- **A chat's pictures page as one.** A substitute of `FilePreviewGallery`
+  has a picture tapped in a chat open among every picture the chat draws,
+  in its order: each message's, attached then embedded, and each one its
+  Cell viewed (`chat/pictures.ts`), up to 25 either side, where T3's
+  pages through the tapped message's own. The same substitute of
+  `ThreadDetailScreen` hands it the chat's feed, read at the tap so a
+  streaming chat re-renders no picture (`chat/ChatGallery.tsx`). A picture
+  the chat doesn't hold yet (one still sending) keeps T3's list. Videos
+  open alone in T3's player: the native viewer pages pictures only
+  (`stemcells/tasks/media-swipe.md`).
 - **The ask in its chat.** The substitute of `ThreadComposer` docks the
   Cell's ask over the composer, inside the slot upstream measures for the
   feed's inset, so no line of the hot `ThreadDetailScreen.tsx` changes
