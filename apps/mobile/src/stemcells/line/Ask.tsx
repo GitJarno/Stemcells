@@ -65,35 +65,37 @@ export function AskCard(props: AskCardProps) {
   );
 }
 
-/** A failed turn reads its machine's disk: a full one says so, and offers the cleanup Cell. */
 function FailedAsk(props: AskCardProps) {
-  const disk = useMachineDisk(props.ask.environmentId);
-  const freeSpace = useFreeSpace(props.ask.environmentId);
-  return (
-    <AskBody
-      {...props}
-      disk={disk ? diskFailure(props.ask.need.key, disk.free) : null}
-      freeSpace={freeSpace}
-    />
-  );
+  return <AskBody {...props} {...useFailureDisk(props.ask)} />;
 }
 
-function AskBody(
-  props: AskCardProps & {
-    readonly disk: ReturnType<typeof diskFailure> | null;
-    readonly freeSpace: (() => Promise<void>) | null;
-  },
-) {
+/** A failed turn reads its machine's disk: a full one says so, and offers the cleanup Cell. */
+export function useFailureDisk(ask: Ask): FailureDisk {
+  const disk = useMachineDisk(ask.environmentId);
+  return {
+    disk: disk ? diskFailure(ask.need.key, disk.free) : null,
+    freeSpace: useFreeSpace(ask.environmentId),
+  };
+}
+
+export interface FailureDisk {
+  readonly disk: ReturnType<typeof diskFailure> | null;
+  readonly freeSpace: (() => Promise<void>) | null;
+}
+
+/** The cleanup Cell is a new Cell on the full machine: the ask stays until it retries. */
+export const chooserOf =
+  (choose: AskActs["choose"], freeSpace: FailureDisk["freeSpace"]) =>
+  (option: CardOption, given?: Given) =>
+    option.choice.kind === "freeSpace" ? void freeSpace?.() : choose(option, given);
+
+function AskBody(props: AskCardProps & FailureDisk) {
   const { need } = props.ask;
   const card = cardOf(need, props.now, props.disk);
   const { cell } = props;
   const place = { environmentId: props.ask.environmentId, projectId: need.projectId };
   const repo = repositoryUrlOf(useProjectAt(place)?.repositoryIdentity);
-  // The cleanup Cell is a new Cell on the full machine: the ask stays until it retries.
-  const choose = (option: CardOption, given?: Given) =>
-    option.choice.kind === "freeSpace"
-      ? void props.freeSpace?.()
-      : props.acts.choose(option, given);
+  const choose = chooserOf(props.acts.choose, props.freeSpace);
   const head = (
     <AskHead
       cell={props.cell}
@@ -274,7 +276,7 @@ const ANSWER: CardOption = {
   choice: { kind: "answer" },
 };
 
-function Quiet(props: { readonly label: string; readonly onPress: () => void }) {
+export function Quiet(props: { readonly label: string; readonly onPress: () => void }) {
   return (
     <Pressable accessibilityRole="button" onPress={props.onPress} hitSlop={8}>
       <AppText className="text-sm text-foreground-muted">{props.label}</AppText>
@@ -443,34 +445,16 @@ function Options(props: {
     <View className="gap-1.5">
       <View className="flex-row flex-wrap gap-2">
         {props.options.map((option) => {
-          const filled = option.recommended && !option.allows;
           const disabled = option.allows && !allowReady;
           return (
-            <Pressable
+            <Pill
               key={option.id}
-              accessibilityRole="button"
-              accessibilityState={{ disabled }}
+              title={option.title}
+              filled={option.recommended && !option.allows}
+              warn={option.warn}
               disabled={disabled}
               onPress={() => (option.words ? setWriting(option) : props.onChoose(option))}
-              className={
-                filled
-                  ? "rounded-full bg-foreground px-4 py-2 active:opacity-70"
-                  : "rounded-full border border-border px-4 py-2 active:bg-subtle"
-              }
-              style={option.warn ? { borderColor: NEEDS_YOU } : undefined}
-            >
-              <AppText
-                className={
-                  filled
-                    ? "font-t3-medium text-base text-background"
-                    : disabled
-                      ? "text-base text-foreground-muted"
-                      : "font-t3-medium text-base text-foreground"
-                }
-              >
-                {option.title}
-              </AppText>
-            </Pressable>
+            />
           );
         })}
       </View>
@@ -486,8 +470,47 @@ function Options(props: {
   );
 }
 
+/** An option's button: filled when it's the one to take, ringed in amber when the provider warns. */
+export function Pill(props: {
+  readonly title: string;
+  readonly filled: boolean;
+  readonly warn?: boolean;
+  readonly disabled?: boolean;
+  readonly small?: boolean;
+  readonly onPress: () => void;
+}) {
+  const box = props.small ? "px-3.5 py-1.5" : "px-4 py-2";
+  const size = props.small ? "text-sm" : "text-base";
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ disabled: props.disabled === true }}
+      disabled={props.disabled}
+      onPress={props.onPress}
+      className={
+        props.filled
+          ? `rounded-full bg-foreground ${box} active:opacity-70`
+          : `rounded-full border border-border ${box} active:bg-subtle`
+      }
+      style={props.warn ? { borderColor: NEEDS_YOU } : undefined}
+    >
+      <AppText
+        className={
+          props.filled
+            ? `font-t3-medium ${size} text-background`
+            : props.disabled
+              ? `${size} text-foreground-muted`
+              : `font-t3-medium ${size} text-foreground`
+        }
+      >
+        {props.title}
+      </AppText>
+    </Pressable>
+  );
+}
+
 /** An ask's words: links open where the phone opens them, code in the code face, bold bold. */
-function Words(props: { readonly text: string; readonly repo: string | null }) {
+export function Words(props: { readonly text: string; readonly repo: string | null }) {
   return spansOf(props.text, props.repo).map((span, index) =>
     span.kind === "link" ? (
       <AppText

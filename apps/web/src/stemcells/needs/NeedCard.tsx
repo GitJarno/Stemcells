@@ -48,7 +48,7 @@ import { holds, useSettleAtOnce } from "./live";
 import { openPeek } from "./peeking";
 import { RunFacts } from "./RunFacts";
 import { type Lit, lit, useLit } from "./answers/lit";
-import { linkAddresses, marksUp } from "./inline";
+import { linkAddresses, marksUp, plainOf } from "./inline";
 import { tellAsk } from "./told";
 import { rereadWholeKinds, useShowsWhole } from "./whole";
 import { answering, land } from "./walk";
@@ -434,7 +434,7 @@ interface WordsProps {
  * a bare web address and an issue number linked (`inline.ts`); plain words stay plain text, which
  * costs nothing.
  */
-function Words(props: WordsProps) {
+export function Words(props: WordsProps) {
   if (!marksUp(props.text, props.repo)) return props.text;
   return (
     <ChatMarkdown
@@ -446,10 +446,6 @@ function Words(props: WordsProps) {
     />
   );
 }
-
-/** A folded ask's one line: its words without their markup. */
-export const plainOf = (text: string): string =>
-  text.replace(/\[([^\]\n]+)\]\([^)\s]+\)/g, "$1").replace(/[`*]/g, "");
 
 /** Whether folded words run past their lines, measured as the ask resizes; never once `more` shows them all. */
 function useRunsLong(more: boolean) {
