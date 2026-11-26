@@ -546,7 +546,7 @@ function UsageSummary(props: { readonly merged: MergedUsage; readonly metric: Us
         {metric === "cost" ? formatUsd(merged.costUsd) : formatTokens(merged.totalTokens)}
       </Text>
       <Text className="text-sm text-foreground-muted">
-        {gt("{count, plural, other {Across {sessions} sessions}}", {
+        {gt("{count, plural, one {Across {sessions} session} other {Across {sessions} sessions}}", {
           count: merged.sessions,
           sessions: formatCount(merged.sessions),
         })}
