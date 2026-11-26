@@ -53,29 +53,32 @@ export function askCitationOf(
 
 /**
  * Jumps the Cell's chat to where `need` asked, highlighting its words; null while the chat has
- * no reply to point at. Reads the chat's loaded items, not the timeline: the card re-renders
- * only when the place it points to moves.
+ * no reply to point at. Reads the items the timeline draws, which hold still while a reply
+ * streams, so nothing here runs per streamed word.
  */
 export function useAskJump(cell: CellRef, need: Need): (() => void) | null {
   const thread = threadRefOf(cell);
-  const href = useAtomValue(environmentThreadDetails.visibleTurnItemsAtom(thread), (items) => {
-    const messages = items.flatMap(({ item }): ChatMessage[] =>
-      item.type === "assistant_message" || item.type === "user_message"
-        ? [
-            {
-              id: item.messageId,
-              role: item.type === "assistant_message" ? "assistant" : "user",
-              text: item.text,
-            },
-          ]
-        : [],
-    );
-    const anchor = askAnchorOf(need, messages);
-    const text = messages.find((message) => message.id === anchor?.messageId)?.text;
-    const citation =
-      anchor === null || text === undefined ? null : askCitationOf(cell, anchor, text);
-    return citation === null ? null : formatAssistantCitationHref(citation);
-  });
+  const href = useAtomValue(
+    environmentThreadDetails.timelineVisibleTurnItemsAtom(thread),
+    (items) => {
+      const messages = items.flatMap(({ item }): ChatMessage[] =>
+        item.type === "assistant_message" || item.type === "user_message"
+          ? [
+              {
+                id: item.messageId,
+                role: item.type === "assistant_message" ? "assistant" : "user",
+                text: item.text,
+              },
+            ]
+          : [],
+      );
+      const anchor = askAnchorOf(need, messages);
+      const text = messages.find((message) => message.id === anchor?.messageId)?.text;
+      const citation =
+        anchor === null || text === undefined ? null : askCitationOf(cell, anchor, text);
+      return citation === null ? null : formatAssistantCitationHref(citation);
+    },
+  );
   const navigate = useNavigate();
   const sourceThread = useQuietThreadShell(thread);
   if (href === null) return null;

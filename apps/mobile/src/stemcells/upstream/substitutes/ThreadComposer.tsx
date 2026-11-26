@@ -28,7 +28,11 @@ export const ThreadComposer: typeof Upstream.ThreadComposer = (props) => {
   const modelSelection = askis
     ? thread.modelSelection
     : cellSelection(props.serverConfig, thread.modelSelection);
-  const docked = useChatAsk(props.isDraft ? null : props.environmentId, thread);
+  const docked = useChatAsk(
+    props.isDraft ? null : props.environmentId,
+    thread.id,
+    props.activeThreadBusy,
+  );
   const composer = (
     <>
       <Veil edge="bottom" color={ground} fade={FADE} over={OVER} beyond={insets.bottom} />

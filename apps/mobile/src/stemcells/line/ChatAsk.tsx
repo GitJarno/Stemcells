@@ -22,20 +22,21 @@ import { useKeepReadingChat, useReadings } from "./readings";
 const STEPS = 3;
 
 /**
- * The ask `cell`'s chat docks: its oldest its machine says, less those just answered and those
+ * The ask a chat docks: its Cell's oldest its machine says, less those just answered and those
  * upstream's own panels over the composer answer. Keeps the machine read meanwhile; a draft
  * (no `environmentId`) has none.
  */
 export function useChatAsk(
   environmentId: string | null,
-  cell: { readonly id: string },
+  threadId: string,
+  busy: boolean,
 ): Ask | null {
   const minute = useMinute();
-  useKeepReadingChat(environmentId, cell, minute);
+  useKeepReadingChat(environmentId, threadId, busy, minute);
   const readings = useReadings();
   const { answered } = useSyncExternalStore(held.subscribe, held.read);
   if (environmentId === null) return null;
-  return chatAskIn(readings.get(environmentId), environmentId, cell.id, answered);
+  return chatAskIn(readings.get(environmentId), environmentId, threadId, answered);
 }
 
 export function ChatAsk(props: {
@@ -157,12 +158,12 @@ function Dock(props: DockProps & FailureDisk) {
       ))}
       {card.steps.length > STEPS ? (
         <AppText className="text-sm text-foreground-muted">
-          and {card.steps.length - STEPS} more
+          {card.steps.length - STEPS} more in the chat
         </AppText>
       ) : null}
       {card.next ? (
         <AppText className="text-sm text-foreground-muted">
-          Then: <Words text={card.next} repo={repo} />
+          Then <Words text={card.next} repo={repo} />
         </AppText>
       ) : null}
       {props.canAnswer && (primary !== null || rest.length > 0 || notNow !== null) ? (
