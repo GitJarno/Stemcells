@@ -1,15 +1,12 @@
 // Replaces `components/CompactBrandTitle.tsx` (`substitutes.cjs`): the app's name set in type
 // where upstream draws the T3 logo beside "Code", as the web's sidebar does (`brand/Wordmark.tsx`
-// there). The rest is upstream's: the offset, the stage badge, and dropping the badge when the
-// title doesn't fit.
-import Constants from "expo-constants";
+// there), and no release-stage badge beside it. The offset is upstream's.
 import { useState } from "react";
 import { Platform, View } from "react-native";
 
 import { brandTitleOffset } from "../../../components/CompactBrandTitle";
 import { AppText as Text } from "../../../components/ui/AppText";
 import { useAndroidControlSizing } from "../../../components/ui/useAndroidControlSizing";
-import { resolveMobileStageLabel } from "../../../lib/mobileBranding";
 import { BatteryMarks } from "../../battery/BatteryMarks";
 import { APP_NAME } from "../../brand/name";
 
@@ -21,27 +18,18 @@ export function CompactBrandTitle(
   props: {
     readonly allowFontScaling?: boolean;
     readonly accessibilityLabel?: string;
-    /**
-     * Fills the parent row and drops the stage badge when the full title does not fit.
-     * Narrow Android sidebar headers otherwise draw their actions over the badge.
-     */
+    /** Fills the parent row, leaving the battery marks the room the title doesn't take. */
     readonly fit?: boolean;
   } = {},
 ) {
-  const stageLabel = resolveMobileStageLabel(Constants.expoConfig?.extra?.appVariant);
   const titleOffset = brandTitleOffset();
   const { scale } = useAndroidControlSizing();
   const [availableWidth, setAvailableWidth] = useState<number | null>(null);
-  // Measured only while the badge shows, so hiding it does not make it look like it fits.
   const [fullWidth, setFullWidth] = useState<number | null>(null);
-  const showStage =
-    !props.fit || availableWidth === null || fullWidth === null || fullWidth <= availableWidth;
 
   const title = (
     <View
-      onLayout={
-        props.fit && showStage ? (event) => setFullWidth(event.nativeEvent.layout.width) : undefined
-      }
+      onLayout={props.fit ? (event) => setFullWidth(event.nativeEvent.layout.width) : undefined}
       aria-level={1}
       accessibilityLabel={props.accessibilityLabel ?? `${APP_NAME}, Cells`}
       accessible
@@ -61,25 +49,6 @@ export function CompactBrandTitle(
       >
         {APP_NAME}
       </Text>
-      {showStage ? (
-        <View
-          className="rounded-full bg-subtle px-1.5 py-0.5"
-          style={
-            Platform.OS === "android"
-              ? { paddingHorizontal: 5.25 * scale, paddingVertical: 1.75 * scale }
-              : undefined
-          }
-        >
-          <Text
-            allowFontScaling={props.allowFontScaling}
-            maxFontSizeMultiplier={BRAND_MAX_FONT_SCALE}
-            className="font-t3-bold text-foreground-muted uppercase"
-            style={{ fontSize: 9 * scale, letterSpacing: 0.9 * scale }}
-          >
-            {stageLabel}
-          </Text>
-        </View>
-      ) : null}
     </View>
   );
 
