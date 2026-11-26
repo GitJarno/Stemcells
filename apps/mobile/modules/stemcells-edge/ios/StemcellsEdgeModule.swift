@@ -9,6 +9,9 @@ public final class StemcellsEdgeModule: Module {
       Prop("edge") { (view: StemcellsVeilView, edge: String) in
         view.edge = edge == "bottom" ? .bottom : .top
       }
+      Prop("followsBar") { (view: StemcellsVeilView, follows: Bool) in
+        view.followsBar = follows
+      }
     }
   }
 }
