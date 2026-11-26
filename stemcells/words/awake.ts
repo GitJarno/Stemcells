@@ -1,0 +1,24 @@
+/**
+ * The stages a person reads and the verbs between them (`stemcells/tasks/awake-asleep.md`).
+ * Flying and Landed stay the words for an awake Cell's own state (`cells.ts`).
+ */
+export const STAGE_WORDS = { needs: "Input", awake: "Awake", asleep: "Asleep" } as const;
+
+/** Putting a Cell away, putting it away until a time, and bringing it back. */
+export const SLEEP = "Sleep";
+export const SLEEP_UNTIL = "Sleep until…";
+export const WAKE = "Wake";
+
+export const EMPTY_WORDS = {
+  needs: "Nothing needs you.",
+  awake: "No Cells awake.",
+  asleep: "No Cells asleep.",
+} as const;
+
+/** What the undo line says once a Cell, or several, sleeps or wakes. */
+export const sleptWords = (who: string) => `${who} is asleep`;
+export const sleptManyWords = (count: number) => `${count} Cells asleep`;
+export const wokeWords = (who: string) => `${who} is awake`;
+
+/** A timed sleep's row, in place of its time: when it wakes. */
+export const wakesWords = (when: string) => `Wakes ${when}`;
