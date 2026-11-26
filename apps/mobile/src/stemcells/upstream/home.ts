@@ -33,14 +33,6 @@ export { useProjects } from "../../state/entities";
 export { useSavedRemoteConnections } from "../../state/use-remote-environment-registry";
 export { useHomeListOptions } from "../../features/home/home-list-options";
 
-/** A transparent header with nothing behind it: iOS 27's `automatic` edge is a hard band. */
-export const NO_HEADER_BAND = {
-  top: "hidden",
-  bottom: "hidden",
-  left: "hidden",
-  right: "hidden",
-} as const;
-
 /** Each environment's kind of machine, where it says. */
 export function useMachineKinds() {
   return useAtomValue(threadListEnvironmentsAtom).machineByEnvironmentId;

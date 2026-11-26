@@ -15,7 +15,7 @@ import { NativeStackScreenOptions } from "../../../native/StackHeader";
 import { CellTitle } from "../../chat/CellTitle";
 import { codeMenu } from "../../chat/code";
 import { ChatHeaderContext, setColumnWidth } from "../../chat/header";
-import { NO_HEADER_BAND } from "../home";
+import { NO_HEADER_BAND } from "../../edge/headerEdge";
 
 export * from "../../../components/ui/AppBar";
 

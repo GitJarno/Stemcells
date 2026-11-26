@@ -15,6 +15,8 @@ import { blurs, Veil } from "./Veil";
 
 /** Past the status bar: the header's bar, and a short reach under it. */
 const HEADER_FADE = 76;
+/** How far past a bar's foot the veil reaches: its clear quarter starts about there. */
+const PAST_THE_BAR = 32;
 /** What fades over the tab bar, past the home indicator. */
 const TAB_BAR_FADE = 72;
 
@@ -23,18 +25,27 @@ export function ScreenVeils(props: {
   readonly night: boolean | null;
   /** The tab bar's veil too: the home's. */
   readonly bottom: boolean;
+  /**
+   * Where the header's bar ends, when the page knows: the veil reaches a little past it. The
+   * Duo's bar is taller than the phone's, under no status bar.
+   */
+  readonly barBottom?: number;
 }) {
   const dusk = useNight(props.night);
   const primaryColumn = use(NativePrimaryColumnContext);
   const insets = useSafeAreaInsets();
   const ground = useResolveClassNames(primaryColumn ? "bg-drawer" : "bg-screen").backgroundColor;
+  const headerFade =
+    props.barBottom === undefined
+      ? HEADER_FADE
+      : Math.max(0, props.barBottom + PAST_THE_BAR - insets.top);
   return (
     <>
       <Veil
         edge="top"
         color={dusk === "night" ? skyAt(0) : ground}
         solid={insets.top}
-        fade={HEADER_FADE}
+        fade={headerFade}
       />
       {dusk === "turning" && !blurs ? (
         <AtNight

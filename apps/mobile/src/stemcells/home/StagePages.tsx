@@ -16,7 +16,6 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { scheduleOnUI } from "react-native-worklets";
 
 import { ScreenVeils } from "../edge/ScreenVeils";
@@ -118,7 +117,6 @@ export function StagePages<Stage extends string>(props: {
   readonly render: (stage: Stage) => ReactNode;
 }) {
   const { home, tab } = props;
-  const insets = useSafeAreaInsets();
   const primaryColumn = use(NativePrimaryColumnContext);
   const inFront = use(HomeInFront);
   const held = use(HomeCellsHeld);
@@ -169,12 +167,8 @@ export function StagePages<Stage extends string>(props: {
         pointerEvents="box-none"
         style={[{ position: "absolute", left: 0, right: 0, top: 0 }, header]}
       >
-        <View
-          pointerEvents="box-none"
-          style={{ paddingLeft: insets.left, paddingRight: insets.right }}
-        >
-          <AskiHome />
-        </View>
+        {/* The column already keeps its pages off the Duo's rail and a notch. */}
+        <AskiHome />
       </Animated.View>
       {primaryColumn ? null : <ScreenVeils night={props.night} bottom />}
       <CopyLayer shown={inFront} />

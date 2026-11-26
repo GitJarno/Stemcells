@@ -68,6 +68,7 @@ import {
   useNativeWorkspaceColumnsSupported,
 } from "../../native/NativeWorkspaceColumns";
 import { V5StackHeader } from "../../native/V5StackHeader.ios";
+import { NativeScrollEdgeEffectsContext } from "../../native/NativeScrollViewMarker";
 import { InspectorColumnScreens } from "./inspector-host";
 import { PaneContext } from "../../components/ui/Pane";
 import { useWorkspaceSidebarHeaderItem } from "./useWorkspaceSidebarHeaderItem";
@@ -193,7 +194,9 @@ function ColumnScreen(props: {
             >
               <NativePrimaryColumnContext value={primaryColumn}>
                 {/* The Settings slot swaps pages here; its column keeps its measured insets. */}
-                <Fragment key={key}>{descriptor.render()}</Fragment>
+                <NativeScrollEdgeEffectsContext value={options.scrollEdgeEffects}>
+                  <Fragment key={key}>{descriptor.render()}</Fragment>
+                </NativeScrollEdgeEffectsContext>
               </NativePrimaryColumnContext>
             </ColumnContent>
             {props.footer}

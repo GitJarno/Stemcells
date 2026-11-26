@@ -516,7 +516,8 @@ library's dependency (above); the rest are substitutes:
   a hard band under a transparent header; UIKit draws it on the scroll
   view, and T3's home list asks for it by name, so a substitute wraps
   `NativeScrollViewMarker`: inside the home (`home/HomeFront.tsx`)
-  a scroll view takes none, and a scroll the code makes may reach the
+  a scroll view takes none, nor under the header of any page in the
+  Duo's columns (`edge/headerEdge.ts`), and a scroll the code makes may reach the
   list's rest under the header (React Native stops one at the scroll
   view's own inset, 0 under UIKit's `automatic` one, which left Aski under
   the header). Every list on the home's stages takes T3's `automatic`

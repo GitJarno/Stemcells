@@ -37,6 +37,17 @@ chat) was drawn for one phone screen, so on the Duo it fought the shell.
 5. A sideways swipe over Aski turns the stage, as two fingers do on the
    Mac's column: left to the next, right to the one before, a rubber band
    past either end.
+6. No chrome up top, ever, on the Duo (the person's ask, 2026-11-26). A
+   chat there showed UIKit's hard band behind its header: T3's columns
+   dropped the chat's "no band", which its stack hands on (a seam now
+   hands it on in columns too). Every other page in the Duo's columns
+   takes no band either; the page blurs under the bar instead, the blur
+   reaching just past the bar's foot, which on the Duo is the camera's
+   82 pt band, not the phone's status bar and 44 pt bar.
+7. The Cell's name and one-liner carry a soft glow of the ground, unseen
+   over the plain page, so they hold over what scrolls under the blur.
+8. The home's stages control spans its column: the header padded itself
+   by the rail's inset inside a column that already keeps clear of it.
 
 ## Steps
 
@@ -46,4 +57,8 @@ chat) was drawn for one phone screen, so on the Duo it fought the shell.
 - [x] 4. Copies over the fold
 - [x] 5. The swipe
 - [x] Docs: interaction (the spawn, the swipe)
+- [x] 6. No band in the Duo's columns; the veil sized to the bar
+- [x] 7. The title's glow
+- [x] 8. The stages control at the column's width
+- [ ] Seen on the Duo itself (no Duo simulator runtime here)
 - [ ] Checks, pull request, merge
