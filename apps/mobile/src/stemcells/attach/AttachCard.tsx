@@ -6,7 +6,7 @@
 import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
 import * as ImagePicker from "expo-image-picker";
-import { useEffect, useRef, useState } from "react";
+import { type RefObject, useEffect, useRef, useState } from "react";
 import {
   AccessibilityInfo,
   Alert,
@@ -15,6 +15,7 @@ import {
   StyleSheet,
   useWindowDimensions,
   View,
+  type ViewInstance,
 } from "react-native";
 import { LegendList, type LegendListRef } from "@legendapp/list/react-native";
 import Animated, {
@@ -70,9 +71,7 @@ const DETENTS = formSheetDetents(0.62);
 const lastSeen: {
   access: Access | null;
   shots: readonly Shot[];
-  /** The card's height at the tallest detent, for the window it was seen on. */
-  tallest: { readonly window: number; readonly height: number } | null;
-} = { access: null, shots: [], tallest: null };
+} = { access: null, shots: [] };
 
 type Tile =
   | { readonly kind: "camera" }
@@ -92,34 +91,19 @@ export function AttachCard(props: {
   // What to do once the card is down: UIKit presents nothing over a sheet still leaving.
   const after = useRef<(() => Promise<void>) | null>(null);
   const [shown, setShown] = useState(false);
-  const [detent, setDetent] = useState(0);
-  const [height, setHeight] = useState(0);
-  const [tallest, setTallest] = useState(lastSeen.tallest);
+  const [lift, setLift] = useState(0);
+  const card = useRef<ViewInstance>(null);
+  // Sliding in, the card stands below its place: a measure then would lift the bar mid-card.
+  const arrived = useRef(false);
   const window = useWindowDimensions();
-  const insets = useSafeAreaInsets();
-  if (props.open && !shown) {
-    setShown(true);
-    setDetent(0);
-  }
-  const seen = tallest?.window === window.height ? tallest.height : undefined;
-  const lift = footLift({
-    height,
-    fraction: DETENTS[detent] ?? 1,
-    tallest: seen,
-    window: window.height,
-    top: insets.top,
-    bottom: insets.bottom,
-  });
-  /** The detent and the card's layout come as separate events; either can be the one at the top. */
-  const measure = (at: number, laidOut: number) => {
-    if (at !== DETENTS.length - 1 || laidOut === 0) return;
-    // A sheet stops below the top inset; a taller layout is the content's, not the sheet's.
-    const next = Math.min(laidOut, window.height - insets.top);
-    if (next <= (seen ?? 0)) return;
-    lastSeen.tallest = { window: window.height, height: next };
-    setTallest(lastSeen.tallest);
+  if (props.open && !shown) setShown(true);
+  /** Where the card's foot stands against the window's: its layout, its arrival and each detent move it. */
+  const measureFoot = () => {
+    if (!arrived.current) return;
+    card.current?.measureInWindow((_x, top, _width, height) =>
+      setLift(footLift({ top, height, window: window.height })),
+    );
   };
-
   const leave = (then: () => Promise<void>) => {
     after.current = then;
     props.onClose();
@@ -131,14 +115,16 @@ export function AttachCard(props: {
       detents={DETENTS}
       prefersGrabberVisible
       nativeContainerStyle={sheet}
-      onDetentChanged={(event) => {
-        setDetent(event.nativeEvent.index);
-        measure(event.nativeEvent.index, height);
+      onDidAppear={() => {
+        arrived.current = true;
+        measureFoot();
       }}
+      onDetentChanged={measureFoot}
       onNativeDismiss={props.onClose}
       onDidDisappear={() => {
         // A sheet of the system's over the card (Choose more) can report it gone while it stays.
         if (props.open) return;
+        arrived.current = false;
         setShown(false);
         const then = after.current;
         after.current = null;
@@ -149,24 +135,20 @@ export function AttachCard(props: {
       }}
     >
       {shown ? (
-        <Card
-          {...props}
-          lift={lift}
-          onHeight={(laidOut) => {
-            setHeight(laidOut);
-            measure(detent, laidOut);
-          }}
-          leave={leave}
-        />
+        <Card {...props} lift={lift} ref={card} onLayout={measureFoot} leave={leave} />
       ) : null}
     </FormSheet>
   );
 }
 
-function Card(props: {
+function Card({
+  ref,
+  ...props
+}: {
   /** How far above the card's foot the sheet's visible foot is (`foot.ts`). */
   readonly lift: number;
-  readonly onHeight: (height: number) => void;
+  readonly ref: RefObject<ViewInstance | null>;
+  readonly onLayout: () => void;
   readonly onClose: () => void;
   readonly supportsFiles: boolean;
   readonly onPickMedia: () => Promise<void>;
@@ -292,10 +274,11 @@ function Card(props: {
 
   return (
     <View
+      ref={ref}
       className="flex-1 bg-sheet"
       onLayout={(event) => {
         setWidth(event.nativeEvent.layout.width);
-        props.onHeight(event.nativeEvent.layout.height);
+        props.onLayout();
       }}
     >
       <View className="flex-row items-center px-3 pb-2 pt-4">
