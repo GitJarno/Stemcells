@@ -54,7 +54,9 @@ class T3ContextChip(
   private val iconSlot = if (iconUri.isEmpty()) 0f else em * 1.25f
   val width = ceil(
     min(
-      maximumWidth.coerceAtLeast(em * 3),
+      // Stemcells: a chip leaves room on its line for the caret and a tap beside it; one as
+      // wide as the line left the person nowhere to start typing.
+      min(maximumWidth * 2 / 3, density * 240).coerceAtLeast(em * 3),
       paint.measureText(content.label) + detailWidth + iconSlot + padding * 2
     )
   )

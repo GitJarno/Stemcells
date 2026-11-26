@@ -132,6 +132,16 @@ do {
   check(view.chip(at: 4) == nil && view.chip(at: 15) != nil, "A chip moved to another copy of its source stayed on the old one")
 }
 
+// A long file name never fills its line: the person can still tap beside the chip to type.
+do {
+  let label = String(repeating: "Osakkeenomistajan paatos ", count: 6) + ".pdf"
+  let view = makeEditor("@README.md", tokensJson: mention(label, at: 0))
+  view.layoutIfNeeded()
+  let width = view.chip(at: 0)?.bounds.width ?? .infinity
+  let line = view.editor.textContainer.size.width
+  check(width <= min(240, line * 2 / 3) + 1, "A long chip took \(width) of a \(line)-wide line")
+}
+
 // A chip source that changes only in Unicode normalization is rebuilt from the new text.
 do {
   let view = makeEditor("@\u{00E9}", tokensJson: mention("e", at: 0, source: "@\u{00E9}"))
