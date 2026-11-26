@@ -1,7 +1,7 @@
 // The Cells' line and its asks: the web's own plain TypeScript, imported here and nowhere
 // else, as the creature is (`cell/kit.ts`). What a card says and offers, the commands a choice
-// sends, the line's stages, the filter's words and a Cell's latest settle by hand are the Mac's,
-// so the two never disagree.
+// sends, the line's stages and their words, Awake's order and its rows' light, the filter's words
+// and a Cell's latest settle by hand are the Mac's, so the two never disagree.
 
 export {
   type CellStanding,
@@ -33,11 +33,21 @@ export {
   type Given,
   type ThreadCommand,
 } from "../../../../web/src/stemcells/needs/actions.ts";
+export { type LineStage } from "../../../../web/src/stemcells/rail/moves.ts";
 export {
-  standingsOf,
-  type LineStage,
-  type Standings,
-} from "../../../../web/src/stemcells/rail/moves.ts";
+  byLaunch,
+  ROW_LIGHT,
+  rowStateOf,
+  type Launchable,
+  type RowLight,
+} from "../../../../web/src/stemcells/rail/awake.ts";
+export {
+  EMPTY_WORDS,
+  SLEEP,
+  sleptWords,
+  STAGE_WORDS,
+  wakesWords,
+} from "../../../../../stemcells/words/awake.ts";
 export {
   elsewhereWords,
   shows,

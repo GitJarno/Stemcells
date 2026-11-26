@@ -8,8 +8,8 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
 const isText = (value: unknown): value is string => typeof value === "string" && value.length > 0;
 
-/** The home's stages as both homes' code names them (Input, Flying, Landed, Settled). */
-export const SHOW_STAGES = ["needs", "working", "landed", "settled"] as const;
+/** The home's stages as both homes' code names them (Input, Awake, Asleep). */
+export const SHOW_STAGES = ["needs", "awake", "asleep"] as const;
 export type ShowStage = (typeof SHOW_STAGES)[number];
 
 export type AskiShow =
@@ -32,15 +32,18 @@ export interface ShowInput {
   /** A place in Settings as Settings words it (`Settings › Providers › Codex`), or a place key. */
   readonly settings?: string;
   /** A stage as the person reads it. */
-  readonly stage?: "Input" | "Flying" | "Landed" | "Settled";
+  readonly stage?: "Input" | "Awake" | "Asleep";
 }
 
-const STAGE_OF: Readonly<Record<NonNullable<ShowInput["stage"]>, ShowStage>> = {
-  Input: "needs",
-  Flying: "working",
-  Landed: "landed",
-  Settled: "settled",
-};
+const STAGE_OF: ReadonlyMap<string, ShowStage> = new Map([
+  ["Input", "needs"],
+  ["Awake", "awake"],
+  ["Asleep", "asleep"],
+  // A server from before the three stages names the four-stage line's.
+  ["Flying", "awake"],
+  ["Landed", "awake"],
+  ["Settled", "asleep"],
+]);
 
 /** A Settings place's key from its words or its key, or null when the catalog has no such place. */
 export function settingsPlaceKey(words: string): string | null {
@@ -63,7 +66,7 @@ export function showOfInput(input: unknown, environmentId: string): AskiShow | n
     const place = settingsPlaceKey(input.settings);
     return place === null ? null : { kind: "settings", place };
   }
-  const stage = STAGE_OF[input.stage as NonNullable<ShowInput["stage"]>];
+  const stage = isText(input.stage) ? STAGE_OF.get(input.stage) : undefined;
   return stage === undefined ? null : { kind: "stage", stage };
 }
 

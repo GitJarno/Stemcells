@@ -1,8 +1,8 @@
 /**
- * Settles a Cell as upstream's sidebar does, via our substitute so its pane closes, with the
- * "Settled" notice whose Undo restores its pin and snooze. From any stage
- * (stemcells/tasks/left-column.md, decision 2): upstream refuses a thread that runs or waits on
- * an answer, so a Cell at work stops first. A queued message still refuses: it's the person's.
+ * Sleep is upstream's settle, via our substitute so its pane closes; Wake its unsettle, or its
+ * unsnooze for a timed sleep. From any stage (left-column.md, decision 2): upstream refuses a
+ * thread that runs or waits on an answer, so a Cell at work stops first. A queued message still
+ * refuses: it's the person's.
  */
 import { scopeThreadRef } from "@t3tools/client-runtime/environment";
 import { runAtomCommand } from "@t3tools/client-runtime/state/runtime";
@@ -57,14 +57,27 @@ export async function settleFromAnyStage(
     toastManager.add(
       stackedThreadToast({
         type: "error",
-        title: "Couldn't stop it to settle it",
-        description: "Settle it once it has stopped.",
+        title: "Couldn't stop it, so it's still awake",
+        description: "Try Sleep again once it has stopped.",
       }),
     );
     return false;
   }
   const result = await settleThread(ref);
   return result._tag === "Success";
+}
+
+/** Wakes a Cell: upstream's unsnooze while `timed`, else its unsettle; true once accepted. */
+export function useWakeCell(): (
+  cell: { readonly environmentId: string; readonly threadId: string },
+  timed: boolean,
+) => Promise<boolean> {
+  const { unsettleThread, unsnoozeThread } = useThreadActions();
+  return async (cell, timed) => {
+    const ref = scopeThreadRef(cell.environmentId as EnvironmentId, cell.threadId as ThreadId);
+    const result = await (timed ? unsnoozeThread(ref) : unsettleThread(ref));
+    return result._tag === "Success";
+  };
 }
 
 export function useSettleCell(): (cell: {

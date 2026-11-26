@@ -35,7 +35,20 @@ describe("launchedAt", () => {
       }),
       at(40),
     ],
-    ["an older server's Cell stands where it was made", cell({ latestRun: { requestedAt: at(20) } }), at(0)],
+    [
+      "a timed sleep's alarm brings it forward",
+      cell({
+        latestUserAuthoredMessageAt: at(10),
+        latestRun: { requestedAt: at(10) },
+        snoozedUntil: at(50),
+      }),
+      at(50),
+    ],
+    [
+      "an older server's Cell stands where it was made",
+      cell({ latestRun: { requestedAt: at(20) } }),
+      at(0),
+    ],
   ])("%s", (_name, input, expected) => {
     expect(launchedAt(input)).toBe(Date.parse(expected));
   });

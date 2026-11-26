@@ -84,7 +84,7 @@ describe("the room in words", () => {
       "At work (1):",
       "[Otter](t3-thread://v1/t-otter) · Atlas · the checks on #212",
       "",
-      "Done, not settled (1):",
+      "Landed, awake (1):",
       "[Pip](t3-thread://v1/t-pip) · Atlas · #281 merged",
     ]);
     expect(standing).toMatchObject({ needsYou: 2, atWork: 1, done: 1 });
@@ -191,7 +191,7 @@ describe("the room in words", () => {
       "Needs you (1):",
       "1 [Floof](t3-thread://v1/t-floof) · p-harbor · plan ready: Split the export · told: Split the export into pages",
       "",
-      "Done, not settled (2):",
+      "Landed, awake (2):",
       "[Pip](t3-thread://v1/t-pip) · p-atlas · tokens moved · landed short: a check it ran last failed · +40 −8 in 3 files · tests failed · lint clean · #12 open, checks pending, conflicts",
       "[Otter](t3-thread://v1/t-otter) · p-atlas · its word only: nothing it ran or opened shows it",
     ]);

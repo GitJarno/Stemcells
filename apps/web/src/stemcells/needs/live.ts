@@ -5,7 +5,7 @@
  * there to take it back.
  */
 import { sendThreadCommand, unsnoozeCell } from "../upstream/needs";
-import { useSettleCell } from "../upstream/settle";
+import { useSettleCell, useWakeCell } from "../upstream/settle";
 import { putAnswerOnUndoLine, takeOffUndoLine } from "../upstream/undoNotice";
 import { timing } from "../tokens/motion";
 import { movedByHand } from "./byHand";
@@ -69,7 +69,7 @@ export const page = createPage({
 
 if (typeof window !== "undefined") window.addEventListener("pagehide", () => holds.flush());
 
-/** Settles a Cell, off the column at once while it runs (`leaving.ts`). */
+/** Sleeps a Cell (upstream's settle), off the column at once while it runs (`leaving.ts`). */
 export function useSettleAtOnce(): (cell: {
   readonly environmentId: string;
   readonly threadId: string;
@@ -78,6 +78,18 @@ export function useSettleAtOnce(): (cell: {
   return (cell) => {
     movedByHand(cell.threadId);
     return leaving.leaveWhile(cell.threadId, settle(cell));
+  };
+}
+
+/** Wakes a Cell by the person's own hand, so it hops into Awake's count (`byHand.ts`). */
+export function useWakeByHand(): (
+  cell: { readonly environmentId: string; readonly threadId: string },
+  timed: boolean,
+) => Promise<boolean> {
+  const wake = useWakeCell();
+  return (cell, timed) => {
+    movedByHand(cell.threadId);
+    return wake(cell, timed);
   };
 }
 

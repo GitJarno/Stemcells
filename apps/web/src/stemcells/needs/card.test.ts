@@ -323,7 +323,7 @@ describe("cards read from a Cell's prose, with no model", () => {
     expect(left.options.map((each) => [each.title, each.consequence, each.recommended])).toEqual([
       ["Done it", "Sends “Done. Carry on.”", false],
       ["Reply…", null, false],
-      ["Nothing to do", "Settles the Cell. Nothing is sent.", false],
+      ["Nothing to do", "The Cell sleeps. Nothing is sent.", false],
     ]);
 
     const several = prose("left", "sign in · pick the plan", {

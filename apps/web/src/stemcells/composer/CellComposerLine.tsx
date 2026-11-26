@@ -1,7 +1,8 @@
 /* oxlint-disable shadcn/no-unknown-classes -- Stemcells' classes live in its own stylesheet (composer-line.css), outside upstream's Tailwind entry. */
-import { CheckIcon, CornerLeftUpIcon, FolderGit2Icon } from "lucide-react";
+import { CornerLeftUpIcon, FolderGit2Icon, MoonIcon } from "lucide-react";
 import { type CSSProperties, use, useLayoutEffect, useRef } from "react";
 
+import { SLEEP } from "../../../../../stemcells/words/awake.ts";
 import { poke, stroke } from "../cell/acting";
 import { clockSeconds } from "../cell/blink";
 import { POINTS_PER_PIXEL } from "../cell/look";
@@ -246,11 +247,11 @@ export function CellComposerLine() {
             <button
               type="button"
               className="composer-line-settle composer-line-act"
-              aria-label={`Settle ${name}`}
+              aria-label={`${SLEEP} ${name}`}
               onClick={() => void settle(cell)}
             >
-              <CheckIcon aria-hidden />
-              <span>Settle</span>
+              <MoonIcon aria-hidden />
+              <span>{SLEEP}</span>
             </button>
           ) : null}
           <span ref={stash?.setElement} className="composer-line-stash-slot" />

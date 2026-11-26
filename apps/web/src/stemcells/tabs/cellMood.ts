@@ -1,8 +1,8 @@
 /**
- * A Cell's face from its chat's status: crashed when its run failed, asking while it waits on
- * you (`needsApproval` for leave to run or change something, `needsYou` for an answer or a plan),
- * awake while it works, cheering then resting once a turn lands. It sleeps once the prompt cache
- * is cold, so a sleeping Cell's next message costs a cold start. While its line is down it peers.
+ * A Cell's face from its chat's status: crashed when its run failed, asking (`needsApproval`,
+ * `needsYou`) while it waits on you, cheering then resting once a turn lands, peering while its
+ * line is down. It sleeps only while asleep: a cold prompt cache leaves it awake, as the art has
+ * no doze (stemcells/tasks/awake-asleep.md, decision 6).
  */
 import type { Activity } from "../cell/activity";
 import type { Mood } from "../cell/look";
@@ -29,34 +29,38 @@ export function moodOfStatus(status: CellStatus | null): Mood {
 export const CHEER_MS = 6_000;
 
 /**
- * The face at `now` for a chat in `status` whose last turn landed at `landedAt` and whose prompt
- * cache goes cold at `coldAt` (ms; null before a turn lands, undefined when nothing says). While
- * `lineDown` (machine reconnecting or offline, provider out: `useCellLineDown`) it peers, whatever
- * the chat last said: nothing it shows can change until the line is back.
+ * The face at `now` for a chat in `status` that landed at `landedAt` and sleeps until `wakesAt`
+ * (`useCellWakesAt`). While `lineDown` (`useCellLineDown`) it peers, whatever the chat last said:
+ * nothing it shows can change until the line is back. Asking, at work or crashed, it shows that
+ * even asleep: a raised hand wakes it.
  */
 export function moodAt(
   status: CellStatus | null,
   landedAt: number | null,
-  coldAt: number | undefined,
   now: number,
   lineDown = false,
+  wakesAt: number | null = null,
 ): Mood {
   if (lineDown) return "peering";
   if (status !== null && status !== "Completed") return moodOfStatus(status);
+  if (wakesAt !== null && now < wakesAt) return "asleep";
   if (landedAt === null) return "awake";
-  if (now - landedAt < CHEER_MS) return "pleased";
-  return coldAt !== undefined && now >= coldAt ? "asleep" : "awake";
+  return now - landedAt < CHEER_MS ? "pleased" : "awake";
 }
 
 /** When the face `moodAt` gives changes next with nothing else changing; undefined when it holds. */
 export function moodTurnsAt(
   status: CellStatus | null,
   landedAt: number | null,
-  coldAt: number | undefined,
   now: number,
+  wakesAt: number | null = null,
 ): number | undefined {
-  if ((status !== null && status !== "Completed") || landedAt === null) return undefined;
-  const next = Math.min(...[landedAt + CHEER_MS, coldAt ?? Infinity].filter((at) => at > now));
+  if (status !== null && status !== "Completed") return undefined;
+  const next = Math.min(
+    ...[landedAt === null ? Infinity : landedAt + CHEER_MS, wakesAt ?? Infinity].filter(
+      (at) => at > now,
+    ),
+  );
   return Number.isFinite(next) ? next : undefined;
 }
 

@@ -4,6 +4,7 @@ import type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/model
 import type { ScopedThreadRef } from "@t3tools/contracts";
 
 import {
+  hasUnseenCompletion,
   resolveSidebarThreadStatus,
   resolveThreadLastVisitedAt,
   resolveThreadStatusPill,
@@ -39,6 +40,33 @@ export function useCellStatus(cell: CellRef | null): CellStatus | null {
     ref ? state.threadLastVisitedAtById[scopedThreadKey(ref)] : undefined,
   );
   return shell === null ? null : statusOfShell(shell, localLastVisitedAt);
+}
+
+/**
+ * Whether the chat's latest run landed after the person last opened it, as upstream's sidebar
+ * marks a chat unread.
+ */
+export function useCellUnseen(cell: CellRef | null): boolean {
+  const ref = cell ? threadRefOf(cell) : null;
+  const shell = useQuietThreadShell(ref);
+  const localLastVisitedAt = useUiStateStore((state) =>
+    ref ? state.threadLastVisitedAtById[scopedThreadKey(ref)] : undefined,
+  );
+  if (shell === null) return false;
+  const lastVisitedAt = resolveThreadLastVisitedAt(shell.lastVisitedAt, localLastVisitedAt);
+  return hasUnseenCompletion({ ...shell, lastVisitedAt });
+}
+
+/**
+ * When the Cell wakes while it is asleep, in epoch ms: never (Infinity) once settled, its
+ * snooze's end while snoozed. Null while it is awake.
+ */
+export function useCellWakesAt(cell: CellRef | null): number | null {
+  const shell = useQuietThreadShell(cell ? threadRefOf(cell) : null);
+  if (shell === null) return null;
+  if (shell.settledOverride === "settled") return Infinity;
+  const until = shell.snoozedUntil === null ? Number.NaN : Date.parse(shell.snoozedUntil);
+  return Number.isFinite(until) ? until : null;
 }
 
 /** Whether the chat is working now, as upstream's sidebar shows it. */

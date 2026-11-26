@@ -5,7 +5,7 @@
 import { createContext, useEffect, useSyncExternalStore } from "react";
 import type { AnimatedRef, SharedValue } from "react-native-reanimated";
 
-import type { TabCounts } from "./tabs";
+import type { CellState } from "../line/line";
 
 export interface HomeTabs {
   readonly tab: string;
@@ -14,9 +14,7 @@ export interface HomeTabs {
     readonly label: string;
     readonly count: number;
   }>;
-  /** The home in Aski's terms. */
-  readonly counts: TabCounts;
-  /** The night comes over Aski: the tab of Cells put away. */
+  /** The night comes over Aski: Asleep. */
   readonly night: boolean;
   readonly choose: (tab: string) => void;
   /** The machine the list is narrowed to, whose Aski the header opens. */
@@ -34,6 +32,9 @@ export const HomeTabsContext = createContext<HomeTabs | null>(null);
  * list stays mounted, so what a row draws for its tab goes by its own list, not the tab chosen.
  */
 export const HomeStageContext = createContext<string | null>(null);
+
+/** Each awake Cell's state on the line, by `environmentId:id`, for its row's light and time. */
+export const CellStates = createContext<ReadonlyMap<string, CellState>>(new Map());
 
 /** One stage's list as the home switches between them (`StagePages.tsx`). */
 export interface StagePage {

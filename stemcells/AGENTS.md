@@ -98,10 +98,12 @@ The fork exists to keep taking upstream's work for free. The reasoning is in
 - A word upstream writes inline in a view is never edited in its file: add
   an entry to the word table (`stemcells/brand/wordTable.ts`) and the
   builds swap it (`stemcells/docs/fork.md`, The name transform).
-- A Cell is thrown at a problem and flies until it lands: the stages a
-  person reads are Input, Flying, Landed, Settled, never Working or Needs
-  you. Code, wire values and text only models read keep `working` and
-  `needs-you` (`stemcells/tasks/flying.md`, `stemcells/tasks/input.md`).
+- A Cell is thrown at a problem and flies until it lands. The stages a
+  person reads are Input, Awake and Asleep; Flying and Landed are an awake
+  Cell's own states; never Working or Needs you. The verbs are Sleep,
+  Sleep until… and Wake, never Settle, Snooze or "put to sleep". Code, wire
+  values and text only models read keep `working`, `needs-you`, `done` and
+  `settled` (`stemcells/tasks/awake-asleep.md`, `stemcells/tasks/input.md`).
 
 ## In public
 

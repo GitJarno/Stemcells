@@ -84,7 +84,7 @@ function turn(
 
 /** The stages' pages, in the segments' order, and a turn to one of them from a tap. */
 export function useStagePages<Stage extends string>(
-  stages: readonly [Stage, Stage, Stage, Stage],
+  stages: readonly [Stage, Stage, Stage],
   opening: Stage,
 ) {
   const at = stages.indexOf(opening);
@@ -93,11 +93,10 @@ export function useStagePages<Stage extends string>(
   const a = usePage(at === 0, top);
   const b = usePage(at === 1, top);
   const c = usePage(at === 2, top);
-  const d = usePage(at === 3, top);
   const front = useSharedValue(at);
   const reduced = useReducedMotion();
   return useMemo(() => {
-    const pages = [a, b, c, d];
+    const pages = [a, b, c];
     return {
       stages,
       pages,
@@ -107,7 +106,7 @@ export function useStagePages<Stage extends string>(
       show: (stage: Stage, still = reduced) =>
         scheduleOnUI(turn, pages, front, stages.indexOf(stage), still, top),
     };
-  }, [stages, a, b, c, d, front, reduced, top]);
+  }, [stages, a, b, c, front, reduced, top]);
 }
 
 export function StagePages<Stage extends string>(props: {

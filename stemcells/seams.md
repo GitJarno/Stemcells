@@ -556,18 +556,18 @@ library's dependency (above); the rest are substitutes:
   workspace) and while searching, the home is T3's own. Two more substitutes: the row tokens make cards on the
   phone's own screen (`thread-list-v2-row-appearance.ts`; Android's file
   and the iPad's sidebar stay T3's), no row recedes (`thread-row-emphasis.ts`: T3 fades a
-  working Cell's card to 55%, where Flying is a segment of its own and the card's light says it
-  flies), and on the home's tabs every shelf stays open,
-  Settled's only on its own tab (`use-thread-list-v2-shelf-preferences.ts`:
-  open, it reads the older settled Cells page by page, and elsewhere showed
-  "Loading" and grew the home's Cells), and, at the row's seam, draws
-  no header: the tab is the shelf. Settled counts the older settled Cells
+  working Cell's card to 55%, where an awake row's light says it flies), and on the home's tabs
+  every shelf stays open, the settled one only on Asleep, and T3's arranging by hand stays off
+  (`use-thread-list-v2-shelf-preferences.ts`: open, the settled shelf reads the older settled
+  Cells page by page, and elsewhere showed "Loading" and grew the home's Cells), and, at the
+  row's seam, draws no header: the tab is the shelf. Asleep counts the older settled Cells
   the servers keep back with those the phone holds (T3's own count,
   `useOlderSettledShelf`), and reads them a page at a time as the person
   scrolls near its end, where T3's list has a Show more button (a seam in
-  `HomeScreen.tsx`, `home/SettledPages.tsx`). One of `useThreadListV2.ts` keeps Flying in T3's
-  one order, so a Cell between two turns holds its place (`stemcells/tasks/home-holds-still-3.md`;
-  `useThreadListV2.contract.test.ts` pins that order). One of `workspace-connection-status.ts`
+  `HomeScreen.tsx`, `home/SettledPages.tsx`). One of `useThreadListV2.ts` stands each tab in its
+  own order (`upstream/listOrder.ts`): Awake's pins, then the latest the person brought forward,
+  so a landing, an ask or a flight moves no row (`stemcells/tasks/awake-asleep.md`;
+  `useThreadListV2.contract.test.ts` pins it), and Asleep's latest asleep first. One of `workspace-connection-status.ts`
   has the header say Cells while the phone loads or syncs them; upstream's
   own test of a module still gets upstream's (`substitutes.cjs`). The seam in the row puts the
   Cell beside its card's content and keeps the card to two lines, its

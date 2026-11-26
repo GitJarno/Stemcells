@@ -1,6 +1,6 @@
 /**
  * What a Cell's acting relies on in upstream: tool calls' turn items, a shell's run, the
- * desktop keeping running threads live, Claude's prompt cache expiry, the runs and requests its
+ * desktop keeping running threads live, the runs and requests its
  * growth reads, and the checkpoints that count a run's lines. A failure after a sync names the
  * contract that moved; fix it in `cellWork.ts`, not in the views.
  */
@@ -12,8 +12,6 @@ import {
   OrchestrationV2Run,
   OrchestrationV2RuntimeRequest,
   OrchestrationV2TurnItem,
-  type OrchestrationV2ProviderTurn,
-  type OrchestrationV2ThreadProjection,
 } from "@t3tools/contracts";
 import * as DateTime from "effect/DateTime";
 import * as Schema from "effect/Schema";
@@ -25,18 +23,7 @@ import { resolveThreadDetailRef } from "../../state/entities";
 import claudeAdapterSource from "../../../../server/src/orchestration-v2/Adapters/ClaudeAdapterV2.ts?raw";
 import projectionStoreSource from "../../../../server/src/orchestration-v2/ProjectionStore.ts?raw";
 import { currentActivity } from "../cell/activity";
-import {
-  beatOf,
-  beatsOf,
-  budsIn,
-  CODEX_CACHE_MS,
-  coldAtFor,
-  coldAtOf,
-  diffOf,
-  growthOf,
-  newsOf,
-  subagentsAwayOf,
-} from "./cellWork";
+import { beatOf, beatsOf, budsIn, diffOf, growthOf, newsOf, subagentsAwayOf } from "./cellWork";
 
 const decode = Schema.decodeUnknownSync(OrchestrationV2TurnItem);
 const decodePending = Schema.decodeUnknownSync(Schema.Array(OrchestrationV2PendingBackgroundTask));
@@ -179,78 +166,6 @@ describe("what a working Cell acts out, from its run's turn items", () => {
     expect(resolveThreadDetailRef(ref, { shellExists: true, waitForShell: true })).toBe(ref);
   });
 });
-
-describe("when a chat's prompt cache goes cold", () => {
-  it("is Claude's as its turn says, Codex's half an hour on, and no other provider's", () => {
-    const landed = 1_000_000;
-    expect(coldAtFor("claudeAgent", landed, landed + 60 * 60_000)).toBe(landed + 60 * 60_000);
-    expect(coldAtFor("claudeAgent", landed, undefined)).toBeUndefined();
-    expect(coldAtFor("codex", landed, undefined)).toBe(landed + CODEX_CACHE_MS);
-    expect(CODEX_CACHE_MS).toBe(30 * 60_000);
-    expect(coldAtFor("opencode", landed, landed)).toBeUndefined();
-    expect(coldAtFor(null, landed, landed)).toBeUndefined();
-  });
-
-  it("Claude's adapter stamps the expiry by the tier the request wrote, from the request's start", () => {
-    for (const line of [
-      "if (cacheCreation.ephemeral_1h_input_tokens > 0) return 60 * 60_000;",
-      "if (cacheCreation.ephemeral_5m_input_tokens > 0) return 5 * 60_000;",
-      ": DateTime.formatIso(DateTime.add(requestedAt, { milliseconds: promptCacheTtlMs }));",
-      "if (requestStarted && context.streamUsage !== null) context.streamUsage.requestedAt = now;",
-    ]) {
-      expect(claudeAdapterSource).toContain(line);
-    }
-    type Usage = NonNullable<OrchestrationV2ProviderTurn["tokenUsage"]>;
-    expectTypeOf<Usage["promptCacheExpiresAt"]>().toEqualTypeOf<string | undefined>();
-    expectTypeOf<Usage["updatedAt"]>().toEqualTypeOf<string>();
-  });
-
-  it("reads the newest turn's expiry once the detail has seen the run land", () => {
-    const expiry = "2026-10-21T09:00:00.000Z";
-    const thread = detail("completed", [
-      usage("2026-10-21T07:00:00.000Z", "2026-10-21T07:05:00.000Z"),
-      usage("2026-10-21T08:00:30.000Z", expiry),
-    ]);
-    expect(coldAtOf(thread, "run-1")).toBe(Date.parse(expiry));
-    expect(coldAtOf(detail("running", []), "run-1")).toBeNull();
-    expect(coldAtOf(thread, "run-2")).toBeNull();
-  });
-
-  it("makes no claim when the newest usage names no expiry", () => {
-    const servedFromCache = detail("completed", [
-      usage("2026-10-21T07:00:00.000Z", "2026-10-21T08:00:00.000Z"),
-      usage("2026-10-21T08:00:30.000Z", undefined),
-    ]);
-    expect(coldAtOf(servedFromCache, "run-1")).toBeUndefined();
-  });
-});
-
-/** A turn's usage reported at `updatedAt`, its cache expiring at `expiresAt`. */
-function usage(updatedAt: string, expiresAt: string | undefined) {
-  return {
-    // Upstream reads only the active provider thread's turns.
-    providerThreadId: "provider-thread-1",
-    tokenUsage: {
-      usedTokens: 1_000,
-      updatedAt,
-      ...(expiresAt === undefined ? {} : { promptCacheExpiresAt: expiresAt }),
-    },
-  };
-}
-
-/** A thread's detail with run `run-1` in `status` and its provider turns. */
-function detail(
-  status: string,
-  providerTurns: ReadonlyArray<ReturnType<typeof usage>>,
-): OrchestrationV2ThreadProjection {
-  return {
-    thread: { id: "thread-1", activeProviderThreadId: "provider-thread-1", forkedFrom: null },
-    runs: [{ id: "run-1", status }],
-    providerThreads: [{ id: "provider-thread-1", contextUsage: null }],
-    providerTurns,
-    contextTransfers: [],
-  } as unknown as OrchestrationV2ThreadProjection;
-}
 
 function projected(turnItem: OrchestrationV2TurnItem) {
   return {

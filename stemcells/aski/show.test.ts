@@ -5,8 +5,10 @@ import { AT_DEVICE_MS, isShowTool, mayShow, SHOW_FRESH_MS, showOfInput } from ".
 describe("what Aski's show names", () => {
   it.each([
     [{ cell: "thread-1" }, { kind: "cell", environmentId: "mac", threadId: "thread-1" }],
-    [{ stage: "Flying" }, { kind: "stage", stage: "working" }],
+    [{ stage: "Awake" }, { kind: "stage", stage: "awake" }],
     [{ stage: "Input" }, { kind: "stage", stage: "needs" }],
+    // From a server before the three stages.
+    [{ stage: "Settled" }, { kind: "stage", stage: "asleep" }],
     [{ settings: "Settings › Providers › Codex" }, { kind: "settings", place: "provider-codex" }],
     [{ settings: "Appearance" }, { kind: "settings", place: "page-appearance" }],
     [{ settings: "provider-codex" }, { kind: "settings", place: "provider-codex" }],
@@ -18,6 +20,7 @@ describe("what Aski's show names", () => {
     [{}],
     [{ cell: "thread-1", stage: "Input" }],
     [{ stage: "Working" }],
+    [{ stage: "toString" }],
     [{ settings: "Settings › Nowhere at all" }],
     [{ cell: "" }],
     ["thread-1"],

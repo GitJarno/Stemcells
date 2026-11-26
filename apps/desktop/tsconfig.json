@@ -18,6 +18,7 @@
     "../../stemcells/privacy/buildEnv.ts",
     "../../stemcells/privacy/closed.ts",
     "../../stemcells/privacy/switches.ts",
+    "../../stemcells/words/awake.ts",
     "../../stemcells/words/casualChat.ts",
     "../../stemcells/words/cells.ts",
     "../../stemcells/words/copyCell.ts",

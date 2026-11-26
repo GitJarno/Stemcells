@@ -20,7 +20,7 @@ import { standingOf } from "../needs/standing.ts";
 
 const StandingTool = Tool.make("stemcells_standing", {
   description:
-    "Where every Cell on this server stands, across every project: what needs the person, under the numbers Aski's room shows on its cards; the Cells at work; and those done but not yet settled. Each Cell is linked. Read only.",
+    "Where every Cell on this server stands, across every project: what needs the person, under the numbers Aski's room shows on its cards; the Cells at work; and those landed and still awake. Each Cell is linked. Read only.",
   parameters: Tool.EmptyParams,
   success: Schema.Struct({
     needsYou: Schema.Number,

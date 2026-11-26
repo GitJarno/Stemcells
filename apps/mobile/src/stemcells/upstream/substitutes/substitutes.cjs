@@ -43,11 +43,11 @@ const SUBSTITUTES = {
   "apps/mobile/src/features/home/workspace-connection-status.ts": "workspace-connection-status.ts",
   "apps/mobile/src/features/threads/thread-list-v2-row-appearance.ts":
     "thread-list-v2-row-appearance.ts",
-  // A flying Cell's card reads at full contrast: its segment and its light say it flies.
+  // A flying Cell's row reads at full contrast: its light says it flies.
   "apps/mobile/src/features/threads/thread-row-emphasis.ts": "thread-row-emphasis.ts",
   "apps/mobile/src/features/threads/use-thread-list-v2-shelf-preferences.ts":
     "use-thread-list-v2-shelf-preferences.ts",
-  // On Flying a Cell keeps its place between two turns: T3's list parts them from the rest.
+  // Awake holds still and Asleep lists the latest asleep first: T3's list moves a Cell by its runs.
   "apps/mobile/src/features/threads/useThreadListV2.ts": "useThreadListV2.ts",
   // The usage chart is the Mac's, a smoothed line per agent over a faint fill,
   // and an agent whose Cells wear a body of their own is drawn in its colour.

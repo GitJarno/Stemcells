@@ -1,6 +1,6 @@
 // A working Cell's light as the Mac's composer wears it: its colours, its band, its strength over
 // the glass and the beat it crosses on, from the web's own plain TypeScript, taken here and
-// nowhere else. The phone draws it itself (`CardLight.tsx`).
+// nowhere else. The phone draws it itself (`Wave.tsx`).
 
 export {
   BAND_LEAN,

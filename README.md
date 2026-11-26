@@ -66,16 +66,15 @@ and asks you one clear question. Your answer is the next throw.
                         flies again
 ```
 
-| Stage       | Means                                 | You                 |
-| ----------- | ------------------------------------- | ------------------- |
-| **Input**   | It fell short and waits for your word | Answer; it flies    |
-| **Flying**  | In the air, on its way                | Nothing. Hands free |
-| **Landed**  | It stuck the landing                  | Read it             |
-| **Settled** | Put away by you                       | Nothing, ever again |
+| Stage      | Means                                 | You                               |
+| ---------- | ------------------------------------- | --------------------------------- |
+| **Input**  | It fell short and waits for your word | Answer; it flies                  |
+| **Awake**  | In play: flying, or landed            | Nothing while it flies; then read |
+| **Asleep** | Put away by you, or until a time      | Nothing, until you wake it        |
 
-Landing is the agent's finish. Settling is yours: a click on the Mac, a
-swipe on the phone. A settled Cell is put away, not deleted; write to it and
-it flies again.
+Landing is the agent's finish. Sleep is yours: a click on the Mac, a swipe
+on the phone, now or until a time. An asleep Cell is put away, not deleted;
+wake it or write to it and it flies again.
 
 ### Shown, not told
 

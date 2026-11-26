@@ -81,9 +81,9 @@ describe("Aski's shows", () => {
     expect(
       showToAct(call("s", { settings: "page-providers" }), AT.environmentId, gate(), here),
     ).toEqual({ kind: "settings", place: "page-providers" });
-    expect(showToAct(call("t", { stage: "Landed" }), AT.environmentId, gate(), here)).toEqual({
+    expect(showToAct(call("t", { stage: "Asleep" }), AT.environmentId, gate(), here)).toEqual({
       kind: "stage",
-      stage: "landed",
+      stage: "asleep",
     });
   });
 

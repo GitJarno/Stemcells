@@ -69,6 +69,19 @@ Mac's column: left to the next, right to the one before
   settles back on `settle`.
 - **Reduce Motion**: the list isn't drawn along; the turn is still.
 
+## The column's rows
+
+A Cell's row stands where the person last brought it forward and moves only
+when they act (`stemcells/tasks/awake-asleep.md`).
+
+- **Its light** is the composer's, painted once: a flying Cell's band crosses
+  its row on the composer's beat (`glow-pass`, `glow-rest`), stepped beside
+  another app and held off screen. A landing lets the pass under way finish,
+  and the wash stays.
+- **Sleep and Wake** fold the row away on `leave` as its light fades, and the
+  Cell hops into the other stage's count on `travel` (`rail/Hops.tsx`).
+- **Reduce Motion**: no band, and the row fades without folding.
+
 ## Aski's button
 
 Aski is the other side of every chat (`stemcells/tasks/aski-side.md`). One

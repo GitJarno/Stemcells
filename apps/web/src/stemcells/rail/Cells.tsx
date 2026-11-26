@@ -1,31 +1,56 @@
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import {
   ChartNoAxesColumnIcon,
-  CheckIcon,
   ChevronDownIcon,
   ChevronsLeftIcon,
   FolderPlusIcon,
   ListIcon,
-  PinIcon,
+  MoonIcon,
   SearchIcon,
   SettingsIcon,
   SquarePenIcon,
+  SunIcon,
 } from "lucide-react";
-import { useLayoutEffect, useState, useSyncExternalStore, type ReactNode } from "react";
+import {
+  useLayoutEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 
 import { useAskiRoomInFront } from "../aski/inFront";
 import { CardList, onListOf } from "../needs/CardList";
 import { conditionLineOf } from "../needs/conditionLines";
 import type { Shown } from "../needs/display";
 import { useLeaving } from "../needs/leaving";
-import { leaving, page, useSettleAtOnce } from "../needs/live";
+import { leaving, page, useSettleAtOnce, useWakeByHand } from "../needs/live";
 import { useNeeds } from "../needs/stream";
 import { reveal } from "../needs/walk";
 import type { CellStanding, Condition } from "../needs/wire";
+import { toneTokenOf } from "../glow/light";
+import { crossing, resweep, sweep } from "../motion/beat";
+import { type Sight, watchSight } from "../motion/sight";
 import { CellMark } from "../tabs/CellMark";
 import { openNewCellPane } from "../tabs/commands";
-import { CellAge, CellCard, CellProject, CellPullRequest, useCellShell } from "../upstream/cellRow";
-import { useOpenCell, useSettledKeptBack, useShelves, type ShelvedCell } from "../upstream/column";
+import { reducedMotion } from "../tokens/motion";
+import {
+  CellAge,
+  CellCard,
+  CellProjectMark,
+  compactAge,
+  useCellLightFacts,
+  useCellShell,
+  wakeIn,
+} from "../upstream/cellRow";
+import {
+  useOpenCell,
+  useSettledKeptBack,
+  useShelves,
+  type AsleepCell,
+  type ShelvedCell,
+} from "../upstream/column";
 import { useNowMinuteMs, useOpenFromNeeds, usePrimaryEnvironmentId } from "../upstream/needs";
 import {
   isElectron,
@@ -48,6 +73,14 @@ import {
   MenuTrigger,
   useSidebar,
 } from "../upstream/ui";
+import {
+  EMPTY_WORDS,
+  SLEEP,
+  STAGE_WORDS,
+  WAKE,
+  wakesWords,
+} from "../../../../../stemcells/words/awake.ts";
+import { byLaunch, type Launchable, ROW_LIGHT, rowStateOf, type RowState } from "./awake";
 import { useColumnStore, type ColumnStage } from "./column";
 import { elsewhere, elsewhereWords, shows } from "./filter";
 import { Hops } from "./Hops";
@@ -68,24 +101,15 @@ import "./cells.css";
 
 const NO_STANDINGS: Standings = new Map();
 
-/** Settled Cells the list shows before search takes over. */
-const SETTLED_SHOWN = 30;
-
-const LABEL: Record<ColumnStage, string> = {
-  needs: "Input",
-  working: "Flying",
-  landed: "Landed",
-  settled: "Settled",
-  pinned: "Pinned",
-};
+/** Asleep Cells the list shows before search takes over. */
+const ASLEEP_SHOWN = 30;
 
 type Ref = { readonly environmentId: string; readonly threadId: string };
 
 /**
- * The left column as the Cells' line (stemcells/tasks/left-column.md): what
- * needs you on top, open by default, and every stage a row at the foot that
- * opens it in its place. It reads the Cells, never the route, so moving
- * between tabs leaves it as it is.
+ * The left column as the Cells' line (stemcells/tasks/awake-asleep.md): what needs you, open by
+ * default, the Cells awake and those asleep, each stage a row at the foot that opens it in its
+ * place. It reads the Cells, never the route, so moving between tabs leaves it as it is.
  */
 export function Cells() {
   const navigate = useNavigate();
@@ -102,27 +126,25 @@ export function Cells() {
   const shownStage = aim ?? stage;
   const view = useSyncExternalStore(page.subscribe, page.read, page.read);
   const { cells, conditions } = useNeeds();
-  const allShelves = useShelves();
+  const shelves = useShelves();
   const environmentId = usePrimaryEnvironmentId();
   const projects = useRailProjects();
+  const now = useNowMinuteMs();
   // A project that's gone shows every one, as no filter does.
   const project = projects.find((each) => each.key === projectKey) ?? null;
   const here = (cell: { readonly projectId: string }) =>
     project === null || (environmentId !== null && shows(project, environmentId, cell.projectId));
-  const shelves = {
-    settled: allShelves.settled.filter(here),
-    pinned: allShelves.pinned.filter(here),
-  };
-  // The server sends only its newest settled Cells; Settled counts the rest it keeps back too.
+  const asleep = shelves.asleep.filter(here);
+  // The server sends only its newest settled Cells; Asleep counts the rest it keeps back too.
   const keptBack = useSettledKeptBack((projectId) => here({ projectId }));
-  const settledCount = shelves.settled.length + keptBack;
-  const settledUnlisted = settledCount - Math.min(shelves.settled.length, SETTLED_SHOWN);
+  const asleepCount = asleep.length + keptBack;
+  const asleepUnlisted = asleepCount - Math.min(asleep.length, ASLEEP_SHOWN);
   // The undo line stands above the stages; with the column hidden, the notice is a toast.
   // Settings and Usage have no ⌘Z to undo with.
   const { open } = useSidebar();
   useRailUndoNotice(!open && lit === null);
   const onList = onListOf(view);
-  const settling = useLeaving(leaving);
+  const sleeping = useLeaving(leaving);
 
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Mark the document root with the Cells column while it is mounted.
   useLayoutEffect(() => {
@@ -133,14 +155,6 @@ export function Cells() {
     };
   }, []);
 
-  const standing = (of: CellStanding["stage"]) =>
-    (cells ?? []).filter((cell) => cell.stage === of && !settling.has(cell.threadId) && here(cell));
-  const toRef = (cell: CellStanding): Ref | null =>
-    environmentId === null ? null : { environmentId, threadId: cell.threadId };
-  // A Cell a shared stop holds (conditions.md) reads `working` on the wire and isn't flying.
-  const working = standing("working").filter((cell) => cell.holds == null);
-  const held = standing("working").filter((cell) => cell.holds != null);
-  const landed = standing("done");
   // Asks never hide: Input counts every one, and says where those the filter leaves out are.
   const asking = onList.filter((each) => each.goneAt === null);
   const waiting = asking.length;
@@ -155,12 +169,20 @@ export function Cells() {
             asking.map((each) => each.need),
           ),
         );
+  const asked = askedSince(onList);
+  const awake =
+    environmentId === null
+      ? []
+      : awakeOrder((cells ?? []).filter(here), shelves.pinned, shelves.launches).map((cell) =>
+          awakeRowOf(cell, environmentId, sleeping.has(cell.threadId), asked),
+        );
+  const staying = awake.filter((row) => !row.leaving);
+  // A Cell a shared stop holds (conditions.md) reads `working` on the wire and isn't flying.
+  const held = staying.filter((row) => row.holds !== null);
   const counts: Record<ColumnStage, number> = {
     needs: waiting,
-    working: working.length,
-    landed: landed.length,
-    settled: settledCount,
-    pinned: shelves.pinned.length,
+    awake: staying.length,
+    asleep: asleepCount,
   };
 
   return (
@@ -203,64 +225,49 @@ export function Cells() {
                 onShowAll={() => setProject(null)}
               />
             ),
-            working: (
+            awake: (
               <>
-                <Rows
-                  label="Flying"
-                  cells={working.flatMap((cell) => rowOf(cell, toRef))}
-                  settles
-                />
                 {(conditions ?? []).map((condition) => (
                   <Holding
                     key={condition.key}
                     condition={condition}
-                    cells={held
-                      .filter((cell) => cell.holds === condition.key)
-                      .flatMap((cell) => rowOf(cell, toRef))}
+                    count={held.filter((row) => row.holds === condition.key).length}
+                    now={now}
                   />
                 ))}
+                <Awake rows={awake} now={now} />
               </>
             ),
-            landed: <Landed cells={landed.flatMap((cell) => rowOf(cell, toRef))} />,
-            settled: (
-              <Rows
-                label="Settled"
-                settled
-                cells={shelves.settled.slice(0, SETTLED_SHOWN).map(rowOfShelved)}
+            asleep: (
+              <Asleep
+                cells={asleep.slice(0, ASLEEP_SHOWN)}
+                now={now}
                 more={
-                  settledUnlisted > 0 ? (
+                  asleepUnlisted > 0 ? (
                     <button type="button" data-cells-more="" onClick={openSearch}>
-                      {settledUnlisted} more · search finds them
+                      {asleepUnlisted} more · search finds them
                     </button>
                   ) : null
                 }
               />
             ),
-            pinned: <Rows label="Pinned" cells={shelves.pinned.map(rowOfShelved)} />,
           }}
         />
         <nav data-cells-stages="" aria-label="Stages">
           <UndoLine />
-          {(["needs", "working", "landed", "settled"] as const).map((each) => (
+          {(["needs", "awake", "asleep"] as const).map((each) => (
             <StageRow
               key={each}
               stage={each}
               count={counts[each]}
-              held={each === "working" ? held.length : 0}
+              held={each === "awake" ? held.length : 0}
               open={shownStage === each}
               onOpen={() => setStage(each)}
             />
           ))}
-          <div data-cells-apart="" />
-          <StageRow
-            stage="pinned"
-            count={counts.pinned}
-            open={shownStage === "pinned"}
-            onOpen={() => setStage("pinned")}
-          />
         </nav>
         <Hops
-          standings={cells === null ? NO_STANDINGS : standingsOf(cells, allShelves.settled)}
+          standings={cells === null ? NO_STANDINGS : standingsOf(cells, shelves.asleep)}
           environmentId={environmentId}
         />
         <UpdateBanner />
@@ -296,21 +303,68 @@ export function Cells() {
   );
 }
 
-interface Row {
+/**
+ * Awake's order (stemcells/tasks/awake-asleep.md, decision 1): pins first, as the person set
+ * them, then the latest brought forward. Landing, asking or working never moves a row.
+ */
+function awakeOrder(
+  cells: ReadonlyArray<CellStanding>,
+  pinned: ReadonlyArray<ShelvedCell>,
+  launches: ReadonlyMap<string, Launchable>,
+): CellStanding[] {
+  const pins = new Map(pinned.map((cell, index) => [cell.threadId, index]));
+  const first = cells
+    .filter((cell) => pins.has(cell.threadId))
+    .toSorted((a, b) => pins.get(a.threadId)! - pins.get(b.threadId)!);
+  const rest = byLaunch(
+    cells
+      .filter((cell) => !pins.has(cell.threadId))
+      .map((cell) => ({
+        ...(launches.get(cell.threadId) ?? { createdAt: cell.createdAt, latestRun: null }),
+        id: cell.threadId,
+        cell,
+      })),
+  );
+  return [...first, ...rest.map((each) => each.cell)];
+}
+
+/** When each asking Cell began to wait on the person: its oldest ask, by its thread. */
+function askedSince(onList: ReturnType<typeof onListOf>): ReadonlyMap<string, string> {
+  const since = new Map<string, string>();
+  for (const { need } of onList) {
+    const threadId = need.parentThreadId ?? need.threadId;
+    const before = since.get(threadId);
+    if (before === undefined || need.since < before) since.set(threadId, need.since);
+  }
+  return since;
+}
+
+interface AwakeRow {
   readonly cell: Ref;
   readonly title: string;
   readonly line: string | null;
+  readonly stage: CellStanding["stage"];
+  /** The shared stop that holds it: neither flying nor asking. */
+  readonly holds: string | null;
+  /** Since when it has been like this: flying, landed, waiting or held. */
+  readonly since: string | null;
+  /** Going to sleep: it folds away while upstream's settle runs. */
+  readonly leaving: boolean;
 }
 
-const rowOf = (cell: CellStanding, toRef: (cell: CellStanding) => Ref | null): Row[] => {
-  const ref = toRef(cell);
-  return ref === null ? [] : [{ cell: ref, title: cell.title, line: cell.line }];
-};
-
-const rowOfShelved = (cell: ShelvedCell): Row => ({
-  cell: { environmentId: cell.environmentId, threadId: cell.threadId },
+const awakeRowOf = (
+  cell: CellStanding,
+  environmentId: string,
+  leaving: boolean,
+  asked: ReadonlyMap<string, string>,
+): AwakeRow => ({
+  cell: { environmentId, threadId: cell.threadId },
   title: cell.title,
-  line: null,
+  line: cell.line,
+  stage: cell.stage,
+  holds: cell.holds ?? null,
+  since: cell.stage === "needs-you" ? (asked.get(cell.threadId) ?? null) : (cell.since ?? null),
+  leaving,
 });
 
 /**
@@ -364,7 +418,7 @@ const ALL_PROJECTS = "";
 function StageRow(props: {
   stage: ColumnStage;
   count: number;
-  /** Cells of this stage a shared stop holds, counted apart from it. */
+  /** Cells of this stage a shared stop holds, among its count. */
   held?: number;
   open: boolean;
   onOpen: () => void;
@@ -375,16 +429,12 @@ function StageRow(props: {
       type="button"
       data-cells-stage={props.stage}
       data-open={props.open ? "true" : "false"}
-      data-empty={props.count + held === 0 ? "true" : "false"}
+      data-empty={props.count === 0 ? "true" : "false"}
       aria-pressed={props.open}
       onClick={props.onOpen}
     >
-      {props.stage === "pinned" ? (
-        <PinIcon data-cells-stage-mark="" aria-hidden />
-      ) : (
-        <span data-cells-stage-mark="" aria-hidden />
-      )}
-      <span data-cells-stage-label="">{LABEL[props.stage]}</span>
+      <span data-cells-stage-mark="" aria-hidden />
+      <span data-cells-stage-label="">{STAGE_WORDS[props.stage]}</span>
       {held > 0 ? <span data-cells-stage-held="">{held} holding</span> : null}
       {/* A hop dives in here (Hops.tsx). */}
       <span data-cells-stage-count="">{props.count}</span>
@@ -394,7 +444,7 @@ function StageRow(props: {
 
 /**
  * What needs you: the cards, each folding away the moment it's answered,
- * settled or gone. In front of Aski's room, which shows every ask open, they
+ * slept or gone. In front of Aski's room, which shows every ask open, they
  * fold to an index of it (stemcells/tasks/aski-asks.md, decision 8).
  */
 function NeedsHere(props: {
@@ -420,7 +470,7 @@ function NeedsHere(props: {
       head={
         props.waiting === 0 && view.cleared === null ? (
           <div data-cells-calm="">
-            <b>Nothing needs you.</b>
+            <b>{EMPTY_WORDS.needs}</b>
             <span>You’ll hear the moment a Cell does, here and on your phone.</span>
           </div>
         ) : !view.live ? (
@@ -451,134 +501,248 @@ function revealInRoom(key: string) {
   requestAnimationFrame(() => reveal(key));
 }
 
-/** A stage's Cells; `settles` gives each a Settle, which stops one at work first (`upstream/settle.ts`). */
-function Rows(props: {
-  label: string;
-  cells: ReadonlyArray<Row>;
-  more?: ReactNode;
-  settles?: boolean;
-  settled?: boolean;
-}) {
-  const settle = useSettleAtOnce();
+/** What one shared stop holds, and until when (conditions.md), over Awake's rows it holds. */
+function Holding(props: { condition: Condition; count: number; now: number }) {
+  if (props.count === 0) return null;
+  const line = conditionLineOf(props.condition, props.now);
   return (
-    <ol data-cells-rows="" aria-label={props.label}>
-      {props.cells.map((row) => (
-        <CellRow
+    <div data-cells-head="" data-cells-holding="">
+      <span>
+        Holding {props.count} · {line.what}
+      </span>
+      <span>{line.when}</span>
+    </div>
+  );
+}
+
+/** Every Cell awake, each with Sleep, which stops one at work first (`upstream/settle.ts`). */
+function Awake(props: { rows: ReadonlyArray<AwakeRow>; now: number }) {
+  const sleep = useSettleAtOnce();
+  if (props.rows.length === 0) return <p data-cells-none="">{EMPTY_WORDS.awake}</p>;
+  return (
+    <ol data-cells-rows="" aria-label={STAGE_WORDS.awake}>
+      {props.rows.map((row) => (
+        <AwakeCell
           key={row.cell.threadId}
           row={row}
-          settled={props.settled === true}
-          {...(props.settles ? { onSettle: () => void settle(row.cell) } : {})}
+          now={props.now}
+          onSleep={() => void sleep(row.cell)}
         />
       ))}
-      {props.cells.length === 0 ? <li data-cells-none="">None</li> : null}
+    </ol>
+  );
+}
+
+/** Every Cell asleep, the latest first, each with Wake. */
+function Asleep(props: { cells: ReadonlyArray<AsleepCell>; now: number; more: ReactNode }) {
+  if (props.cells.length === 0 && props.more === null) {
+    return <p data-cells-none="">{EMPTY_WORDS.asleep}</p>;
+  }
+  return (
+    <ol data-cells-rows="" aria-label={STAGE_WORDS.asleep}>
+      {props.cells.map((cell) => (
+        <AsleepCellRow key={cell.threadId} cell={cell} now={props.now} />
+      ))}
       {props.more ? <li>{props.more}</li> : null}
     </ol>
   );
 }
 
-/** The Cells one shared stop holds, under what stopped them and until when (conditions.md). */
-function Holding(props: { condition: Condition; cells: ReadonlyArray<Row> }) {
-  const now = useNowMinuteMs();
-  if (props.cells.length === 0) return null;
-  const line = conditionLineOf(props.condition, now);
+/**
+ * An awake Cell on one line: the Cell, its project's mark and its title, and how long it has
+ * been like this. Behind it the composer's light from the Cell outward, in its provider's tone
+ * or Input's amber (stemcells/tasks/awake-asleep.md, decision 3); Sleep takes the time's place.
+ */
+function AwakeCell(props: { row: AwakeRow; now: number; onSleep: () => void }) {
+  const { row } = props;
+  const ref = { ...row.cell, draftId: null };
+  const { driver, unseen } = useCellLightFacts(ref);
+  const state = rowStateOf(row.holds === null ? row.stage : undefined, unseen);
+  const tone = ROW_LIGHT[state].tone === "input" ? "--sc-needs-you" : toneTokenOf(driver);
   return (
-    <>
-      <div data-cells-head="" data-cells-holding="">
-        <span>Holding · {line.what}</span>
-        <span>{line.when}</span>
-      </div>
-      <Rows label="Holding" cells={props.cells} settles />
-    </>
+    <CellLine
+      cell={row.cell}
+      title={row.title}
+      line={row.line}
+      leaving={row.leaving}
+      light={{ state, tone }}
+      when={row.since === null ? null : compactAge(row.since, props.now)}
+      act={{ label: SLEEP, icon: <MoonIcon aria-hidden />, run: props.onSleep }}
+    />
   );
 }
 
-/** The Cells that say they're done: each settles on its own, or all at once. */
-function Landed(props: { cells: ReadonlyArray<Row> }) {
-  const settle = useSettleAtOnce();
-  if (props.cells.length === 0) return <p data-cells-none="">Nothing waits to be settled.</p>;
+function AsleepCellRow(props: { cell: AsleepCell; now: number }) {
+  const { cell } = props;
+  const wake = useWakeByHand();
+  // Off the list at once while the wake runs; back if it fails.
+  const [waking, setWaking] = useState(false);
+  const ref = { environmentId: cell.environmentId, threadId: cell.threadId };
   return (
-    <>
-      <div data-cells-head="">
-        <span>Close one and it settles</span>
-        {props.cells.length > 1 ? (
-          <button
-            type="button"
-            onClick={() => {
-              for (const row of props.cells) void settle(row.cell);
-            }}
-          >
-            Settle all
-          </button>
-        ) : null}
-      </div>
-      <ol data-cells-rows="" aria-label="Landed">
-        {props.cells.map((row) => (
-          <CellRow key={row.cell.threadId} row={row} onSettle={() => void settle(row.cell)} />
-        ))}
-      </ol>
-    </>
+    <CellLine
+      cell={ref}
+      title={cell.title}
+      line={null}
+      leaving={waking}
+      light={null}
+      when={
+        cell.wakesAt === null
+          ? compactAge(cell.since, props.now)
+          : wakesWords(`in ${wakeIn(cell.wakesAt, props.now)}`)
+      }
+      act={{
+        label: WAKE,
+        icon: <SunIcon aria-hidden />,
+        run: () => {
+          setWaking(true);
+          void wake(ref, cell.wakesAt !== null).then((woke) => {
+            if (!woke) setWaking(false);
+          });
+        },
+      }}
+    />
   );
 }
 
 /**
- * One Cell in two lines: its title and age, the title first at the row's edge for scanning; under
- * them its sprite, project and pull request. Hovering shows the thread's card, and Settle takes
- * the age's place.
+ * One Cell's line: opens its chat, shows the thread's card on hover, and its act (Sleep or
+ * Wake) takes the time's place while pointed at. Leaving, it folds away.
  */
-function CellRow(props: { row: Row; settled?: boolean; onSettle?: () => void }) {
-  const { row, onSettle } = props;
+function CellLine(props: {
+  cell: Ref;
+  title: string;
+  line: string | null;
+  leaving: boolean;
+  light: { readonly state: RowState; readonly tone: string } | null;
+  /** How long it has been like this; upstream's age while the stream doesn't say. */
+  when: string | null;
+  act: { readonly label: string; readonly icon: ReactNode; readonly run: () => void };
+}) {
   const open = useOpenCell();
-  const ref = { ...row.cell, draftId: null };
+  const ref = { ...props.cell, draftId: null };
   const shell = useCellShell(ref);
-  const onOpen = () => open(row.cell);
+  const onOpen = () => open(props.cell);
+  const { light } = props;
   return (
-    <li data-cells-row="" data-cells-thread={row.cell.threadId}>
-      <CellCard
-        shell={shell}
-        line={row.line}
-        trigger={
-          <div
-            role="button"
-            tabIndex={0}
-            data-cells-open=""
-            onClick={onOpen}
-            onKeyDown={(event) => {
-              if (event.target !== event.currentTarget) return;
-              if (event.key !== "Enter" && event.key !== " ") return;
-              event.preventDefault();
-              onOpen();
-            }}
-          />
-        }
-      >
-        <span data-cells-row-title="">{row.title}</span>
-        <span data-cells-row-end="">
-          <span data-cells-row-age="">
-            {shell === null ? null : <CellAge shell={shell} settled={props.settled === true} />}
-          </span>
-          {onSettle ? (
+    <li
+      data-cells-row=""
+      data-cells-thread={props.cell.threadId}
+      data-leaving={props.leaving ? "" : undefined}
+      inert={props.leaving}
+    >
+      <div data-cells-row-fold="">
+        <CellCard
+          shell={shell}
+          line={props.line}
+          trigger={
+            <div
+              role="button"
+              tabIndex={0}
+              data-cells-open=""
+              data-light={light?.state}
+              style={
+                light === null
+                  ? undefined
+                  : ({ "--cells-row-tone": `var(${light.tone})` } as CSSProperties)
+              }
+              onClick={onOpen}
+              onKeyDown={(event) => {
+                if (event.target !== event.currentTarget) return;
+                if (event.key !== "Enter" && event.key !== " ") return;
+                event.preventDefault();
+                onOpen();
+              }}
+            />
+          }
+        >
+          {light === null ? null : (
+            <span data-cells-light="" aria-hidden>
+              <RowBand on={ROW_LIGHT[light.state].band} />
+            </span>
+          )}
+          <CellMark cell={ref} />
+          {shell === null ? null : <CellProjectMark shell={shell} />}
+          <span data-cells-row-title="">{props.title}</span>
+          <span data-cells-row-end="">
+            <span data-cells-row-age="">
+              {props.when ??
+                (shell === null ? null : <CellAge shell={shell} settled={light === null} />)}
+            </span>
             <button
               type="button"
-              aria-label="Settle"
-              data-cells-settle=""
+              aria-label={props.act.label}
+              data-cells-act=""
               onPointerDown={(event) => event.stopPropagation()}
               onClick={(event) => {
                 event.stopPropagation();
-                onSettle();
+                props.act.run();
               }}
             >
-              <CheckIcon aria-hidden />
+              {props.act.icon}
             </button>
-          ) : null}
-        </span>
-        <CellMark cell={ref} />
-        {shell === null ? null : (
-          <span data-cells-row-under="">
-            <CellProject shell={shell} />
-            <CellPullRequest shell={shell} onOpenCell={onOpen} />
           </span>
-        )}
-      </CellCard>
+        </CellCard>
+      </div>
     </li>
   );
+}
+
+/** The band's width, a little wider than a word's sheen: a row is wider than a word. */
+const BAND_WIDTH = 48;
+/** The composer's lean (`glow/light.ts`): a shear, its top ahead. */
+const BAND_LEAN = "skewX(-24deg)";
+
+/**
+ * The flying Cell's band, crossing its row on the composer's beat (`motion/beat.ts`), the column
+ * standing for the pane it crosses. Only a transform moves; it holds unseen, steps beside
+ * another app and stays still with less motion. A landing lets the pass under way finish, so
+ * the light comes to rest rather than going out.
+ */
+function RowBand(props: { on: boolean }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const { on } = props;
+
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Own the band's crossing and its size, motion and sight watchers while the Cell flies.
+  useLayoutEffect(() => {
+    const band = ref.current;
+    const plate = band?.closest("[data-cells-open]");
+    const column = band?.closest("[data-stemcells-cells]");
+    if (!on || !band || !plate || !column) return;
+    let crossingNow: Animation | null = null;
+    let sight: Sight = "focused";
+    const aim = () => {
+      if (reducedMotion() || sight === "hidden") {
+        crossingNow?.cancel();
+        crossingNow = null;
+        return;
+      }
+      const pane = column.getBoundingClientRect();
+      const left = plate.getBoundingClientRect().left - pane.left;
+      const { from, to } = crossing(pane.width, left, BAND_WIDTH / 2);
+      const stepped = sight === "unfocused";
+      if (crossingNow) resweep(crossingNow, from, to, BAND_LEAN, stepped);
+      else crossingNow = sweep(band, from, to, BAND_LEAN, stepped);
+    };
+    aim();
+    // oxlint-disable-next-line t3code/no-raw-resize-observer -- The place goes to the band's animation, never into React state.
+    const sized = new ResizeObserver(aim);
+    sized.observe(column);
+    const motion = matchMedia("(prefers-reduced-motion: reduce)");
+    motion.addEventListener("change", aim);
+    // The plate, which holds still: the band itself rests off it.
+    const unwatch = watchSight(plate, (now) => {
+      sight = now;
+      aim();
+    });
+    return () => {
+      sized.disconnect();
+      motion.removeEventListener("change", aim);
+      unwatch();
+      const pass = crossingNow?.effect?.getComputedTiming().currentIteration;
+      if (typeof pass === "number") crossingNow?.effect?.updateTiming({ iterations: pass + 1 });
+      else crossingNow?.cancel();
+    };
+  }, [on]);
+
+  return <span ref={ref} data-cells-band="" style={{ width: BAND_WIDTH }} />;
 }
