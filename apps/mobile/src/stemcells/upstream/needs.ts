@@ -24,11 +24,8 @@ import { scopedThreadKey } from "../../lib/scopedEntities";
 import { uuidv4 } from "../../lib/uuid";
 import { appAtomRegistry } from "../../state/atom-registry";
 import { readEnvironmentScope } from "../../state/session";
-import {
-  environmentThreadDetails,
-  environmentThreadShells,
-  threadEnvironment,
-} from "../../state/threads";
+import { environmentThreadShells, threadEnvironment } from "../../state/threads";
+import { useQuietThreadStructure } from "../../state/use-thread-detail";
 import { buildPlanMessage, type ChatMessage, type ThreadCommand } from "../line/kit";
 
 export { AppTextInput } from "../../components/ui/AppText";
@@ -161,13 +158,15 @@ export async function sendThreadCommand(
   }
 }
 
-/** A chat's messages as T3 holds them now, read once: a subscription redraws on every word. */
-export function chatMessagesOf(
+const NO_MESSAGES: ReadonlyArray<ChatMessage> = [];
+
+/** A chat's messages, as of their last change but a streamed word: a reply's text once it ends. */
+export function useChatMessages(
   environmentIdText: string,
   threadIdText: string,
 ): ReadonlyArray<ChatMessage> {
   const ref = scopeThreadRef(environmentIdText as EnvironmentId, ThreadId.make(threadIdText));
-  return appAtomRegistry.get(environmentThreadDetails.threadAtom(ref))?.projection.messages ?? [];
+  return useQuietThreadStructure(ref)?.projection.messages ?? NO_MESSAGES;
 }
 
 /** Scrolls the chat on screen to a message, loading earlier history until it's there. */

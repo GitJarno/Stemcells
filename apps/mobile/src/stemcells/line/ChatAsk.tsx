@@ -10,12 +10,12 @@ import Animated, { FadeInDown, FadeOut } from "react-native-reanimated";
 import { useMinute } from "../home/state";
 import { NEEDS_YOU } from "../tokens";
 import { AppText, SymbolView, useProjectAt } from "../upstream/cells";
-import { chatMessagesOf, jumpToMessage, relativeTime, useDeviceType } from "../upstream/needs";
+import { jumpToMessage, relativeTime, useChatMessages, useDeviceType } from "../upstream/needs";
 import { answersFor } from "./answer";
 import { chooserOf, type FailureDisk, Pill, Quiet, useFailureDisk, Words } from "./Ask";
 import { held } from "./heldLine";
-import { askAnchorOf, cardOf, chatAskOf, dockedButtonsOf, repositoryUrlOf, spansOf } from "./kit";
-import type { Ask } from "./line";
+import { askAnchorOf, cardOf, dockedButtonsOf, repositoryUrlOf, spansOf } from "./kit";
+import { type Ask, chatAskIn } from "./line";
 import { useKeepReadingChat, useReadings } from "./readings";
 
 /** The most steps the card lists: more are the chat's to show. */
@@ -35,14 +35,7 @@ export function useChatAsk(
   const readings = useReadings();
   const { answered } = useSyncExternalStore(held.subscribe, held.read);
   if (environmentId === null) return null;
-  const reading = readings.get(environmentId);
-  const list = reading === undefined || reading.state === "none" ? null : reading.list;
-  const keyOf = (key: string) => `${environmentId}:${key}`;
-  const need = chatAskOf(
-    list && { ...list, needs: list.needs.filter((each) => !answered.has(keyOf(each.key))) },
-    cell.id,
-  );
-  return need === null ? null : { key: keyOf(need.key), environmentId, need };
+  return chatAskIn(readings.get(environmentId), environmentId, cell.id, answered);
 }
 
 export function ChatAsk(props: {
@@ -105,10 +98,7 @@ function Dock(props: DockProps & FailureDisk) {
   const repo = repositoryUrlOf(useProjectAt(place)?.repositoryIdentity);
   const folds = useDeviceType() === "duo-folded";
   const [opened, setOpened] = useState(false);
-  // Read once: the words it quotes are in a reply that has ended.
-  const [anchor] = useState(() =>
-    askAnchorOf(need, chatMessagesOf(ask.environmentId, need.threadId)),
-  );
+  const anchor = askAnchorOf(need, useChatMessages(ask.environmentId, need.threadId));
   const age = relativeTime(need.since, now);
   if (folds && !opened)
     return (
