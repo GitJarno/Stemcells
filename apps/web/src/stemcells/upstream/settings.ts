@@ -55,7 +55,12 @@ export {
   useScopedSettings,
   useUpdateScopedSettings,
 } from "../../components/settings/useScopedSettings";
-export { updateClientSettings, useClientSettings } from "../../hooks/useSettings";
+export {
+  ensureClientSettingsHydrated,
+  getClientSettings,
+  updateClientSettings,
+  useClientSettings,
+} from "../../hooks/useSettings";
 export { setAppearanceMode, useTheme } from "../../hooks/useTheme";
 export {
   Select,

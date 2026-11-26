@@ -142,3 +142,20 @@ export function useKeepReading(
     }
   }, [chats, inFront]);
 }
+
+/**
+ * Keeps a chat's machine read while the chat shows, for the ask it docks: the home reads none
+ * behind a chat. An ask comes and goes as a turn starts or ends, and a stall by the `minute`.
+ */
+export function useKeepReadingChat(
+  environmentId: string | null,
+  threadId: string,
+  busy: boolean,
+  minute: string,
+): void {
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Read the chat's machine on opening it, as its turn starts or ends, and each minute.
+  useEffect(() => {
+    if (environmentId !== null) readSoon(environmentId);
+    // oxlint-disable-next-line react/exhaustive-effect-dependencies -- The Cell, its turn and the minute say when to read, not what.
+  }, [environmentId, threadId, busy, minute]);
+}

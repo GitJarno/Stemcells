@@ -403,7 +403,11 @@ export function workEntryHiddenByToolCallVisibility(
 ): boolean {
   if (visibility === "showAll" || !HIDEABLE_TOOL_CALL_ITEM_TYPES.has(entry.itemType)) return false;
   if (visibility !== "hideSuccessful") return true;
-  return entry.toolLifecycleStatus === "completed" && !workEntryDisplayIndicatesToolFailure(entry);
+  return (
+    entry.toolLifecycleStatus === "completed" &&
+    !workEntryDisplayIndicatesToolFailure(entry) &&
+    entry.viewedImagePath === undefined
+  );
 }
 
 function workLogEntryIsLocalCodeSearch(entry: WorkLogPresentationEntry): boolean {

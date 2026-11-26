@@ -82,6 +82,17 @@ when they act (`stemcells/tasks/awake-asleep.md`).
   Cell hops into the other stage's count on `travel` (`rail/Hops.tsx`).
 - **Reduce Motion**: no band, and the row fades without folding.
 
+## The work log
+
+A run's tool calls are its means, not its results. While a Cell flies, the
+chat shows what it says and thinks, a live line naming what it runs now
+("Running python3"), and the images it looks at, which the person steers
+by. Finished, successful commands, reads, searches and edits step aside; a
+failed one stays. This is upstream's "Hide successful", which Stemcells sets
+once per install on the Mac and the phone (`apps/web/src/stemcells/work/`,
+`apps/mobile/src/stemcells/work/`), with one change of ours: what the agent
+looked at stays. Settings › Appearance › Tool calls shows everything again.
+
 ## Aski's button
 
 Aski is the other side of every chat (`stemcells/tasks/aski-side.md`). One
@@ -89,14 +100,17 @@ button turns the chat in front over to Aski, and back to where it came from.
 
 - **Where it stands.** On the phone, over the composer at the lower right
   (the search field's, on the home); where the bars run down the side (an
-  unfolded Duo held sideways), in the rail's open middle. It hides while the
+  unfolded Duo held sideways), in the rail, just above its tabs. On iOS it
+  floats in a window of its own over the Duo's native columns, which would
+  otherwise cover it (the folded Duo's outer screen). It hides while the
   keyboard is up.
 - **What it shows** is where it goes: Aski from a Cell or the home, the
   Cell it came from (or a house) from Aski. A dot, still, while Aski has
   answered and the person hasn't looked.
-- **The turn.** A tap squashes the button (`flick`) and the ground spreads
-  from it over the pane that changes; the chat turns under it, and the
-  ground clears off the new one. Reduce Motion: the chat just turns.
+- **The turn.** A tap squashes the button (`flick`), and Aski and the chat
+  swap places through it, as down a pipe: the pane that changes fades out
+  and the other fades in, while in the button what stood there sinks below
+  its rim and what comes next rises. Reduce Motion: the chat just turns.
 - **The chip.** From a Cell, Aski's composer gets that Cell's chip, only
   into a draft that holds nothing of the person's.
 - **Held**, it opens a menu under the finger: New Aski, New Cell, and the

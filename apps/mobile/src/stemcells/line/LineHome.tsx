@@ -20,17 +20,10 @@ import {
 } from "../upstream/cells";
 import { useHomeThreadSelection } from "../upstream/home";
 import { settleFromAnyStage } from "../upstream/needs";
-import type { Act } from "./held";
 import { held } from "./heldLine";
-import { AskCard, type AskActs, AskHead, AskLine, whoOf } from "./Ask";
-import {
-  commandsFor,
-  elsewhereWords,
-  EMPTY_WORDS,
-  type FilterProject,
-  type LineStage,
-  sleptWords,
-} from "./kit";
+import { answersFor } from "./answer";
+import { AskCard, type AskActs, AskHead, AskLine } from "./Ask";
+import { elsewhereWords, EMPTY_WORDS, type FilterProject, type LineStage } from "./kit";
 import { type Ask, type CellState, countsOf, elsewhereOf, lineOf, opensOn, SEGMENTS } from "./line";
 import type { Reading } from "./read";
 import { UndoLine } from "./UndoLine";
@@ -122,27 +115,9 @@ export function LineHome(props: {
 
   const actsFor = (ask: Ask, done: () => void): AskActs => {
     const { need, environmentId } = ask;
-    const who = whoOf(need);
-    const hold = (commands: Act["commands"], words: string) => {
-      if (commands.length === 0) return;
-      void held.hold({
-        key: ask.key,
-        environmentId,
-        threadId: need.threadId,
-        who,
-        words,
-        commands,
-      });
-      done();
-    };
     const cell = cellOf(need.parentThreadId ?? need.threadId);
     return {
-      choose: (option, given = {}) =>
-        hold(
-          commandsFor(need, option.choice, given, Date.now()),
-          option.choice.kind === "wait" ? sleptWords(who) : `Answered ${who}`,
-        ),
-      later: () => hold(commandsFor(need, { kind: "later" }, {}, Date.now()), sleptWords(who)),
+      ...answersFor(ask, done),
       settle:
         cell === undefined
           ? null

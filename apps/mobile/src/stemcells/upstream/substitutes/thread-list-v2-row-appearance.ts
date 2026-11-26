@@ -1,7 +1,6 @@
-// Replaces `features/threads/thread-list-v2-row-appearance.ts`
-// (`substitutes.cjs`; Android's `.android.ts` stays T3's): on the phone's
-// own screen each row is a card, as the original app's were, its Cell beside it
-// (`home/RowCell.tsx`), and its menu starts a New Cell. The iPad's sidebar keeps T3's rows.
+// Replaces `features/threads/thread-list-v2-row-appearance.ts` (`substitutes.cjs`; Android keeps
+// T3's): on the phone's own screen each row is a card with its Cell beside it (`home/RowCell.tsx`),
+// and its menu starts a New Cell. The iPad's and the unfolded Duo's sidebar keep T3's look.
 import type { ViewStyle } from "react-native";
 
 import * as Upstream from "../../../features/threads/thread-list-v2-row-appearance";

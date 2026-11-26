@@ -26,15 +26,16 @@ can't approve its own requests.
    no second, cramped chat. The button shows where it will take you: Aski
    from a Cell, the Cell's creature from Aski.
 2. **Where it stands.**
-   - Duo unfolded, sideways (home beside a chat): in the rail's open middle,
-     just over its lower group.
+   - Duo unfolded, sideways (home beside a chat): in the rail, just above
+     its tabs.
    - Every other phone posture (Duo unfolded upright, folded either way, any
      iPhone): floating at the lower right, just over the composer (the
      search field on the home).
    - The Mac: the window's lower right, and a keyboard shortcut.
-3. **The turn.** The chat steps back and dims while Aski's opens out of the
-   button, about a quarter second; back, it folds into the button. Reduce
-   Motion: a crossfade.
+3. **The turn.** Aski and the chat swap places through the button, as down
+   a pipe: the chat fades out and the other fades in, while in the button
+   what stood there sinks below its rim and what comes next rises; about a
+   third of a second. Reduce Motion: a crossfade.
 4. **"This" carries over.** Turning to Aski from a Cell puts that Cell's chip
    (upstream's thread context) in Aski's composer; × drops it.
 5. **Long press: what's next, under one finger.** Hold, slide, let go:

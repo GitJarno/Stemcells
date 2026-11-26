@@ -1,21 +1,16 @@
-// Aski's button (stemcells/tasks/aski-side.md): a tap turns the chat in front over to Aski and
-// back; held, it offers a fresh Aski, a new Cell, and the next Cell on Input. It stands in the
-// Duo's side rail where the bars run down the side, and over the composer everywhere else.
-// Mounted once over the workspace (`Stack.tsx`, `stemcells/seams/mobile.md`).
+// Aski's button (stemcells/tasks/aski-side.md): a tap swaps the chat in front with Aski through
+// it, as down a pipe; held, it offers a fresh Aski, a new Cell, and the next Cell on Input. In the
+// Duo's side rail where the bars run down the side, over the composer elsewhere. Mounted once over
+// the workspace (`Stack.tsx`, `stemcells/seams/mobile.md`).
 
 import * as Haptics from "expo-haptics";
 import * as Linking from "expo-linking";
-import {
-  AppState,
-  Keyboard,
-  Pressable,
-  useWindowDimensions,
-  View,
-  type ViewInstance,
-} from "react-native";
-import { useEffect, useRef, useState } from "react";
+import { AppState, Keyboard, Platform, Pressable, useWindowDimensions, View } from "react-native";
+import { Fragment, useEffect, useState } from "react";
 import Animated, {
   Easing,
+  Keyframe,
+  LayoutAnimationConfig,
   runOnJS,
   useAnimatedStyle,
   useReducedMotion,
@@ -25,6 +20,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { FullWindowOverlay } from "react-native-screens";
 import { useResolveClassNames } from "uniwind";
 
 import {
@@ -73,9 +69,21 @@ const SIZE = 52;
 /** Over the composer's pill (or the home's search field) and its gap. */
 const OVER_COMPOSER = 76;
 const SIDE = 16;
+/** UIKit sets the side rail's buttons on a line 14 pt in from the screen's edge, and starts its
+ * tab group 0.649 of the way down in every posture (measured on the Duo); the button stands just above it. */
+const RAIL_EDGE_INSET = 14;
+const RAIL_TABS_START = 0.649;
+const RAIL_GAP = 14;
 
 /** Each show is acted on once, however often its chat's items come round. */
 const shown = new Set<string>();
+
+/**
+ * Over the workspace: on iOS a layer over the whole window, since the Duo's native columns cover
+ * anything laid beside them (the folded Duo had no button). It stays mounted, so a sheet or a
+ * modal presented later still comes up over it.
+ */
+const Above = Platform.OS === "ios" ? FullWindowOverlay : Fragment;
 
 export function AskiButton(props: { readonly pathname: string; readonly routeName?: string }) {
   const here = whereOf(props.routeName, props.pathname);
@@ -83,8 +91,11 @@ export function AskiButton(props: { readonly pathname: string; readonly routeNam
   const anywhere = useAskiChat(null);
   const aski = near ?? anywhere;
   const keyboardUp = useKeyboardUp();
-  if (here === null || aski === null || keyboardUp) return null;
-  return <Button here={here} aski={aski} />;
+  return (
+    <Above>
+      {here === null || aski === null || keyboardUp ? null : <Button here={here} aski={aski} />}
+    </Above>
+  );
 }
 
 function Button(props: { readonly here: Where; readonly aski: EnvironmentThreadShell }) {
@@ -101,12 +112,9 @@ function Button(props: { readonly here: Where; readonly aski: EnvironmentThreadS
   const ground = useResolveClassNames("bg-card").backgroundColor;
   const screen = useResolveClassNames("bg-screen").backgroundColor;
   const pop = useSharedValue(1);
-  const standsIn = useRef<ViewInstance>(null);
   const metrics = useNativeLayoutMetrics();
-  const window = useWindowDimensions();
-  const [wipe, setWipe] = useState<Wipe | null>(null);
-  const cover = useSharedValue(0);
-  const clear = useSharedValue(1);
+  const [fade, setFade] = useState<{ readonly left: number } | null>(null);
+  const veil = useSharedValue(0);
   const shells = useThreadShellsSelected((threads) => threads);
   const shellOf = (where: Where | null) =>
     where?.kind === "cell"
@@ -155,43 +163,30 @@ function Button(props: { readonly here: Where; readonly aski: EnvironmentThreadS
     if (!inAski && from !== null)
       carryChip(aski, { environmentId: from.environmentId, threadId: from.id, title: from.title });
     rememberBack(next.back);
-    const view = standsIn.current;
-    if (reduced || view === null) {
+    if (reduced) {
       go(next.go);
       return;
     }
-    // The chat turns under the ground, which spreads from the button over the pane that changes
-    // and clears off the new one.
-    view.measureInWindow((x, y, width, height) => {
-      const centre = { x: x + width / 2, y: y + height / 2 };
-      const left = paneLeft(metrics);
-      const reach = Math.hypot(
-        Math.max(centre.x - left, window.width - centre.x),
-        Math.max(centre.y, window.height - centre.y),
-      );
-      setWipe({ centre, reach, left });
-      cover.set(0);
-      clear.set(1);
-      cover.set(
-        withTiming(1, { duration: SPREAD_MS, easing: Easing.inOut(Easing.cubic) }, (done) => {
-          if (!done) return;
-          runOnJS(go)(next.go);
-          clear.set(
-            withDelay(
-              HOLD_MS,
-              withTiming(0, { duration: CLEAR_MS, easing: Easing.out(Easing.quad) }, (cleared) => {
-                if (cleared) runOnJS(setWipe)(null);
-              }),
-            ),
-          );
-        }),
-      );
-    });
+    // The pane that changes fades to its ground, the chat turns under it, and the new one fades
+    // in; the button's figures swap as it turns (`SINK`, `RISE`).
+    setFade({ left: paneLeft(metrics) });
+    veil.set(0);
+    veil.set(
+      withTiming(1, { duration: FADE_OUT_MS, easing: Easing.in(Easing.quad) }, (done) => {
+        if (!done) return;
+        runOnJS(go)(next.go);
+        veil.set(
+          withDelay(
+            HOLD_MS,
+            withTiming(0, { duration: FADE_IN_MS, easing: Easing.out(Easing.quad) }, (cleared) => {
+              if (cleared) runOnJS(setFade)(null);
+            }),
+          ),
+        );
+      }),
+    );
   };
-  const wipeStyle = useAnimatedStyle(() => ({
-    opacity: clear.get(),
-    transform: [{ scale: Math.max(cover.get(), 0.001) }],
-  }));
+  const veilStyle = useAnimatedStyle(() => ({ opacity: veil.get() }));
 
   const show = (what: AskiShow) => {
     if (what.kind === "cell") {
@@ -270,33 +265,15 @@ function Button(props: { readonly here: Where; readonly aski: EnvironmentThreadS
 
   return (
     <>
-      {wipe === null ? null : (
-        <View
+      {fade === null ? null : (
+        <Animated.View
           pointerEvents="none"
-          style={{
-            position: "absolute",
-            top: 0,
-            bottom: 0,
-            left: wipe.left,
-            right: 0,
-            overflow: "hidden",
-          }}
-        >
-          <Animated.View
-            style={[
-              {
-                position: "absolute",
-                left: wipe.centre.x - wipe.left - wipe.reach,
-                top: wipe.centre.y - wipe.reach,
-                width: wipe.reach * 2,
-                height: wipe.reach * 2,
-                borderRadius: wipe.reach,
-                backgroundColor: screen,
-              },
-              wipeStyle,
-            ]}
-          />
-        </View>
+          style={[
+            { position: "absolute", top: 0, bottom: 0, left: fade.left, right: 0 },
+            { backgroundColor: screen },
+            veilStyle,
+          ]}
+        />
       )}
       <Place>
         <Menu
@@ -316,21 +293,40 @@ function Button(props: { readonly here: Where; readonly aski: EnvironmentThreadS
             onPress={turn}
             hitSlop={6}
           >
-            <Animated.View ref={standsIn} style={{ transform: [{ scale: pop }] }}>
+            <Animated.View style={{ transform: [{ scale: pop }] }}>
               <GlassSurface
                 ref={inAski ? undefined : askiStandsIn}
                 className="items-center justify-center rounded-full"
                 style={{ width: SIZE, height: SIZE }}
               >
-                {inAski ? (
-                  backShell !== null ? (
-                    <ThreadCell thread={backShell} points={2} />
-                  ) : (
-                    <SymbolView name="house" size={20} tintColorClassName="accent-foreground" />
-                  )
-                ) : (
-                  <AskiFigure height={30} ink={ink} ground={ground} />
-                )}
+                <View
+                  className="items-center justify-center overflow-hidden rounded-full"
+                  style={{ width: SIZE, height: SIZE }}
+                >
+                  {/* What first stands in the button, and the button leaving, play nothing. */}
+                  <LayoutAnimationConfig skipEntering skipExiting>
+                    <Animated.View
+                      key={inAski ? (backShell?.id ?? "home") : "aski"}
+                      entering={RISE}
+                      exiting={SINK}
+                      className="absolute items-center justify-center"
+                    >
+                      {inAski ? (
+                        backShell !== null ? (
+                          <ThreadCell thread={backShell} points={2} />
+                        ) : (
+                          <SymbolView
+                            name="house"
+                            size={20}
+                            tintColorClassName="accent-foreground"
+                          />
+                        )
+                      ) : (
+                        <AskiFigure height={30} ink={ink} ground={ground} />
+                      )}
+                    </Animated.View>
+                  </LayoutAnimationConfig>
+                </View>
               </GlassSurface>
               {dot ? (
                 <View
@@ -346,17 +342,24 @@ function Button(props: { readonly here: Where; readonly aski: EnvironmentThreadS
   );
 }
 
-interface Wipe {
-  readonly centre: { readonly x: number; readonly y: number };
-  readonly reach: number;
-  readonly left: number;
-}
-/** The ground spreads, the chat turns under it, a beat, and it clears. */
-const SPREAD_MS = 220;
+/** The pane fades to its ground, the chat turns under it, a beat, and the new one fades in. */
+const FADE_OUT_MS = 140;
 const HOLD_MS = 90;
-const CLEAR_MS = 200;
+const FADE_IN_MS = 200;
 
-/** Where the pane that turns begins: past the fold where the home stands beside it, else the edge. */
+/** Down past the rim: what stood in the button sinks out of it, and what's next comes up. */
+const SINK = new Keyframe({
+  0: { transform: [{ translateY: 0 }], opacity: 1 },
+  100: { transform: [{ translateY: SIZE * 0.7 }], opacity: 0.3, easing: Easing.in(Easing.cubic) },
+}).duration(180);
+const RISE = new Keyframe({
+  0: { transform: [{ translateY: SIZE * 0.7 }], opacity: 0.3 },
+  100: { transform: [{ translateY: 0 }], opacity: 1, easing: Easing.out(Easing.back(1.6)) },
+})
+  .duration(260)
+  .delay(60);
+
+/** Where the pane that changes begins: past the fold where the home stands beside it, else the edge. */
 function paneLeft(metrics: ReturnType<typeof useNativeLayoutMetrics>): number {
   if (metrics === null || metrics.verticalBarEdge === "none") return 0;
   const division = metrics.reservedRegions.find(
@@ -365,7 +368,7 @@ function paneLeft(metrics: ReturnType<typeof useNativeLayoutMetrics>): number {
   return division === undefined ? 0 : division.x + division.width;
 }
 
-/** Where the button stands: the side rail's open middle where the bars run down the side, else over the composer. */
+/** Where the button stands: in the side rail above its tabs where the bars run down the side, else over the composer. */
 function Place(props: { readonly children: React.ReactNode }) {
   const metrics = useNativeLayoutMetrics();
   const insets = useSafeAreaInsets();
@@ -376,8 +379,8 @@ function Place(props: { readonly children: React.ReactNode }) {
   const style =
     rail >= SIZE
       ? {
-          [edge]: (rail - SIZE) / 2,
-          top: (window.height - SIZE) / 2,
+          [edge]: (rail + RAIL_EDGE_INSET - SIZE) / 2,
+          top: window.height * RAIL_TABS_START - RAIL_GAP - SIZE,
         }
       : { right: insets.right + SIDE, bottom: insets.bottom + OVER_COMPOSER };
   return (

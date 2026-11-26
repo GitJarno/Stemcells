@@ -1388,7 +1388,8 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
     project: props.project,
   };
   const card = useCardLines(
-    variant === "card" && !sidebarPane,
+    variant === "card",
+    sidebarPane,
     Boolean((status === "failed" || status === "limited") && thread.runtime?.lastError),
     marks,
   );
@@ -1694,7 +1695,9 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
         style={rowAppearance.cardStyle}
       >
         {sidebarPane ? (
-          fadedCardContent
+          <CellBesideRow sidebar thread={thread} marks={marks}>
+            {fadedCardContent}
+          </CellBesideRow>
         ) : (
           <View>
             <View className={THREAD_LIST_V2_ROW_CONTENT_CLASS_NAME}>
