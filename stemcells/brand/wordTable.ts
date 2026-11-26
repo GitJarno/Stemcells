@@ -56,6 +56,14 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
       `in ${APP_NAME} on your computer`,
     ),
   ),
+  // A video saves as a picture does (the phone's `saveImageToLibrary.ts` substitute), so the
+  // action names where it goes, not what it saves.
+  ...inFile(
+    "apps/mobile/src/state/mediaActions.ts",
+    within('? "Saving image…" :', "Saving image…", "Saving…"),
+    within(': "Save image",', "Save image", "Save to Photos"),
+    within('"Could not save image"', "Could not save image", "Could not save to Photos"),
+  ),
   ...inFile(
     `${PHONE}/home/HomeScreen.tsx`,
     within(`gt('No threads matching "{query}".'`, "threads", CELL.many),

@@ -68,6 +68,8 @@ const SUBSTITUTES = {
   // Claude for it.
   "apps/mobile/src/lib/modelOptions.ts": "modelOptions.ts",
   "apps/mobile/src/components/ui/Dialog.tsx": "Dialog.tsx",
+  // A video saves to Photos as a picture does, from every media menu.
+  "apps/mobile/src/lib/saveImageToLibrary.ts": "saveImageToLibrary.ts",
 };
 
 /** Package upstream's code imports, by name, to its substitute in this folder. */
