@@ -33,8 +33,9 @@ Space on a picture sends it back into the thumbnail of whatever is showing.
 - **The reel is the chat's, built from the entries its timeline draws**
   (`media/chatEntries.ts`), not from the DOM: the timeline is virtualised,
   so most thumbnails aren't mounted. Per message: its pictures, its videos,
-  then the media its text embeds (image syntax, `<img>`, `<video>`); each once,
-  at its first place. Proposed plans count as text. Anything opened from
+  then the media its text embeds (image syntax, `<img>`, `<video>`); per tool
+  call, the picture it viewed (a Read of an image, `media-swipe.md`); each
+  once, at its first place. Proposed plans count as text. Anything opened from
   elsewhere (the composer, a tool's output) keeps upstream's list for that row.
 - **Fly in (FLIP on the compositor).** The figure is laid out at its resting
   rect and starts transformed onto the thumbnail's drawn pixels, clipped to the

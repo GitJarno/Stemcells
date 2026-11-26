@@ -456,6 +456,20 @@ const CASES: Readonly<Record<string, Case>> = {
       "apps/mobile/src/features/home/useThreadListActions.ts": ["../../components/ui/Dialog", []],
     },
   },
+  "apps/mobile/src/components/ui/FilePreviewGallery.tsx": {
+    exports: view("apps/mobile/src/components/ui/FilePreviewGallery.tsx", "FilePreviewGallery.tsx"),
+    importers: {
+      // A picture tapped in a chat pages through every picture in the chat.
+      "apps/mobile/src/features/threads/ThreadFeed.tsx": [
+        "../../components/ui/FilePreviewGallery",
+        ["useFilePreviewGallery"],
+      ],
+      "apps/mobile/src/features/threads/ThreadMarkdownImage.tsx": [
+        "../../components/ui/FilePreviewGallery",
+        ["useFilePreviewGallery"],
+      ],
+    },
+  },
   "packages/client-runtime/src/state/subagentDisplay.ts": {
     exports: [
       Object.keys(UpstreamSubagentDisplay),
@@ -746,6 +760,9 @@ describe("the phone's substitutes for upstream modules", () => {
     >();
     expectTypeOf<typeof import("./Dialog")>().toEqualTypeOf<
       typeof import("../../../components/ui/Dialog")
+    >();
+    expectTypeOf<typeof import("./FilePreviewGallery")>().toEqualTypeOf<
+      typeof import("../../../components/ui/FilePreviewGallery")
     >();
     expectTypeOf<typeof import("./expo-image-picker")>().toEqualTypeOf<
       typeof import("expo-image-picker")

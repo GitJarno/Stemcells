@@ -1,11 +1,12 @@
 // Replaces `features/threads/ThreadDetailScreen.tsx` (`substitutes.cjs`): the chat on screen is
-// told to the words in it (`chat/inView.ts`), which name the Cells beside it as tokens, and it
-// gives way to the home when the app comes back to a Cell settled meanwhile on another device
-// (`chat/useClosesOnReturn.ts`).
+// told to its words, which name the Cells beside it (`chat/inView.ts`), gives way to the home on
+// return to a Cell settled meanwhile on another device (`chat/useClosesOnReturn.ts`), and hands
+// its pictures to the viewer (`chat/ChatGallery.tsx`).
 import {
   ThreadDetailScreen as UpstreamThreadDetailScreen,
   type ThreadDetailScreenProps,
 } from "../../../features/threads/ThreadDetailScreen";
+import { ChatGallery } from "../../chat/ChatGallery";
 import { ChatInView } from "../../chat/inView";
 import { useClosesOnReturn } from "../../chat/useClosesOnReturn";
 
@@ -19,7 +20,16 @@ export function ThreadDetailScreen(props: ThreadDetailScreenProps) {
   useClosesOnReturn(chat);
   return (
     <ChatInView value={chat}>
-      <UpstreamThreadDetailScreen {...props} />
+      <ChatGallery
+        feed={props.selectedThreadFeed}
+        place={{
+          environmentId: props.environmentId,
+          threadId: props.selectedThread.id,
+          workspaceRoot: props.threadCwd,
+        }}
+      >
+        <UpstreamThreadDetailScreen {...props} />
+      </ChatGallery>
     </ChatInView>
   );
 }

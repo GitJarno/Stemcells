@@ -8,6 +8,7 @@
 import * as NodeFS from "node:fs";
 
 import { classifyMarkdownImageSource } from "@t3tools/client-runtime/markdown-images";
+import { resolveViewedImageAsset } from "@t3tools/client-runtime/work-log/presentation";
 import { EnvironmentId, MessageId, PlanId, RunId, ThreadId } from "@t3tools/contracts";
 import { describe, expect, it } from "vite-plus/test";
 
@@ -15,6 +16,7 @@ import {
   expandedImagePreviewAtom,
   openExpandedImagePreview,
 } from "../../components/chat/ExpandedImageDialog";
+import { assetMediaActionsSource } from "../../components/chat/ChatMarkdownMedia";
 import { buildAttachmentVideoPreview } from "../../components/chat/ExpandedImagePreview";
 import { appAtomRegistry } from "../../rpc/atomRegistry";
 import { chatReel, itemKey, reelAround, sameItem } from "../media/reel";
@@ -76,6 +78,24 @@ const video = (id: string, name: string) => ({
   sizeBytes: 10,
 });
 
+// A tool call that read a file, as the Claude and ACP adapters tag a picture's read.
+const read = (id: string, second: number, path: string, status = "completed") => ({
+  kind: "work" as const,
+  id,
+  createdAt: time(second),
+  entry: {
+    id,
+    createdAt: time(second),
+    label: "Read",
+    toolTitle: "Read",
+    tone: "tool",
+    itemType: "dynamic_tool",
+    toolLifecycleStatus: status,
+    detail: path,
+    ...(path.endsWith(".png") ? { viewedImagePath: path } : {}),
+  },
+});
+
 const timeline = [
   message("u1", "user", 1, "Here is what I see ![sketch](shots/sketch.png)", [
     picture("a1", "screen.png", "blob:screen"),
@@ -83,6 +103,10 @@ const timeline = [
     picture("a3", "preview-annotation-1.png", "blob:annotation"),
     video("v1", "walkthrough.mp4"),
   ]),
+  read("r1", 2, "/Users/example/project/out/viewed.png"),
+  read("r2", 2, "/Users/example/project/notes.md"),
+  read("r3", 2, "/Users/example/project/out/missing.png", "failed"),
+  read("r4", 2, "/Users/example/project/out/viewed.png"),
   message(
     "c1",
     "assistant",
@@ -138,12 +162,13 @@ describe("opening a picture", () => {
 describe("a chat's reel", () => {
   const reel = chatReel(timeline, place, (id) => (id === "a2" ? "https://local/a2" : undefined));
 
-  it("holds each message's pictures, its videos, then what its text embeds, in reading order, each once", () => {
+  it("holds each message's pictures, its videos, then what its text embeds, and the pictures its Cell viewed, in reading order, each once", () => {
     expect(reel.map((item) => item.name)).toEqual([
       "screen.png",
       "stored.png",
       "walkthrough.mp4",
       "sketch.png",
+      "viewed.png",
       "chart.png",
       "diagram.png",
       "next.png",
@@ -156,7 +181,34 @@ describe("a chat's reel", () => {
       "image",
       "image",
       "image",
+      "image",
     ]);
+  });
+
+  it("names a picture the Cell viewed as its row's thumbnail does (a swipe skipped the tool's pictures)", () => {
+    const viewed = reel.find((item) => item.name === "viewed.png")!;
+    // `ViewedImagesTimelineRow` draws each path as `ChatMarkdownAssetImage` of this resource.
+    expect(upstreamSource("components/chat/TimelineWorkEntryRow.tsx")).toMatch(
+      /resolveViewedImageAsset\(path, \{\s*threadId: threadRef\.threadId,\s*workspaceRoot,\s*\}\)[\s\S]*?resource=\{image\.resource\}/,
+    );
+    const asset = resolveViewedImageAsset("/Users/example/project/out/viewed.png", {
+      threadId: place.threadId,
+      workspaceRoot: place.cwd,
+    })!;
+    const src = "https://local/viewed?token=1";
+    const clicked = {
+      src,
+      name: asset.alt,
+      actionsSource: assetMediaActionsSource({
+        environmentId: place.environmentId,
+        resource: asset.resource,
+        kind: "image",
+        name: asset.alt,
+        src,
+        workspaceRoot: place.cwd,
+      }),
+    };
+    expect(reelAround(clicked, reel, [clicked]).index).toBe(reel.indexOf(viewed));
   });
 
   it("asks for the attached pictures the message rows resolve themselves", () => {

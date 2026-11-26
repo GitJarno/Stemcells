@@ -1,10 +1,15 @@
 /**
  * Upstream's media as the media viewer reads it: a chat's pictures and videos (its messages,
- * their attachments and embedded markdown media), how a click opens one, and the pieces that
- * draw one (video player, context menu, asset URLs). `media.contract.test.ts` pins them.
+ * their attachments and embedded markdown media, the pictures its Cell viewed), how a click
+ * opens one, and the pieces that draw one (video player, context menu, asset URLs).
+ * `media.contract.test.ts` pins them.
  */
 import { useAtomValue } from "@effect/atom-react";
 import { resolveMediaSource } from "@t3tools/client-runtime/media-source";
+import {
+  resolveViewedImageAsset,
+  workEntryViewedImagePath,
+} from "@t3tools/client-runtime/work-log/presentation";
 import type { AssetResource, EnvironmentId, ThreadId } from "@t3tools/contracts";
 import { parseComposerContextHref } from "@t3tools/shared/composerContextReferences";
 import {
@@ -127,7 +132,8 @@ export interface ChatMedia {
 /**
  * A timeline entry's media in the order its row shows them: a message's
  * pictures, then its videos, then what its text embeds; a proposed plan's
- * embedded media. `pictureUrl` gives an attached picture's resolved URL.
+ * embedded media; the picture a tool call viewed. `pictureUrl` gives an
+ * attached picture's resolved URL.
  */
 export function entryMedia(
   entry: TimelineEntry,
@@ -140,6 +146,7 @@ export function entryMedia(
     const text = { id: `plan:${plan.id}`, markdown: plan.planMarkdown, settled: true };
     return markdownMedia(markdownSources(text), place);
   }
+  if (entry.kind === "work") return viewedMedia(workEntryViewedImagePath(entry.entry), place);
   if (entry.kind !== "message") return [];
   const message = entry.message;
   const attached = (message.attachments ?? []).map((attachment, index) => ({
@@ -222,6 +229,23 @@ function markdownHref(source: string): string {
     : (rewriteMarkdownFileUriHref(source) ?? safeUrl(source));
   const normalized = normalizeMarkdownLinkDestination(href);
   return isWindowsDrivePathHref(source) ? normalized.replaceAll("\\", "/") : normalized;
+}
+
+/** A picture the Cell opened, as its tool group's row of viewed pictures draws it. */
+function viewedMedia(path: string | null, place: ChatPlace): ChatMedia[] {
+  const viewed =
+    path === null
+      ? null
+      : resolveViewedImageAsset(path, { threadId: place.threadId, workspaceRoot: place.cwd });
+  if (viewed === null) return [];
+  const asset = { environmentId: place.environmentId, resource: viewed.resource };
+  const item: MediaItem = {
+    src: null,
+    name: viewed.alt,
+    ...(viewed.srcFragment ? { srcFragment: viewed.srcFragment } : {}),
+    actionsSource: { kind: "image", name: viewed.alt, src: null, asset },
+  };
+  return [{ item }];
 }
 
 function markdownMedia(sources: readonly string[], place: ChatPlace): ChatMedia[] {
