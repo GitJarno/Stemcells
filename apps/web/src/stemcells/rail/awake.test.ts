@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { byLaunch, launchedAt, type Launchable } from "./awake";
+import { byLaunch, launchedAt, rowStateOf, type Launchable } from "./awake";
 
 const at = (minute: number) => new Date(Date.UTC(2026, 10, 26, 12, minute)).toISOString();
 
@@ -57,5 +57,17 @@ describe("byLaunch", () => {
       "b",
       "old",
     ]);
+  });
+});
+
+describe("rowStateOf", () => {
+  it.each([
+    ["needs-you", false, "needs"],
+    ["working", true, "flying"],
+    ["done", true, "news"],
+    ["done", false, "seen"],
+    [undefined, false, "seen"],
+  ] as const)("%s, unseen %s, is %s", (stage, unseen, expected) => {
+    expect(rowStateOf(stage, unseen)).toBe(expected);
   });
 });

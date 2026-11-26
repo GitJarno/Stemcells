@@ -37,3 +37,31 @@ export function byLaunch<C extends Launchable>(cells: ReadonlyArray<C>): C[] {
     (a, b) => at.get(b)! - at.get(a)! || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
   );
 }
+
+/** What an awake Cell's row says by its light: flying, asking, landed and not yet opened, or seen. */
+export type RowState = "flying" | "needs" | "news" | "seen";
+
+export interface RowLight {
+  /** The provider's tone, or Input's amber, which means Input and nothing else. */
+  readonly tone: "provider" | "input";
+  readonly strength: "full" | "faint";
+  /** The band crossing on the wall clock's beat, in step with the composer's. */
+  readonly band: boolean;
+}
+
+export const ROW_LIGHT: Readonly<Record<RowState, RowLight>> = {
+  flying: { tone: "provider", strength: "full", band: true },
+  needs: { tone: "input", strength: "full", band: false },
+  news: { tone: "provider", strength: "full", band: false },
+  seen: { tone: "provider", strength: "faint", band: false },
+};
+
+/** A row's state from the machine's word on its Cell and whether its last landing was opened. */
+export function rowStateOf(
+  stage: "needs-you" | "working" | "done" | undefined,
+  unseen: boolean,
+): RowState {
+  if (stage === "needs-you") return "needs";
+  if (stage === "working") return "flying";
+  return unseen ? "news" : "seen";
+}
