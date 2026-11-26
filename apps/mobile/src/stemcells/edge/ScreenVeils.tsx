@@ -26,8 +26,9 @@ export function ScreenVeils(props: {
   /** The tab bar's veil too: the home's. */
   readonly bottom: boolean;
   /**
-   * Where the header's bar ends, when the page knows: the veil reaches a little past it. The
-   * Duo's bar is taller than the phone's, under no status bar.
+   * Where the header's bar ends, when the page stands under a native bar: the veil reaches a
+   * little past it, and rises and returns with the bar as iOS minimizes it. The Duo's bar is
+   * taller than the phone's, under no status bar.
    */
   readonly barBottom?: number;
 }) {
@@ -46,6 +47,7 @@ export function ScreenVeils(props: {
         color={dusk === "night" ? skyAt(0) : ground}
         solid={insets.top}
         fade={headerFade}
+        followsBar={props.barBottom !== undefined}
       />
       {dusk === "turning" && !blurs ? (
         <AtNight

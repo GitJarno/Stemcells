@@ -15,10 +15,9 @@ function resolveNativeVeil() {
       readonly ViewPrototypes?: { readonly StemcellsEdge_Veil?: unknown };
     }>("StemcellsEdge");
     if (!module?.ViewPrototypes?.StemcellsEdge_Veil) return null;
-    return requireNativeView<ViewProps & { readonly edge: "top" | "bottom" }>(
-      "StemcellsEdge",
-      "Veil",
-    );
+    return requireNativeView<
+      ViewProps & { readonly edge: "top" | "bottom"; readonly followsBar?: boolean }
+    >("StemcellsEdge", "Veil");
   } catch {
     return null;
   }
@@ -29,13 +28,19 @@ const NativeVeil = resolveNativeVeil();
 /** Whether the veil blurs, so takes no colour, rather than fading into its ground. */
 export const blurs = NativeVeil !== null;
 
-export function Veil(props: ComponentProps<typeof Scrim>) {
+export function Veil(
+  props: ComponentProps<typeof Scrim> & {
+    /** A top veil under a native bar rises and returns with it as iOS minimizes the bar. */
+    readonly followsBar?: boolean;
+  },
+) {
   if (NativeVeil === null) return <Scrim {...props} />;
   const beyond = props.beyond ?? 0;
   const far = props.edge === "top" ? "bottom" : "top";
   return (
     <NativeVeil
       edge={props.edge}
+      followsBar={props.followsBar}
       pointerEvents="none"
       style={{
         position: "absolute",
