@@ -4,8 +4,8 @@
  */
 import type { Need, NeedKind, NeedsList } from "./wire";
 
-/** Kinds upstream's chat already answers over the composer: its approval and question panels. */
-const CHAT_ANSWERS: ReadonlySet<NeedKind> = new Set(["permission", "question", "input"]);
+/** Kinds upstream's chat already answers over the composer: its approval, question and limit panels. */
+const CHAT_ANSWERS: ReadonlySet<NeedKind> = new Set(["permission", "question", "input", "limit"]);
 
 /** The Cell's own ask, oldest first; null when it has none or the chat already shows it. */
 export function chatAskOf(list: NeedsList | null, threadId: string): Need | null {

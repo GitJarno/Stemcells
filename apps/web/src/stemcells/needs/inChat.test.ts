@@ -13,6 +13,7 @@ describe("a chat docks its own Cell's ask", () => {
         needFixture({ key: "b", number: 3, kind: "prose", prose: proseFixture("offer", "Go on?") }),
         needFixture({ key: "c", number: 2, kind: "failed" }),
         needFixture({ key: "d", number: 0, kind: "failed", threadId: "thread-other" }),
+        needFixture({ key: "e", number: 0, kind: "limit" }),
       ],
     };
     expect(chatAskOf(list, "thread-floof")?.key).toBe("c");

@@ -127,7 +127,7 @@ function Dock(props: DockProps & FailureDisk) {
       <View className="flex-row items-center gap-1.5">
         <Dot />
         <AppText className="flex-1 font-t3-medium text-xs text-foreground-muted">
-          Needs you · {age}
+          Input · {age}
         </AppText>
         {anchor === null ? null : (
           <Quiet
