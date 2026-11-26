@@ -83,6 +83,16 @@ export function useDraftText(cell: { environmentId: string; threadId: string } |
   });
 }
 
+/** Whether a chat's composer holds nothing unsent, read once: for a key, not a render. */
+export function composerIsEmpty(cell: { environmentId: string; threadId: string }): boolean {
+  const draft = useComposerDraftStore
+    .getState()
+    .getComposerDraft(
+      scopeThreadRef(cell.environmentId as EnvironmentId, ThreadId.make(cell.threadId)),
+    );
+  return !composerDraftHasUserContent(draft);
+}
+
 /**
  * A GET to the primary environment's server that stays open: the session
  * cookie in a browser on its origin, the desktop app's bearer token

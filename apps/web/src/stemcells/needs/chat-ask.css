@@ -1,0 +1,116 @@
+/* The ask docked over a Cell's composer (ChatAsk.tsx): one bounded card,
+   in from the box's sides as the ledge is, solid, so nothing scrolling
+   behind reads through its words. Orange is its only colour: the dot. */
+
+[data-stemcells-chat-ask] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sc-space-sm);
+  margin: 0 var(--ledge-inset, 0) var(--sc-space-md);
+  padding: var(--sc-space-md) var(--sc-space-lg);
+  border: 1px solid var(--sc-hairline);
+  border-radius: var(--sc-radius-card);
+  background:
+    linear-gradient(var(--chat-composer-attached-surface), var(--chat-composer-attached-surface)),
+    var(--background);
+  color: var(--sc-text);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  animation: stemcells-chat-ask-in var(--sc-motion-fade-duration) var(--sc-motion-fade-easing);
+}
+[data-stemcells-chat-ask][data-leaving] {
+  animation: stemcells-chat-ask-out var(--sc-motion-leave-duration) var(--sc-motion-leave-easing)
+    forwards;
+}
+
+[data-chat-ask-kicker] {
+  display: flex;
+  align-items: center;
+  gap: var(--sc-space-sm);
+  min-height: 1.5rem;
+  color: var(--sc-dim);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+[data-chat-ask-dot] {
+  flex: none;
+  inline-size: 0.5rem;
+  block-size: 0.5rem;
+  border-radius: 50%;
+  background: var(--sc-needs-you);
+}
+/* "Where it asked" stands at the kicker's right end. */
+[data-chat-ask-kicker] > button {
+  margin-inline-start: auto;
+}
+
+[data-chat-ask-headline] {
+  display: -webkit-box;
+  overflow: hidden;
+  font-weight: 500;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+[data-chat-ask-steps] {
+  margin: 0;
+  padding-inline-start: 1.25rem;
+  color: var(--sc-reading);
+  list-style: decimal;
+}
+[data-chat-ask-steps] > li:not(:first-child) {
+  margin-block-start: var(--sc-space-xs);
+}
+[data-chat-ask-steps] > [data-chat-ask-more] {
+  color: var(--sc-faint);
+  list-style: none;
+}
+[data-chat-ask-next] {
+  margin: 0;
+  color: var(--sc-dim);
+}
+[data-chat-ask-next] > span:first-child {
+  color: var(--sc-faint);
+}
+[data-chat-ask-receipt] {
+  margin: 0;
+  color: var(--sc-error);
+}
+
+[data-chat-ask-buttons] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sc-space-sm);
+  margin-block-start: var(--sc-space-xs);
+}
+
+@keyframes stemcells-chat-ask-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--sc-space-sm));
+  }
+}
+@keyframes stemcells-chat-ask-out {
+  to {
+    opacity: 0;
+    transform: translateY(var(--sc-space-sm));
+  }
+}
+@keyframes stemcells-chat-ask-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes stemcells-chat-ask-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+/* Less motion: it fades in and out where it stands. */
+@media (prefers-reduced-motion: reduce) {
+  [data-stemcells-chat-ask] {
+    animation-name: stemcells-chat-ask-fade-in;
+  }
+  [data-stemcells-chat-ask][data-leaving] {
+    animation-name: stemcells-chat-ask-fade-out;
+  }
+}

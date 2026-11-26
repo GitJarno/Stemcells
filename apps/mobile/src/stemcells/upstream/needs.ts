@@ -2,6 +2,7 @@
 // commands, run as its chat runs them, a shell's mode for a message, the settle a Cell at work
 // stops for first, T3's notice, which steps aside for an answer's undo line, and the views an
 // ask is drawn with. Only `respond` with an allow decision can approve, and only a tap reaches it.
+// The ask a chat docks (stemcells/tasks/the-ask.md) reads its chat's messages and jumps to one.
 
 import { scopeThreadRef } from "@t3tools/client-runtime/environment";
 import {
@@ -19,11 +20,17 @@ import {
   type EnvironmentId,
 } from "@t3tools/contracts";
 
+import { requestThreadMessageJump } from "../../features/threads/threadMessageJump";
+import { scopedThreadKey } from "../../lib/scopedEntities";
 import { uuidv4 } from "../../lib/uuid";
 import { appAtomRegistry } from "../../state/atom-registry";
 import { readEnvironmentScope } from "../../state/session";
-import { environmentThreadShells, threadEnvironment } from "../../state/threads";
-import { buildPlanMessage, type ThreadCommand } from "../line/kit";
+import {
+  environmentThreadDetails,
+  environmentThreadShells,
+  threadEnvironment,
+} from "../../state/threads";
+import { buildPlanMessage, type ChatMessage, type ThreadCommand } from "../line/kit";
 
 export { AppTextInput } from "../../components/ui/AppText";
 export { Toast } from "../../components/ui/Toast";
@@ -34,6 +41,7 @@ export {
 } from "../../features/home/thread-undo-notice";
 export { useSavedRemoteConnections } from "../../state/use-remote-environment-registry";
 export { relativeTime } from "../../lib/time";
+export { useDeviceType } from "../../native/native-layout-metrics";
 
 export type CommandOutcome = { readonly ok: true } | { readonly ok: false; readonly why: string };
 
@@ -152,6 +160,23 @@ export async function sendThreadCommand(
     case "settle":
       return run(threadEnvironment.settle, { environmentId, input: { threadId } });
   }
+}
+
+/** A chat's messages as T3 holds them now, read once: a subscription redraws on every word. */
+export function chatMessagesOf(
+  environmentIdText: string,
+  threadIdText: string,
+): ReadonlyArray<ChatMessage> {
+  const ref = scopeThreadRef(environmentIdText as EnvironmentId, ThreadId.make(threadIdText));
+  return appAtomRegistry.get(environmentThreadDetails.threadAtom(ref))?.projection.messages ?? [];
+}
+
+/** Scrolls the chat on screen to a message, loading earlier history until it's there. */
+export function jumpToMessage(environmentIdText: string, threadIdText: string, messageId: string) {
+  requestThreadMessageJump(
+    scopedThreadKey(environmentIdText as EnvironmentId, ThreadId.make(threadIdText)),
+    MessageId.make(messageId),
+  );
 }
 
 const RUNNING = new Set(["preparing", "starting", "running", "waiting"]);
