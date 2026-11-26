@@ -14,7 +14,7 @@ export interface HomeTabs {
     readonly label: string;
     readonly count: number;
   }>;
-  /** The home in Aski's terms, for its line (`greeting.ts`). */
+  /** The home in Aski's terms. */
   readonly counts: TabCounts;
   /** The night comes over Aski: the tab of Cells put away. */
   readonly night: boolean;

@@ -585,8 +585,7 @@ library's dependency (above); the rest are substitutes:
 - **Aski is the web's.** `apps/mobile/src/stemcells/aski/kit.ts` imports
   the web's canon (its lobes, block eyes, mood glyphs and blink rhythm),
   and the phone draws it as SVG; `cell/hermes.test.ts` reads those modules
-  for calls Hermes lacks. Its greeting is word for word from its persona
-  (`home/greeting.test.ts`).
+  for calls Hermes lacks.
 - **Cells by name.** A Cell named in a chat's words is a pill, the Cell
   held still and its name, that opens it
   (`stemcells/tasks/cell-tokens.md`). A substitute of

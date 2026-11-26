@@ -4,6 +4,7 @@ import type { ComponentProps } from "react";
 import { Platform } from "react-native";
 
 import { COLLECTION } from "../../../../stemcells/words/feats.ts";
+export { AskiButton } from "./aski/AskiButton";
 import { CollectionScreen } from "./collection/CollectionScreen";
 import { DiskScreen } from "./disk/DiskScreen";
 import { allowPushes, usePushState } from "./push/PushCoordinator";
