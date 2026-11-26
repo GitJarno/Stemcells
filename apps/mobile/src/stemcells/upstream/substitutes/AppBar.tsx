@@ -14,7 +14,7 @@ import { useNativeColumnLayoutMetrics } from "../../../native/native-layout-metr
 import { NativeStackScreenOptions } from "../../../native/StackHeader";
 import { CellTitle } from "../../chat/CellTitle";
 import { codeMenu } from "../../chat/code";
-import { ChatHeaderContext, setColumnWidth } from "../../chat/header";
+import { ChatHeaderContext, setColumnWidth, titleRowWidth } from "../../chat/header";
 import { NO_HEADER_BAND } from "../../edge/headerEdge";
 
 export * from "../../../components/ui/AppBar";
@@ -43,13 +43,13 @@ function ChatBar(
   },
 ) {
   const { threadId, titled, ...bar } = props;
-  const width = useNativeColumnLayoutMetrics()?.width ?? null;
+  const width = titleRowWidth(useNativeColumnLayoutMetrics());
   const { layout } = useAdaptiveWorkspaceLayout();
   const { panes } = useWorkspacePaneState();
   const onTop = useIsFocused();
   // The home stands in the column beside this one, not floating over it, and no page covers it.
   const besideHome = layout.variant === "expanded" && panes.primarySidebarVisible && onTop;
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Hands the column's width to the title the native bar renders outside the column.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Hands the title row's width to the title the native bar renders outside the column.
   useLayoutEffect(() => {
     setColumnWidth(threadId, width);
     return () => setColumnWidth(threadId, null);

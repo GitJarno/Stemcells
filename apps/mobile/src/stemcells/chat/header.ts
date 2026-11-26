@@ -1,5 +1,7 @@
 import { createContext, useSyncExternalStore } from "react";
 
+import { deriveSharedTopBand, type NativeLayoutMetrics } from "../upstream/reservedRegions";
+
 /**
  * The chat whose header a bar draws, from `ThreadHeader`'s substitute to `AppBar`'s: `titled`
  * when the Cell stands beside its name there (`CellTitle`), not in a draft or a chat not yet known.
@@ -31,4 +33,15 @@ export function useColumnWidth(threadId: string): number | null {
     },
     () => widths.get(threadId) ?? null,
   );
+}
+
+/**
+ * The width a chat's title row has in its column: where the bar shares its row with the system's
+ * status (the unfolded Duo, `deriveSharedTopBand`), the bar's buttons stand beside the status,
+ * so the title ends that much sooner.
+ */
+export function titleRowWidth(metrics: NativeLayoutMetrics | null): number | null {
+  if (metrics === null) return null;
+  const band = deriveSharedTopBand(metrics);
+  return metrics.width - (band?.left ?? 0) - (band?.right ?? 0);
 }
