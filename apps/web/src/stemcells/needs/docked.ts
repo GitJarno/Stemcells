@@ -9,7 +9,7 @@ export interface DockedButtons {
   /** The first button, which Return takes: never a settle or an allow. */
   readonly primary: CardOption | null;
   readonly rest: ReadonlyArray<CardOption>;
-  /** Later, which Escape takes. */
+  /** Later: Not now. */
   readonly notNow: CardOption | null;
 }
 
@@ -27,7 +27,7 @@ export function dockedButtonsOf(card: Card): DockedButtons {
 /** What upstream's panels over the composer answer (`inChat.ts`): its keys are theirs then. */
 const PANEL_KINDS: ReadonlySet<NeedKind> = new Set(["permission", "question", "input"]);
 
-/** Whether the composer's Return and Escape are free for the docked card: no panel of upstream's asks. */
+/** Whether the composer's Return is free for the docked card: no panel of upstream's asks. */
 export function dockedKeysFree(list: NeedsList | null, threadId: string): boolean {
   return !list?.needs.some((need) => need.threadId === threadId && PANEL_KINDS.has(need.kind));
 }

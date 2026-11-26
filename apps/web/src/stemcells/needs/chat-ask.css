@@ -10,9 +10,7 @@
   padding: var(--sc-space-md) var(--sc-space-lg);
   border: 1px solid var(--sc-hairline);
   border-radius: var(--sc-radius-card);
-  background:
-    linear-gradient(var(--chat-composer-attached-surface), var(--chat-composer-attached-surface)),
-    var(--background);
+  background: var(--sc-raised);
   color: var(--sc-text);
   font-size: 0.875rem;
   line-height: 1.25rem;
@@ -61,15 +59,12 @@
   margin-block-start: var(--sc-space-xs);
 }
 [data-chat-ask-steps] > [data-chat-ask-more] {
-  color: var(--sc-faint);
+  color: var(--sc-dim);
   list-style: none;
 }
 [data-chat-ask-next] {
   margin: 0;
   color: var(--sc-dim);
-}
-[data-chat-ask-next] > span:first-child {
-  color: var(--sc-faint);
 }
 [data-chat-ask-receipt] {
   margin: 0;

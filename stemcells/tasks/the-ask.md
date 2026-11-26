@@ -27,8 +27,9 @@ retires Input, the card being where an ask is answered. Until then both stand.
    the phone's placeholder says so (the Mac's lives in a hot upstream file).
 6. **The folded Duo** rests the card as one line (kicker and headline) that
    opens on a tap, so the chat keeps its height. Everywhere else it opens.
-7. **The Mac's keys.** With the card shown and the composer empty, Return
-   takes the first button and Escape takes Not now.
+7. **The Mac's key.** With the card shown and the composer empty, Return
+   takes the first button. Escape stays the composer's: empty, it already
+   dismisses a suggestion or a held send.
 
 ## Plan
 

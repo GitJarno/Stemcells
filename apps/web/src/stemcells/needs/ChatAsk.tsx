@@ -73,7 +73,7 @@ interface DockedProps {
   readonly need: Need;
   readonly hold: Hold | undefined;
   readonly leaving: boolean;
-  /** No panel of upstream's answers over the composer: Return and Escape are the card's. */
+  /** No panel of upstream's answers over the composer: Return is the card's. */
   readonly keysFree: boolean;
   readonly onLeft: () => void;
 }
@@ -116,26 +116,20 @@ function DockedAsk(props: DockedProps & { disk: DiskFailure; freeSpace: (() => v
   const putOff = notNow !== null ? () => choose(notNow) : null;
 
   const onKey = useEffectEvent((event: KeyboardEvent) => {
-    if (props.leaving || !props.keysFree || !ownsInput || event.defaultPrevented) return;
-    if (event.shiftKey || event.altKey || event.metaKey || event.ctrlKey || event.repeat) return;
+    if (take === null || props.leaving || !props.keysFree || !ownsInput) return;
+    if (event.key !== "Enter" || event.defaultPrevented || event.repeat) return;
+    if (event.shiftKey || event.altKey || event.metaKey || event.ctrlKey) return;
     if (event.isComposing || event.keyCode === 229) return;
-    const act = event.key === "Enter" ? take : putOff;
-    if (act === null || !inComposerBelow(root.current, event.target) || !composerIsEmpty(cell))
-      return;
+    if (!inComposerBelow(root.current, event.target) || !composerIsEmpty(cell)) return;
     event.preventDefault();
     event.stopPropagation();
-    act();
+    take();
   });
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Hear the composer's Return before its editor sends, and an Escape nothing under it took.
+  // Escape stays the composer's: with it empty, it dismisses a suggestion or a held send.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Hear the composer's Return before its editor sends.
   useEffect(() => {
-    const enter = (event: KeyboardEvent) => event.key === "Enter" && onKey(event);
-    const escape = (event: KeyboardEvent) => event.key === "Escape" && onKey(event);
-    window.addEventListener("keydown", enter, true);
-    window.addEventListener("keydown", escape);
-    return () => {
-      window.removeEventListener("keydown", enter, true);
-      window.removeEventListener("keydown", escape);
-    };
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
   }, []);
 
   const steps = card.steps.slice(0, STEPS_SHOWN);
