@@ -40,6 +40,11 @@ const POINTS = 2;
 /** The project's mark beside the one-liner: its capitals' height and a little over. */
 const MARK = 14;
 /**
+ * A soft glow of the ground behind the name's letters: unseen over the plain page, it holds
+ * them off whatever scrolls under the bar's blur.
+ */
+const HALO = { textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 6 } as const;
+/**
  * The bar's buttons and margins, where the bar doesn't say. A custom title keeps its natural
  * width, so it ends under the Code button unless it's told where the buttons start.
  */
@@ -76,6 +81,7 @@ function Title(props: {
   const width = props.width ?? windowWidth;
   const buttons = use(HeaderItemsWidthContext) ?? BESIDE_BUTTONS;
   const reduced = useReducedMotion();
+  const halo = { ...HALO, textShadowColor: ground };
   /** The finger's travel over the Cell, and whether this touch soothed it: then it is no poke. */
   const hand = useRef<{ travel: Stroking | undefined; soothed: boolean }>({
     travel: undefined,
@@ -131,13 +137,21 @@ function Title(props: {
         </Pressable>
       )}
       <View className="min-w-0 shrink">
-        <AppText className="font-t3-bold text-[15px] text-foreground" numberOfLines={1}>
+        <AppText
+          className="font-t3-bold text-[15px] text-foreground"
+          style={halo}
+          numberOfLines={1}
+        >
           {name}
         </AppText>
         {about === null ? null : (
           <View className="min-w-0 flex-row items-center gap-1.5">
             {project === null ? null : <ProjectMark project={project} size={MARK} />}
-            <AppText className="min-w-0 shrink text-xs text-foreground" numberOfLines={1}>
+            <AppText
+              className="min-w-0 shrink text-xs text-foreground"
+              style={halo}
+              numberOfLines={1}
+            >
               {about}
             </AppText>
           </View>
