@@ -601,6 +601,13 @@ library's dependency (above); the rest are substitutes:
   and a Cell settled by hand on another device meanwhile gives way to the
   home, the Threads tab opened without columns (`chat/useClosesOnReturn.ts`,
   `stemcells/tasks/settle-everywhere.md`).
+- **The ask in its chat.** The substitute of `ThreadComposer` docks the
+  Cell's ask over the composer, inside the slot upstream measures for the
+  feed's inset, so no line of the hot `ThreadDetailScreen.tsx` changes
+  (`line/ChatAsk.tsx`, `stemcells/tasks/the-ask.md`). Approvals and
+  questions keep upstream's panels. An answer waits on the home's undo line
+  and stands in the card's place; the chip jumps with upstream's
+  `requestThreadMessageJump`.
 - **Add to Chat.** A substitute of `ComposerAttachmentButton` has T3's
   plus button open our card (`attach/AttachCard.tsx`): the phone's newest
   photos, the camera first, picks numbered in the order tapped. Add N stages the
