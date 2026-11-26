@@ -6,10 +6,10 @@ so Cells changed tabs on their own as they landed, and keeping up with many
 meant watching two lists reshuffle. The tabs now answer the person's
 questions; the agent's state shows inside the row.
 
-| Stage  | Asks                 | Holds                                        | Order                                     |
-| ------ | -------------------- | -------------------------------------------- | ----------------------------------------- |
-| Input  | What needs me now?   | Every ask, answerable in place               | A queue: longest waiting first            |
-| Awake  | What's in play?      | Every Cell not asleep, flying or landed      | When the person last brought it forward   |
+| Stage  | Asks                 | Holds                                          | Order                                               |
+| ------ | -------------------- | ---------------------------------------------- | --------------------------------------------------- |
+| Input  | What needs me now?   | Every ask, answerable in place                 | A queue: longest waiting first                      |
+| Awake  | What's in play?      | Every Cell not asleep, flying or landed        | When the person last brought it forward             |
 | Asleep | What did I put away? | Cells slept by hand or by time, and timed ones | Latest asleep first; timed ones show when they wake |
 
 ## Decisions
@@ -35,9 +35,9 @@ questions; the agent's state shows inside the row.
    - needs you: the wash in Input's amber (amber means Input and nothing
      else, `stemcells/brand/book.md`);
    - asleep: no light; the Cell sleeps.
-   No provider name or icon in text, and no coloured edge.
-   The time means "how long it's been like this": flying for, landed for,
-   waiting for, asleep for.
+     No provider name or icon in text, and no coloured edge.
+     The time means "how long it's been like this": flying for, landed for,
+     waiting for, asleep for.
 4. **The verb is Sleep; its reverse is Wake.** It pairs with the stages and
    is what the Mac says of itself. Never "put to sleep": Cells are
    creatures. Snooze becomes **Sleep until…**, a sleep with an alarm; its

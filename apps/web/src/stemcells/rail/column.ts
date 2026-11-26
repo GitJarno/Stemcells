@@ -44,7 +44,9 @@ const WAS: Readonly<Record<string, ColumnStage>> = {
 };
 
 export function parseColumnStage(raw: string | null): ColumnStage {
-  return COLUMN_STAGES.find((stage) => stage === raw) ?? (raw === null ? undefined : WAS[raw]) ?? "needs";
+  return (
+    COLUMN_STAGES.find((stage) => stage === raw) ?? (raw === null ? undefined : WAS[raw]) ?? "needs"
+  );
 }
 
 function readStored(key: string): string | null {
