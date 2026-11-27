@@ -15,7 +15,7 @@ describe("the lists' motion", () => {
         expect(tokensCss).toContain(`--sc-motion-${name}-easing: ${cssEasing(timing.easing)};`);
     };
     token("recede", LIST_MOTION.move);
-    token("recede", LIST_MOTION.leave);
+    token("leave", LIST_MOTION.leave);
     token("fade", LIST_MOTION.enter);
     token("settle", LIST_MOTION.tick);
   });

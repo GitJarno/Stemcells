@@ -676,6 +676,13 @@ library's dependency (above); the rest are substitutes:
   panels. An answer goes at once, and one that fails says so on the card;
   a line of the card jumps to its reply with upstream's
   `requestThreadMessageJump`.
+- **A chat reads from its top.** A substitute of `@legendapp/list/keyboard`
+  hands upstream's feed a list that never holds a short chat at its end
+  (`legendapp-list-keyboard.tsx`): it sits under the header until it fills
+  the screen, then follows its end. Upstream anchors only a first message
+  sent from the open screen, until the screen closes, so a short chat opened
+  again, or begun elsewhere, sat above the composer. `ThreadFeed.tsx` is at
+  its budget, so it's no line there.
 - **Add to Chat.** A substitute of `ComposerAttachmentButton` has T3's
   plus button open our card (`attach/AttachCard.tsx`): the phone's newest
   photos, the camera first, picks numbered in the order tapped. Add N stages the
