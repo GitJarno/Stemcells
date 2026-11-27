@@ -14,7 +14,6 @@ import { compilePlan, expectPlan, promptOf, usePlanWorld } from "../../upstream/
 import { randomUUID } from "../../upstream/ui";
 import { type BeforeSend, WordsSendSlot } from "../../words/send";
 import { useAskiPlans } from "../planning";
-import { wasDictated } from "./dictated";
 import { runner } from "./PlanRunner";
 import { chatKeyOf, PlanRoom } from "./room";
 import { readCheckAlways, readPlanCap } from "./settings";
@@ -68,7 +67,6 @@ function Planning(props: { readonly anchor: string; readonly aski: CellRef }) {
               ...now.context,
               cap: readPlanCap(),
               always: readCheckAlways(),
-              dictated: wasDictated(text),
             },
             think,
           });

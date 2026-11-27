@@ -8,6 +8,9 @@ const ASKI = "/settings/aski";
 export const OUR_ROWS = [
   { id: "aski-tab-on", title: "Aski's tab", page: ASKI },
   { id: "aski-plans", title: ASKI_SWITCHES["aski-plans"].title, page: ASKI },
+  { id: "aski-plan-check", title: "Check every plan", page: ASKI },
+  { id: "aski-plan-cap", title: "Most Cells one message starts", page: ASKI },
+  { id: "aski-plan-learned", title: "Names Aski learned", page: ASKI },
   { id: "aski-takes-retry", title: KINDS.retry.title, page: ASKI },
   { id: "aski-takes-go-ahead", title: KINDS.goAhead.title, page: ASKI },
   { id: "aski-takes-implement", title: KINDS.implement.title, page: ASKI },
