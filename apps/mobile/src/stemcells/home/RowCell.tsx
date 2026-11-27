@@ -248,7 +248,8 @@ const MARK_GAP = 6;
 function useTitleMarkLayout() {
   const { fontScale } = useWindowDimensions();
   const base = useResolveClassNames("text-base").fontSize;
-  return titleMarkLayout((typeof base === "number" ? base : 16) * fontScale);
+  const family = useResolveClassNames("font-sans").fontFamily;
+  return titleMarkLayout((typeof base === "number" ? base : 16) * fontScale, family);
 }
 
 /**

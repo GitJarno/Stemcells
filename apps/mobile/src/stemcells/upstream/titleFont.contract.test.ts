@@ -4,14 +4,17 @@ import * as NodeModule from "node:module";
 import * as NodePath from "node:path";
 import * as NodeURL from "node:url";
 
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, it, vi } from "vite-plus/test";
 
-import { DM_SANS_ASCENT, DM_SANS_CAP } from "../project/titleMark";
+import { TITLE_TYPE } from "../project/titleMark";
+
+const platform = vi.hoisted(() => ({ OS: "ios" }));
+vi.mock("react-native", () => ({ Platform: platform }));
 
 /**
- * Contract: a title's project mark centres on the capitals of upstream's type, DM Sans, from
- * where they stand in its font files (`project/titleMark.ts`). If this fails after a sync,
- * upstream set titles in another font, or another cut of this one: read its metrics again.
+ * Contract: a title's project mark centres on the capitals of whichever face upstream's font
+ * preference sets (`project/titleMark.ts`). If this fails after a sync, upstream offers another
+ * face, or another cut of DM Sans: read its metrics and add them.
  */
 
 const mobileRoot = NodePath.resolve(
@@ -40,18 +43,20 @@ function metricsOf(file: string) {
 }
 
 describe("the type a title's mark centres on", () => {
-  it("is DM Sans, as upstream's stylesheet names it", () => {
-    const sheet = NodeFS.readFileSync(NodePath.join(mobileRoot, "global.css"), "utf8");
-    expect(sheet).toContain('--font-sans: "DMSans-Regular";');
-    expect(sheet).toContain('--font-medium: "DMSans-Medium";');
+  it("is known for every face upstream's font preference sets, on each platform", async () => {
+    for (const os of ["ios", "android"]) {
+      platform.OS = os;
+      vi.resetModules();
+      const { MOBILE_FONT_FAMILIES } = await import("../../lib/fontFamilies");
+      for (const families of Object.values(MOBILE_FONT_FAMILIES)) {
+        expect(TITLE_TYPE, `${os}: ${families.regular}`).toHaveProperty([families.regular]);
+      }
+    }
   });
 
   it("stands its capitals where the mark centres, in each weight a title wears", () => {
     for (const file of ["400Regular/DMSans_400Regular.ttf", "500Medium/DMSans_500Medium.ttf"]) {
-      expect(metricsOf(NodePath.join(fonts, file)), file).toEqual({
-        cap: DM_SANS_CAP,
-        ascent: DM_SANS_ASCENT,
-      });
+      expect(metricsOf(NodePath.join(fonts, file)), file).toEqual(TITLE_TYPE["DMSans-Regular"]);
     }
   });
 });
