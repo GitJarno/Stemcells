@@ -219,17 +219,32 @@ describe("carrying a plan out", () => {
     refusing.stop();
   });
 
-  it("calls back the Cells just started, and lets the plan go once it is over", async () => {
+  it("calls back the one Cell asked for, and lets the plan go once it is over", async () => {
     const w = world();
     w.trays.reading("plan-1", "mac", "aski-chat");
     w.trays.arrived("plan-1", planOf([start(0), start(1)]));
     await w.until("started", "started");
     w.advance(4_000);
-    await w.carrier.callBack("plan-1");
-    expect(w.log.slice(-2)).toEqual(["call back thread-0", "call back thread-1"]);
-    expect(statuses(w)).toEqual(["called-back", "called-back"]);
+    await w.carrier.callBack("plan-1", 1);
+    expect(w.log.at(-1)).toBe("call back thread-1");
+    expect(statuses(w)).toEqual(["started", "called-back"]);
     w.advance(10_000);
     expect(w.trays.read().has("plan-1")).toBe(false);
+  });
+
+  it("keeps a plan with a Cell that didn't start until the person closes it", async () => {
+    const w = world();
+    const failing = carry(w.trays, {
+      ...w.hands,
+      start: async () => ({ ok: false, reason: "Harbor isn’t here any more." }),
+    });
+    w.carrier.stop();
+    w.trays.reading("plan-1", "mac", "aski-chat");
+    w.trays.arrived("plan-1", planOf([start(0)]));
+    await w.until("failed");
+    w.advance(60_000);
+    expect(w.trays.read().has("plan-1")).toBe(true);
+    failing.stop();
   });
 
   it("lets a message Aski couldn't read as Cells stand briefly, then go", () => {

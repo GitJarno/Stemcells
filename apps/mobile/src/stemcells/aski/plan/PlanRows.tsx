@@ -14,6 +14,7 @@ import {
   confirm,
   confirmAll,
   drop,
+  dropAll,
   held,
   setNewName,
   setPlace,
@@ -22,6 +23,7 @@ import {
 import { cellNameOf } from "../../../../../../stemcells/words/cellNames.ts";
 import {
   CALL_BACK,
+  DICTATED,
   DROP,
   LEFT_OVER,
   placeLabel,
@@ -35,6 +37,7 @@ import { HoldCard } from "./HoldCard";
 import { planCarrier, trays } from "./run";
 import type { PlanEntry } from "./trays";
 import {
+  CLOSE_PLAN,
   headOf,
   HIDE_MESSAGE,
   messageSpans,
@@ -96,7 +99,7 @@ export function PlanPanel(props: {
   if (tray === null) return null;
   const exists = new Set(here === "" ? [] : here.split(",").map(Number));
   const head = headOf(tray);
-  const back = callable(tray, now).length > 0;
+  const back = new Set(callable(tray, now).map((one) => one.act.i));
   const blocked = held(tray);
   const leftOver = tray.plan.leftOver
     .map((n) => tray.plan.pieces.find((piece) => piece.n === n)?.text ?? "")
@@ -112,14 +115,30 @@ export function PlanPanel(props: {
           >
             {head.line}
           </AppText>
+          {tray.plan.dictated ? (
+            <AppText className="text-xs text-foreground-tertiary">{DICTATED}</AppText>
+          ) : null}
           {head.startAll ? (
             <Pill filled title={START_ALL} onPress={() => trays.change(entry.id, confirmAll)} />
-          ) : back ? (
-            <Pill
-              filled={false}
-              title={CALL_BACK}
-              onPress={() => void planCarrier().callBack(entry.id)}
-            />
+          ) : null}
+          {entry.door === "composer" ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={CLOSE_PLAN}
+              hitSlop={12}
+              onPress={() => {
+                trays.change(entry.id, dropAll);
+                trays.leave(entry.id);
+              }}
+              className="size-7 items-center justify-center active:opacity-70"
+            >
+              <SymbolView
+                name="xmark"
+                size={12}
+                tintColorClassName="accent-foreground-muted"
+                type="monochrome"
+              />
+            </Pressable>
           ) : null}
         </View>
       ) : null}
@@ -142,6 +161,7 @@ export function PlanPanel(props: {
               one={one}
               started={exists.has(one.act.i)}
               blocked={blocked}
+              back={back.has(one.act.i)}
               places={props.places}
               models={props.models}
               open={props.open}
@@ -165,6 +185,8 @@ function CellRow(props: {
   readonly started: boolean;
   /** A deletion is held: nothing starts before it. */
   readonly blocked: boolean;
+  /** It started within the last ten seconds: one tap stops and archives it. */
+  readonly back: boolean;
   readonly places: ReadonlyArray<PlaceEntry>;
   readonly models: ReadonlyArray<ModelEntry>;
   readonly open: boolean;
@@ -338,6 +360,15 @@ function CellRow(props: {
           <StartPill
             enabled={canStart(act) && !props.blocked}
             onPress={() => trays.change(id, (tray) => confirm(tray, act.i))}
+          />
+        </View>
+      ) : props.back ? (
+        // Where Start was: the hand that started it is still there to take it back.
+        <View className="flex-row justify-end pt-1">
+          <Pill
+            filled={false}
+            title={CALL_BACK}
+            onPress={() => void planCarrier().callBack(id, act.i)}
           />
         </View>
       ) : null}

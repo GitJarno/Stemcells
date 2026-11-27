@@ -52,12 +52,18 @@ export interface Hands {
 export const TELL_AFTER_MS = 150;
 /** How long "Aski couldn't read that" stands. */
 export const FLOOR_MS = 5_000;
+/** How long a plan whose Cells all started stands: their call-back time and a breath, as on the Mac. */
+export const LINGER_MS = CALL_BACK_MS + 1_500;
+
+/** Nothing left to ask and nothing that failed: a failure stays until the person closes the plan. */
+const over = (tray: Tray): boolean =>
+  settled(tray) && tray.acts.every((one) => one.status !== "failed");
 
 export interface Carrier {
   /** The person's hand held on a deletion: the only way one runs. */
   readonly destroy: (id: string, i: number) => Promise<void>;
   /** Stops and archives every Cell of the plan that can still be called back. */
-  readonly callBack: (id: string) => Promise<void>;
+  readonly callBack: (id: string, i: number) => Promise<void>;
   readonly stop: () => void;
 }
 
@@ -123,23 +129,23 @@ export function carry(trays: Trays, hands: Hands): Carrier {
   /** When a plan over the composer has nothing left to show, it goes. */
   const leaveWhenOver = (entry: PlanEntry) => {
     if (entry.door !== "composer" || leaving.has(entry.id)) return;
-    const over =
+    const after =
       entry.state === "floor"
         ? FLOOR_MS
-        : entry.tray !== null && settled(entry.tray)
-          ? // Nothing started and nothing failed: there is nothing to call back or to read.
-            entry.tray.acts.some((one) => one.status === "started" || one.status === "failed")
-            ? CALL_BACK_MS
+        : entry.tray !== null && over(entry.tray)
+          ? // Nothing started: there is nothing to call back.
+            entry.tray.acts.some((one) => one.status === "started")
+            ? LINGER_MS
             : 0
           : null;
-    if (over === null) return;
+    if (after === null) return;
     leaving.set(
       entry.id,
-      hands.later(over, () => {
+      hands.later(after, () => {
         leaving.delete(entry.id);
         const now = trays.read().get(entry.id);
         // The person may have changed it meanwhile: a plan with something waiting stays.
-        if (now !== undefined && (now.tray === null || settled(now.tray))) trays.leave(entry.id);
+        if (now !== undefined && (now.tray === null || over(now.tray))) trays.leave(entry.id);
       }),
     );
   };
@@ -188,11 +194,11 @@ export function carry(trays: Trays, hands: Hands): Carrier {
       if (went.ok) trays.change(id, (tray) => done(tray, i));
       else trays.refuse(id, i, went.reason);
     },
-    callBack: async (id) => {
+    callBack: async (id, i) => {
       const entry = trays.read().get(id);
       if (entry === undefined || entry.tray === null) return;
-      const back = callable(entry.tray, hands.now());
-      // Off the tray at once: the person's word is taken while the Cells stop.
+      const back = callable(entry.tray, hands.now()).filter((one) => one.act.i === i);
+      // Off the tray at once: the person's word is taken while the Cell stops.
       trays.change(id, (tray) => back.reduce((next, one) => calledBack(next, one.act.i), tray));
       await Promise.all(
         back.map((one) =>

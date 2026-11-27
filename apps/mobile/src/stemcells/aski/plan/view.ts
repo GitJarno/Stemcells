@@ -34,6 +34,7 @@ export const STATUS_WORDS: Readonly<Record<Exclude<Status, "waiting">, string>> 
 export const PLAN_GONE = "This plan is no longer here.";
 export const PLAN_UNREACHABLE = "The plan can’t be read from here.";
 export const NEW_PROJECT_NAME = "Name the new project";
+export const CLOSE_PLAN = "Close the plan";
 export const HIDE_MESSAGE = "Hide the message";
 export const SHOW_MESSAGE = "Show the message";
 
