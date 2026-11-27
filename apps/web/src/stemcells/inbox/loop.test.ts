@@ -42,6 +42,11 @@ describe("the loop through Input", () => {
     const beside = entered(LOOP_AT_REST, reading(["pip", "otter"], "harbor"), true);
     expect(beside.open).toBe("pip");
     expect(entered(LOOP_AT_REST, reading(["pip"], "harbor"), false).open).toBeNull();
+    // With no chat open beside the list, the top opens all the same.
+    const none = entered(LOOP_AT_REST, reading(["pip"], null), true);
+    expect(none.open).toBe("pip");
+    expect(read(none.loop, reading(["pip"], null)).loop.following).toBe("pip");
+    expect(read(none.loop, reading(["pip"], "pip")).loop.landing).toBe(false);
     // Already open, it is followed as it stands.
     const open = entered(LOOP_AT_REST, reading(["pip"], "pip"), true);
     expect(open.open).toBeNull();

@@ -46,7 +46,8 @@ export interface Loop {
   readonly queue: ReadonlyArray<string>;
   /** The Cell the loop follows: opened from Input, while the person stays on it. */
   readonly following: string | null;
-  /** What was open when the loop opened `following`, until the open chat is `following`. */
+  /** The loop opened `following`, which hasn't shown yet: meanwhile `from`, open then, shows. */
+  readonly landing: boolean;
   readonly from: string | null;
   readonly clearing: Clearing | null;
   readonly cleared: Cleared | null;
@@ -55,6 +56,7 @@ export interface Loop {
 export const LOOP_AT_REST: Loop = {
   queue: [],
   following: null,
+  landing: false,
   from: null,
   clearing: null,
   cleared: null,
@@ -87,20 +89,26 @@ export function entered(loop: Loop, reading: Reading, beside: boolean): Step {
   const step = read(loop, { ...reading, onInput: true });
   const top = step.loop.queue[0] ?? null;
   if (!beside || top === null) return step;
-  const from = top === reading.open ? null : reading.open;
+  const landing = top !== reading.open;
   return {
     ...step,
-    loop: { ...step.loop, following: top, from },
-    open: from === null ? null : top,
+    loop: { ...step.loop, following: top, landing, from: landing ? reading.open : null },
+    open: landing ? top : null,
   };
 }
 
 /** The person opened `cell` from Input's list: the loop follows it. */
 export const opened = (loop: Loop, cell: string): Loop =>
-  loop.queue.includes(cell) ? { ...loop, following: cell, from: null } : loop;
+  loop.queue.includes(cell) ? { ...loop, following: cell, landing: false, from: null } : loop;
 
 /** Turning away from Input: the loop stops opening, and the all-clear line has been seen. */
-export const left = (loop: Loop): Loop => ({ ...loop, following: null, from: null, cleared: null });
+export const left = (loop: Loop): Loop => ({
+  ...loop,
+  following: null,
+  landing: false,
+  from: null,
+  cleared: null,
+});
 
 /**
  * A reading (decision 5): the followed Cell's ask gone, the next opens in its place; the person
@@ -114,18 +122,20 @@ export function read(loop: Loop, reading: Reading): Step {
     clearing = { startedAt: now, met: new Set() };
   if (clearing !== null && queue.some((cell) => !clearing!.met.has(cell)))
     clearing = { ...clearing, met: new Set([...clearing.met, ...queue]) };
-  let { following, from } = loop;
+  let { following, landing, from } = loop;
   let next: string | null = null;
-  if (following !== null && from !== null) {
+  if (following !== null && landing) {
     // On its way: the chat that was open shows until it lands.
-    if (open === following) from = null;
+    if (open === following) landing = false;
     else if (open !== from) following = null;
   } else if (following !== null && open !== following) {
     following = null;
   }
-  if (following !== null && from === null && !inQueue.has(following)) {
+  if (following === null) landing = false;
+  if (following !== null && !landing && !inQueue.has(following)) {
     next = queue[0] ?? null;
-    from = next === null ? null : following;
+    landing = next !== null;
+    from = open;
     following = next;
   }
   const allClear = clearing !== null && queue.length === 0;
@@ -133,6 +143,7 @@ export function read(loop: Loop, reading: Reading): Step {
     loop: {
       queue,
       following: allClear ? null : following,
+      landing: !allClear && landing,
       from: allClear ? null : from,
       clearing: allClear ? null : clearing,
       cleared: allClear

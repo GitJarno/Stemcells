@@ -174,9 +174,10 @@ export function Cells() {
           (cell) => awakeRowOf(cell, environmentId, sleeping.has(cell.threadId), asked),
         );
   const staying = awake.filter((row) => !row.leaving);
-  // Input (inbox.md, decisions 1 and 2): the same rows, those that ask, the longest waiting first.
+  // Input (inbox.md, decisions 1 and 2): the same rows, those with an ask open, the longest
+  // waiting first. One just answered here has left the asks already (`needs/live.ts`).
   const asking = byWaiting(
-    staying.filter((row) => row.stage === "needs-you" && row.holds === null),
+    staying.filter((row) => asked.has(row.cell.threadId) && row.holds === null),
     (row) => row.cell.threadId,
     (row) => row.since,
   );

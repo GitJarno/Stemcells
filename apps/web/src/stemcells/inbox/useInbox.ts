@@ -115,8 +115,7 @@ export function useInbox(input: {
     if (step.open !== null && environmentId !== null)
       openCellHere({ environmentId, threadId: step.open, draftId: null });
     // The chat it opened has landed: the next answer starts without a click.
-    if (before.from !== null && step.loop.from === null && step.loop.following === open)
-      focusComposer();
+    if (before.landing && !step.loop.landing && step.loop.following === open) focusComposer();
   }, [queueKey, open, stage, environmentId]);
 
   return useInboxState();
