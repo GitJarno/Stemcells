@@ -1,7 +1,7 @@
 // Settings › Collection on the phone, as the Mac's (`apps/web/src/stemcells/collection/
 // CollectionSettings.tsx`): one machine's feats, and the wardrobe they fill. Two views of one
-// read, the feats first (`FeatsView`); the wardrobe is where a Cell is dressed and shows an act
-// (`Wardrobe`).
+// read, the feats first (`FeatsView`, or on a screen as wide as the Duo's `FeatsBoard`); the
+// wardrobe is where a Cell is dressed and shows an act (`Wardrobe`). Usage's trophy opens it too.
 
 import { useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
@@ -16,6 +16,7 @@ import {
 } from "../upstream/disk";
 import { askMachine, machineConnectionOf } from "../upstream/machines";
 import { useSavedRemoteConnections } from "../upstream/push";
+import { FeatsBoard } from "./FeatsBoard";
 import { FeatsView } from "./FeatsView";
 import { COLLECTION } from "./kit";
 import { Chip } from "./parts";
@@ -23,6 +24,11 @@ import { readCollectionOf, useCollections } from "./read";
 import { Wardrobe } from "./Wardrobe";
 
 type Machine = ReturnType<typeof useMachines>[number];
+
+/** From this width the feats lay out as a board; narrower, as a list. */
+const BOARD_WIDTH = 720;
+/** The wardrobe keeps a phone's width, centred, on a wider screen. */
+const WARDROBE_WIDTH = 640;
 
 const VIEWS = ["feats", "wardrobe"] as const;
 type View_ = (typeof VIEWS)[number];
@@ -38,6 +44,8 @@ export function CollectionScreen() {
   const { savedConnectionsById } = useSavedRemoteConnections();
   const [picked, setPicked] = useState<string | null>(null);
   const [view, setView] = useState<View_>("feats");
+  const [width, setWidth] = useState(0);
+  const board = width >= BOARD_WIDTH;
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Read each machine's collection as the screen opens, and again once a route hands the phone its token.
   useEffect(() => {
     for (const saved of Object.values(savedConnectionsById))
@@ -67,6 +75,7 @@ export function CollectionScreen() {
         showsVerticalScrollIndicator={false}
         className="flex-1"
         contentContainerClassName="gap-6 px-5 pt-4 pb-[18px]"
+        onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
       >
         {shown === undefined || collection === undefined ? (
           <AppText className="px-2 text-sm text-foreground-muted">{COLLECTION.reading}</AppText>
@@ -87,16 +96,25 @@ export function CollectionScreen() {
                 </Chip>
               ))}
             </View>
-            {view === "feats" ? (
-              <FeatsView
-                key={`feats:${shown.environmentId}`}
+            {view === "wardrobe" ? (
+              <View className="w-full gap-6 self-center" style={{ maxWidth: WARDROBE_WIDTH }}>
+                <Wardrobe
+                  key={`room:${shown.environmentId}`}
+                  environmentId={shown.environmentId}
+                  connection={connection}
+                  collection={collection}
+                />
+              </View>
+            ) : board ? (
+              <FeatsBoard
+                key={`board:${shown.environmentId}`}
                 environmentId={shown.environmentId}
                 connection={connection}
                 collection={collection}
               />
             ) : (
-              <Wardrobe
-                key={`room:${shown.environmentId}`}
+              <FeatsView
+                key={`feats:${shown.environmentId}`}
                 environmentId={shown.environmentId}
                 connection={connection}
                 collection={collection}

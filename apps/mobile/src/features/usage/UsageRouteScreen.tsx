@@ -48,6 +48,7 @@ import { useRefreshLimits } from "./UsageLimitsSection";
 import { UsageLimitsSection } from "./UsageLimitsPooled";
 import type { UsageChartMetric } from "./usageChartData";
 import { PROVIDER_LABEL, useProviderColors, useUsageMixColors } from "./usageProviders";
+import { useCollectionTrophy } from "../../stemcells/collection/trophy";
 
 type UsageView = UsageChartMetric | "limits";
 const VIEW_OPTIONS = [
@@ -211,6 +212,7 @@ function UsageScreen(props: {
   const providers = <ProviderSection merged={merged} metric={metric} compact={wide} />;
 
   const showEnvironmentFilter = environments.length > 0 || selectedEnvironmentIds !== null;
+  const trophy = useCollectionTrophy();
   const selectEnvironment = (value: string) => {
     if (value === "all") {
       setSelectedEnvironmentIds(null);
@@ -247,6 +249,7 @@ function UsageScreen(props: {
     <SettingsScreen
       title={gt("Usage", { $context: "screen title" })}
       menus={showEnvironmentFilter ? [environmentMenu] : undefined}
+      actions={trophy}
       workspaceRoot={props.workspace}
     >
       {headerOnly ? null : (

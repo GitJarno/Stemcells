@@ -59,6 +59,23 @@ export const secretsOf = (feats: ReadonlyArray<FeatState>): Standing[] =>
 export const reachOf = (ladder: Ladder): number =>
   ladder.next === null ? 1 : Math.min(1, ladder.have / ladder.next.feat.of);
 
+/**
+ * How far along a ladder drawn as a track the measure has come, 0 to 1: the rungs stand evenly
+ * spaced along it, the last at its end, and each stretch between two rungs is read on a log
+ * scale, since the counts climb by tens. 1 once topped.
+ */
+export function trackOf(ladder: Ladder): number {
+  if (ladder.next === null) return 1;
+  const at = ladder.rungs.indexOf(ladder.next);
+  const to = ladder.next.feat.of;
+  const from = at === 0 ? 0 : ladder.rungs[at - 1]!.feat.of;
+  const within =
+    from <= 0
+      ? ladder.have / to
+      : Math.log(Math.max(ladder.have, from) / from) / Math.log(to / from);
+  return (at + Math.min(1, Math.max(0, within))) / ladder.rungs.length;
+}
+
 /** A ladder time climbs on its own is no goal to work at: it is never next up. */
 const CLIMBS_ALONE: ReadonlySet<Measure> = new Set<Measure>(["days"]);
 

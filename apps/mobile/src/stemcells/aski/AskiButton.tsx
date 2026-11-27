@@ -11,6 +11,7 @@ import Animated, {
   Easing,
   Keyframe,
   LayoutAnimationConfig,
+  LinearTransition,
   runOnJS,
   useAnimatedStyle,
   useReducedMotion,
@@ -63,6 +64,7 @@ import {
   whereOf,
   type Where,
 } from "./turn";
+import { railStyle, useRail, useRailAski } from "./rail";
 import { useAskiChat } from "./useAskiChat";
 
 /** The button, points across. */
@@ -70,16 +72,6 @@ const SIZE = 52;
 /** Over the composer's pill (or the home's search field) and its gap. */
 const OVER_COMPOSER = 76;
 const SIDE = 16;
-/** UIKit sets the side rail's buttons on a line 14 pt in from the screen's edge, and starts its
- * tab group 0.649 of the way down in every posture (measured on the Duo). */
-const RAIL_EDGE_INSET = 14;
-const RAIL_TABS_START = 0.649;
-const RAIL_GAP = 14;
-/** Unfolded (regular width), the rail's top group (new chat, then code) centres its first button
- * 156 pt down and the next 63 pt below (measured on the Duo); the button takes the place after
- * them. Folded, the group starts lower and ends just above the tabs, so the button stands there. */
-const RAIL_TOP_GROUP_START = 156;
-const RAIL_TOP_GROUP_PITCH = 63;
 
 /** Each show is acted on once, however often its chat's items come round. */
 const shown = new Set<string>();
@@ -373,30 +365,32 @@ function paneLeft(metrics: ReturnType<typeof useNativeLayoutMetrics>): number {
   return division === undefined ? 0 : division.x + division.width;
 }
 
-/** Where the button stands: in the side rail under its top group where the bars run down the side, else over the composer. */
+/** Where the button stands: in the side rail after its top group (and the trophy, on Usage) where the bars run down the side, else over the composer. */
 function Place(props: { readonly children: React.ReactNode }) {
   const metrics = useNativeLayoutMetrics();
   const insets = useSafeAreaInsets();
   const window = useWindowDimensions();
-  const edge = metrics?.verticalBarEdge ?? "none";
-  const rail =
-    edge === "right" ? metrics!.safeArea.right : edge === "left" ? metrics!.safeArea.left : 0;
-  const style =
-    rail >= SIZE
-      ? {
-          [edge]: (rail + RAIL_EDGE_INSET - SIZE) / 2,
-          top:
-            metrics!.horizontalSizeClass === "regular"
-              ? RAIL_TOP_GROUP_START + 2 * RAIL_TOP_GROUP_PITCH - SIZE / 2
-              : window.height * RAIL_TABS_START - RAIL_GAP - SIZE,
-        }
-      : { right: insets.right + SIDE, bottom: insets.bottom + OVER_COMPOSER };
+  const { top, ours: told } = useRail();
+  useRailAski();
+  // Aski is one of ours from its first frame, before the store has heard it.
+  const ours = Math.max(told, 1);
+  const style = railStyle({ metrics, window, top, index: ours - 1, ours, size: SIZE }) ?? {
+    right: insets.right + SIDE,
+    bottom: insets.bottom + OVER_COMPOSER,
+  };
   return (
-    <View pointerEvents="box-none" style={{ position: "absolute", ...style }}>
+    <Animated.View
+      pointerEvents="box-none"
+      layout={GLIDE}
+      style={{ position: "absolute", ...style }}
+    >
       {props.children}
-    </View>
+    </Animated.View>
   );
 }
+
+/** As the rail's group grows or shrinks between screens, the button glides to its new place. */
+const GLIDE = LinearTransition.duration(240).easing(Easing.out(Easing.cubic));
 
 function useKeyboardUp(): boolean {
   const [up, setUp] = useState(Keyboard.isVisible());

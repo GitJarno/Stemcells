@@ -22,10 +22,12 @@ export {
   type Ladder,
   nextUp,
   rankOf,
+  RANKS,
   reachOf,
   secretsOf,
   type Tally,
   tallyOf,
+  trackOf,
 } from "../../../../../stemcells/ledger/ladders.ts";
 export {
   type Collection,
@@ -50,6 +52,7 @@ export {
   rankLine,
   rewardLine,
   rewardShort,
+  rungMark,
   SECRET,
   SEGMENT_ABOUT,
   SEGMENT_NAMES,
