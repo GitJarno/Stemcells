@@ -17,6 +17,9 @@ import * as PeersHttp from "./peers/http.ts";
 import * as PlannerHttp from "./planner/http.ts";
 import * as PresenceHttp from "./presence/http.ts";
 import * as PushHttp from "./push/http.ts";
+import * as RecallHttp from "./recall/http.ts";
+import * as AskiTools from "./upstream/askiTools.ts";
+import * as ReadScope from "./upstream/readScope.ts";
 import * as Privacy from "./privacy/telemetry.ts";
 import * as Defaults from "./defaults/defaults.ts";
 import * as DirectEndpoints from "./upstream/directEndpoints.ts";
@@ -42,9 +45,12 @@ export const layer = Layer.mergeAll(
   PushHttp.layer,
   NeedsHttp.layer,
   PlannerHttp.layer,
+  RecallHttp.layer,
   LimitResumeHttp.layer,
   PeersHttp.layer,
   OnTheWire.layer,
+  ReadScope.layer,
+  AskiTools.layer,
   SpendHttp.layer,
   TailscaleHttp.layer,
   Look.layer,

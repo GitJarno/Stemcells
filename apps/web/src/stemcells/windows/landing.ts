@@ -33,7 +33,37 @@ export function useLandsNewChats(): void {
   );
 }
 
-export async function landNewCells(cells: readonly CellRef[]): Promise<void> {
+/** Cells that open no tab as they start, by thread: those Aski's plan starts (aski-orchestrator.md, decision 5). */
+const tabless = new Set<string>();
+const TABLESS_KEPT = 200;
+/** Every window hears it: the lead window lands, whichever window holds Aski's chat. */
+const tablessWire =
+  typeof BroadcastChannel === "function" ? new BroadcastChannel("stemcells.landing.noTab") : null;
+
+function keepTabless(threadIds: readonly string[]): void {
+  for (const threadId of threadIds) tabless.add(threadId);
+  for (const threadId of tabless) {
+    if (tabless.size <= TABLESS_KEPT) break;
+    tabless.delete(threadId);
+  }
+}
+tablessWire?.addEventListener("message", (event: MessageEvent<unknown>) => {
+  if (Array.isArray(event.data))
+    keepTabless(event.data.filter((id): id is string => typeof id === "string"));
+});
+
+/**
+ * The Cells of `threadIds` open no tab when they start: they form in Awake, and a click there
+ * opens one. Say it before they are launched, in any window.
+ */
+export function opensNoTab(threadIds: readonly string[]): void {
+  keepTabless(threadIds);
+  // oxlint-disable-next-line unicorn/require-post-message-target-origin -- A BroadcastChannel reaches this origin's windows only; it takes no target.
+  tablessWire?.postMessage([...threadIds]);
+}
+
+export async function landNewCells(arrived: readonly CellRef[]): Promise<void> {
+  const cells = arrived.filter((cell) => !tabless.has(cell.threadId));
   if (cells.length === 0) return;
   // A Cell started a moment ago has no project here until its chat shows.
   await cellsKnown(cells);

@@ -19,7 +19,8 @@ const PLAN_WAIT_MS = 25_000;
 /** The lines are a help, not a need: past this the plan goes without them. */
 const LINES_WAIT_MS = 2_000;
 
-async function fromPrimary(url: string, init: RequestInit = {}): Promise<Response> {
+/** A request to this Mac's server, signed in as upstream's are. */
+export async function fromPrimary(url: string, init: RequestInit = {}): Promise<Response> {
   const bearerToken = await readDesktopPrimaryBearerToken();
   return fetch(url, {
     ...init,

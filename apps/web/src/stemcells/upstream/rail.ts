@@ -46,6 +46,8 @@ export interface RailProject {
   readonly memberKeys: ReadonlyArray<string>;
   /** Where a new Cell starts while the column shows this project (`newCellProject.ts`). */
   readonly scope: NewCellScope;
+  /** "No project": where chats with no project live. */
+  readonly scratch: boolean;
 }
 
 /** A chat the rail counts: open, the person's own (not a subagent's), with its status. */
@@ -63,6 +65,7 @@ export function useRailProjects(): ReadonlyArray<RailProject> {
     record: group,
     memberKeys: group.memberProjectRefs.map((ref) => `${ref.environmentId}:${ref.projectId}`),
     scope: group,
+    scratch: group.isScratch === true,
   }));
 }
 

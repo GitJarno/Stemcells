@@ -415,6 +415,155 @@
 [data-cells-open]:not([data-light])::before {
   --cells-bloom-tone: var(--sc-accent);
 }
+/* A planned row (Planned.tsx; stemcells/tasks/aski-orchestrator.md, decision 12): Aski's plan
+   puts it at Awake's top before the machine lists its Cell. Its Cell condenses in its own box
+   through the spawn's glyphs, which ride with the row as later arrivals push it down. */
+[data-cells-row-cell] {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+[data-cells-row-cell] > .sc-spawn-glyphs-in {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: var(--sc-text);
+  font-family: var(--sc-font-mono);
+  pointer-events: none;
+}
+/* Its birth words, between its project's mark and its title: the Cell's name, then its model
+   and effort as a quiet chip in neutral ink. They stay a while once the Cell is listed, then
+   fade, and the title takes their place. */
+[data-cells-birth] {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--sc-space-sm);
+  transition: opacity var(--sc-motion-flick-duration) var(--sc-motion-flick-easing);
+}
+[data-cells-birth][data-leaving] {
+  opacity: 0;
+  transition: opacity var(--sc-motion-leave-duration) var(--sc-motion-leave-easing);
+}
+[data-cells-birth-name] {
+  font-weight: 500;
+  white-space: nowrap;
+}
+[data-cells-birth-chip] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0 0.3125rem;
+  border-radius: var(--sc-radius-chip);
+  box-shadow: inset 0 0 0 1px var(--sc-hairline);
+  color: var(--sc-dim);
+  font-size: 0.6875rem;
+  line-height: 1rem;
+  white-space: pre;
+  --cells-settle-ink: var(--sc-dim);
+}
+/* While its line says its birth a row shows no time: its light says it flies, and the words
+   need the room. What fits is chosen by the row's own width, the title always: then the model
+   (not in the narrowest column), its effort, and the name, as the column is drawn wider. */
+[data-cells-row][data-born] {
+  container-type: inline-size;
+  /* A container's track no longer takes the row's width from its words. */
+  grid-template-columns: minmax(0, 1fr);
+}
+[data-cells-row][data-born] [data-cells-row-end] {
+  display: none;
+}
+@container (max-width: 20.5rem) {
+  [data-cells-birth-name] {
+    display: none;
+  }
+}
+@container (max-width: 17.5rem) {
+  [data-cells-birth-effort] {
+    display: none;
+  }
+}
+@container (max-width: 13.5rem) {
+  [data-cells-birth-chip] {
+    display: none;
+  }
+}
+/* Its birth words gone, the title glides into their place (`useTitleGlide`), and only then its time shows. */
+[data-cells-row][data-was-born] [data-cells-row-end] {
+  transition: opacity var(--sc-motion-fade-duration) var(--sc-motion-fade-easing)
+    var(--sc-motion-recede-duration);
+  @starting-style {
+    opacity: 0;
+  }
+}
+/* Its light comes as the machine lists it, rather than standing there at once. */
+[data-cells-row][data-born] [data-cells-light] {
+  @starting-style {
+    opacity: 0;
+  }
+}
+/* The line settles out of glyphs (`settleLine`): while a part settles, script writes what it
+   shows into `data-settling` a beat apart, drawn here over the part's own words, which keep
+   their room unseen. What has settled is a prefix of the words, so no letter moves as it lands. */
+[data-cells-open] {
+  --cells-settle-ink: var(--sc-text);
+}
+[data-settling] {
+  position: relative;
+  overflow: clip;
+  color: transparent;
+}
+[data-settling]::after {
+  content: attr(data-settling);
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  color: var(--cells-settle-ink);
+  white-space: pre;
+  pointer-events: none;
+}
+[data-cells-row-project][data-settling] > * {
+  visibility: hidden;
+}
+[data-cells-row-project][data-settling]::after {
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--sc-font-mono);
+}
+[data-cells-birth-chip]:has(> [data-settling=""]:first-child) {
+  visibility: hidden;
+}
+/* A check row waits for the person's tap in Aski's chat: an outline, dim, the field it is
+   unsure of marked, no light. Confirmed, it fills in. */
+[data-cells-row][data-born] :is([data-cells-row-project], [data-cells-row-title]) {
+  transition: opacity var(--sc-motion-flick-duration) var(--sc-motion-flick-easing);
+}
+[data-cells-row][data-outline] [data-cells-open] {
+  outline: 1px dashed var(--sc-faint);
+  outline-offset: -1px;
+}
+[data-cells-row][data-outline]
+  :is([data-cells-row-project], [data-cells-birth], [data-cells-row-title]) {
+  opacity: 0.55;
+}
+/* Unsure of its words, the mark stands at the title's end, not the row's. */
+[data-cells-row-title]:has(+ [data-cells-unsure]) {
+  flex: 0 1 auto;
+}
+[data-settling-line] [data-cells-unsure] {
+  visibility: hidden;
+}
+[data-cells-unsure] {
+  flex-shrink: 0;
+  margin-inline-start: -0.1875rem;
+  color: var(--sc-accent-ink);
+  font-family: var(--sc-font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
 [data-cells-more] {
   padding: var(--sc-space-sm) var(--sc-space-md);
   color: var(--sc-faint);

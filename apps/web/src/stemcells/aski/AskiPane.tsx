@@ -10,11 +10,16 @@ import { AnswersProvider } from "../needs/answers/room";
 import { NeedsFrame } from "../needs/NeedsFrame";
 import { Peek } from "../needs/Peek";
 import { usePeek } from "../needs/peeking";
+import { RecallScope } from "../recall/RecallPills";
 import { subscribeLaunches } from "../upstream/landing";
 import { AskiFigure } from "./AskiFigure";
 import { copiesOut } from "./copies";
+import { awakeInSight } from "../rail/arrivals";
+import { throwTo } from "./throw";
 import { AskiPerch } from "./AskiPerch";
 import { AskiMoments } from "./moments/AskiMoments";
+import { PlanTray } from "./plan/PlanTray";
+import { PlanRoom } from "./plan/room";
 
 import "./room.css";
 
@@ -70,11 +75,11 @@ export function AskiPane(props: {
     () =>
       subscribeLaunches((cells) => {
         const figure = room.current?.querySelector("[data-aski-perch-stage]");
-        if (figure)
-          void copiesOut(
-            figure,
-            cells.map((cell) => cell.threadId),
-          );
+        if (!figure) return;
+        const threadIds = cells.map((cell) => cell.threadId);
+        // To its row at Awake's top, where the Cell forms (`rail/arrivals.ts`); with Awake out of sight, to its tab's chip.
+        if (awakeInSight()) throwTo(threadIds, figure);
+        else void copiesOut(figure, threadIds);
       }),
     [],
   );
@@ -90,17 +95,32 @@ export function AskiPane(props: {
       <NeedsFrame aski={aski}>
         <div className="relative flex min-h-0 min-w-0 flex-1 flex-col [&>main]:h-full!">
           {props.target ? (
-            <ComposerRoofSlot value={aski ? <AskiPerch aski={aski} /> : null}>
-              {/* Words in its composer answer the cards beside it. */}
+            <ComposerRoofSlot
+              value={
+                aski ? (
+                  <>
+                    <AskiPerch aski={aski} />
+                    {/* The plans its messages became stand on the composer, under Aski. */}
+                    <PlanTray aski={aski} />
+                  </>
+                ) : null
+              }
+            >
+              {/* Words in its composer answer the cards beside it, and start Cells as a plan. */}
+              <PlanRoom value={aski}>
               <AnswersProvider>
-                <ChatPaneView
-                  target={props.target}
-                  ownsWindowInput={ownsInput}
-                  focused={props.focused}
-                  panelHost={null}
-                  bare
-                />
+                {/* A question about the past shows the Cells it found under it. */}
+                <RecallScope value>
+                  <ChatPaneView
+                    target={props.target}
+                    ownsWindowInput={ownsInput}
+                    focused={props.focused}
+                    panelHost={null}
+                    bare
+                  />
+                </RecallScope>
               </AnswersProvider>
+              </PlanRoom>
             </ComposerRoofSlot>
           ) : (
             <Empty>

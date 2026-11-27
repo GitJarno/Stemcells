@@ -1,8 +1,7 @@
-// One message to Aski, compiled (stemcells/tasks/aski-orchestrator.md, decisions 3, 4 and 11):
-// code cuts it into pieces, one lean model call says which pieces are which act, and code checks
-// every field. A first answer that fails the checks gets one more call with what failed, on the
-// stronger model when the client names one. When that fails too, or a call is slow or down,
-// nothing starts: the plan is the floor, and the message is Aski's chat's to answer.
+// One message to Aski, compiled (aski-orchestrator.md, decisions 3, 4 and 11): code cuts it into
+// pieces, one lean call says which pieces are which act, code checks every field. A failed answer
+// gets one more call, on the stronger model; after that, or when a call is slow or down, nothing
+// starts and the message is Aski's chat's to answer.
 
 import * as Clock from "effect/Clock";
 import * as Duration from "effect/Duration";
@@ -97,6 +96,7 @@ export const compile = Effect.fn("AskiCompile.compile")(function* (input: {
   if (pieces.length === 0) return floor([]);
 
   // A thread id is a random UUID, as a client's own would be.
+  // @effect-diagnostics-next-line cryptoRandomUUID:off -- The pure checks take a plain function to mint with.
   const mint = () => crypto.randomUUID();
 
   const tries: Try[] = [];

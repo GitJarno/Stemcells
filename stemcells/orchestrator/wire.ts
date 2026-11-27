@@ -48,10 +48,13 @@ export interface OutcomeRequest {
 
 /** The fence Aski's chat shows a proposed plan with: ```plan, then the plan's id on a line. */
 export const PLAN_FENCE = "plan";
-/** The plan id a fence's body names; null when it names none. */
+/**
+ * The plan id a fence's body names; null when it names none. A plan's id is a UUID and the body
+ * is nothing else, so a `plan` block someone wrote for another reason stays the code it is.
+ */
 export function planIdOfFence(body: string): string | null {
-  const id = body.trim().split(/\s+/u)[0] ?? "";
-  return /^[\w-]{8,64}$/u.test(id) ? id : null;
+  const id = body.trim();
+  return /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/iu.test(id) ? id : null;
 }
 
 /**

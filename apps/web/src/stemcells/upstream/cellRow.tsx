@@ -5,6 +5,7 @@
  */
 import { scopeProjectRef } from "@t3tools/client-runtime/environment";
 import type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/shell";
+import type { EnvironmentId, ProjectId } from "@t3tools/contracts";
 import { snoozeWakeLabel } from "@t3tools/client-runtime/state/thread-settled";
 import {
   resolveSettledThreadTimestamp,
@@ -16,7 +17,7 @@ import type { ReactElement, ReactNode } from "react";
 import { ThreadHoverCard, ThreadHoverCardPopup } from "../../components/ThreadHoverCard";
 import { ThreadPullRequestsMiniList } from "../../components/ThreadStatusIndicators";
 import { MiddleTruncate } from "../../components/ui/middle-truncate";
-import { Tooltip, TooltipTrigger } from "../../components/ui/tooltip";
+import { Tooltip, TooltipPopup, TooltipTrigger } from "../../components/ui/tooltip";
 import { useNowMinute } from "../../hooks/useNowMinute";
 import { useSupportsMultiplePullRequests } from "../../hooks/useSupportsMultiplePullRequests";
 import { useProject, useQuietThreadShell } from "../../state/entities";
@@ -77,12 +78,33 @@ function useShellProject(shell: CellShell) {
 const ROW_MARK = 18;
 const CARD_MARK = 16;
 
-/** The project's icon alone, as a one-line row marks it; none for a chat without a project. */
-export function CellProjectMark(props: { shell: CellShell }) {
-  const project = useShellProject(props.shell);
+/**
+ * The project's icon alone, as a one-line row marks it; none for a chat without a project.
+ * `settles` marks it a part of a planned row's line, which settles out of glyphs (`rail/Planned.tsx`).
+ */
+export function CellProjectMark(props: { shell: CellShell; settles?: boolean }) {
+  const { environmentId, projectId } = props.shell;
+  return (
+    <CellProjectMarkOf
+      environmentId={environmentId}
+      projectId={projectId}
+      settles={props.settles === true}
+    />
+  );
+}
+
+/** A row's project mark by the project's own id: a planned row's, before its chat is known here. */
+export function CellProjectMarkOf(props: {
+  environmentId: string;
+  projectId: string;
+  settles: boolean;
+}) {
+  const project = useProject(
+    scopeProjectRef(props.environmentId as EnvironmentId, props.projectId as ProjectId),
+  );
   if (project === null || project.isScratch) return null;
   return (
-    <span data-cells-row-project="">
+    <span data-cells-row-project="" data-settle={props.settles ? "#" : undefined}>
       <ProjectMark project={project} size={ROW_MARK} />
     </span>
   );
@@ -95,6 +117,8 @@ export function CellProjectMark(props: { shell: CellShell }) {
 export function CellCard(props: {
   shell: CellShell | null;
   line: string | null;
+  /** What a row without a chat says when pointed at: a planned row that waits for the person. */
+  note?: string | null;
   trigger: ReactElement;
   children: ReactNode;
 }) {
@@ -102,7 +126,13 @@ export function CellCard(props: {
   return (
     <Tooltip>
       <TooltipTrigger render={props.trigger}>{props.children}</TooltipTrigger>
-      {shell === null ? null : <CellCardPopup shell={shell} line={props.line} />}
+      {shell !== null ? (
+        <CellCardPopup shell={shell} line={props.line} />
+      ) : props.note ? (
+        <TooltipPopup side="right" align="start" sideOffset={4}>
+          {props.note}
+        </TooltipPopup>
+      ) : null}
     </Tooltip>
   );
 }

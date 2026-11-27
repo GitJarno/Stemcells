@@ -21,7 +21,7 @@ export interface Standing {
 /** Long enough to tell asks apart, short enough that ten of them stay one read. */
 const SAID = 160;
 
-function clip(text: string): string {
+export function clip(text: string): string {
   const line = text.replace(/\s+/g, " ").trim();
   if (line.length <= SAID) return line;
   const cut = line.slice(0, SAID);
@@ -68,7 +68,7 @@ function asked(need: Need): string {
 }
 
 /** How a done Cell landed, said so Aski can pass it on without believing a bare "Done". */
-const LANDED: Readonly<Record<Proof, string>> = {
+export const LANDED: Readonly<Record<Proof, string>> = {
   stopped: "landed short: its run was stopped before it finished",
   "rolled-back": "landed short: its run was rolled back",
   failed: "landed short: its run failed",
@@ -84,7 +84,7 @@ const LANDED: Readonly<Record<Proof, string>> = {
 const CHECKS = { test: "tests", typecheck: "typecheck", lint: "lint", build: "build" } as const;
 
 /** What the run shows, as counted facts. */
-function facts(brief: Brief | null): ReadonlyArray<string> {
+export function facts(brief: Brief | null): ReadonlyArray<string> {
   if (brief === null) return [];
   const { changed, checks, pullRequest } = brief;
   return [
@@ -109,6 +109,28 @@ function landed(cell: CellStanding): string {
   const said = cell.line ? [clip(cell.line)] : [];
   const how = cell.landing === null ? [] : [LANDED[cell.landing.proof]];
   return [...said, ...how, ...facts(cell.brief)].map((part) => ` · ${part}`).join("");
+}
+
+/** The room as a Cell may hear it: only the projects `inReach` keeps, and their counts. */
+export function standingWithin(
+  list: NeedsList,
+  inReach: (projectId: string) => boolean,
+): NeedsList {
+  const kept = <Row extends { readonly projectId: string }>(rows: ReadonlyArray<Row>) =>
+    rows.filter((row) => inReach(row.projectId));
+  return {
+    ...list,
+    needs: kept(list.needs),
+    later: kept(list.later),
+    cells: kept(list.cells),
+    ...(list.conditions === undefined
+      ? {}
+      : {
+          conditions: list.conditions
+            .map((condition) => ({ ...condition, cells: kept(condition.cells) }))
+            .filter((condition) => condition.cells.length > 0),
+        }),
+  };
 }
 
 export function standingOf(list: NeedsList, projectTitles: ReadonlyMap<string, string>): Standing {

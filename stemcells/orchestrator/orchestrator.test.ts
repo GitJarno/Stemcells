@@ -577,6 +577,9 @@ describe("the wire", () => {
       "3f2a9c1e-77aa-4c1b-9d7e-0a1b2c3d4e5f",
     );
     expect(planIdOfFence("rm -rf")).toBeNull();
+    // A `plan` block written for another reason stays the code it is.
+    expect(planIdOfFence("first-step-then-second")).toBeNull();
+    expect(planIdOfFence("3f2a9c1e-77aa-4c1b-9d7e-0a1b2c3d4e5f and more")).toBeNull();
   });
 
   it("thinks with the fast model first and a stronger one second", () => {

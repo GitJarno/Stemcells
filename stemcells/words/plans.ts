@@ -49,7 +49,9 @@ export const holdStays = (act: DestroyAct): string =>
     ? "Its folder stays on disk. Its Cells leave the app."
     : "Archived Cells leave the lists. Their work stays.";
 
-export const HOLD_HEARD = (heard: string): string => `You said “${heard}”.`;
+/** The person's own words for the deletion, without the stop they ended on. */
+export const HOLD_HEARD = (heard: string): string =>
+  `You said “${heard.trim().replace(/[.!?,;:]+$/u, "")}”.`;
 export const HOLD_PRESS = "Press and hold to confirm";
 export const HOLD_UNKNOWN = "Aski couldn’t tell which. Nothing is deleted.";
 

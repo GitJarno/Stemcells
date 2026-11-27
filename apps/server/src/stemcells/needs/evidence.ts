@@ -72,7 +72,8 @@ const SUBSTANCE_WORDS = 6;
 
 const words = (text: string) => text.trim().split(/\s+/).filter(Boolean);
 
-function capped(text: string): string {
+/** The words as one line, ended at a word with an ellipsis past the cap. */
+export function capped(text: string): string {
   const line = text.replace(/\s+/g, " ").trim();
   if (line.length <= GOAL_CAP) return line;
   const head = line.slice(0, GOAL_CAP);

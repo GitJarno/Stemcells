@@ -34,10 +34,11 @@ export type BeforeSend = (intent: SendIntent) => Sending | null;
 
 /**
  * Who reads a message's words as it sends, in the order they're asked:
- * answers to Aski's open cards first, then the Cells the words start.
+ * answers to Aski's open cards first, then the plan a message to Aski becomes
+ * (`aski/plan`), then the Cells a new chat's words start.
  */
-export type SendTurn = "answers" | "words";
-const TURNS: readonly SendTurn[] = ["answers", "words"];
+export type SendTurn = "answers" | "plan" | "words";
+const TURNS: readonly SendTurn[] = ["answers", "plan", "words"];
 
 /**
  * How what reads the words hands the composer its `BeforeSend`, under its

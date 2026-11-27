@@ -23,6 +23,7 @@ export const at = (offset: number): DateTime.Utc => DateTime.makeUnsafe(NOW + of
 
 export const runId = (id: string) => RunId.make(id);
 export const threadId = (id: string) => ThreadId.make(id);
+export const projectId = (id: string) => ProjectId.make(id);
 export const instanceId = (id: string) => ProviderInstanceId.make(id);
 
 export function shellFixture(

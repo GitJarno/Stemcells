@@ -89,19 +89,21 @@ export function figureOf(pose: Pose, worn: readonly Piece[] = []): Figure {
   const wide = 1 / Math.sqrt(squash);
   const placed = (x: number, y: number, z: number): Vec3 => [x * wide, y * squash + lift, z * wide];
 
-  const head = placed(0, lerp(0.38, 1.22, grown), 0);
+  // A newborn is a mochi, as the drawn Cell is: a dome widest where it sits, on a foot a little
+  // wider still. So its head's middle is low and its torso lies flat under it.
+  const head = placed(0, lerp(0.42, 1.22, grown), 0);
   const headRadii: Vec3 = [
-    lerp(1, 0.64, grown) * wide,
-    lerp(0.87, 0.58, grown) * squash,
+    lerp(0.97, 0.64, grown) * wide,
+    lerp(0.83, 0.58, grown) * squash,
     lerp(0.9, 0.6, grown) * wide,
   ];
-  const torso = placed(0, lerp(0.3, 0.5, grown), 0);
+  const torso = placed(0, lerp(0.1, 0.5, grown), 0);
   const torsoRadii: Vec3 = [
-    lerp(0.85, 0.4, grown) * wide,
+    lerp(1.05, 0.4, grown) * wide,
     lerp(0.3, 0.44, grown) * squash,
-    lerp(0.75, 0.34, grown) * wide,
+    lerp(0.96, 0.34, grown) * wide,
   ];
-  const eye = [lerp(0.36, 0.34, grown), lerp(0.41, -0.04, grown)] as const;
+  const eye = [lerp(0.36, 0.34, grown), lerp(0.36, -0.04, grown)] as const;
 
   const body: Shape[] = [
     ellipsoid(head, headRadii, TONE.body),
@@ -209,7 +211,7 @@ export function figureOf(pose: Pose, worn: readonly Piece[] = []): Figure {
     things,
     melt: lerp(0.16, 0.09, grown),
     floor: lift,
-    tuck: lerp(0.2, 0.03, grown),
+    tuck: lerp(0.05, 0.03, grown),
     head,
     headRadii,
     eye,

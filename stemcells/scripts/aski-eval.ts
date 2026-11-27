@@ -1,18 +1,12 @@
-// Scores Aski's compiler on a corpus (stemcells/tasks/aski-orchestrator.md, decision 14): each
-// message goes through the real pieces, prompt, checks and tiers, with a real model answering.
-// It spends the person's plan, so it runs by hand, never in a gate.
-//
+// Scores Aski's compiler on a corpus with a real model answering (aski-orchestrator.md,
+// decision 14). It spends the person's plan: run it by hand, never in a gate.
 //   node stemcells/scripts/aski-eval.ts --model haiku [--strong sonnet] [--effort low]
-//        [--cases stemcells/evals/compiler/corpus.json] [--only <words in a case's name>]
-//        [--jobs 4] [--out report.json]
-//
-// Two numbers gate a change to the compiler: no Cell in the Start tier that is wrong in place or
-// words, and every deletion held. The rest (how many Cells wait that needn't) is tuned.
+//        [--cases <file>] [--only <words in a case's name>] [--jobs 4] [--out report.json]
 
-import { spawn } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import * as NodeChildProcess from "node:child_process";
+import * as NodeFS from "node:fs";
+import * as NodeOS from "node:os";
+import * as NodePath from "node:path";
 
 import { floorPlan, planOf } from "../orchestrator/check.ts";
 import { said } from "../orchestrator/names.ts";
@@ -56,7 +50,7 @@ const strong = args.get("strong") ?? model;
 const effort = args.get("effort") ?? "low";
 const jobs = Number(args.get("jobs") ?? "4");
 const corpus = JSON.parse(
-  readFileSync(args.get("cases") ?? "stemcells/evals/compiler/corpus.json", "utf8"),
+  NodeFS.readFileSync(args.get("cases") ?? "stemcells/evals/compiler/corpus.json", "utf8"),
 ) as { context: Pick<CompileContext, "places" | "models" | "cells">; cases: Case[] };
 const only = args.get("only");
 const cases = corpus.cases.filter((c) => only === undefined || c.name.includes(only));
@@ -95,10 +89,10 @@ const SCHEMA = JSON.stringify({
 
 /** One lean call, as the server's `runLean` makes it: no tools, no settings, no saved session. */
 function ask(prompt: string, on: string): Promise<{ answer: unknown; ms: number }> {
-  const cwd = mkdtempSync(join(tmpdir(), "aski-eval-"));
+  const cwd = NodeFS.mkdtempSync(NodePath.join(NodeOS.tmpdir(), "aski-eval-"));
   const started = Date.now();
   return new Promise((resolve) => {
-    const child = spawn(
+    const child = NodeChildProcess.spawn(
       "claude",
       [
         "-p",
@@ -125,7 +119,7 @@ function ask(prompt: string, on: string): Promise<{ answer: unknown; ms: number 
     let out = "";
     child.stdout.on("data", (chunk: Buffer) => (out += chunk.toString()));
     child.on("close", () => {
-      rmSync(cwd, { recursive: true, force: true });
+      NodeFS.rmSync(cwd, { recursive: true, force: true });
       let answer: unknown = null;
       try {
         const reply = JSON.parse(out) as { structured_output?: unknown; result?: string };
@@ -299,5 +293,5 @@ console.log(
   `GATES: wrong starts ${report.wrongStarts} (must be 0), deletions not held ${report.holdsMissed} (must be 0)`,
 );
 const out = args.get("out");
-if (out !== undefined) writeFileSync(out, JSON.stringify({ report, scores }, null, 2));
+if (out !== undefined) NodeFS.writeFileSync(out, JSON.stringify({ report, scores }, null, 2));
 process.exitCode = report.wrongStarts + report.holdsMissed > 0 ? 1 : 0;

@@ -62,7 +62,7 @@ describe("the modelled Cell drawn on the phone", () => {
   it("fills each pixel of its picture once, in its colour, and leaves the clear ones", () => {
     const sprite = drawSprite(
       figureOf(poseAt("writing", STILL.writing, 0)),
-      wholeView(0, 32, 0.45, 34),
+      wholeView(0, 32, 0, 34),
       hueOfBody("codex"),
     );
     const expected = new Map<string, string>();
