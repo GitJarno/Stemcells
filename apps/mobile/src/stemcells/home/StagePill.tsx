@@ -15,10 +15,11 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useResolveClassNames } from "uniwind";
 
-import { NativePrimaryColumnContext, SegmentedControl, useOverSearch } from "../upstream/home";
+import { NativePrimaryColumnContext, SegmentedControl } from "../upstream/home";
 import { bumpNow, pillStandsIn, useBump } from "./hops";
 import { LIST_MOTION } from "./listMotion";
 import { Night } from "./Night";
+import { useOverKeyboard } from "./overKeyboard";
 import { HomeInFront, HomeStageContext, HomeTabsContext, liftNotices, PILL_ROOM } from "./state";
 
 /** Asleep's sky over its list, room for the moon and the stars. */
@@ -39,7 +40,7 @@ const BUMP_DOWN = {
 export function StagePill() {
   const home = use(HomeTabsContext);
   const inFront = use(HomeInFront);
-  const place = useOverSearch();
+  const { place, style } = useOverKeyboard();
   const lift = place.pill + PILL_ROOM - place.notice;
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Tell T3's undo notice, drawn outside the home, to stand over the stages.
   useEffect(() => (inFront ? liftNotices(lift) : undefined), [inFront, lift]);
@@ -73,11 +74,11 @@ export function StagePill() {
       style={[
         {
           position: "absolute",
-          bottom: place.pill,
           left: place.left,
           right: place.right,
           transformOrigin: [middle, "50%", 0],
         },
+        style,
         bumping,
       ]}
     >
