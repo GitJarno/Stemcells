@@ -25,6 +25,8 @@ const ARRIVAL_MS = 10 * 60_000;
 
 export interface Hop {
   readonly key: string;
+  /** This departure's own: a Cell woken mid-leap starts a new flight, not the old one's end. */
+  readonly id: number;
   readonly thread: EnvironmentThreadShell;
   readonly from: Box;
   readonly fromStage: HopStage;
@@ -47,6 +49,7 @@ let pill: { readonly view: Measurable; readonly stages: readonly string[] } | nu
 let shown: readonly Hop[] = [];
 let bump: { readonly stage: HopStage; readonly count: number } | null = null;
 const listeners = new Set<() => void>();
+let departed = 0;
 
 function changed(): void {
   shown = [...hops.values()];
@@ -81,7 +84,18 @@ export function departs(
   figure.measureInWindow((x, y, width, height) => {
     if (width === 0 || departures.get(key) !== departure) return;
     const from = { x, y, width, height };
-    hops.set(key, { key, thread, from, fromStage, toStage: null, to: null, fades: false });
+    departed += 1;
+    const hop: Hop = {
+      key,
+      id: departed,
+      thread,
+      from,
+      fromStage,
+      toStage: null,
+      to: null,
+      fades: false,
+    };
+    hops.set(key, hop);
     changed();
   });
   setTimeout(() => {

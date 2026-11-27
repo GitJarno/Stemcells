@@ -606,7 +606,9 @@ library's dependency (above); the rest are substitutes:
   substitute of `ThreadUndoNotice` stands T3's notice over the pill, and
   shows none for a Sleep or Sleep until… (`stemcells/tasks/no-undo.md`). The list's header (`ThreadListFilters`,
   substituted) is its stage's top, the same room on each, under the
-  header's sky (`home/Sky.tsx`); on iOS T3's filter chips leave it for the workspace
+  header's sky (`home/Sky.tsx`); a substitute of `WorkspaceConnectionTitle` carries the header's
+  title row up with the list in front, the sky with it (`home/head.ts`,
+  `stemcells/tasks/home-head.md`); on iOS T3's filter chips leave it for the workspace
   header's top right, where the seam in `WorkspaceToolbar.tsx` hands
   its trailing items a projects menu and, with two machines or more, a
   machines menu, each staying open while you tick (`home/scope.tsx`). Where the list has no header (Android, outside the

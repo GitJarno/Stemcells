@@ -101,7 +101,7 @@ function Flying(props: {
         <Copy key={flight.threadId} flight={flight} origin={origin} />
       ))}
       {props.hops.map((hop) => (
-        <HopFlight key={hop.key} hop={hop} origin={origin} />
+        <HopFlight key={hop.id} hop={hop} origin={origin} />
       ))}
     </View>
   );

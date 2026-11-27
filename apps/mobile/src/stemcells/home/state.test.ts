@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { enteringX, pillBottom } from "./state";
+import { enteringX, headLift, headShown, pillBottom } from "./state";
 
 describe("enteringX", () => {
   it("brings a hidden list in from the side of travel", () => {
@@ -23,5 +23,24 @@ describe("pillBottom", () => {
     ["keeps its rest over a keyboard too short to reach it", 6, 55, 1, 120],
   ])("%s", (_, above, keyboard, progress, bottom) => {
     expect(pillBottom(120, above, keyboard, progress)).toBe(bottom);
+  });
+});
+
+describe("headLift", () => {
+  // A list under a 116-point inset, in an 800-point view, 1500 points long.
+  it.each([
+    ["rests at its top", -116, 1500, 0],
+    ["carries the title as far as the list has scrolled", -86, 1500, 30],
+    ["leaves it put as the list is pulled down past its top", -150, 1500, 0],
+    ["never moves it for a list too short to scroll, however far it is dragged", -40, 400, 0],
+    ["stops where the list can scroll no further, past its end", 400, 1000, 316],
+  ])("%s", (_, offset, content, lift) => {
+    expect(headLift(offset, 116, 0, content, 800)).toBe(lift);
+  });
+});
+
+describe("headShown", () => {
+  it("shows the title whole at rest, half halfway up the bar, and none once past it", () => {
+    expect([0, 22, 44, 90].map((lift) => headShown(lift, 44))).toEqual([1, 0.5, 0, 0]);
   });
 });

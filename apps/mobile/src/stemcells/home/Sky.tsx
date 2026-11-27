@@ -1,15 +1,10 @@
 // The sky behind the home's header (stemcells/tasks/day-night.md): dawn over Input, day over
 // Awake, night over Asleep, and the sun rising or setting between. Drawn once, in layers whose opacity and place alone follow
 // the one progress (`useSky.ts`), on the UI thread; while it stands, nothing moves or redraws.
+// It goes up and out with the title as the list in front scrolls (`head.ts`).
 
 import { memo, type ReactNode, useState } from "react";
-import {
-  type StyleProp,
-  StyleSheet,
-  useWindowDimensions,
-  View,
-  type ViewStyle,
-} from "react-native";
+import { type StyleProp, StyleSheet, useWindowDimensions, type ViewStyle } from "react-native";
 import Animated, { useAnimatedStyle, useReducedMotion } from "react-native-reanimated";
 import Svg, {
   Circle,
@@ -37,6 +32,7 @@ import {
 } from "../line/kit";
 import { useAppearancePreferences, useContentTopInset, useHomeSidebar } from "../upstream/home";
 import { STAGE_ROOM, useMoonPhase } from "./state";
+import { useHeadStyle } from "./head";
 import { fallen } from "./useSky";
 
 /** Where the sun and moon stand: clear of two trailing header buttons, in the bar's row. */
@@ -57,16 +53,17 @@ export function Sky() {
   const window = useWindowDimensions();
   const [measured, setMeasured] = useState<number | null>(null);
   const { themeAppearance } = useAppearancePreferences();
+  const lifted = useHeadStyle();
   if (top === 0) return null;
   // The sidebar's width is its own: it draws once measured.
   const width = measured ?? (sidebar ? null : window.width);
   const height = top + STAGE_ROOM + SKY_SHAPE.tail;
   return (
-    <View
+    <Animated.View
       pointerEvents="none"
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
-      style={{ position: "absolute", left: 0, right: 0, top: 0, height }}
+      style={[{ position: "absolute", left: 0, right: 0, top: 0, height }, lifted]}
       onLayout={({ nativeEvent }) => setMeasured(nativeEvent.layout.width)}
     >
       {width === null ? null : (
@@ -77,7 +74,7 @@ export function Sky() {
           palette={SKY[themeAppearance === "light" ? "light" : "dark"]}
         />
       )}
-    </View>
+    </Animated.View>
   );
 }
 
