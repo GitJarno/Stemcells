@@ -78,13 +78,38 @@ describe("a Cell's stage", () => {
     ]);
   });
 
-  it("is working while a run is under way, or while it waits on its own work", () => {
+  it("is working while a run is under way, or while its turn waits on work it awaits", () => {
     expect(stageOf(shellFixture({ status: "running", activeRunId: runId("run-2") }), null)).toBe(
       "working",
     );
     expect(stageOf(shellFixture({ status: "queued" }), null)).toBe("working");
     expect(stageOf(shellFixture({ blockedOnThreadWait: true }))).toBe("working");
-    expect(stageOf(shellFixture(), { ask: null, waits: true, line: "CI on #40" })).toBe("working");
+    const awaited = { taskId: "task-1", kind: "command", awaited: true } as const;
+    expect(stageOf(shellFixture({ pendingBackgroundTasks: [awaited] }))).toBe("working");
+  });
+
+  it("has landed once its turn ended, though a dev server it started still runs", () => {
+    const server = {
+      taskId: "task-1",
+      kind: "command",
+      description: "Start the dev server",
+    } as const;
+    expect(stageOf(shellFixture({ pendingBackgroundTasks: [server] }))).toBe("done");
+  });
+
+  it("has landed short when its turn ended on what's left, with the line saying who it waits on", () => {
+    const waiting: Stop = { ask: null, waits: true, line: "waiting: the review on #40" };
+    const [cell] = standingsOf(
+      [shellFixture()],
+      [],
+      new Map([[threadId("thread-floof"), waiting]]),
+      NOW,
+    );
+    expect(cell).toMatchObject({
+      stage: "done",
+      line: "waiting: the review on #40",
+      landing: { verdict: "short", proof: "left" },
+    });
   });
 
   it("holds a Cell a usage limit stopped, armed or not: working on the wire, and neither asking nor done", () => {

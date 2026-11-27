@@ -74,6 +74,7 @@ const LANDED: Readonly<Record<Proof, string>> = {
   failed: "landed short: its run failed",
   "pr-checks-failing": "landed short: its pull request's checks fail",
   "check-failed": "landed short: a check it ran last failed",
+  left: "landed short: its turn ended with work left, so nothing runs until it's woken",
   "pr-merged": "shown: its pull request merged",
   "pr-checks-passing": "shown: its pull request's checks pass",
   "checks-clean": "shown: the checks it ran ended clean",

@@ -23,6 +23,7 @@ import * as Effect from "effect/Effect";
 import * as Option from "effect/Option";
 import * as Stream from "effect/Stream";
 import * as SqlClient from "effect/sql/SqlClient";
+import { backgroundWorkHoldsCompletion } from "@t3tools/shared/orchestrationV2PendingBackgroundWork";
 
 import { loadShellSnapshotParts } from "../../orchestration-v2/ShellStream.ts";
 import { projectTurnItemForWire } from "../../orchestration-v2/WireProjection.ts";
@@ -45,6 +46,13 @@ export type FailureClass = NonNullable<Shell["lastErrorClass"]>;
  * approval, a question asked after it, a guest's message, or a later failure wakes it.
  */
 export const isSnoozed = (shell: Shell, now: number): boolean => threadIsSnoozed(shell, now);
+
+/**
+ * T3's own rule for background work that keeps a turn open: a subagent, or a command or monitor
+ * the Cell said it waits on. A dev server it left running holds nothing.
+ */
+export const backgroundWorkHolds = (shell: Shell): boolean =>
+  backgroundWorkHoldsCompletion(shell.pendingBackgroundTasks ?? []);
 
 /** A question a Cell asked through its provider's own question tool. */
 export interface AskedQuestion {

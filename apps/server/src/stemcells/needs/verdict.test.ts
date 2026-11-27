@@ -66,3 +66,13 @@ it.each([
 ] as const)("%s with %j lands %s on %s", (status, facts, verdict, proof) => {
   expect(landingOf(status, facts)).toEqual({ verdict, proof });
 });
+
+it.each([
+  // A Cell that says work is left is believed over a passing fact.
+  [brief({ pullRequest: pullRequest({ state: "merged" }) }), "left"],
+  [null, "left"],
+  // A failing fact still names what went wrong.
+  [brief({ checks: FAILED }), "check-failed"],
+] as const)("a turn that ended with work left, with %j, lands short on %s", (facts, proof) => {
+  expect(landingOf("completed", facts, true)).toEqual({ verdict: "short", proof });
+});

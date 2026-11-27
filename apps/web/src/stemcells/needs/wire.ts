@@ -167,6 +167,7 @@ export interface Landing {
     | "failed"
     | "pr-checks-failing"
     | "check-failed"
+    | "left"
     | "pr-merged"
     | "pr-checks-passing"
     | "checks-clean"

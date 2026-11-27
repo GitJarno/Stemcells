@@ -39,6 +39,7 @@ import * as SqlitePersistence from "../../persistence/Sqlite.ts";
 import { REQUEST_KINDS } from "../needs/derive.ts";
 import {
   RUN_RECORD_FIELDS,
+  backgroundWorkHolds,
   byThread,
   latestHandSettles,
   pullRequestOf,
@@ -108,6 +109,19 @@ describe("upstream's thread shell, as the needs list reads it", () => {
       options: question?.options.map((sent) => ({ ...sent, own: 1 })),
     }).options;
     expect(option).toEqual({ label: "Wide", description: "Two columns", preview: "[ a | b ]" });
+  });
+
+  it("holds a turn open only for work the Cell waits on: a subagent, or a command it awaits", () => {
+    const task = (over: object) =>
+      shellFixture({
+        pendingBackgroundTasks: [{ taskId: "task-1", kind: "command", ...over }],
+      });
+    const server = task({ description: "Start the dev server" });
+    expect(backgroundWorkHolds(server)).toBe(false);
+    expect(backgroundWorkHolds(task({ kind: "monitor" }))).toBe(false);
+    expect(backgroundWorkHolds(task({ awaited: true }))).toBe(true);
+    expect(backgroundWorkHolds(task({ kind: "subagent" }))).toBe(true);
+    Schema.asserts(OrchestrationV2ThreadShell, server);
   });
 
   it("still names a usage limit as its own failure class", () => {
