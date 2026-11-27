@@ -95,6 +95,8 @@ export function arrivedAt(key: string): void {
 function comeOut(): void {
   if (turn === null || turn.phase !== "dive" || !dived || !there) return;
   const whole = PIPE.rise + PIPE.stagger;
+  // Its end is the rise's from here: giving up mid-rise would drop the figures to rest.
+  clearTimeout(givingUp);
   rise.set(
     withDelay(
       PIPE.settle,
