@@ -1,3 +1,4 @@
+import { guardAskisTools } from "../stemcells/upstream/askiTools.ts";
 import {
   type EnvironmentId,
   type OrchestrationV2LinkOrigin,
@@ -489,7 +490,7 @@ const routed = Effect.fn("McpToolAccess.routed")(function* <Tools extends Record
         return forwarded === undefined ? result : yield* forwarded(params, target, result);
       });
   }
-  return handlers as Toolkit.HandlersFrom<Tools>;
+  return guardAskisTools(handlers) as Toolkit.HandlersFrom<Tools>;
 });
 
 export const toLayer = <Tools extends Record<string, Tool.Any>, EX = never, RX = never>(

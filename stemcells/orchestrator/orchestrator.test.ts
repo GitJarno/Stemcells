@@ -406,26 +406,22 @@ describe("an answer that fails", () => {
 
 describe("a plan Aski's chat proposes", () => {
   it("always waits, with its words shown, and marks what is risky", () => {
-    const result = proposedPlan({
+    const plan = proposedPlan({
       id: "plan-2",
-      cells: [{ place: "harbor", title: "Reset the branch", words: "Force-push the release branch." }],
-      context: context(),
+      cells: [
+        {
+          projectId: "harbor",
+          projectName: "Harbor",
+          title: "Reset the branch",
+          words: "Force-push the release branch.",
+        },
+      ],
       mint: () => "thread-9",
     });
-    expect(result.ok && result.plan.acts[0]).toMatchObject({
+    expect(plan.acts[0]).toMatchObject({
       tier: "check",
       why: ["proposed", "risky"],
-      place: { id: "p-harbor", how: "picked" },
+      place: { projectId: "harbor", how: "picked" },
     });
-  });
-
-  it("names a project that isn't one", () => {
-    const result = proposedPlan({
-      id: "plan-3",
-      cells: [{ place: "Lantern", title: "Docs", words: "Write the docs." }],
-      context: context(),
-      mint: () => "thread-9",
-    });
-    expect(result).toEqual({ ok: false, failed: ['"Lantern" is no project here.'] });
   });
 });

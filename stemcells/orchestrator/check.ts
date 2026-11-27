@@ -18,6 +18,7 @@ import {
   type PlaceField,
   type Plan,
   type RiskMark,
+  type Selection,
   type StartAct,
   type Why,
 } from "./plan.ts";
@@ -341,92 +342,54 @@ export const floorPlan = (id: string, pieces: readonly Piece[], dictated: boolea
 
 /** One Cell as Aski's chat proposes it: the words are Aski's, so the person sees them first. */
 export interface Proposal {
-  readonly place: string;
-  readonly model?: string | undefined;
-  readonly effort?: string | undefined;
+  readonly projectId: string;
+  readonly projectName: string;
+  readonly selection?: Selection | undefined;
   readonly title: string;
   readonly words: string;
 }
 
-/**
- * A plan from Aski's chat. Every act waits for the person, whatever it says. A project or a
- * model that isn't one fails it, named, so Aski can ask again.
- */
+/** A plan from Aski's chat. Every act waits for the person, whatever it says. */
 export function proposedPlan(input: {
   readonly id: string;
   readonly cells: readonly Proposal[];
-  readonly context: Pick<CompileContext, "places" | "models">;
   readonly mint: () => string;
-}): PlanResult {
-  const failed: string[] = [];
-  const acts: StartAct[] = [];
-  for (const cell of input.cells.slice(0, CEILING)) {
-    const place = input.context.places.find((p) => saysExactly(cell.place, p.name, p.aliases));
-    if (place === undefined) {
-      failed.push(`"${cell.place}" is no project here.`);
-      continue;
-    }
-    const entry =
-      cell.model === undefined
-        ? undefined
-        : input.context.models.find((m) => saysExactly(cell.model!, m.name, m.aliases));
-    if (cell.model !== undefined && entry === undefined) {
-      failed.push(`"${cell.model}" is no model here.`);
-      continue;
-    }
+}): Plan {
+  const acts = input.cells.slice(0, CEILING).map((cell, i): StartAct => {
     const words = cell.words.trim();
-    if (words.length === 0) {
-      failed.push("A Cell needs words.");
-      continue;
-    }
-    const level =
-      entry !== undefined && cell.effort !== undefined
-        ? clampEffort(cell.effort, entry.efforts)
-        : null;
     const risks: RiskMark[] = riskFindings(words)
       .filter((finding) => !finding.negated)
       .map(({ start, end, kind }) => ({ start, end, kind }));
-    acts.push({
+    return {
       kind: "start",
-      i: acts.length,
+      i,
       pieces: [],
       threadId: input.mint(),
       title: titleOf(cell.title, words),
       words,
       note: null,
-      place: { id: place.id, name: place.name, heard: null, how: "picked" },
-      model:
-        entry === undefined
-          ? null
-          : {
-              instanceId: entry.instanceId,
-              id: entry.id,
-              name: entry.name,
-              heard: cell.model!,
-              how: "exact",
-              effort:
-                level !== null && entry.effortOption !== undefined
-                  ? { option: entry.effortOption, level }
-                  : null,
-            },
-      effort: cell.effort ?? null,
+      place: {
+        id: null,
+        projectId: cell.projectId,
+        name: cell.projectName,
+        heard: null,
+        how: "picked",
+      },
+      model: null,
+      ...(cell.selection === undefined ? {} : { selection: cell.selection }),
+      effort: null,
       risks,
       tier: "check",
       why: ["proposed", ...(risks.length > 0 ? (["risky"] as const) : [])],
-    });
-  }
-  if (failed.length > 0 || acts.length === 0)
-    return { ok: false, failed: failed.length > 0 ? failed : ["A plan needs a Cell."] };
+    };
+  });
   return {
-    ok: true,
-    plan: {
-      id: input.id,
-      dictated: false,
-      pieces: [],
-      acts,
-      talk: [],
-      leftOver: [],
-      from: "proposed",
-    },
+    id: input.id,
+    dictated: false,
+    pieces: [],
+    acts,
+    talk: [],
+    leftOver: [],
+    from: "proposed",
   };
 }

@@ -9,6 +9,7 @@ import * as Needs from "../needs/Needs.ts";
 import { registerArcsTool } from "./arcsTool.ts";
 import { registerDiskTool } from "./diskTool.ts";
 import { registerPeerTool } from "./peerTool.ts";
+import { registerPlanTools } from "./planTool.ts";
 import { registerSettingsTool } from "./settingsTool.ts";
 import { registerShowTool } from "./showTool.ts";
 import { registerStandingTool } from "./standingTool.ts";
@@ -21,4 +22,5 @@ export const registerStemcellsTools = (register: typeof toolkitRegistration) =>
     registerArcsTool(register),
     registerSettingsTool(register),
     registerShowTool(register),
+    registerPlanTools(register),
   );

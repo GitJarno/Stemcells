@@ -19,6 +19,8 @@ import * as Effect from "effect/Effect";
 import type { ProjectionStoreV2Shape } from "../../orchestration-v2/ProjectionStore.ts";
 import type { ProjectService } from "../../project/ProjectService.ts";
 import { elsewhereNow } from "../peers/elsewhere.ts";
+import { planForMessage } from "../aski/book.ts";
+import { planNote } from "../aski/note.ts";
 import { cellsOnTheWire } from "../peers/onTheWire.ts";
 import { providerTextOf, type ThreadFacts } from "../peers/frame.ts";
 import { mailOf } from "../peers/link.ts";
@@ -207,5 +209,11 @@ export const text = Effect.fn("Stemcells.peers.text")(function* (
       Effect.logWarning("Stemcells couldn't say who's here", cause).pipe(Effect.as(null)),
     ),
   );
-  return note === null ? words : `${note}\n\nUser message:\n${words}`;
+  // A message the person wrote to Aski's chat that a plan was made from: Aski reads what came of it.
+  const plan =
+    message.senderThreadId === undefined
+      ? planForMessage(threadId, message.text, DateTime.toEpochMillis(yield* DateTime.now))
+      : null;
+  const notes = [note, plan === null ? null : planNote(plan.plan)].filter((one) => one !== null);
+  return notes.length === 0 ? words : `${notes.join("\n")}\n\nUser message:\n${words}`;
 });

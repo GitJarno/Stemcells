@@ -66,8 +66,10 @@ export const DEFAULT_CAP = 6;
 export type How = "exact" | "near" | "picked" | "new";
 
 export interface PlaceField {
-  /** Null for a project that doesn't exist yet. */
+  /** The client's key for the place. Null for a project that doesn't exist yet, or one the server named. */
   readonly id: string | null;
+  /** The project on this server, when the server named the place (a plan Aski's chat proposed). */
+  readonly projectId?: string;
   readonly name: string;
   /** The person's own word for it, when they said one. */
   readonly heard: string | null;
@@ -82,6 +84,13 @@ export interface ModelField {
   readonly how: "exact" | "near";
   /** The effort option and level a launch sends; null for the model's default. */
   readonly effort: { readonly option: string; readonly level: string } | null;
+}
+
+/** A provider instance, a model and its options, as a launch takes them. */
+export interface Selection {
+  readonly instanceId: string;
+  readonly model: string;
+  readonly options?: ReadonlyArray<{ readonly id: string; readonly value: string | boolean }>;
 }
 
 /** `start` begins at once; `check` waits for one tap; `hold` needs a hand on the named thing. */
@@ -141,6 +150,8 @@ export interface StartAct extends ActBase {
   readonly place: PlaceField | null;
   /** Null for the project's default. */
   readonly model: ModelField | null;
+  /** The model as Aski's chat named it, whole, for a plan it proposed; a launch sends it as it is. */
+  readonly selection?: Selection;
   /** The level the person said, kept for a default model whose ladder the client knows. */
   readonly effort: string | null;
   readonly risks: readonly RiskMark[];
