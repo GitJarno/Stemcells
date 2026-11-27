@@ -34,3 +34,7 @@ export function hueOfBody(body: string): Rgb {
 
 /** A provider's colour. */
 export const hueOf = (provider: string | null | undefined): Rgb => hueOfBody(bodyOf(provider));
+
+/** A number in 0 to 1 a name always gives: when its Cell breathes and blinks. */
+export const seedOf = (name: string) =>
+  [...name].reduce((hash, letter) => (hash * 31 + letter.charCodeAt(0)) % 9973, 7) / 9973;

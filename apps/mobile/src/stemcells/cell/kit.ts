@@ -55,3 +55,22 @@ export type { Activity } from "../../../../web/src/stemcells/cell/activity.ts";
 export { subcellFace } from "../../../../web/src/stemcells/cell/subcell.ts";
 export { oneLinerOf } from "../../../../web/src/stemcells/composer/oneLiner.ts";
 export { cellNameOf } from "../../../../../stemcells/words/cellNames.ts";
+export {
+  type Act,
+  moved,
+  performerOf,
+  poseAt,
+  STILL,
+} from "../../../../web/src/stemcells/cell/model/acts.ts";
+export { figureOf, type Pose } from "../../../../web/src/stemcells/cell/model/body.ts";
+export {
+  drawSprite,
+  type Sprite,
+  wholeView,
+} from "../../../../web/src/stemcells/cell/model/sprite.ts";
+export {
+  actOf,
+  grownOf,
+  hueOfBody,
+  seedOf,
+} from "../../../../web/src/stemcells/cell/model/stance.ts";

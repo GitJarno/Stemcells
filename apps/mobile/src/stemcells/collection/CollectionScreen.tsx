@@ -19,6 +19,7 @@ import { useSavedRemoteConnections } from "../upstream/push";
 import { FeatsBoard } from "./FeatsBoard";
 import { FeatsView } from "./FeatsView";
 import { COLLECTION } from "./kit";
+import { NewBody } from "./NewBody";
 import { Chip } from "./parts";
 import { readCollectionOf, useCollections } from "./read";
 import { Wardrobe } from "./Wardrobe";
@@ -104,6 +105,7 @@ export function CollectionScreen() {
                   connection={connection}
                   collection={collection}
                 />
+                <NewBody />
               </View>
             ) : board ? (
               <FeatsBoard

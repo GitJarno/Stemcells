@@ -3,7 +3,7 @@
 // so one drawing serves every size. The web rasters the same rows to a
 // canvas (`apps/web/src/stemcells/cell/paint.ts`).
 
-import { keylined, type Ground, type MiniFrame, paletteOf } from "./kit";
+import { keylined, type Ground, type MiniFrame, paletteOf, type Sprite } from "./kit";
 
 /** One colour of a frame: its fill, its alpha, and the cells it covers. */
 export interface Ink {
@@ -55,6 +55,44 @@ export function drawingOf(rows: readonly string[], body: string): Drawing {
     width: rows[0]?.length ?? 0,
     height: rows.length,
     inks: [...paths].map(([colour, d]) => ({ ...inkOf(colour), d })),
+  };
+}
+
+const hex = (value: number) => value.toString(16).padStart(2, "0");
+
+/** A picture of the modelled Cell (`model/sprite.ts`) as a drawing: each row's runs of one colour joined, clear pixels left. */
+export function drawingOfSprite(sprite: Sprite): Drawing {
+  const { width, height, pixels } = sprite;
+  const colourAt = (x: number, y: number): number => {
+    const at = (y * width + x) * 4;
+    const alpha = x < width ? pixels[at + 3]! : 0;
+    // One number a colour: its alpha last, so a clear pixel is 0 whatever lies under it.
+    return alpha === 0
+      ? 0
+      : ((pixels[at]! << 16) | (pixels[at + 1]! << 8) | pixels[at + 2]!) * 256 + alpha;
+  };
+  const paths = new Map<number, string>();
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const colour = colourAt(x, y);
+      if (colour === 0) continue;
+      let end = x;
+      while (colourAt(end + 1, y) === colour) end++;
+      paths.set(colour, (paths.get(colour) ?? "") + run(x, y, end - x + 1));
+      x = end;
+    }
+  }
+  return {
+    width,
+    height,
+    inks: [...paths].map(([colour, d]) => {
+      const rgb = Math.floor(colour / 256);
+      return {
+        fill: `#${hex(rgb >> 16)}${hex((rgb >> 8) & 255)}${hex(rgb & 255)}`,
+        opacity: (colour % 256) / 255,
+        d,
+      };
+    }),
   };
 }
 

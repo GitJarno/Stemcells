@@ -47,10 +47,10 @@ pictures a second.
    - **On the Mac** (done). An edit is written, other work is watched,
      thought is hands off; strength grows the body. A picture is taken only
      when the pose moved half a pixel.
-   - **On the phone** (next). It has no store of its own for a switch, no
-     painter for a picture in full colour, and its engine has no JIT, so
-     its speed has to be measured on a device first; a row there may need
-     pictures kept per act, as the kit keeps frames.
+   - **On the phone** (done). The Cell heading a chat, on the hero art's
+     own grid (34 × 32), so a pixel of it is a pixel of the old Cell. The
+     switch is kept in a file of the phone's own. The phone reads no
+     strength yet, so every Cell there is drawn as it is born.
 3. **The wardrobe.** Today's pieces as model pieces, pack by pack; first
    try lifting the drawn ones (most headwear is a shape turned round its
    axis). The dressing room on a turning stage.
@@ -76,6 +76,14 @@ pictures a second.
 - [x] Seen in the built app on a lab home, a Replay chat through a turn
 - [x] Checks, pull request, merge
 
+## Steps (slice 2, the phone)
+
+- [x] A painter from a picture to the phone's drawing (`figure.ts`)
+- [x] `CellModelFigure`, the switch in a kept file, its row under the wardrobe
+- [x] Speed measured on the phone's engine
+- [x] Seen on a simulator: at rest, through a Replay turn, the switch both ways
+- [x] Checks, pull request, merge
+
 ## Review
 
 Slice 1 landed as planned, with no surface changed. The tests earned their
@@ -91,3 +99,12 @@ the old figure back at once. Over a 45-second turn it took 102 pictures
 where the clock beat 540 times. Not yet measured: its cost on the main
 thread with several chats streaming, which decides whether drawing moves to
 a worker before the switch defaults to on.
+
+Slice 2 on the phone: on an iPhone Duo simulator the Cell stood in the
+chat's header, pulled its laptop out as a Replay turn began and was glad at
+the landing, and the switch brought the old figure back. A picture takes
+13 to 17 ms on Hermes (the Mac's browser: 1.1 ms at this size), about one a
+second at rest and up to twelve while a part moves. That is fine for the one
+Cell heading a chat and too slow for a list of them: rows need pictures kept
+per act (slice 4). Still open on the phone: reading a Cell's strength, so
+it grows as the Mac's does; a tap on it is not yet answered by the model.

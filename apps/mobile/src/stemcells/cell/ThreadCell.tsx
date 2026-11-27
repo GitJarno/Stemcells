@@ -10,6 +10,8 @@ import {
   useThemeAppearance,
 } from "../upstream/cells";
 import { CellFigure } from "./CellFigure";
+import { CellModelFigure } from "./CellModelFigure";
+import { useCellModelOn } from "./modelPreview";
 import { faceOf, faceTurnsAt } from "./mood";
 import { useCellLook } from "./roster";
 
@@ -39,11 +41,14 @@ export function ThreadCell(props: {
   readonly formingFrom?: number | undefined;
   /** Out of sight: it stands still and reads no clock (`CellFigure`). */
   readonly held?: boolean;
+  /** It heads its chat: drawn from its model while that preview is on (`modelPreview.ts`). */
+  readonly stage?: boolean;
 }) {
   const { thread } = props;
   const driver = useDriverOf(thread);
   const look = useCellLook(thread.id);
   const ground = useThemeAppearance() === "light" ? "light" : "black";
+  const modelled = useCellModelOn() && props.stage === true;
   const [now, setNow] = useState(Date.now);
   const face = faceOf(thread, resolveThreadListV2Status(thread), {
     now,
@@ -63,6 +68,17 @@ export function ThreadCell(props: {
     run?.status === "completed" && run.completedAt !== null
       ? Date.parse(run.completedAt)
       : undefined;
+  if (modelled)
+    return (
+      <CellModelFigure
+        name={thread.id}
+        mood={face.mood}
+        activity={face.activity}
+        provider={driver}
+        points={props.points}
+        held={props.held}
+      />
+    );
   return (
     <CellFigure
       name={thread.id}

@@ -1,7 +1,20 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { drawFrame, drawingOf } from "./figure";
-import { BODIES, frameShown, MOODS, paletteOf, sceneFor, wornLook } from "./kit";
+import { drawFrame, drawingOf, drawingOfSprite } from "./figure";
+import {
+  BODIES,
+  drawSprite,
+  figureOf,
+  frameShown,
+  hueOfBody,
+  MOODS,
+  paletteOf,
+  poseAt,
+  sceneFor,
+  STILL,
+  wholeView,
+  wornLook,
+} from "./kit";
 
 /** The cells a drawing fills, each with its fill, read back from its runs. */
 function cellsOf(drawing: ReturnType<typeof drawingOf>): Map<string, string> {
@@ -42,5 +55,33 @@ describe("a Cell drawn on the phone", () => {
         expect(cellsOf(drawing).size).toBe(frame.drawn.detail.join("").replaceAll(".", "").length);
       }
     }
+  });
+});
+
+describe("the modelled Cell drawn on the phone", () => {
+  it("fills each pixel of its picture once, in its colour, and leaves the clear ones", () => {
+    const sprite = drawSprite(
+      figureOf(poseAt("writing", STILL.writing, 0)),
+      wholeView(0, 32, 0.45, 34),
+      hueOfBody("codex"),
+    );
+    const expected = new Map<string, string>();
+    for (let y = 0; y < sprite.height; y++) {
+      for (let x = 0; x < sprite.width; x++) {
+        const at = (y * sprite.width + x) * 4;
+        if (sprite.pixels[at + 3] === 0) continue;
+        const [red, green, blue] = sprite.pixels.subarray(at, at + 3);
+        expected.set(
+          `${x},${y}`,
+          `#${[red!, green!, blue!].map((value) => value.toString(16).padStart(2, "0")).join("")}`,
+        );
+      }
+    }
+    const drawing = drawingOfSprite(sprite);
+    expect([drawing.width, drawing.height]).toEqual([34, 32]);
+    expect(expected.size).toBeGreaterThan(200);
+    expect(cellsOf(drawing)).toEqual(expected);
+    // Its shadow keeps its alpha; the body and its laptop are solid.
+    expect(new Set(drawing.inks.map((ink) => ink.opacity)).size).toBe(2);
   });
 });

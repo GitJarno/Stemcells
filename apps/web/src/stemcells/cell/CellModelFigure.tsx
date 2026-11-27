@@ -9,31 +9,16 @@ import type { Activity } from "./activity.ts";
 import { onStage } from "./clock.ts";
 import type { Strength } from "./kit.ts";
 import { BOX, moodOf, POINTS_PER_PIXEL } from "./look.ts";
-import { type Act, moved, performerOf, poseAt } from "./model/acts.ts";
+import { type Act, moved, performerOf, poseAt, STILL } from "./model/acts.ts";
 import { figureOf, type Pose } from "./model/body.ts";
 import { drawSprite, wholeView } from "./model/sprite.ts";
-import { actOf, grownOf, hueOf } from "./model/stance.ts";
+import { actOf, grownOf, hueOf, seedOf } from "./model/stance.ts";
 import { MARGIN } from "./scene.ts";
 import "../tokens/stemcells.css";
 import "./cell.css";
 
 /** The tallest picture drawn: past it, a picture's pixel takes several of the display's. */
 const ROWS = 64;
-
-/** Where each act stands still under Reduce Motion: ms into it, at its telling pose. */
-const STILL: Readonly<Record<Act, number>> = {
-  rest: 0,
-  thinking: 3000,
-  writing: 2500,
-  watching: 2500,
-  asking: 300,
-  landed: 2700,
-  asleep: 1000,
-};
-
-/** A number in 0 to 1 a name always gives: when its Cell breathes and blinks. */
-const seedOf = (name: string) =>
-  [...name].reduce((hash, letter) => (hash * 31 + letter.charCodeAt(0)) % 9973, 7) / 9973;
 
 export function CellModelFigure(props: {
   readonly name: string;
