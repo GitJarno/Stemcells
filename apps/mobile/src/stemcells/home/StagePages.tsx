@@ -1,7 +1,7 @@
-// The home's stages, a list each, all kept mounted under the stages' pill at the home's foot
-// (`StagePill.tsx`), so UIKit's segment slides whole; a tap brings the chosen list in on the UI
-// thread, and turns the header's sky (`Sky.tsx`) in the same frame. Lists out of sight render
-// nothing new and keep their place.
+// The home's stages, a list each, all kept mounted under the stages' pill (`StagePill.tsx`), so
+// UIKit's segment slides whole; a tap brings the chosen list in on the UI thread and turns the sky
+// (`Sky.tsx`) in the same frame. The title and the sky go up with the list in front (`head.ts`).
+// Lists out of sight render nothing new and keep their place.
 
 import {
   memo,
@@ -18,18 +18,28 @@ import Animated, {
   Easing,
   makeMutable,
   type SharedValue,
+  useAnimatedReaction,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { scheduleOnUI } from "react-native-worklets";
 
 import { ScreenVeils } from "../edge/ScreenVeils";
 import { useContentTopInset, useDuoBarBottom, useHomeSidebar } from "../upstream/home";
 import { readInboxSky, skyOver, useInboxSky } from "../line/kit";
 import { CopyLayer } from "./CopyLayer";
-import { enteringX, HomeCellsHeld, HomeInFront, HomeStageContext, StagePageContext } from "./state";
+import { head } from "./head";
+import {
+  enteringX,
+  headShown,
+  HomeCellsHeld,
+  HomeInFront,
+  HomeStageContext,
+  StagePageContext,
+} from "./state";
 import { Sky } from "./Sky";
 import { StagePill } from "./StagePill";
 import { riseSky, turnSky } from "./useSky";
@@ -43,12 +53,21 @@ interface Page {
   readonly opacity: SharedValue<number>;
   /** How far it stands aside as it comes in, points. */
   readonly x: SharedValue<number>;
+  /** How far its list carries the title up. */
+  readonly lift: SharedValue<number>;
+}
+
+/** The title's glide on a switch: from where it stood (`from`) to the list in front's, by `t`. */
+interface Glide {
+  readonly from: SharedValue<number>;
+  readonly t: SharedValue<number>;
 }
 
 /** Turns the home to the stage at `next`, on the UI thread. */
 function turn(
   pages: ReadonlyArray<Page>,
   front: SharedValue<number>,
+  glide: Glide,
   next: number,
   still: boolean,
 ) {
@@ -56,6 +75,9 @@ function turn(
   const from = front.get();
   if (from === next || pages[next] === undefined) return;
   front.set(next);
+  glide.from.set(head.lift.get());
+  glide.t.set(still ? 1 : 0);
+  if (!still) glide.t.set(withTiming(1, SWITCH));
   for (let index = 0; index < pages.length; index++) {
     const page = pages[index]!;
     const shows = index === next;
@@ -76,23 +98,28 @@ export function useStagePages<Stage extends string>(stages: readonly Stage[], op
     stages.map((stage): Page => ({
       opacity: makeMutable(stage === opening ? 1 : 0),
       x: makeMutable(0),
+      lift: makeMutable(0),
     })),
   );
   const front = useSharedValue(stages.indexOf(opening));
+  const from = useSharedValue(0);
+  const t = useSharedValue(1);
   const reduced = useReducedMotion();
-  return useMemo(
-    () => ({
+  return useMemo(() => {
+    const glide = { from, t };
+    return {
       stages,
       pages,
+      front,
+      glide,
       /** Called in the tap's own frame, before React renders the chosen stage; `still` at once. */
       show: (stage: Stage, still = reduced) => {
         // The sky turns whichever way the list does: the first home to show takes it as it stands.
         turnSky(skyOver(stage, readInboxSky()), reduced);
-        scheduleOnUI(turn, pages, front, stages.indexOf(stage), still);
+        scheduleOnUI(turn, pages, front, glide, stages.indexOf(stage), still);
       },
-    }),
-    [stages, pages, front, reduced],
-  );
+    };
+  }, [stages, pages, front, from, t, reduced]);
 }
 
 export function StagePages<Stage extends string>(props: {
@@ -107,6 +134,27 @@ export function StagePages<Stage extends string>(props: {
   const held = use(HomeCellsHeld);
   // Where a list rests: under the inset T3's list rests under, at the native header's foot.
   const inset = useContentTopInset();
+  // The bar's row, under the status bar or the Duo's camera band: the title fades out across it.
+  const bar = inset - useSafeAreaInsets().top;
+  const { pages, front, glide } = home;
+  useAnimatedReaction(
+    () => {
+      const live = pages[front.get()]?.lift.get() ?? 0;
+      return glide.from.get() + (live - glide.from.get()) * glide.t.get();
+    },
+    (lift) => {
+      head.lift.set(lift);
+      head.shown.set(headShown(lift, bar));
+    },
+  );
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- A home leaving the screen leaves the title at rest for the header's next screen.
+  useEffect(
+    () => () => {
+      head.lift.set(0);
+      head.shown.set(1);
+    },
+    [],
+  );
   // The rest mount once the first has shown, so a switch only ever shows a list.
   const [warm, setWarm] = useState(false);
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Follow a stage chosen without a tap (where the home opens) at once; a tap has turned already.
@@ -149,7 +197,8 @@ export function StagePages<Stage extends string>(props: {
           </Stage>
         );
       })}
-      {sidebar ? null : <ScreenVeils bottom barBottom={barBottom} />}
+      {/* One top edge in every posture; the sidebar's foot is the split's own. */}
+      <ScreenVeils bottom={!sidebar} barBottom={barBottom} />
       <Sky />
       <StagePill />
       <CopyLayer shown={inFront} />
@@ -168,7 +217,7 @@ function Stage(props: {
   readonly children: ReactNode;
 }) {
   const { page, active, inset } = props;
-  const value = useMemo(() => ({ active, inset }), [active, inset]);
+  const value = useMemo(() => ({ active, inset, lift: page.lift }), [active, inset, page]);
   const style = useAnimatedStyle(() => ({
     opacity: page.opacity.get(),
     transform: [{ translateX: page.x.get() }],

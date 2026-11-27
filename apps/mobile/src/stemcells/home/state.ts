@@ -3,6 +3,7 @@
 // one, the home opens where `opens` says, and holds it from there.
 
 import { createContext, useSyncExternalStore } from "react";
+import type { SharedValue } from "react-native-reanimated";
 
 import { drawnMoonPhase } from "../line/kit";
 import type { CellState } from "../line/line";
@@ -43,6 +44,8 @@ export interface StagePage {
   readonly active: boolean;
   /** The inset every stage's scroll view rests under, set by hand: each rests at minus this. */
   readonly inset: number;
+  /** How far this stage's list has carried the title up (`headLift`), on the UI thread. */
+  readonly lift: SharedValue<number>;
 }
 
 export const StagePageContext = createContext<StagePage | null>(null);
@@ -95,6 +98,30 @@ export function enteringX(
 ): number {
   "worklet";
   return opacity > 0 ? x : Math.sign(to - from) * shift;
+}
+
+/**
+ * How far a stage's list carries the title up, points: as far as it stands past its rest (minus
+ * its top inset), never further than it can scroll, so a list too short to scroll never moves the
+ * title, and nor does a pull past either end.
+ */
+export function headLift(
+  offset: number,
+  insetTop: number,
+  insetBottom: number,
+  contentHeight: number,
+  viewportHeight: number,
+): number {
+  "worklet";
+  const reach = insetTop + contentHeight + insetBottom - viewportHeight;
+  return Math.min(Math.max(0, offset + insetTop), Math.max(0, reach));
+}
+
+/** How much of the title shows `lift` up a bar `bar` tall: whole at rest, gone past the bar, eased. */
+export function headShown(lift: number, bar: number): number {
+  "worklet";
+  const t = Math.min(1, Math.max(0, lift / Math.max(1, bar)));
+  return 1 - t * t * (3 - 2 * t);
 }
 
 let footRoom = 0;

@@ -45,6 +45,8 @@ const SUBSTITUTES = {
   "apps/mobile/src/features/home/ThreadUndoNotice.tsx": "ThreadUndoNotice.tsx",
   // The header says Cells while the phone loads or syncs them.
   "apps/mobile/src/features/home/workspace-connection-status.ts": "workspace-connection-status.ts",
+  // The home's title row goes up with the list in front, as iOS's large title does.
+  "apps/mobile/src/features/home/WorkspaceConnectionTitle.tsx": "WorkspaceConnectionTitle.tsx",
   "apps/mobile/src/features/threads/thread-list-v2-row-appearance.ts":
     "thread-list-v2-row-appearance.ts",
   // A flying Cell's row reads at full contrast: its light says it flies.

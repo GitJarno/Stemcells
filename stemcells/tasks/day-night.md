@@ -21,8 +21,11 @@ until they're unblocked.
    layer drawn once over the stages' lists (`home/StagePages.tsx`), not part
    of any list, so every list rests at the same 8 pt under the bar. It starts
    at the screen's top edge and ends 20 pt past the first row's top
-   (`SKY_SHAPE.tail`). It doesn't scroll: it is the header's sky, and rows
-   scroll under it as they scroll under the header.
+   (`SKY_SHAPE.tail`). It is the title row's ground and goes where the title
+   goes (`home-head.md`): still behind it at rest, and as the list in front
+   scrolls, up with the list, fading with the title until both have passed
+   the bar. Rows move with it, so none ever scrolls under it; the edge it
+   leaves is the veil every screen has.
 2. **It fades out, it doesn't end.** The sky is whole for half the way down to
    the bar's foot, then its opacity falls along a curve with no visible start
    or end (`skyStops`, a smootherstep) to nothing at its foot. Its foot is the
