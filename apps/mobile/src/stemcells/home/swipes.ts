@@ -46,3 +46,19 @@ export function reach(flick: Flick, x: number, now: number): number {
   "worklet";
   return now - flick.t > STOPPED_MS ? x : x + flick.v * TOSS_S;
 }
+
+/** The slide out of a row let go past its full swipe, ms: T3's own, or quicker for a quick flick. */
+const SLIDE = { least: 140, most: 220 } as const;
+
+/**
+ * How long a row let go at `speed` (pt/s) takes to slide out its last `remaining` points on T3's
+ * ease out, so it leaves as fast as the finger let it go rather than jumping or dragging.
+ */
+export function slideMs(remaining: number, speed: number): number {
+  "worklet";
+  // An ease-out cubic starts at three times its mean speed.
+  const matched = speed > 0 ? ((3 * remaining) / speed) * 1000 : SLIDE.most;
+  return Math.min(Math.max(matched, SLIDE.least), SLIDE.most);
+}
+
+export { thrown } from "./hops";

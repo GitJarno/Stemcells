@@ -30,24 +30,31 @@ the leap's physics, which no curve can hold, sit beside them there:
   or buttons). Putting a Cell to sleep is always a job done, so its Cell
   doesn't fly: it leaps from where it stands into Asleep's count, and Asleep
   catches it. Physics, not a tween (`leapOf`, `leapAt` in `listMotion.ts`):
-  - a crouch, 90 ms, ease in-out: it squashes 12% on its feet;
-  - up, one gravity (6400 pt/s²) slowing it to its top, which stands 1.6 of
-    its heights plus 5% of the way over the higher end (90 at most); it leans
-    6° into the leap and stretches 14% at launch, round at the top;
+  - from rest, a crouch first (90 ms, squashing 12% on its feet); thrown by a
+    swipe (faster than 300 pt/s), no crouch: it pushes off its sliding row,
+    stretching into the leap over 40 ms, and keeps 70% of the row's speed;
+  - up, one gravity (6400 pt/s²) slowing it to its top, 0.9 of its heights
+    plus 3% of the way over the higher end (56 at most), leaning 6° in;
   - its eyes close 40 ms past the top;
-  - down under the same gravity, faster and faster, stretching to 18%, lying
-    back 14°, shrinking to the count's words and going into them over its
-    last word's height. Up and down are one parabola: the time up is to the time
-    down as √rise is to √fall. Its time in the air is what gravity says,
-    held between 380 and 560 ms, so it lands 470 to 650 ms after the crouch
-    began.
+  - down under the same gravity, stretching, lying back 14° and shrinking to
+    its landing size. Up and down are one parabola; its time in the air is
+    what gravity says, held between 360 and 540 ms.
+  - Its way across slows as if through air (a drag), so it is over the
+    count by the time it rises past it and drops in, never crossing the
+    stages beside it; thrown, the drag is what keeps the row's speed at
+    launch, whichever is more.
+  - It touches down whole on the bar's rim (the phone's pill; the Mac's
+    count), squashes 26% as that gives, rights itself and sinks into the
+    count, fading, over 170 ms. The catch, the tick and the soft haptic come
+    at that touch, not at the end.
 - **Catch**: Asleep gives under the landing, 80 ms easing out, then a soft
   spring hands it back past its place and to rest (`--sc-motion-catch`,
   response 0.36, damping 0.5; about 0.16 rebound, still by 625 ms): the
   phone's pill dips 3 pt, widening 2% and flattening 5%; the Mac's Asleep
   row dips 2.5 px. A second landing gives again from wherever the first has
   it. The count ticks as it lands; on the phone a light haptic as the feet
-  leave the ground and a soft one at the catch. Wake keeps the flight.
+  leave the ground (not when a swipe threw it: the release gave one) and a
+  soft one at the catch. Wake keeps the flight.
 
 Every motion runs once on the UI thread (the phone) or as one animation (the
 Mac), and ends; nothing is mounted or repaints while still. With Reduce
@@ -88,6 +95,11 @@ keep busy; and the Cell waited for the server. Now a release carries the
 row's speed (`reach` in `home/swipes.ts`, 0.15 s of it), so a flick sleeps;
 the row starts leaving on the UI thread as the finger lifts, and T3's
 dismissal joins it there (`leavesOnRelease`); and the Cell leaps at once.
+The row slides out at the flick's own speed (`slideMs`), and the release
+hands that speed to the leap (`thrown`), so the Cell springs off the row
+already moving. It takes off from where the row has carried it, read on the
+UI thread as the leap starts, and that offset fades into its planned way by
+halfway to the top.
 A flick that never crossed the threshold gives the armed haptic as it
 commits. Slow drags are unchanged: past the threshold they arm, short of it
 they show the button.
@@ -101,7 +113,8 @@ they show the button.
 - [x] Reduce Motion
 - [ ] Gates, pull request, merge, seen on the Duo, an iPhone and the Mac
 - [x] Sleep's leap and Asleep's catch, phone and Mac
-- [ ] The leap seen on an iPhone and the Duo
+- [x] The thrown leap seen on an iPhone simulator, frame by frame
+- [ ] The leap seen on the Duo
 
 ## Review
 
@@ -111,6 +124,6 @@ they show the button.
   doesn't fly; its row leaves and the count ticks.
 - The Mac's asleep rows bloom in the accent: they carry no provider tone.
 - The leap: seen on the Mac in a headless lab, frame by frame and in real
-  time. The phone's leap, its haptics and the pill's catch are not yet seen
-  on a device. On the Mac a settle that fails brings its row back after its
+  time. The phone's thrown leap and the pill's catch: seen on an iPhone
+  simulator, frame by frame (2026-11-28); its haptics only on a device. On the Mac a settle that fails brings its row back after its
   Cell has leapt.

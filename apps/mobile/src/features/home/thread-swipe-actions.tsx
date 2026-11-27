@@ -43,7 +43,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { AppText as Text } from "../../components/ui/AppText";
-import { AT_REST, type Flick, reach, sampled } from "../../stemcells/home/swipes";
+import { AT_REST, type Flick, reach, sampled, slideMs, thrown } from "../../stemcells/home/swipes";
 import type { MessageResolver } from "../../i18n/messages";
 import { useScaledTextRole } from "../settings/appearance/useScaledTextRole";
 import { SwipeRowActivationContext, type SwipeRowActivation } from "./swipe-row-activation";
@@ -398,17 +398,19 @@ export function ThreadSwipeable(props: ThreadSwipeableProps) {
         return;
       }
       dismissing.set(true);
-      const timing = {
-        duration: 220,
-        easing: Easing.out(Easing.cubic),
-        reduceMotion: ReduceMotion.System,
-      };
-      actionOpacity.set(withTiming(0, timing));
       // A row swiped right leaves to the right.
       const to =
         translation.value > 0
           ? Math.max(translation.value, rowWidth.value)
           : Math.min(translation.value, -rowWidth.value);
+      const timing = {
+        // Stemcells: a row let go leaves at the finger's speed (`stemcells/home/swipes.ts`).
+        duration:
+          id === 0 ? slideMs(Math.abs(to - translation.value), Math.abs(flick.value.v)) : 220,
+        easing: Easing.out(Easing.cubic),
+        reduceMotion: ReduceMotion.System,
+      };
+      actionOpacity.set(withTiming(0, timing));
       translation.set(
         withTiming(to, timing, (finished) => {
           if (!finished) return;
@@ -417,7 +419,7 @@ export function ThreadSwipeable(props: ThreadSwipeableProps) {
         }),
       );
     },
-    [actionOpacity, dismissing, fold, joined, rowWidth, slidOut],
+    [actionOpacity, dismissing, flick, fold, joined, rowWidth, slidOut],
   );
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- registers this row's animated dismissal in the module-level thread dismissal registry
   useLayoutEffect(
@@ -467,7 +469,7 @@ export function ThreadSwipeable(props: ThreadSwipeableProps) {
   );
   // RNGH lifecycle events call the latest handler, so commit from this release.
   const commitFullSwipe = useCallback(
-    (flung: boolean) => {
+    (flung: boolean, speed: number) => {
       if (!mountedRef.current) return;
       // Stemcells: a stale release may have slid out a row the list has since reused.
       if (contentRef.current !== content) {
@@ -476,6 +478,8 @@ export function ThreadSwipeable(props: ThreadSwipeableProps) {
       }
       // Stemcells: a flick never armed the full swipe; a row leaving at release arms it as it slides.
       if (flung && !leavesOnRelease) handleFullSwipeArmedChange(true);
+      // Stemcells: the row's Cell leaves it thrown at the row's speed (`stemcells/home/hops.ts`).
+      if (leavesOnRelease) thrown(content.threadKey, speed);
       if (fullSwipeAction === "primary") commitPrimaryAction();
       else {
         swipeableRef.current?.close();
@@ -504,7 +508,7 @@ export function ThreadSwipeable(props: ThreadSwipeableProps) {
         out * reach(flick.value, translation.value, Date.now()) >= fullSwipeThreshold
       ) {
         if (leavesOnRelease) dismiss(translation, 0);
-        runOnJS(commitFullSwipe)(out * translation.value < fullSwipeThreshold);
+        runOnJS(commitFullSwipe)(out * translation.value < fullSwipeThreshold, flick.value.v);
         return true;
       }
       return false;

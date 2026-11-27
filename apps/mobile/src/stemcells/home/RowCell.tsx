@@ -3,15 +3,9 @@
 // On Awake a card is one line, as Asleep's rows are, its light behind it (`awake-asleep.md`).
 // T3's row hands control here (`features/threads/thread-list-v2-items.tsx`).
 
-import { type ReactNode, use, useEffect, useRef } from "react";
-import {
-  Pressable,
-  useWindowDimensions,
-  View,
-  type ViewInstance,
-  type ViewStyle,
-} from "react-native";
-import { useReducedMotion } from "react-native-reanimated";
+import { type ReactNode, use, useEffect } from "react";
+import { Pressable, useWindowDimensions, View, type ViewStyle } from "react-native";
+import { useAnimatedRef, useReducedMotion } from "react-native-reanimated";
 import { useResolveClassNames } from "uniwind";
 
 import { AskiFigure } from "../aski/AskiFigure";
@@ -65,7 +59,8 @@ function Figure(props: { readonly thread: EnvironmentThreadShell; readonly point
   const reduced = useReducedMotion();
   const inFront = use(HomeInFront);
   const held = use(HomeCellsHeld);
-  const box = useRef<ViewInstance>(null);
+  // Animated, so a leap can find where the row has carried its Cell on the UI thread (`Hop.tsx`).
+  const box = useAnimatedRef<View>();
   // Sleep and Wake take the Cell out of its row to its stage (`hops.ts`); its place stands empty.
   useDeparture(thread, box, !aski);
   const lifted = useLifted(cellKey(thread));
