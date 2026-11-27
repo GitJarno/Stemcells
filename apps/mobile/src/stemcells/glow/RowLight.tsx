@@ -1,5 +1,5 @@
-// An awake Cell's row light (`Wave.tsx`, stemcells/tasks/awake-asleep.md): the row tinted evenly
-// in its provider's tone, the band crossing it only while it flies; faint once its landing has
+// An awake Cell's row light (`Wave.tsx`, stemcells/tasks/awake-asleep.md): a lamp round the Cell
+// in its provider's tone, the band crossing it only while it flies; none once its landing has
 // been seen. Its status icon says what it does or needs.
 
 import { use } from "react";
@@ -23,6 +23,12 @@ export function RowLight(props: {
   readonly anchorX: number;
 }) {
   const { light } = props;
+  if (!light.lit) return null;
+  return <Lit {...props} />;
+}
+
+function Lit(props: Parameters<typeof RowLight>[0]) {
+  const { light } = props;
   const inFront = use(HomeInFront);
   const provider = TONES[toneTokenOf(useDriverOf(props.thread))] ?? TONES["--sc-accent"];
   const tone = rgbOf(provider)!;
@@ -37,7 +43,6 @@ export function RowLight(props: {
       fill={props.fill}
       inSight={inFront}
       band={light.band}
-      faint={light.strength === "faint"}
       glow
     />
   );

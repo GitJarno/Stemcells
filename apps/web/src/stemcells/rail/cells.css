@@ -293,17 +293,17 @@
 }
 
 /* An awake row's light (stemcells/tasks/awake-asleep.md, decision 3): the
-   row's pill tinted evenly in its provider's tone, the band crossing it while
-   the Cell flies; its icon says what it does or needs. Seen, it is faint. The
-   tone is typed, so a recolour fades. */
+   a lamp in its provider's tone around the Cell, the band crossing it while
+   the Cell flies; its icon says what it does or needs. The lamp is an
+   ellipse as tall as the row, so it is gone by the row's edges and two lit
+   rows never meet as boxes. Seen, there is none. The tone is typed, so a
+   recolour fades. */
 @property --cells-row-tone {
   syntax: "<color>";
   inherits: true;
   initial-value: transparent;
 }
 [data-cells-open][data-light] {
-  /* The Cell's middle: the row's padding and half the Cell's width. */
-  --cells-row-cell-x: calc(var(--sc-space-md) + 0.6rem);
   position: relative;
   isolation: isolate;
   transition: --cells-row-tone var(--sc-motion-fade-duration) var(--sc-motion-fade-easing);
@@ -311,17 +311,21 @@
 /* The light clips its band, never the Cell, which may hop out of its box. */
 [data-cells-light] {
   position: absolute;
-  /* Dark between two lit rows. */
-  inset: 1px 0;
+  inset: 0;
   z-index: -1;
   overflow: clip;
   border-radius: inherit;
-  background: color-mix(in srgb, var(--cells-row-tone) 13%, transparent);
+  background: radial-gradient(
+    var(--cells-lamp),
+    color-mix(in srgb, var(--cells-row-tone) 30%, transparent),
+    color-mix(in srgb, var(--cells-row-tone) 10%, transparent) 50%,
+    transparent
+  );
   pointer-events: none;
   transition: opacity var(--sc-motion-fade-duration) var(--sc-motion-fade-easing);
 }
 [data-light="seen"] > [data-cells-light] {
-  opacity: 0.4;
+  opacity: 0;
 }
 [data-cells-row][data-leaving] [data-cells-light] {
   opacity: 0;
@@ -333,6 +337,8 @@
   top: 0;
   left: 0;
   height: 100%;
+  /* Feathered top and bottom, as the lamp is: light passing, not a box. */
+  mask-image: linear-gradient(transparent, #000 35% 65%, transparent);
   background: linear-gradient(
     to right,
     transparent,
@@ -350,17 +356,26 @@
   initial-value: 0;
 }
 [data-cells-open] {
+  /* The Cell's middle: the row's padding and half the Cell's width. */
+  --cells-row-cell-x: calc(var(--sc-space-md) + 0.6rem);
+  /* The lamp's shape, round the Cell: wide, and as tall as the row. */
+  --cells-lamp: ellipse 72% 50% at var(--cells-row-cell-x) 50%;
   position: relative;
   isolation: isolate;
 }
 [data-cells-open]::before {
   content: "";
   position: absolute;
-  inset: 1px 0;
+  inset: 0;
   z-index: -1;
   border-radius: inherit;
-  /* The row's own light, a little stronger: it settles to the light's level. */
-  background: color-mix(in srgb, var(--cells-bloom-tone) 20%, transparent);
+  /* The row's own lamp, a little stronger: it settles to the light's level. */
+  background: radial-gradient(
+    var(--cells-lamp),
+    color-mix(in srgb, var(--cells-bloom-tone) 42%, transparent),
+    color-mix(in srgb, var(--cells-bloom-tone) 14%, transparent) 50%,
+    transparent
+  );
   opacity: var(--cells-bloom);
   pointer-events: none;
   --cells-bloom-tone: var(--cells-row-tone);

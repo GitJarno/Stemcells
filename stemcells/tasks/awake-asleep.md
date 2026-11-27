@@ -30,12 +30,14 @@ questions; the agent's state shows inside the row.
 3. **The row's light says the agent's state; its hue says the provider.**
    One line per Cell, as Asleep's rows are: the Cell, its project's mark
    and title, a time. Behind it, the composer's light (`glow/Wave.tsx`,
-   `apps/web/src/stemcells/glow/`) from the Cell outward, in the provider's
-   tone (Claude's orange, Codex's green):
+   `apps/web/src/stemcells/glow/`) as a lamp round the Cell, in the
+   provider's tone (Claude's orange, Codex's green). The lamp is an ellipse
+   as tall as the row and gone by its edges: lit rows never meet as boxes,
+   and the only box in the list is the open Cell's:
    - flying: the wash, and the band crossing on the wall clock's beat, in
      step with the Mac's composer;
    - landed, not yet opened: the wash, still: the light came to rest;
-   - landed and seen: a faint wash;
+   - landed and seen: no light; most rows are quiet, so a lit one is news;
    - needs you: the wash in Input's amber (amber means Input and nothing
      else, `stemcells/brand/book.md`);
    - asleep: no light; the Cell sleeps.
