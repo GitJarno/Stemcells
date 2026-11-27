@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import manifest from "../../../../server/src/provider/model-manifest.json";
-import { everyVersion, lineup, pickName, selectedIn } from "./lineup";
+import { everyVersion, lineup, pickName, selectedIn } from "../models/lineup";
+
+// The pick's rule (`stemcells/models/lineup.ts`) over upstream's own model manifest.
 
 type Provider = keyof typeof manifest.providers;
 
