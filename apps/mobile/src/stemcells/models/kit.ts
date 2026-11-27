@@ -11,4 +11,4 @@ export {
   pickName,
   selectedIn,
 } from "../../../../web/src/stemcells/models/lineup.ts";
-export { conciseModelName } from "../../../../web/src/stemcells/models/names.ts";
+export { conciseModelName } from "../../../../../stemcells/models/names.ts";

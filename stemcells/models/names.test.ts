@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { conciseModelName, withConciseName } from "./names";
+import { conciseModelName, withConciseName } from "./names.ts";
 
 describe("conciseModelName", () => {
   // Every name in upstream's model manifest (apps/server/src/provider/model-manifest.json).
