@@ -22,7 +22,7 @@ import {
 
 import { onListOf } from "../needs/CardList";
 import { conditionLineOf } from "../needs/conditionLines";
-import { byWaiting } from "../inbox/loop";
+import { inputOf, waitingSince } from "../inbox/loop";
 import { inboxOpened, useInbox } from "../inbox/useInbox";
 import { useLeaving } from "../needs/leaving";
 import { leaving, page, useSettleAtOnce, useWakeByHand } from "../needs/live";
@@ -166,7 +166,9 @@ export function Cells() {
     };
   }, []);
 
-  const asked = askedSince(onList);
+  const asked = waitingSince(
+    onList.map(({ need }) => ({ cell: need.parentThreadId ?? need.threadId, since: need.since })),
+  );
   const awake =
     environmentId === null
       ? []
@@ -176,13 +178,13 @@ export function Cells() {
   const staying = awake.filter((row) => !row.leaving);
   // Input (inbox.md, decisions 1 and 2): the same rows, those with an ask open, the longest
   // waiting first. One just answered here has left the asks already (`needs/live.ts`).
-  const asking = byWaiting(
-    staying.filter((row) => asked.has(row.cell.threadId) && row.holds === null),
-    (row) => row.cell.threadId,
-    (row) => row.since,
-  );
+  const asking = inputOf(staying, (row) => row.cell.threadId, asked);
+  // What the stages list, once read: another project is the list read again (`rowMotion.ts`).
+  const rowsView =
+    cells === null || environmentId === null ? null : `${environmentId}|${projectKey}`;
   const { loop, fact } = useInbox({
     queue: asking.map((row) => row.cell.threadId),
+    view: rowsView,
     stage,
     environmentId,
   });
@@ -196,9 +198,6 @@ export function Cells() {
         );
   // A Cell a shared stop holds (conditions.md) reads `working` on the wire and isn't flying.
   const held = staying.filter((row) => row.holds !== null);
-  // What the stages list, once read: another project is the list read again (`rowMotion.ts`).
-  const rowsView =
-    cells === null || environmentId === null ? null : `${environmentId}|${projectKey}`;
   const counts: Record<ColumnStage, number> = {
     needs: asking.length,
     awake: staying.length,
@@ -358,17 +357,6 @@ function awakeOrder(
     ({ cell }) => sinceOf(cell, asked),
   );
   return [...first, ...rest.map((each) => each.cell)];
-}
-
-/** When each asking Cell began to wait on the person: its oldest ask, by its thread. */
-function askedSince(onList: ReturnType<typeof onListOf>): ReadonlyMap<string, string> {
-  const since = new Map<string, string>();
-  for (const { need } of onList) {
-    const threadId = need.parentThreadId ?? need.threadId;
-    const before = since.get(threadId);
-    if (before === undefined || need.since < before) since.set(threadId, need.since);
-  }
-  return since;
 }
 
 interface AwakeRow {

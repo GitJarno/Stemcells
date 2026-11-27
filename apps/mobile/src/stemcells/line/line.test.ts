@@ -77,10 +77,12 @@ describe("the phone's home on the Cells' line", () => {
     expect(line.states.get("mac:asking")).toEqual({
       stage: "needs-you",
       since: "2026-10-27T11:50:00.000Z",
+      asked: "2026-10-27T11:50:00.000Z",
     });
     expect(line.states.get("mac:busy")).toEqual({
       stage: "working",
       since: "2026-10-27T11:00:00.000Z",
+      asked: null,
     });
   });
 
@@ -165,7 +167,7 @@ describe("the phone's home on the Cells' line", () => {
     expect(askCount(line)).toBe(2);
   });
 
-  it("lists in Input the Cells that ask, longest waiting first, until each ask is answered", () => {
+  it("lists in Input the Cells with an ask open, longest waiting first, as the Mac does", () => {
     const readings = new Map<string, Reading>([
       [
         "mac",
@@ -194,14 +196,14 @@ describe("the phone's home on the Cells' line", () => {
       cell("answered"),
       cell("parent"),
       cell("busy"),
-      // Its machine hasn't been read: its own record says it asks.
+      // Its machine hasn't been read: its own record says it asks, but no ask is known yet.
       cell("unread", { environmentId: "mini" }),
     ];
     const line = lineOf(cells, readings, NOW, new Set(["mac:answered:ask"]), (each) => ({
       stage: each.id === "unread" ? "needs-you" : "done",
       since: each.id === "unread" ? "2026-10-27T09:30:00.000Z" : null,
     }));
-    expect(line.needs.map((each) => each.id)).toEqual(["oldest", "unread", "parent", "recent"]);
+    expect(line.needs.map((each) => each.id)).toEqual(["oldest", "parent", "recent"]);
     // Still awake, in its time slot: Input is a lens.
     expect(line.awake.map((each) => each.id)).toContain("answered");
   });

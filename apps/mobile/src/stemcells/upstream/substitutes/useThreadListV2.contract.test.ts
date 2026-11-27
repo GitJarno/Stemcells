@@ -83,7 +83,7 @@ describe("Awake's order", () => {
     new Map(
       Object.entries(since).map(([id, at]) => [
         `${environmentId}:${id}`,
-        { stage: "done" as const, since: at },
+        { stage: "done" as const, since: at, asked: null },
       ]),
     );
 
@@ -104,12 +104,13 @@ describe("Awake's order", () => {
 });
 
 describe("Input's order", () => {
-  it("lists the longest waiting first, a pinned Cell in its turn", () => {
-    const asking = (since: Record<string, string>) =>
+  it("lists the longest waiting first by its oldest open ask, a pinned Cell in its turn", () => {
+    // Its stage's time isn't its ask's: a Cell flying while its Subcell asks.
+    const asking = (asked: Record<string, string>) =>
       new Map(
-        Object.entries(since).map(([id, at]) => [
+        Object.entries(asked).map(([id, at]) => [
           `${environmentId}:${id}`,
-          { stage: "needs-you" as const, since: at },
+          { stage: "working" as const, since: NOW, asked: at },
         ]),
       );
     const items = listed([

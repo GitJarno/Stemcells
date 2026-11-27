@@ -5,12 +5,13 @@
 
 import { effectiveSnoozed, type EnvironmentThreadShell } from "../upstream/threads";
 import {
-  byWaiting,
   type CellStanding,
   chatAskOf,
+  inputOf,
   type LineStage,
   type Need,
   STAGE_WORDS,
+  waitingSince,
 } from "./kit";
 import type { Reading } from "./read";
 
@@ -30,6 +31,8 @@ export interface Ask {
 export interface CellState {
   readonly stage: CellStanding["stage"];
   readonly since: string | null;
+  /** Its oldest open ask's time, by which Input orders it (`inputOf`); null for none. */
+  readonly asked: string | null;
 }
 
 type Shell = Parameters<typeof effectiveSnoozed>[0] & {
@@ -44,7 +47,7 @@ export interface Line<S extends Shell> {
   readonly asks: ReadonlyArray<Ask>;
   /** Cells that ask, by their own record, on a machine that hasn't said what they ask yet. */
   readonly unread: ReadonlyArray<S>;
-  /** The awake Cells that ask, but those whose every ask was just answered: longest waiting first. */
+  /** Input: the awake Cells with an ask open, as the Mac's (`inputOf`). */
   readonly needs: ReadonlyArray<S>;
   /** Every Cell not asleep, those that ask too. */
   readonly awake: ReadonlyArray<S>;
@@ -68,27 +71,25 @@ export function lineOf<S extends Shell>(
   readings: ReadonlyMap<string, Reading>,
   now: string,
   answered: ReadonlySet<string>,
-  ownState: (cell: S) => CellState,
+  ownState: (cell: S) => Omit<CellState, "asked">,
 ): Line<S> {
   const staged = new Map<string, ReadonlyMap<string, CellStanding>>();
   const asks: Ask[] = [];
-  const askedSince = new Map<string, string>();
-  const asking = new Set<string>();
   for (const [environmentId, reading] of readings) {
     const list = reading.state === "none" ? null : reading.list;
     if (list === null) continue;
     staged.set(environmentId, new Map((list.cells ?? []).map((cell) => [cell.threadId, cell])));
     for (const need of list.needs) {
       const key = askKeyOf(environmentId, need);
-      const cell = `${environmentId}:${need.parentThreadId ?? need.threadId}`;
-      if (!answered.has(key)) {
-        asks.push({ key, environmentId, need });
-        asking.add(cell);
-      }
-      const before = askedSince.get(cell);
-      if (before === undefined || need.since < before) askedSince.set(cell, need.since);
+      if (!answered.has(key)) asks.push({ key, environmentId, need });
     }
   }
+  const asked = waitingSince(
+    asks.map(({ environmentId, need }) => ({
+      cell: `${environmentId}:${need.parentThreadId ?? need.threadId}`,
+      since: need.since,
+    })),
+  );
   asks.sort((a, b) => a.need.since.localeCompare(b.need.since) || a.need.number - b.need.number);
   const line = { asks, unread: [] as S[], awake: [] as S[], asleep: [] as S[] };
   const states = new Map<string, CellState>();
@@ -107,23 +108,15 @@ export function lineOf<S extends Shell>(
         : { stage: standing.stage, since: standing.since ?? null };
     const key = cellKey(cell);
     line.awake.push(cell);
+    const oldest = asked.get(key) ?? null;
     states.set(key, {
       stage,
-      since: since ?? (stage === "needs-you" ? (askedSince.get(key) ?? null) : null),
+      since: since ?? (stage === "needs-you" ? oldest : null),
+      asked: oldest,
     });
     if (stage === "needs-you" && stages === undefined) line.unread.push(cell);
   }
-  const unread = new Set(line.unread);
-  const needs = byWaiting(
-    line.awake.filter(
-      (cell) =>
-        states.get(cellKey(cell))?.stage === "needs-you" &&
-        (asking.has(cellKey(cell)) || unread.has(cell)),
-    ),
-    cellKey,
-    (cell) => states.get(cellKey(cell))?.since,
-  );
-  return { ...line, needs, states };
+  return { ...line, needs: inputOf(line.awake, cellKey, asked), states };
 }
 
 const askKeyOf = (environmentId: string, need: Need) => `${environmentId}:${need.key}`;

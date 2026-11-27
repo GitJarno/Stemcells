@@ -1,10 +1,9 @@
-// What the phone's home takes from upstream's: its tabs, how it opens a chat, which chat is open and
-// whether it stands beside the list, its column and workspace, its list's inset, its search, the
-// header's items, the machines and projects in view, the servers' older settled chats, where the
-// phone keeps its picks, and when a row starts to leave.
+// What the phone's home takes from upstream's: its tabs, how it opens a chat and comes back, its
+// column, whether it stands in the workspace, the inset its list rests under, where its search
+// stands, the header's items, the machines and projects in view, the older settled chats the
+// servers keep, where the phone keeps its picks, and when a row starts to leave.
 
 import { useAtomValue } from "@effect/atom-react";
-import { useNavigationState } from "@react-navigation/native";
 import { Directory, File, Paths } from "expo-file-system";
 import { use } from "react";
 import { Keyboard } from "react-native";
@@ -15,7 +14,6 @@ import { COMPOSER_BOTTOM_GUTTER } from "../../components/ComposerSurface";
 import { usePaneRole } from "../../components/ui/Pane";
 import { useBarInset } from "../../components/ui/useBarInset";
 import { useAdaptiveWorkspaceLayout } from "../../features/layout/adaptive-workspace-context";
-import { workspaceRoutesOf } from "../../features/layout/workspace-overlay-routes";
 import { useWorkspaceTabs } from "../../features/layout/workspace/WorkspaceTabsContext";
 import { useSelectWorkspaceDetail } from "../../features/layout/workspace/useSelectWorkspaceDetail";
 import {
@@ -81,28 +79,6 @@ export function useHomeThreadSelection() {
       name: "Thread",
       params: { environmentId: String(thread.environmentId), threadId: String(thread.id) },
     });
-}
-
-/**
- * The chat the workspace shows, beside the home or over it, as `environmentId:threadId`; null for
- * none, a draft, or another page. A sheet over the chat leaves it open.
- */
-export function useOpenChat(): string | null {
-  return useNavigationState((state) => {
-    const { workspace } = workspaceRoutesOf(state.routes.slice(0, state.index + 1));
-    const top = workspace.at(-1);
-    const params = top?.name === "Thread" ? (top.params as Record<string, unknown>) : undefined;
-    const { environmentId, threadId } = params ?? {};
-    return typeof environmentId === "string" && typeof threadId === "string"
-      ? `${environmentId}:${threadId}`
-      : null;
-  });
-}
-
-/** Whether a chat opened from the home stands beside it (an iPad's, the unfolded Duo's columns). */
-export function useChatBeside(): boolean {
-  const { layout } = useAdaptiveWorkspaceLayout();
-  return layout.usesSplitView && use(NativePrimaryColumnContext) !== null;
 }
 
 /**

@@ -63,6 +63,13 @@ Asleep. Going through it is a loop: read the ask, answer, next.
   flight to Awake: it never left Awake, and the column stays calm.
 - "N Cells flying again" counts the Cells the clearing went through that
   are awake now; those put off or slept aren't flying.
+- Input holds the awake Cells with an ask open, by their oldest (`inputOf`),
+  the same on both. A Cell whose machine hasn't been read yet isn't in Input
+  until its ask is known; the app icon still counts it.
+- What the queue is read over (a project; the phone's picks and the
+  machines read) is part of each reading: another starts the loop afresh,
+  so a switch or a machine dropping off never reads as answers. A clearing
+  that ends away from Input ends quietly.
 - The sky (`day-night.md`) reads `useInboxSky()`: `progress` for the dawn's
   steps, `clears` growing for the sunrise. `allClear()` in `inbox/sky.ts` is
   where its `riseSky()` call goes.

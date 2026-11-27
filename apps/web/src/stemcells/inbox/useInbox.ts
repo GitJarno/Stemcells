@@ -4,7 +4,7 @@
  * (`tabs/commands.ts`, `openCellHere`), and the composer there takes the caret once it lands.
  * The loop outlives the column, so turning it away and back keeps the clearing.
  */
-import { useEffect, useRef, useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 
 import { factAfter } from "../../../../../stemcells/words/inbox.ts";
 import type { ColumnStage } from "../rail/column";
@@ -12,7 +12,16 @@ import { afterPaint } from "../tabs/afterPaint";
 import { openCellHere } from "../tabs/commands";
 import { focusedPane, type Workspace } from "../tabs/layout";
 import { readWorkspace, useWorkspaceStore } from "../tabs/store";
-import { entered, left, LOOP_AT_REST, type Loop, opened, progressOf, read } from "./loop";
+import {
+  entered,
+  left,
+  LOOP_AT_REST,
+  type Loop,
+  opened,
+  progressOf,
+  read,
+  unfollowed,
+} from "./loop";
 import { allClear, publishProgress } from "./sky";
 
 const FACT_STORAGE_KEY = "stemcells.inbox.fact";
@@ -33,6 +42,8 @@ function readFact(): number | null {
 }
 
 let inbox: Inbox = { loop: LOOP_AT_REST, fact: 0 };
+// The column's stage at its last reading; null at launch, so a stage kept on Input enters it.
+let lastStage: ColumnStage | null = null;
 const listeners = new Set<() => void>();
 
 function set(next: Inbox) {
@@ -86,37 +97,41 @@ function focusComposer(): void {
 
 /**
  * Runs the loop for the column: `queue` is Input's Cells by thread, longest waiting first, on
- * `environmentId`. Turning to Input opens its top; turning away stops the loop.
+ * `environmentId`, read over `view` (null until read). Turning to Input opens its top; turning
+ * away stops the loop.
  */
 export function useInbox(input: {
   readonly queue: ReadonlyArray<string>;
+  readonly view: string | null;
   readonly stage: ColumnStage;
   readonly environmentId: string | null;
 }): Inbox {
-  const { stage, environmentId } = input;
+  const { view, stage, environmentId } = input;
   const open = useWorkspaceStore((store) => focusedChat(store.workspace));
   const queueKey = input.queue.join(" ");
-  const lastStage = useRef(stage);
 
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Step the loop with each reading, opening its next chat in the workspace and telling the sky.
   useEffect(() => {
     const queue = queueKey === "" ? [] : queueKey.split(" ");
-    const was = lastStage.current;
-    lastStage.current = stage;
-    const reading = { queue, open, onInput: stage === "needs", now: Date.now() };
+    const was = lastStage;
+    lastStage = stage;
+    const reading = { view, queue, open, onInput: stage === "needs", now: Date.now() };
     const before = inbox.loop;
     const step =
       stage === "needs" && was !== "needs"
         ? entered(before, reading, true)
         : read(stage !== "needs" && was === "needs" ? left(before) : before, reading);
-    set({ loop: step.loop, fact: step.allClear ? nextFact() : inbox.fact });
-    publishProgress(progressOf(step.loop));
+    const opens =
+      step.open === null ||
+      (environmentId !== null &&
+        openCellHere({ environmentId, threadId: step.open, draftId: null }));
+    const loop = opens ? step.loop : unfollowed(step.loop);
+    set({ loop, fact: step.allClear ? nextFact() : inbox.fact });
+    publishProgress(progressOf(loop));
     if (step.allClear) allClear();
-    if (step.open !== null && environmentId !== null)
-      openCellHere({ environmentId, threadId: step.open, draftId: null });
     // The chat it opened has landed: the next answer starts without a click.
-    if (before.landing && !step.loop.landing && step.loop.following === open) focusComposer();
-  }, [queueKey, open, stage, environmentId]);
+    if (before.landing && !loop.landing && loop.following === open) focusComposer();
+  }, [queueKey, view, open, stage, environmentId]);
 
   return useInboxState();
 }

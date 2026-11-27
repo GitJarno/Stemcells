@@ -17,9 +17,11 @@ import {
   progressOf,
   publishProgress,
   read,
+  unfollowed,
 } from "../line/kit";
 import { cellKey } from "../line/line";
-import { useChatBeside, useHomeThreadSelection, useOpenChat } from "../upstream/home";
+import { useHomeThreadSelection } from "../upstream/home";
+import { useChatBeside, useOpenChat } from "../upstream/openChat";
 
 /** How the last clearing ended, for Input's empty page, and the fact it shows with it. */
 export interface AllClear {
@@ -39,11 +41,12 @@ const listeners = new Set<() => void>();
 /** Hands the loop one reading; the Cell to open now, if any. */
 function step(
   queue: ReadonlyArray<string>,
+  view: string | null,
   open: string | null,
   onInput: boolean,
   beside: boolean,
 ) {
-  const reading = { queue, open, onInput, now: Date.now() };
+  const reading = { view, queue, open, onInput, now: Date.now() };
   const next =
     onInput && !wasOnInput
       ? entered(loop, reading, beside)
@@ -71,20 +74,27 @@ const subscribe = (listener: () => void) => {
 };
 
 /**
- * Runs the loop over Input's Cells in view (`queue`, longest waiting first) while the home is
- * mounted; the last clearing's all-clear while Input's empty page should say it.
+ * Runs the loop over Input's Cells in view (`queue`, longest waiting first, read over `view`,
+ * null until read) while the home is mounted; the last clearing's all-clear while Input's empty
+ * page should say it.
  */
-export function useInbox(queue: ReadonlyArray<Cell>, onInput: boolean): AllClear | null {
+export function useInbox(
+  queue: ReadonlyArray<Cell>,
+  view: string | null,
+  onInput: boolean,
+): AllClear | null {
   const open = useOpenChat();
   const beside = useChatBeside();
   const openChat = useHomeThreadSelection();
   const keys = queue.map(cellKey).join(" ");
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Hand the loop each change of the queue, the open chat and the stage, and open the Cell its step names.
   useEffect(() => {
-    const next = step(keys === "" ? [] : keys.split(" "), open, onInput, beside);
-    const cell = next === null ? undefined : queue.find((each) => cellKey(each) === next);
-    if (cell !== undefined) openChat(cell);
+    const next = step(keys === "" ? [] : keys.split(" "), view, open, onInput, beside);
+    if (next === null) return;
+    const cell = queue.find((each) => cellKey(each) === next);
+    if (cell === undefined) loop = unfollowed(loop);
+    else openChat(cell);
     // oxlint-disable-next-line react/exhaustive-effect-dependencies -- The queue's keys say when it changed; the Cells and the opener are this render's.
-  }, [keys, open, onInput, beside]);
+  }, [keys, view, open, onInput, beside]);
   return useSyncExternalStore(subscribe, () => shown);
 }

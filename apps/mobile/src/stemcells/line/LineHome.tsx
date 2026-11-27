@@ -30,7 +30,7 @@ type Place = { readonly environmentId: string; readonly projectId: string };
 /** How a Cell's own record has it, as T3's tabs read it, while its machine hasn't said. */
 const byRecord =
   (now: string) =>
-  (cell: EnvironmentThreadShell): CellState =>
+  (cell: EnvironmentThreadShell): Omit<CellState, "asked"> =>
     inTab(cell, "input", now)
       ? { stage: "needs-you", since: cell.pendingUserInputAt ?? null }
       : inTab(cell, "working", now)
@@ -44,7 +44,11 @@ function useSteadyStates(states: ReadonlyMap<string, CellState>) {
     kept.size === states.size &&
     [...states].every(([key, state]) => {
       const before = kept.get(key);
-      return before?.stage === state.stage && before.since === state.since;
+      return (
+        before?.stage === state.stage &&
+        before.since === state.since &&
+        before.asked === state.asked
+      );
     });
   if (!same) keep(states);
   return same ? kept : states;
@@ -96,7 +100,14 @@ export function LineHome(props: {
   );
   const tab = segments.useTab("awake");
   const stages = useStagePages(STAGES, tab);
-  const cleared = useInbox(line.needs.filter(props.inView), tab === "needs");
+  // A pick, or a machine read or dropped, is another view: its asks were never answered here.
+  const read = [...props.readings]
+    .filter(([, reading]) => reading.state !== "none" && reading.list !== null)
+    .map(([id]) => id)
+    .sort()
+    .join(" ");
+  const view = props.known && !props.connecting ? `${props.picks}|${read}` : null;
+  const cleared = useInbox(line.needs.filter(props.inView), view, tab === "needs");
   // Only once every machine has answered: a cold start would clear the icon a closed app was given.
   useAppBadge(props.known ? askCount(line) : null);
 

@@ -4,20 +4,23 @@ import { factAfter, STEM_CELL_FACTS } from "../../../../../stemcells/words/inbox
 import {
   byWaiting,
   entered,
+  inputOf,
   left,
   LOOP_AT_REST,
   type Loop,
   opened,
   progressOf,
   read,
+  waitingSince,
 } from "./loop";
 
-const reading = (queue: string[], open: string | null, now = 0, onInput = true) => ({
-  queue,
-  open,
-  onInput,
-  now,
-});
+const reading = (
+  queue: string[],
+  open: string | null,
+  now = 0,
+  onInput = true,
+  view: string | null = "here",
+) => ({ view, queue, open, onInput, now });
 
 describe("Input's queue", () => {
   it("lists the longest waiting first, one with no time last, a tie by key", () => {
@@ -34,6 +37,16 @@ describe("Input's queue", () => {
         (cell) => cell.since,
       ).map((c) => c.key),
     ).toEqual(["c", "a", "b", "none"]);
+  });
+
+  it("holds the awake Cells with an ask open, each by its oldest", () => {
+    const since = waitingSince([
+      { cell: "pip", since: "2026-11-27T10:00:00Z" },
+      { cell: "otter", since: "2026-11-27T09:30:00Z" },
+      { cell: "pip", since: "2026-11-27T09:00:00Z" },
+      { cell: "asleep", since: "2026-11-27T08:00:00Z" },
+    ]);
+    expect(inputOf(["otter", "harbor", "pip"], (cell) => cell, since)).toEqual(["pip", "otter"]);
   });
 });
 
@@ -109,6 +122,44 @@ describe("the loop through Input", () => {
   it("starts no clearing away from Input, and none on an empty queue", () => {
     expect(read(LOOP_AT_REST, reading(["pip"], null, 0, false)).loop.clearing).toBeNull();
     expect(entered(LOOP_AT_REST, reading([], null), true).allClear).toBe(false);
+  });
+
+  it("ends a clearing quietly when its last ask leaves away from Input", () => {
+    const loop = entered(LOOP_AT_REST, reading(["pip"], "pip"), true).loop;
+    const away = read(left(loop), reading([], "pip", 1_000, false));
+    expect(away.allClear).toBe(false);
+    expect(away.loop.clearing).toBeNull();
+    expect(entered(away.loop, reading([], "pip", 2_000), true).loop.cleared).toBeNull();
+  });
+
+  it("starts afresh in another view: a Cell leaving with it was never answered", () => {
+    const loop = entered(LOOP_AT_REST, reading(["pip", "otter"], "pip"), true).loop;
+    const empty = read(loop, reading([], "pip", 1_000, true, "elsewhere"));
+    expect(empty.allClear).toBe(false);
+    expect(empty.loop.cleared).toBeNull();
+    const asks = read(loop, reading(["bongo"], "pip", 1_000, true, "elsewhere"));
+    expect(asks.open).toBeNull();
+    expect(asks.loop.following).toBeNull();
+    expect(progressOf(asks.loop)).toEqual({ done: 0, of: 1 });
+    // Unread, the view leaves the loop as it stands.
+    expect(read(loop, reading([], "pip", 1_000, true, null)).loop).toBe(loop);
+  });
+
+  it("opens the top once the queue is first read, when Input was entered before", () => {
+    const early = entered(LOOP_AT_REST, reading([], null, 0, true, null), true);
+    expect(early.open).toBeNull();
+    expect(read(early.loop, reading(["pip"], null)).open).toBe("pip");
+    const full = entered(LOOP_AT_REST, reading([], null, 0, true, null), false);
+    expect(read(full.loop, reading(["pip"], null)).open).toBeNull();
+    // A view read before, unread for a moment as Input is entered, opens it once read again.
+    const known = read(LOOP_AT_REST, reading(["pip"], null, 0, false)).loop;
+    const again = entered(known, reading(["pip"], null, 0, true, null), true).loop;
+    expect(read(again, reading(["pip"], null)).open).toBe("pip");
+  });
+
+  it("hands back the same loop when a reading changes nothing", () => {
+    const loop = entered(LOOP_AT_REST, reading(["pip", "otter"], "pip"), true).loop;
+    expect(read(loop, reading(["pip", "otter"], "pip", 5_000)).loop).toBe(loop);
   });
 });
 
