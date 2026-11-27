@@ -3,7 +3,7 @@
  * each entry held to its file; a thread only where ours differs or the words aren't a message, as
  * every message says Cell by rule (`cellWords.ts`). Only builds and tests read this file.
  */
-import { SLEEP, SLEEP_UNTIL, sleptWords, WAKE } from "../words/awake.ts";
+import { SLEEP, sleptWords, WAKE } from "../words/awake.ts";
 import { CASUAL_CHAT } from "../words/casualChat.ts";
 import { CELL, FLYING } from "../words/cells.ts";
 import { COPY_CELL } from "../words/copyCell.ts";
@@ -139,16 +139,13 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
   ),
   ...inFile(
     `${PHONE}/threads/thread-list-v2-items.tsx`,
-    // The card's menu and swipe: Settle sleeps a Cell, Un-settle wakes it, Snooze is a timed sleep.
+    // The card's menu and swipe: Settle sleeps a Cell, Un-settle wakes it; Snooze stays upstream's.
     within('title: msg("Settle", { $context: "verb, thread action" })', "Settle", SLEEP),
     within('title: msg("Un-settle", { $context: "verb, thread action" })', "Un-settle", WAKE),
     within('label: gt("Settle", { $context: "verb, thread action" })', "Settle", SLEEP),
     within('label: gt("Un-settle", { $context: "verb, thread action" })', "Un-settle", WAKE),
     within('gt("Settle {title}"', "Settle", SLEEP),
     within('gt("Un-settle {title}"', "Un-settle", WAKE),
-    within('label: gt("Snooze", { $context: "verb, thread action" })', "Snooze", SLEEP_UNTIL),
-    within('title: gt("Snooze", { $context: "verb, thread action" })', "Snooze", SLEEP_UNTIL),
-    within('title: gt("Snooze until")', "Snooze until", "Sleep until"),
     within('title: gt("Copy thread"),', "Copy thread", COPY_CELL.action),
     within('title: gt("Copy thread ID")', "thread ID", COPY_CELL.menuId),
   ),
@@ -190,15 +187,10 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
   ),
   ...inFile(
     "apps/web/src/components/threadActionMenu.logic.ts",
-    // A Cell's menu: Settle sleeps it, Un-settle and Wake wake it, Snooze is a timed sleep.
+    // A Cell's menu: Settle sleeps it, Un-settle and Wake wake it; Snooze stays upstream's.
     within('resolve(msg("Settle thread"))', "Settle thread", SLEEP),
     within('resolve(msg("Un-settle thread"))', "Un-settle thread", WAKE),
     within('resolve(msg("Wake thread"))', "Wake thread", WAKE),
-    within(
-      'resolve(msg("Snooze", { $context: "verb, snooze the thread" }))',
-      "Snooze",
-      SLEEP_UNTIL,
-    ),
   ),
   ...inFile(
     "apps/web/src/components/sidebar/SidebarThreadUndoNotice.tsx",

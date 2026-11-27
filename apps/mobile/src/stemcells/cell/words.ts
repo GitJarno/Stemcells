@@ -30,7 +30,7 @@ export const CELL_ALERTS: Readonly<Record<string, string>> = {
     "This Cell is still starting a turn. Try again once it's flying.",
   "Could not wake thread": "Could not wake Cell",
   "This environment's server does not support snoozing yet. Update the server to wake this thread.":
-    "This environment's server does not support Sleep until… yet. Update the server to wake this Cell.",
+    "This environment's server does not support Snooze yet. Update the server to wake this Cell.",
   "The thread could not be woken.": "The Cell could not be woken.",
   "Could not pin thread": "Could not pin Cell",
   "The thread could not be pinned.": "The Cell could not be pinned.",
