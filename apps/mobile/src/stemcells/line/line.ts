@@ -1,14 +1,21 @@
-// The phone's home as the Cells' line (stemcells/tasks/awake-asleep.md): Awake and Asleep, as the
-// Mac's column stands each Cell, so the two never disagree. Each machine says how its own Cells are
-// (`read.ts`); Asleep, settled Cells and snoozed ones until they wake, is T3's own, from the chats'
-// shells. A Cell that asks stays in Awake, and its ask docks in its chat (`ChatAsk.tsx`).
+// The phone's home as the Cells' line (stemcells/tasks/awake-asleep.md), as the Mac's column stands
+// each Cell. Each machine says how its own Cells are (`read.ts`); Asleep is T3's own, from the
+// chats' shells. Input is a lens over Awake (stemcells/tasks/inbox.md): a Cell that asks keeps its
+// place there, and its ask docks in its chat (`ChatAsk.tsx`).
 
 import { effectiveSnoozed, type EnvironmentThreadShell } from "../upstream/threads";
-import { type CellStanding, chatAskOf, type LineStage, type Need, STAGE_WORDS } from "./kit";
+import {
+  byWaiting,
+  type CellStanding,
+  chatAskOf,
+  type LineStage,
+  type Need,
+  STAGE_WORDS,
+} from "./kit";
 import type { Reading } from "./read";
 
 export const SEGMENTS: ReadonlyArray<{ readonly id: LineStage; readonly label: string }> = (
-  ["awake", "asleep"] as const
+  ["needs", "awake", "asleep"] as const
 ).map((id) => ({ id, label: STAGE_WORDS[id] }));
 
 /** An ask, and the machine it came from: each machine numbers only its own. */
@@ -37,6 +44,8 @@ export interface Line<S extends Shell> {
   readonly asks: ReadonlyArray<Ask>;
   /** Cells that ask, by their own record, on a machine that hasn't said what they ask yet. */
   readonly unread: ReadonlyArray<S>;
+  /** The awake Cells that ask, but those whose every ask was just answered: longest waiting first. */
+  readonly needs: ReadonlyArray<S>;
   /** Every Cell not asleep, those that ask too. */
   readonly awake: ReadonlyArray<S>;
   /** Settled, and snoozed until they wake. */
@@ -64,14 +73,18 @@ export function lineOf<S extends Shell>(
   const staged = new Map<string, ReadonlyMap<string, CellStanding>>();
   const asks: Ask[] = [];
   const askedSince = new Map<string, string>();
+  const asking = new Set<string>();
   for (const [environmentId, reading] of readings) {
     const list = reading.state === "none" ? null : reading.list;
     if (list === null) continue;
     staged.set(environmentId, new Map((list.cells ?? []).map((cell) => [cell.threadId, cell])));
     for (const need of list.needs) {
       const key = askKeyOf(environmentId, need);
-      if (!answered.has(key)) asks.push({ key, environmentId, need });
       const cell = `${environmentId}:${need.parentThreadId ?? need.threadId}`;
+      if (!answered.has(key)) {
+        asks.push({ key, environmentId, need });
+        asking.add(cell);
+      }
       const before = askedSince.get(cell);
       if (before === undefined || need.since < before) askedSince.set(cell, need.since);
     }
@@ -100,7 +113,17 @@ export function lineOf<S extends Shell>(
     });
     if (stage === "needs-you" && stages === undefined) line.unread.push(cell);
   }
-  return { ...line, states };
+  const unread = new Set(line.unread);
+  const needs = byWaiting(
+    line.awake.filter(
+      (cell) =>
+        states.get(cellKey(cell))?.stage === "needs-you" &&
+        (asking.has(cellKey(cell)) || unread.has(cell)),
+    ),
+    cellKey,
+    (cell) => states.get(cellKey(cell))?.since,
+  );
+  return { ...line, needs, states };
 }
 
 const askKeyOf = (environmentId: string, need: Need) => `${environmentId}:${need.key}`;
@@ -130,6 +153,7 @@ export function countsOf<S extends Shell>(
   inView: (cell: { readonly environmentId: string; readonly projectId: string }) => boolean,
 ): Readonly<Record<LineStage, number>> {
   return {
+    needs: line.needs.filter(inView).length,
     awake: line.awake.filter(inView).length,
     asleep: line.asleep.filter(inView).length,
   };

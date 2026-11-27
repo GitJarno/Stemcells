@@ -41,7 +41,14 @@ import { relativeTime } from "../upstream/needs";
 import { Arrival } from "./Arrival";
 import { sendCopy } from "./copies";
 import { useLifted } from "./hops";
-import { CellStates, HomeCellsHeld, HomeInFront, HomeStageContext, useMinute } from "./state";
+import {
+  awakeRows,
+  CellStates,
+  HomeCellsHeld,
+  HomeInFront,
+  HomeStageContext,
+  useMinute,
+} from "./state";
 import { isAway } from "./tabs";
 import { useDeparture } from "./useDeparture";
 
@@ -107,7 +114,7 @@ export function useShelfHeadersShown(): boolean {
  * and whose own time says since when (`AwakeRow`), so T3's "Working 5m" would say it twice.
  */
 export function useSaysNothing(_status: string): boolean {
-  return use(HomeStageContext) === "awake";
+  return awakeRows(use(HomeStageContext));
 }
 
 /**
@@ -121,7 +128,7 @@ export function CellBesideRow(props: {
   readonly children: ReactNode;
 }) {
   const aski = useIsAskiChat(props.thread.id);
-  const awake = use(HomeStageContext) === "awake";
+  const awake = awakeRows(use(HomeStageContext));
   if (awake) return <AwakeRow thread={props.thread}>{props.children}</AwakeRow>;
   if (props.sidebar) return props.children;
   const { machine, pr } = props.marks;
@@ -305,7 +312,7 @@ const HIDDEN: ViewStyle = { display: "none" };
  * one line: the faint mark and the title, as Asleep's rows are.
  */
 export function useCardLines(card: boolean, sidebar: boolean, error: boolean, marks: CardMarks) {
-  const awake = use(HomeStageContext) === "awake";
+  const awake = awakeRows(use(HomeStageContext));
   const beside = card && (!sidebar || awake);
   const { project } = marks;
   if (!beside)

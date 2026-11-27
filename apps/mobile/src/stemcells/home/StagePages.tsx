@@ -6,6 +6,7 @@ import { memo, use, useLayoutEffect, useMemo, useState, type ReactNode } from "r
 import { StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
+  makeMutable,
   type SharedValue,
   useAnimatedStyle,
   useReducedMotion,
@@ -30,12 +31,6 @@ interface Page {
   readonly opacity: SharedValue<number>;
   /** How far it stands aside as it comes in, points. */
   readonly x: SharedValue<number>;
-}
-
-function usePage(shown: boolean): Page {
-  const opacity = useSharedValue(shown ? 1 : 0);
-  const x = useSharedValue(0);
-  return useMemo(() => ({ opacity, x }), [opacity, x]);
 }
 
 /** Turns the home to the stage at `next`, on the UI thread. */
@@ -64,25 +59,25 @@ function turn(
 }
 
 /** The stages' pages, in the segments' order, and a turn to one of them from a tap. */
-export function useStagePages<Stage extends string>(
-  stages: readonly [Stage, Stage],
-  opening: Stage,
-) {
-  const at = stages.indexOf(opening);
-  const a = usePage(at === 0);
-  const b = usePage(at === 1);
-  const front = useSharedValue(at);
+export function useStagePages<Stage extends string>(stages: readonly Stage[], opening: Stage) {
+  const [pages] = useState(() =>
+    stages.map((stage): Page => ({
+      opacity: makeMutable(stage === opening ? 1 : 0),
+      x: makeMutable(0),
+    })),
+  );
+  const front = useSharedValue(stages.indexOf(opening));
   const reduced = useReducedMotion();
-  return useMemo(() => {
-    const pages = [a, b];
-    return {
+  return useMemo(
+    () => ({
       stages,
       pages,
       /** Called in the tap's own frame, before React renders the chosen stage; `still` at once. */
       show: (stage: Stage, still = reduced) =>
         scheduleOnUI(turn, pages, front, stages.indexOf(stage), still),
-    };
-  }, [stages, a, b, front, reduced]);
+    }),
+    [stages, pages, front, reduced],
+  );
 }
 
 export function StagePages<Stage extends string>(props: {

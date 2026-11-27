@@ -8,7 +8,7 @@ import { useSyncExternalStore } from "react";
 import type { EnvironmentThreadShell } from "../upstream/cells";
 import type { Box } from "./copies";
 import { segmentOf } from "./flight";
-import { LIST_MOTION } from "../line/kit";
+import { LIST_MOTION, type LineStage } from "../line/kit";
 
 export type HopStage = "awake" | "asleep";
 
@@ -42,7 +42,7 @@ interface Departure {
 
 const departures = new Map<string, Departure>();
 const hops = new Map<string, Hop>();
-const arrivals = new Map<string, { readonly stage: HopStage; readonly at: number }>();
+const arrivals = new Map<string, { readonly stage: LineStage; readonly at: number }>();
 let pill: { readonly view: Measurable; readonly stages: readonly string[] } | null = null;
 let shown: readonly Hop[] = [];
 let bump: { readonly stage: HopStage; readonly count: number } | null = null;
@@ -162,7 +162,7 @@ export function hopFaded(key: string): void {
 }
 
 /** The rows of `keys` entered `stage` (`enteredRows`): each enters the first time it's seen there. */
-export function arrive(keys: readonly string[], stage: HopStage, now = Date.now()): void {
+export function arrive(keys: readonly string[], stage: LineStage, now = Date.now()): void {
   if (keys.length === 0) return;
   for (const [key, { at }] of arrivals) if (now - at >= ARRIVAL_MS) arrivals.delete(key);
   for (const key of keys) arrivals.set(key, { stage, at: now });

@@ -1,14 +1,14 @@
-// The home's stages in their own order over T3's list (`substitutes/useThreadListV2.ts`,
-// stemcells/tasks/awake-asleep.md). Awake reads in time order: pins first in T3's order, then by
-// the time each row shows, latest first. Asleep lists the latest asleep first, and a timed sleep
-// says when it wakes. The stage is the shelf, so T3's shelf rows go.
+// The home's stages in their own order over T3's list (`substitutes/useThreadListV2.ts`): Input
+// the longest waiting first (stemcells/tasks/inbox.md); Awake pins first, then by the time each row
+// shows, latest first (awake-asleep.md); Asleep the latest asleep first, a timed sleep saying when
+// it wakes. The stage is the shelf, so T3's shelf rows go.
 
 import { snoozeWakeLabel } from "@t3tools/client-runtime/state/thread-settled";
 import { resolveSettledThreadTimestamp } from "@t3tools/client-runtime/state/thread-sort";
 import type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/shell";
 
 import type { ThreadListV2ListItem } from "../../features/threads/threadListV2";
-import { byRecent, type Launchable, wakesWords } from "../line/kit";
+import { byRecent, byWaiting, type Launchable, wakesWords } from "../line/kit";
 import { cellKey, type CellState } from "../line/line";
 
 type ThreadItem = Extract<ThreadListV2ListItem, { readonly type: "v2-thread" }>;
@@ -27,6 +27,18 @@ function launchableOf(item: ThreadItem): Launchable & { readonly item: ThreadIte
     latestRun: requestedAt === null ? null : { requestedAt },
     item,
   };
+}
+
+/** Input: the longest waiting first, by the time each row shows; pins and new chats have no place. */
+export function inInputOrder(
+  items: ReadonlyArray<ThreadListV2ListItem>,
+  states: ReadonlyMap<string, CellState>,
+): ThreadListV2ListItem[] {
+  return byWaiting(
+    items.filter(isThread),
+    (item) => cellKey(item.item.thread),
+    (item) => states.get(cellKey(item.item.thread))?.since,
+  );
 }
 
 /** Awake: new chats on their way, the pins in T3's order, then by the time each row shows. */

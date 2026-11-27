@@ -1,7 +1,7 @@
 // The Cells' line, its asks and the ask a Cell's chat docks: the web's own plain TypeScript,
 // imported here and nowhere else, as the creature is (`cell/kit.ts`). Cards, commands, stages and
-// their words, Awake's order and light, settles by hand and how rows move are the Mac's, so the
-// two never disagree.
+// their words, Awake's order and light, Input's queue and loop, settles by hand and how rows move
+// are the Mac's, so the two never disagree.
 
 export {
   type CellStanding,
@@ -54,3 +54,16 @@ export {
   STATUS_WORDS,
   wakesWords,
 } from "../../../../../stemcells/words/awake.ts";
+export {
+  byWaiting,
+  type Cleared,
+  entered,
+  left,
+  LOOP_AT_REST,
+  type Loop,
+  opened,
+  progressOf,
+  read,
+} from "../../../../web/src/stemcells/inbox/loop.ts";
+export { allClear, publishProgress } from "../../../../web/src/stemcells/inbox/sky.ts";
+export { clearedWords, factAfter, STEM_CELL_FACTS } from "../../../../../stemcells/words/inbox.ts";

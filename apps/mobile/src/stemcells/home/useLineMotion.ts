@@ -11,7 +11,7 @@ import { enteredRows } from "./listMotion";
 
 type Cell = { readonly environmentId: string; readonly id: string; readonly projectId: string };
 
-const STAGES = ["awake", "asleep"] as const satisfies ReadonlyArray<HopStage>;
+const STAGES = ["needs", "awake", "asleep"] as const satisfies ReadonlyArray<LineStage>;
 
 export function useLineMotion<C extends Cell>(
   line: Readonly<Record<LineStage, ReadonlyArray<C>>>,
@@ -24,8 +24,8 @@ export function useLineMotion<C extends Cell>(
   picks: string,
 ): Readonly<Record<LineStage, number>> {
   const hops = useHops();
-  const before = useRef<Record<HopStage, ListReading> | null>(null);
-  const keysIn = (stage: HopStage) => new Set(line[stage].filter(inView).map(cellKey));
+  const before = useRef<Record<LineStage, ListReading> | null>(null);
+  const keysIn = (stage: LineStage) => new Set(line[stage].filter(inView).map(cellKey));
   const has = (list: ReadonlyArray<C>, key: string) => list.some((cell) => cellKey(cell) === key);
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Hand each reading of the line to the hops' store before it paints: the rows that entered a stage, and where the Cells on their way went.
   useLayoutEffect(() => {
@@ -37,6 +37,7 @@ export function useLineMotion<C extends Cell>(
     const machines = [...new Set(cells.map((cell) => cell.environmentId))].sort().join(" ");
     const view = `${picks}|${machines}`;
     const now = {
+      needs: { view, keys: keysIn("needs") },
       awake: { view, keys: keysIn("awake") },
       asleep: { view, keys: keysIn("asleep") },
     };
@@ -50,5 +51,6 @@ export function useLineMotion<C extends Cell>(
   });
   const held = (stage: HopStage) =>
     counts[stage] - inbound(hops, stage, (key) => has(line[stage].filter(inView), key));
-  return { awake: held("awake"), asleep: held("asleep") };
+  // No Cell hops into Input: an ask arrives there, and leaves as it's answered.
+  return { needs: counts.needs, awake: held("awake"), asleep: held("asleep") };
 }
