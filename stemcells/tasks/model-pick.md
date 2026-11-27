@@ -60,7 +60,8 @@ is shared: the phone imports it as the kits are.
 - [x] 7. Upstream tests our substitutes change: skip list with reasons
 - [x] 8. Seams and substitutes recorded; drift; docs where the user guide
       describes the picker
-- [ ] 9. Real-client pass: web captures (done); Duo simulator folded and unfolded (waits on disk)
+- [ ] 9. Real-client pass: web captures (done); iPhone and iPad simulators (done, after the
+      blank-sheet fix below); the Duo itself (waits on disk)
 - [ ] 10. Checks, pull request, check-local, merge
 
 ## Review
@@ -72,3 +73,10 @@ model, an agent's setup line beside its models, backends (fx's) as lines of
 their own, and the runtime limits' refresh. Each is kept on the Mac; the phone
 keeps backends, update notices and the default alias, and has no multi-pick or
 shortcuts to keep. Not yet seen on a phone: no disk for a simulator build.
+
+The first phone build opened a large, empty sheet on every iPhone and iPad.
+A fit-to-contents sheet takes its content's height, but T3's stack draws each
+presented route inside a nested stack that only fills its parent, so that
+content measured 0: no detent was set and nothing showed. The pick now lays
+itself out free of the sheet, measures itself and hands its route that height
+(`useSheetFit` in `pickSheet.ts`); All models asks for the whole sheet.
