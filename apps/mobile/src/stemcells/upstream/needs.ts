@@ -19,6 +19,7 @@ import {
   type EnvironmentId,
 } from "@t3tools/contracts";
 
+import { useThreadUndoNotice } from "../../features/home/thread-undo-notice";
 import { requestThreadMessageJump } from "../../features/threads/threadMessageJump";
 import { scopedThreadKey } from "../../lib/scopedEntities";
 import { uuidv4 } from "../../lib/uuid";
@@ -30,13 +31,21 @@ import { buildPlanMessage, type ChatMessage, type ThreadCommand } from "../line/
 
 export { Toast } from "../../components/ui/Toast";
 export * as Dialog from "../../components/ui/Dialog";
-export {
-  dismissThreadUndoNotice,
-  useThreadUndoNotice,
-} from "../../features/home/thread-undo-notice";
+export { dismissThreadUndoNotice } from "../../features/home/thread-undo-notice";
 export { useSavedRemoteConnections } from "../../state/use-remote-environment-registry";
 export { relativeTime } from "../../lib/time";
 export { useDeviceType } from "../../native/native-layout-metrics";
+
+/**
+ * T3's undo notice, but none for a Sleep or a Sleep until…: those act at once
+ * (stemcells/tasks/no-undo.md), and their notice lapses unseen.
+ */
+export function useShownThreadUndoNotice() {
+  const notice = useThreadUndoNotice();
+  return notice === null || notice.action === "Settled" || notice.action === "Snoozed"
+    ? null
+    : notice;
+}
 
 export type CommandOutcome = { readonly ok: true } | { readonly ok: false; readonly why: string };
 

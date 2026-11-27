@@ -3,7 +3,7 @@
  * each entry held to its file; a thread only where ours differs or the words aren't a message, as
  * every message says Cell by rule (`cellWords.ts`). Only builds and tests read this file.
  */
-import { SLEEP, sleptWords, WAKE } from "../words/awake.ts";
+import { SLEEP, WAKE } from "../words/awake.ts";
 import { CASUAL_CHAT } from "../words/casualChat.ts";
 import { CELL, FLYING } from "../words/cells.ts";
 import { COPY_CELL } from "../words/copyCell.ts";
@@ -44,9 +44,6 @@ const CHAT = "apps/web/src/components/chat";
 
 const OPENS_AGENT = "agent's thread";
 
-/** The undo notice once one Cell sleeps, as our column's says it. */
-const ONE_ASLEEP = sleptWords(`A ${CELL.one}`);
-
 export const WORD_TABLE: ReadonlyArray<Swap> = [
   // The phone.
   ...inFile(
@@ -61,8 +58,6 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
   ),
   ...inFile(
     `${PHONE}/home/ThreadUndoNotice.tsx`,
-    within('gt("Settled thread")', "Settled thread", ONE_ASLEEP),
-    within('gt("Snoozed thread")', "Snoozed thread", ONE_ASLEEP),
     within('gt("Unpinned thread")', "thread", `1 ${CELL.one}`),
   ),
   ...inFile(
@@ -191,16 +186,6 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
     within('resolve(msg("Settle thread"))', "Settle thread", SLEEP),
     within('resolve(msg("Un-settle thread"))', "Un-settle thread", WAKE),
     within('resolve(msg("Wake thread"))', "Wake thread", WAKE),
-  ),
-  ...inFile(
-    "apps/web/src/components/sidebar/SidebarThreadUndoNotice.tsx",
-    within("=1 {Settled,}", "Settled", "Asleep"),
-    within("other {Settled {count},}", "Settled", "Asleep"),
-  ),
-  ...inFile(
-    "apps/web/src/hooks/showThreadUndoNotice.ts",
-    // What a screen reader hears once Cells sleep: "Asleep: 2 Cells".
-    within('msg("Settled {count', "Settled", "Asleep:"),
   ),
   ...inFile(
     `${CHAT}/BackgroundWorkDetails.tsx`,

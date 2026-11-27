@@ -1,6 +1,6 @@
 /**
  * One connection to the server's list of what needs the person, shared by
- * every view that shows it: Aski's tab count, Aski's column and the holds.
+ * every view that shows it: Aski's tab count, Aski's column and the answers.
  * The server sends the whole list on connect and on every change, so a
  * reconnect needs no catching up: the newest list is the truth.
  */

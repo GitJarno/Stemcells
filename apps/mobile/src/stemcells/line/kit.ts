@@ -48,7 +48,6 @@ export {
 } from "../../../../web/src/stemcells/motion/listMotion.ts";
 export {
   EMPTY_WORDS,
-  sleptWords,
   STAGE_WORDS,
   STATUS_WORDS,
   wakesWords,

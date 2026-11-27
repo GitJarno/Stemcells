@@ -9,8 +9,8 @@ import { type BeforeSend, WordsSendSlot } from "../../words/send";
 import type { Span } from "../../words/text";
 import { commandsFor } from "../actions";
 import { movedByHand } from "../byHand";
-import { useHolds } from "../holds";
-import { holds, page } from "../live";
+import { useAnswers } from "../answering";
+import { answering, page } from "../live";
 import { tellAsk } from "../told";
 import { whoOf } from "../NeedCard";
 import type { Need } from "../wire";
@@ -41,9 +41,9 @@ function Answering(props: {
   const sendSlot = use(WordsSendSlot);
   const open = useOpenFromNeeds();
   const view = useSyncExternalStore(page.subscribe, page.read, page.read);
-  const held = useHolds(holds);
+  const answers = useAnswers(answering);
   const now = useNowMinuteMs();
-  const cards = addresseesOf(view.shown, held, now);
+  const cards = addresseesOf(view.shown, answers, now);
   const needs = useRef<ReadonlyMap<number, Need>>(new Map());
   const current = useRef(cards);
   const joined = useRef<Editor | null>(null);
@@ -91,13 +91,13 @@ function Answering(props: {
   // An answer that wasn't sent gives its words back to the composer, once:
   // when the composer has joined, the list is live (a number names nothing
   // until it is) and no message to Aski is on its way. Until then they wait
-  // in their hold, which stays for them.
+  // in their answer, which stays for them.
   const giveBackWaiting = () => {
     const editor = joined.current;
     const { shown, live } = page.read();
     if (editor === null || editor.isDestroyed || !live || sending.current) return;
-    for (const hold of holds.read().values()) {
-      const spoken = hold.words === null ? null : holds.takeWords(hold.key);
+    for (const answer of answering.read().values()) {
+      const spoken = answer.words === null ? null : answering.takeWords(answer.key);
       if (spoken !== null)
         editor.view.dispatch(giveBack(editor.view.state, spoken, shown, current.current));
     }
@@ -113,7 +113,7 @@ function Answering(props: {
     [show],
   );
 
-  // Enter: answers into their holds, clicks lit on their cards, and the
+  // Enter: answers sent, clicks lit on their cards, and the
   // words that answered nothing kept in the composer; the rest goes to Aski.
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Register the composer's before-send hook for answers, and unregister it on each change.
   useEffect(() => {
@@ -160,7 +160,7 @@ function Answering(props: {
   return null;
 }
 
-/** Each answer into its card's hold, with its words; each click asked for on its card. */
+/** Each answer sent to its card's Cell, with its words; each click asked for on its card. */
 function act(
   enter: Enter,
   state: AnswersState,
@@ -175,7 +175,7 @@ function act(
     movedByHand(need.threadId);
     const words = spokenOf(state.doc, state.text, answer, { key: need.key, who: whoOf(need) });
     if (reading.kind === "answer") {
-      holds.hold({
+      void answering.send({
         key: need.key,
         threadId: need.threadId,
         commands: commandsFor(need, { kind: "answer" }, { answers: reading.answers }, now),
@@ -184,7 +184,7 @@ function act(
       continue;
     }
     const given = reading.words === null ? {} : { words: reading.words };
-    holds.hold({
+    void answering.send({
       key: need.key,
       threadId: need.threadId,
       commands: commandsFor(need, reading.option.choice, given, now),

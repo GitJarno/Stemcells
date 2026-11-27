@@ -24,10 +24,5 @@ export const EMPTY_WORDS = {
   asleep: "No Cells asleep.",
 } as const;
 
-/** What the undo line says once a Cell, or several, sleeps or wakes. */
-export const sleptWords = (who: string) => `${who} is asleep`;
-export const sleptManyWords = (count: number) => `${count} Cells asleep`;
-export const wokeWords = (who: string) => `${who} is awake`;
-
 /** A timed sleep's row, in place of its time: when it wakes. */
 export const wakesWords = (when: string) => `Wakes ${when}`;
