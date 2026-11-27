@@ -7,6 +7,7 @@
  */
 import * as NodeFS from "node:fs";
 
+import * as NodeServices from "@effect/platform-node/NodeServices";
 import { assert, expect, it } from "@effect/vitest";
 import {
   CommandId,
@@ -29,6 +30,7 @@ import { dispatchFailure } from "../../mcp/threadAccess.ts";
 import * as CommandReceiptStore from "../../orchestration-v2/CommandReceiptStore.ts";
 import * as EventSink from "../../orchestration-v2/EventSink.ts";
 import * as Orchestrator from "../../orchestration-v2/Orchestrator.ts";
+import * as ProjectionStore from "../../orchestration-v2/ProjectionStore.ts";
 import * as ProviderSessionManager from "../../orchestration-v2/ProviderSessionManager.ts";
 import * as ThreadLaunch from "../../orchestration-v2/ThreadLaunchService.ts";
 import * as ThreadManagement from "../../orchestration-v2/ThreadManagementService.ts";
@@ -139,6 +141,8 @@ const launches = ThreadLaunch.layer.pipe(
   Layer.provide(Layer.mock(ProjectSetupScriptRunner.ProjectSetupScriptRunner)({})),
   Layer.provide(Layer.mock(ProviderRegistry.ProviderRegistry)({})),
   Layer.provide(Layer.mock(TextGeneration.TextGeneration)({})),
+  Layer.provide(Layer.mock(ProjectionStore.ProjectionStoreV2)({})),
+  Layer.provide(NodeServices.layer),
   Layer.provide(Layer.mock(EventSink.EventSinkV2)({})),
   Layer.provide(Layer.mock(IdAllocator.IdAllocatorV2)({} as never)),
   Layer.provide(

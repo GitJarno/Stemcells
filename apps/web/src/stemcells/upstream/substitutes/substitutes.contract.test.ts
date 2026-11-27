@@ -68,7 +68,6 @@ import * as UpstreamPasteToFocusComposer from "../../../components/chat/usePaste
 import * as UpstreamSideThreadPane from "../../../components/chat/SideThreadPane";
 import * as UpstreamMarkdownCodeBlock from "../../../components/chat/MarkdownCodeBlock";
 import * as UpstreamThreadActions from "../../../hooks/useThreadActions";
-import * as UpstreamHandleNewThread from "../../../hooks/useHandleNewThread";
 import * as UpstreamMessagesTimeline from "../../../components/chat/MessagesTimeline";
 import * as UpstreamAssistantRows from "../../../components/chat/TimelineAssistantRows";
 import * as UpstreamUserMessageRow from "../../../components/chat/TimelineUserMessageRow";
@@ -129,7 +128,6 @@ import * as OurTimelineSystemDivider from "./TimelineSystemDivider";
 import * as OurTimelineOverlays from "./TimelineOverlays";
 import * as OurUsageLimitRecoveryBanner from "./UsageLimitRecoveryBanner";
 import * as OurPanelInlineSize from "./usePreviewPanelInlineSize";
-import * as OurHandleNewThread from "./useHandleNewThread";
 import * as OurUsageProviders from "./usageProviders";
 import * as OurUsageLimitsPooled from "./UsageLimitsPooled";
 import * as OurVisibleAnimation from "./visibleAnimation";
@@ -495,7 +493,7 @@ const CASES: Readonly<Record<string, Case>> = {
     substitute: OurSettingsSearch satisfies typeof UpstreamSettingsSearch,
     importers: {
       // The palette matches the list below itself, so it skips what that list does.
-      "apps/web/src/components/CommandPalette.tsx": [
+      "apps/web/src/components/CommandPaletteSettingsItems.tsx": [
         "./settings/settingsSearch",
         ["settingsForThisPlatform"],
       ],
@@ -627,16 +625,6 @@ const CASES: Readonly<Record<string, Case>> = {
       "apps/web/src/components/desktop/SnapShotCoordinator.tsx": [
         "../../lib/chatThreadActions",
         ["resolveThreadActionProjectRef"],
-      ],
-    },
-  },
-  "apps/web/src/hooks/useHandleNewThread.ts": {
-    upstream: UpstreamHandleNewThread,
-    substitute: OurHandleNewThread satisfies typeof UpstreamHandleNewThread,
-    importers: {
-      "apps/web/src/components/chat/useComposerSend.ts": [
-        "../../hooks/useHandleNewThread",
-        ["readPendingWorkspaceDefault"],
       ],
     },
   },

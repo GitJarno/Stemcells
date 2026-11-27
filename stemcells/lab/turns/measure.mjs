@@ -7,11 +7,7 @@ import * as NodeModule from "node:module";
 const args = Object.fromEntries(
   process.argv
     .slice(2)
-    .reduce(
-      (pairs, arg, i, all) =>
-        arg.startsWith("--") ? [...pairs, [arg.slice(2), all[i + 1]]] : pairs,
-      [],
-    ),
+    .flatMap((arg, i, all) => (arg.startsWith("--") ? [[arg.slice(2), all[i + 1]]] : [])),
 );
 const REPO = args.repo;
 const LAB = process.env.LAB ?? "/tmp/snappy-lab";

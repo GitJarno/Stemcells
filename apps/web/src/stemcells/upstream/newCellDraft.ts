@@ -21,6 +21,7 @@ import {
   resolveNewThreadModelSelectionOverride,
   resolveThreadActionProjectRef,
 } from "./substitutes/chatThreadActions";
+import { trackPendingWorkspaceDefault } from "../../lib/draftWorkspaceDefaults";
 import { peekT3ProjectFile, readT3ProjectFile } from "../../lib/t3ProjectFileDefaults";
 import { resolveProjectDefaultProviderModelSelection } from "../../providerInstances";
 import { newDraftId, newThreadId } from "../../lib/utils";
@@ -32,7 +33,6 @@ import { environmentServerConfigsAtom } from "../../state/server";
 import { resolveThreadRouteTarget } from "../../threadRoutes";
 import type { CellRef } from "../tabs/layout";
 import { NEW_CELL_DRAFT_KEY } from "./newCell";
-import { landWorkspaceDefault } from "./workspaceDefault";
 
 /**
  * Makes the new Cell's draft: `project` names the project a new tab gets
@@ -176,12 +176,15 @@ export function makeNewCellDraft(router: AnyRouter, projectRef: ScopedProjectRef
   });
   if (modelSelection) store.setModelSelection(draftId, modelSelection, { replaceOptions: true });
   if (projectFileRead !== null && cachedProjectFile === undefined) {
-    landWorkspaceDefault({
+    trackPendingWorkspaceDefault(
       draftId,
-      envMode,
-      fileEnvMode: projectFileRead.then(envModeFor),
-      startFromOriginFor,
-    });
+      projectRef,
+      { envMode, startFromOrigin: startFromOriginFor(envMode) },
+      projectFileRead.then((projectFile) => {
+        const envMode = envModeFor(projectFile);
+        return { envMode, startFromOrigin: startFromOriginFor(envMode) };
+      }),
+    );
   }
   return { environmentId: projectRef.environmentId, threadId, draftId };
 }
