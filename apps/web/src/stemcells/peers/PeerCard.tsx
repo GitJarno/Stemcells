@@ -51,7 +51,7 @@ export function PeerCard(props: { readonly row: MessageRow; readonly sender: Sen
   const aski = sender.machine === null && isAskiChat(sender.cell, shell);
   const mail = `${mailWord(aski)} from`;
   const note = usePeerNote(message.id) ?? { kind: "says" as const, answers: null, answered: false };
-  const text = bodyOf(message.text);
+  const text = bodyOf(message.text, name);
   const { ref: contentRef, tallEnough: long } = useTallEnoughToFold(text.trim().length > 0);
   const [open, setOpen] = useState(false);
   const revealRef = findRevealRef(() => setOpen(true));

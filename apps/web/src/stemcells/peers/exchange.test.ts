@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { type Entry, exchangeOf, gistOf, senderOf, sentOf } from "./exchange";
+import { bodyOf, type Entry, exchangeOf, gistOf, senderOf, sentOf } from "./exchange";
 
 const incoming = (id: string, from: string, text: string): Entry => ({
   kind: "message",
@@ -45,6 +45,16 @@ describe("a message's gist", () => {
       "Can I take 0043?",
     );
     expect(gistOf("From here, the Cell is yours.").gist).toBe("From here, the Cell is yours.");
+  });
+
+  it("drops the sender's own name before a colon, and only the sender's", () => {
+    expect(bodyOf("Spatula: Devices points at the drive.", "Spatula")).toBe(
+      "Devices points at the drive.",
+    );
+    expect(bodyOf("Note: the drive is full.", "Spatula")).toBe("Note: the drive is full.");
+    expect(bodyOf("Spatula: Devices points at the drive.")).toBe(
+      "Spatula: Devices points at the drive.",
+    );
   });
 
   it("cuts a long first sentence at a word, and carries the cut over", () => {

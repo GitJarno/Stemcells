@@ -64,7 +64,7 @@ function SentMailFold(props: {
   const aski = useIsAskiChat(props.sender);
   const name = aski ? "Aski" : cellNameOf(props.sender);
   const lead = `${mailWord(aski)} from`;
-  const summary = bodyOf(props.summary);
+  const summary = bodyOf(props.summary, name);
   const stills = useCellStills(props.environmentId, aski ? NO_ONE : new Set([props.sender]));
   const toggle = () => {
     void Haptics.selectionAsync();
