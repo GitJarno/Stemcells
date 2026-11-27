@@ -1,7 +1,7 @@
 // The veils over a screen whose scroll view draws no band under the header
 // (`upstream/substitutes/NativeScrollViewMarker.tsx`): the page blurs under the header, and on
-// the home over the tab bar. The home draws them once over its stages' lists and Aski
-// (`home/StagePages.tsx`), so Aski scrolls under the header's veil as a list's rows do.
+// the home over the tab bar. The home draws them once over its stages' lists
+// (`home/StagePages.tsx`), in every posture, the sidebar's too.
 
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useResolveClassNames } from "uniwind";

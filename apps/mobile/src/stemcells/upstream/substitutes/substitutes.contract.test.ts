@@ -312,6 +312,26 @@ const CASES: Readonly<Record<string, Case>> = {
       ],
     },
   },
+  "apps/mobile/src/features/home/WorkspaceConnectionTitle.tsx": {
+    exports: view(
+      "apps/mobile/src/features/home/WorkspaceConnectionTitle.tsx",
+      "WorkspaceConnectionTitle.tsx",
+    ),
+    importers: {
+      "apps/mobile/src/Stack.tsx": [
+        "./features/home/WorkspaceConnectionTitle",
+        ["WorkspaceConnectionStatusProvider"],
+      ],
+      "apps/mobile/src/features/layout/workspace/WorkspaceRootScreen.tsx": [
+        "../../home/WorkspaceConnectionTitle",
+        ["WorkspaceConnectionTitle"],
+      ],
+      "apps/mobile/src/features/layout/workspace/brand-header-options.tsx": [
+        "../../home/WorkspaceConnectionTitle",
+        ["WorkspaceConnectionTitle"],
+      ],
+    },
+  },
   "apps/mobile/src/features/threads/thread-list-v2-row-appearance.ts": {
     exports: view(
       "apps/mobile/src/features/threads/thread-list-v2-row-appearance.ts",
@@ -771,6 +791,9 @@ describe("the phone's substitutes for upstream modules", () => {
     >();
     expectTypeOf<typeof import("./ThreadUndoNotice")>().toEqualTypeOf<
       typeof import("../../../features/home/ThreadUndoNotice")
+    >();
+    expectTypeOf<typeof import("./WorkspaceConnectionTitle")>().toEqualTypeOf<
+      typeof import("../../../features/home/WorkspaceConnectionTitle")
     >();
     expectTypeOf<typeof import("./workspace-connection-status")>().toEqualTypeOf<
       typeof import("../../../features/home/workspace-connection-status")
