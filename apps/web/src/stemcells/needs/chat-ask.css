@@ -1,12 +1,12 @@
-/* The ask docked over a Cell's composer (ChatAsk.tsx): one bounded card,
-   in from the box's sides as the ledge is, solid, so nothing scrolling
-   behind reads through its words. Orange is its only colour: the dot. */
+/* The ask a Cell's chat ends on (ChatAsk.tsx): one bounded card under its
+   last reply, scrolling with it. Its only colour is Input's, T3's indigo:
+   the row's icon, and the words of the reply it was built from. */
 
 [data-stemcells-chat-ask] {
   display: flex;
   flex-direction: column;
   gap: var(--sc-space-sm);
-  margin: 0 var(--ledge-inset, 0) var(--sc-space-md);
+  margin-block: var(--sc-space-sm) var(--sc-space-lg);
   padding: var(--sc-space-md) var(--sc-space-lg);
   border: 1px solid var(--sc-hairline);
   border-radius: var(--sc-radius-card);
@@ -30,16 +30,21 @@
   font-size: 0.75rem;
   font-variant-numeric: tabular-nums;
 }
-[data-chat-ask-dot] {
-  flex: none;
-  inline-size: 0.5rem;
-  block-size: 0.5rem;
-  border-radius: 50%;
-  background: var(--sc-needs-you);
+
+/* A line that shows its words in the reply wears their tint while the
+   pointer is on it, so the line and its passage read as one. */
+[data-chat-ask-jump] {
+  border-radius: 0.25rem;
+  cursor: pointer;
+  box-decoration-break: clone;
+  transition: background-color var(--sc-motion-fade-duration) var(--sc-motion-fade-easing);
 }
-/* "Where it asked" stands at the kicker's right end. */
-[data-chat-ask-kicker] > button {
-  margin-inline-start: auto;
+[data-chat-ask-jump]:is(:hover, :focus-visible) {
+  outline: none;
+  background: var(--sc-input-you);
+}
+[data-chat-ask-jump="next"]:is(:hover, :focus-visible) {
+  background: var(--sc-input-next);
 }
 
 [data-chat-ask-headline] {
@@ -76,6 +81,16 @@
   flex-wrap: wrap;
   gap: var(--sc-space-sm);
   margin-block-start: var(--sc-space-xs);
+}
+
+/* The reply's words the ask was built from, while it is open: the person's
+   steps and the asking sentence, then the Cell's own next step, fainter.
+   Painted by the highlight registry, so the reply's DOM is upstream's. */
+::highlight(stemcells-ask-you) {
+  background-color: var(--sc-input-you);
+}
+::highlight(stemcells-ask-next) {
+  background-color: var(--sc-input-next);
 }
 
 @keyframes stemcells-chat-ask-in {

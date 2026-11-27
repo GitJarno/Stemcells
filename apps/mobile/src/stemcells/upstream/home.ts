@@ -5,28 +5,32 @@
 
 import { useAtomValue } from "@effect/atom-react";
 import { Directory, File, Paths } from "expo-file-system";
+import { use } from "react";
 import { Keyboard } from "react-native";
 import { useKeyboardState } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { COMPOSER_BOTTOM_GUTTER } from "../../components/ComposerSurface";
+import { usePaneRole } from "../../components/ui/Pane";
+import { useBarInset } from "../../components/ui/useBarInset";
 import { useAdaptiveWorkspaceLayout } from "../../features/layout/adaptive-workspace-context";
 import { useWorkspaceTabs } from "../../features/layout/workspace/WorkspaceTabsContext";
 import { useSelectWorkspaceDetail } from "../../features/layout/workspace/useSelectWorkspaceDetail";
-import { workspaceSearchBottomClearance } from "../../features/layout/workspace/workspace-tabs-state";
 import {
   useCompactWorkspaceTabs,
   useSidebarWorkspaceTabs,
 } from "../../features/layout/workspace/useSystemWorkspaceTabBar";
-import { isDuoDevice } from "../../lib/device-type";
 import { writeFileAtomically } from "../../lib/atomic-file";
+import { isDuoDevice } from "../../lib/device-type";
 import {
   useDeviceType,
   useDuoBottomBarInset,
   useNativeColumnLayoutMetrics,
   useNativeLayoutMetrics,
 } from "../../native/native-layout-metrics";
+import { NativePrimaryColumnContext } from "../../native/v5-workspace-context";
 import { threadListEnvironmentsAtom } from "../../state/presentation";
+import { homeFoot } from "./homeFoot";
 
 export type { EnvironmentMachineKind } from "@t3tools/contracts";
 
@@ -38,7 +42,6 @@ export {
 } from "../../features/layout/workspace/WorkspaceTabsContext";
 export { useOlderSettledShelf } from "../../state/olderSettledShelf";
 export type { OlderSettledScope } from "@t3tools/client-runtime/state/threads";
-export { NativePrimaryColumnContext } from "../../native/v5-workspace-context";
 export { Toolbar } from "../../components/ui/Toolbar";
 export { Menu } from "../../components/ui/Menu";
 export { SymbolView } from "../../components/ui/AppSymbol";
@@ -51,6 +54,21 @@ export { registerThreadDismissal } from "../../features/home/thread-dismissal";
 /** Each environment's kind of machine, where it says. */
 export function useMachineKinds() {
   return useAtomValue(threadListEnvironmentsAtom).machineByEnvironmentId;
+}
+
+/**
+ * Whether the home stands in a sidebar beside a page, as T3 draws it (`HomeScreen.tsx`'s
+ * `sidebarSurface`). A collapsed split, the folded Duo's, shows its primary column as the page.
+ */
+export function useHomeSidebar() {
+  const role = usePaneRole();
+  return use(NativePrimaryColumnContext) !== null && role === "sidebar";
+}
+
+/** Where the header's bar ends on the Duo, under the camera's band rather than a status bar. */
+export function useDuoBarBottom(): number | undefined {
+  const barBottom = useBarInset();
+  return isDuoDevice(useDeviceType()) ? barBottom : undefined;
 }
 
 /** Opens a chat as upstream's home opens a thread (`HomeRouteScreen.tsx`). */
@@ -94,12 +112,7 @@ export function writeKept(name: string, text: string): Promise<void> {
   return writeFileAtomically(keptFile(name), text).catch(() => undefined);
 }
 
-/**
- * The home's foot on iOS: where T3's undo notice stands now (`features/home/ThreadUndoNotice.tsx`,
- * copied), and the stages' pill over the search: at `rest`, or `above` a keyboard's top. The search
- * rides only a keyboard it holds; another field's covers it, so the pill then stands level with the
- * composer's foot beside it. `pill` is its place once the keyboard settles.
- */
+/** The home's foot on iOS (`homeFoot.ts`), and the sides a view over it keeps. */
 export function useOverSearch(): {
   readonly notice: number;
   readonly pill: number;
@@ -109,60 +122,21 @@ export function useOverSearch(): {
   readonly right: number;
 } {
   const insets = useSafeAreaInsets();
-  const columnMetrics = useNativeColumnLayoutMetrics();
-  const rootMetrics = useNativeLayoutMetrics();
-  const workspace = useWorkspaceTabs();
   const deviceType = useDeviceType();
-  const sidebarTabs = useSidebarWorkspaceTabs();
-  const compactTabs = useCompactWorkspaceTabs();
-  const duoBar = useDuoBottomBarInset();
-  const keyboardHeight = useKeyboardState((keyboard) => keyboard.height);
+  const workspace = useWorkspaceTabs();
   const sides = deviceType === "phone" ? { left: 29, right: 23 } : { left: 20, right: 20 };
-  // The Duo's native tab pill extends above the 48-point toolbar reservation.
-  const padding = (keyboard: number) =>
-    duoBar === undefined ? (deviceType === "phone" && keyboard === 0 ? 32 : 16) : 8;
-  const foldedResting =
-    rootMetrics?.hasHinge &&
-    rootMetrics.horizontalSizeClass === "compact" &&
-    workspace?.state.tabs.threads.searchMode === "resting";
-  // T3's clearance is a fixed part over max(its rest, the keyboard) (`WorkspaceRootScreen.tsx`,
-  // whose inset is the window's even where it hands the home none); the keyboard is taken back
-  // out, so the pill's place can be had for any keyboard.
-  const clearanceRest =
-    (compactTabs ? (rootMetrics?.safeArea.bottom ?? insets.bottom) : insets.bottom) +
-    (isDuoDevice(deviceType) && sidebarTabs === "picker" ? 64 : 0);
-  const clearance = (keyboard: number) =>
-    (workspace?.bottomClearance ?? 0) -
-    Math.max(0, keyboardHeight - clearanceRest) +
-    Math.max(0, keyboard - clearanceRest);
-  const overBar = (keyboard: number) =>
-    rootMetrics?.hasHinge === true
-      ? workspaceSearchBottomClearance({
-          bottomInset: rootMetrics.safeArea.bottom,
-          bottomBarInset: rootMetrics.bottomBarInset,
-          keyboardHeight: keyboard,
-        }) - 8
-      : 0;
-  const overSearch = (keyboard: number) =>
-    rootMetrics?.hasHinge && rootMetrics.verticalBarEdge !== "none"
-      ? overBar(keyboard)
-      : Math.max(
-          insets.bottom,
-          columnMetrics?.safeArea.bottom ?? 0,
-          clearance(keyboard) - padding(keyboard),
-        ) + 8;
-  const notice = foldedResting
-    ? Math.max(rootMetrics.bottomBarInset ?? rootMetrics.safeArea.bottom + 8, keyboardHeight + 8)
-    : overSearch(keyboardHeight);
-  const pillAt = foldedResting ? overBar : overSearch;
-  const rest = pillAt(0);
-  const above =
-    workspace?.state.tabs.threads.searchMode === "active"
-      ? pillAt(PAST_EVERY_REST) - PAST_EVERY_REST
-      : COMPOSER_BOTTOM_GUTTER;
-  const pill = keyboardHeight > 0 ? Math.max(rest, keyboardHeight + above) : rest;
-  return { notice, pill, rest, above, ...sides };
+  const foot = homeFoot({
+    deviceType,
+    insetsBottom: insets.bottom,
+    column: useNativeColumnLayoutMetrics(),
+    root: useNativeLayoutMetrics(),
+    searchMode: workspace?.state.tabs.threads.searchMode,
+    bottomClearance: workspace?.bottomClearance ?? 0,
+    sidebarPicker: useSidebarWorkspaceTabs() === "picker",
+    compactTabs: useCompactWorkspaceTabs(),
+    duoBar: useDuoBottomBarInset(),
+    keyboardHeight: useKeyboardState((keyboard) => keyboard.height),
+    composerGutter: COMPOSER_BOTTOM_GUTTER,
+  });
+  return { ...foot, ...sides };
 }
-
-/** A keyboard taller than any rest, to read how far over its top a place stands. */
-const PAST_EVERY_REST = 10_000;

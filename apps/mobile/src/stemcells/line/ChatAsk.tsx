@@ -1,52 +1,74 @@
-// The ask a Cell's own chat docks over its composer (stemcells/tasks/the-ask.md): what it takes
-// to decide and nothing more, the chat above being its context. It stays as the chat scrolls and
-// leaves when the ask does; an answer stands in its place with Undo until it goes. On the folded
-// Duo it rests as one line that opens on a tap, so the chat keeps its height.
+// The ask a Cell's chat ends on (stemcells/tasks/the-ask.md): what it takes to decide and
+// nothing more, under the Cell's last reply and scrolling with it, the reply being its context.
+// A tap on a line shows the reply it came from. An answer stands in its place with Undo until
+// it goes.
 
-import { useState, useSyncExternalStore } from "react";
-import { Pressable, View } from "react-native";
+import { createContext, type ReactElement, type ReactNode, use, useSyncExternalStore } from "react";
+import { View } from "react-native";
 import Animated, { FadeInDown, FadeOut } from "react-native-reanimated";
 
 import { useMinute } from "../home/state";
-import { NEEDS_YOU } from "../tokens";
-import { AppText, SymbolView, useProjectAt } from "../upstream/cells";
-import { jumpToMessage, relativeTime, useChatMessages, useDeviceType } from "../upstream/needs";
+import { AppText, useProjectAt } from "../upstream/cells";
+import { jumpToMessage, relativeTime, useChatMessages } from "../upstream/needs";
 import { answersFor } from "./answer";
 import { chooserOf, type FailureDisk, Pill, Quiet, useFailureDisk, Words } from "./Ask";
 import { held } from "./heldLine";
-import { askAnchorOf, cardOf, dockedButtonsOf, repositoryUrlOf, spansOf } from "./kit";
+import { askButtonsOf, askPlaceOf, cardOf, repositoryUrlOf, STATUS_WORDS } from "./kit";
 import { type Ask, chatAskIn } from "./line";
 import { useKeepReadingChat, useReadings } from "./readings";
+import { StatusSymbol } from "./StatusSymbol";
 
-/** The most steps the card lists: more are the chat's to show. */
+/** The most steps the card lists: more are the reply's to show. */
 const STEPS = 3;
 
 /**
- * The ask a chat docks: its Cell's oldest its machine says, less those just answered and those
- * upstream's own panels over the composer answer. Keeps the machine read meanwhile; a draft
- * (no `environmentId`) has none.
+ * The ask a chat ends on: its Cell's oldest its machine says, less those just answered and those
+ * upstream's own panels over the composer answer. A draft (no `environmentId`) has none.
  */
-export function useChatAsk(
-  environmentId: string | null,
-  threadId: string,
-  busy: boolean,
-): Ask | null {
-  const minute = useMinute();
-  useKeepReadingChat(environmentId, threadId, busy, minute);
+function useShownAsk(environmentId: string | null, threadId: string): Ask | null {
   const readings = useReadings();
   const { answered } = useSyncExternalStore(held.subscribe, held.read);
   if (environmentId === null) return null;
   return chatAskIn(readings.get(environmentId), environmentId, threadId, answered);
 }
 
-export function ChatAsk(props: {
-  readonly ask: Ask | null;
+/** The chat's ask, for the composer under it, which keeps the Cell's machine read meanwhile. */
+export function useChatAsk(
+  environmentId: string | null,
+  threadId: string,
+  busy: boolean,
+): Ask | null {
+  useKeepReadingChat(environmentId, threadId, busy, useMinute());
+  return useShownAsk(environmentId, threadId);
+}
+
+/** The chat a thread screen shows, and whether this connection may answer in it. */
+export interface AskChat {
   readonly environmentId: string;
   readonly threadId: string;
-  /** Whether this connection may answer: without, the card only says what's asked. */
   readonly canAnswer: boolean;
-  readonly contentMaxWidth: number | undefined;
-}) {
+}
+
+/** Set by the thread screen (`upstream/substitutes/ThreadDetailScreen.tsx`) for its feed's end. */
+export const AskChatContext = createContext<AskChat | null>(null);
+
+/** Upstream's feed footer with the chat's ask first in it (`upstream/seams/ThreadFeed.ts`). */
+export function withAskAtEnd(footer: ReactNode): ReactElement {
+  return (
+    <>
+      <AskAtEnd />
+      {footer}
+    </>
+  );
+}
+
+function AskAtEnd() {
+  const chat = use(AskChatContext);
+  const ask = useShownAsk(chat?.environmentId ?? null, chat?.threadId ?? "");
+  return chat === null ? null : <ChatAsk ask={ask} {...chat} />;
+}
+
+function ChatAsk(props: AskChat & { readonly ask: Ask | null }) {
   const { line } = useSyncExternalStore(held.subscribe, held.read);
   const about = line?.kind === "held" ? line.act : line?.kind === "said" ? line.about : null;
   const ours =
@@ -59,110 +81,79 @@ export function ChatAsk(props: {
   return (
     <Animated.View
       key={shown === null ? props.ask?.key : `line:${shown.kind}`}
-      className="px-[12px] pb-1.5"
+      className="mb-3"
       entering={FadeInDown.duration(220)}
       exiting={FadeOut.duration(140)}
     >
-      <View className="w-full self-center" style={{ maxWidth: props.contentMaxWidth }}>
-        {shown !== null ? (
-          <View className={`${CARD} flex-row items-center gap-3 py-2.5`}>
-            <AppText className="flex-1 text-sm text-foreground-secondary" numberOfLines={2}>
-              {shown.kind === "held" ? shown.act.words : shown.words}
-            </AppText>
-            {shown.kind === "held" ? <Quiet label="Undo" onPress={held.undo} /> : null}
-          </View>
-        ) : props.ask?.need.kind === "failed" ? (
-          <FailedDock ask={props.ask} canAnswer={props.canAnswer} />
-        ) : props.ask ? (
-          <Dock ask={props.ask} canAnswer={props.canAnswer} disk={null} freeSpace={null} />
-        ) : null}
-      </View>
+      {shown !== null ? (
+        <View className={`${CARD} flex-row items-center gap-3 py-2.5`}>
+          <AppText className="flex-1 text-sm text-foreground-secondary" numberOfLines={2}>
+            {shown.kind === "held" ? shown.act.words : shown.words}
+          </AppText>
+          {shown.kind === "held" ? <Quiet label="Undo" onPress={held.undo} /> : null}
+        </View>
+      ) : props.ask?.need.kind === "failed" ? (
+        <FailedCard ask={props.ask} canAnswer={props.canAnswer} />
+      ) : props.ask ? (
+        <Card ask={props.ask} canAnswer={props.canAnswer} disk={null} freeSpace={null} />
+      ) : null}
     </Animated.View>
   );
 }
 
-/** As upstream's docked approval card (`PendingApprovalCard.tsx`). */
+/** As upstream's approval card (`PendingApprovalCard.tsx`). */
 const CARD = "rounded-[20px] border border-border bg-card-alt px-4";
 
-type DockProps = { readonly ask: Ask; readonly canAnswer: boolean };
+type CardProps = { readonly ask: Ask; readonly canAnswer: boolean };
 
-function FailedDock(props: DockProps) {
-  return <Dock {...props} {...useFailureDisk(props.ask)} />;
+function FailedCard(props: CardProps) {
+  return <Card {...props} {...useFailureDisk(props.ask)} />;
 }
 
-function Dock(props: DockProps & FailureDisk) {
+function Card(props: CardProps & FailureDisk) {
   const { ask } = props;
   const { need } = ask;
   const now = Date.parse(useMinute());
   const card = cardOf(need, now, props.disk);
   const place = { environmentId: ask.environmentId, projectId: need.projectId };
   const repo = repositoryUrlOf(useProjectAt(place)?.repositoryIdentity);
-  const folds = useDeviceType() === "duo-folded";
-  const [opened, setOpened] = useState(false);
-  const anchor = askAnchorOf(need, useChatMessages(ask.environmentId, need.threadId));
-  const age = relativeTime(need.since, now);
-  if (folds && !opened)
-    return (
-      <Pressable
-        accessibilityRole="button"
-        accessibilityHint="Opens what it asks"
-        onPress={() => setOpened(true)}
-        className={`${CARD} flex-row items-center gap-2 py-2.5 active:opacity-70`}
-      >
-        <Dot />
-        <AppText className="flex-1 font-t3-medium text-sm text-foreground" numberOfLines={1}>
-          {spansOf(card.headline)
-            .map((span) => span.text)
-            .join("")}
-        </AppText>
-        <AppText className="text-xs tabular-nums text-foreground-muted">{age}</AppText>
-        <SymbolView name="chevron.up" size={11} tintColorClassName="accent-icon" />
-      </Pressable>
-    );
+  const at = askPlaceOf(need, useChatMessages(ask.environmentId, need.threadId));
+  // The phone's markdown can't mark words in the reply, so a line shows the reply it came from.
+  const show =
+    at === null ? undefined : () => jumpToMessage(ask.environmentId, need.threadId, at.messageId);
+  const line = show === undefined ? {} : { onPress: show, accessibilityHint: "Shows the reply" };
+  const status = need.kind === "permission" ? "approval" : "input";
   const { choose, later } = answersFor(ask);
-  const { primary, rest, notNow } = dockedButtonsOf(card);
+  const { primary, rest, notNow } = askButtonsOf(card);
   const pick = chooserOf(choose, props.freeSpace);
   const steps = card.steps.slice(0, STEPS);
   return (
     <View className={`${CARD} gap-2 py-3`}>
       <View className="flex-row items-center gap-1.5">
-        <Dot />
+        <StatusSymbol status={status} size={13} />
         <AppText className="flex-1 font-t3-medium text-xs text-foreground-muted">
-          Input · {age}
+          {STATUS_WORDS[status]} · {relativeTime(need.since, now)}
         </AppText>
-        {anchor === null ? null : (
-          <Quiet
-            label="↑ Where it asked"
-            onPress={() => jumpToMessage(ask.environmentId, need.threadId, anchor.messageId)}
-          />
-        )}
-        {folds ? (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Fold"
-            hitSlop={10}
-            onPress={() => setOpened(false)}
-            className="pl-2"
-          >
-            <SymbolView name="chevron.down" size={11} tintColorClassName="accent-icon" />
-          </Pressable>
-        ) : null}
       </View>
-      <AppText accessibilityRole="header" className="font-t3-bold text-base text-foreground">
+      <AppText
+        accessibilityRole="header"
+        className="font-t3-bold text-base text-foreground"
+        {...line}
+      >
         <Words text={card.headline} repo={repo} />
       </AppText>
       {steps.map((step, index) => (
-        <AppText key={step} className="text-sm text-foreground-secondary">
+        <AppText key={step} className="text-sm text-foreground-secondary" {...line}>
           {index + 1}. <Words text={step} repo={repo} />
         </AppText>
       ))}
       {card.steps.length > STEPS ? (
         <AppText className="text-sm text-foreground-muted">
-          {card.steps.length - STEPS} more in the chat
+          {card.steps.length - STEPS} more in the reply
         </AppText>
       ) : null}
       {card.next ? (
-        <AppText className="text-sm text-foreground-muted">
+        <AppText className="text-sm text-foreground-muted" {...line}>
           Then <Words text={card.next} repo={repo} />
         </AppText>
       ) : null}
@@ -182,8 +173,4 @@ function Dock(props: DockProps & FailureDisk) {
       ) : null}
     </View>
   );
-}
-
-function Dot() {
-  return <View className="size-1.5 rounded-full" style={{ backgroundColor: NEEDS_YOU }} />;
 }

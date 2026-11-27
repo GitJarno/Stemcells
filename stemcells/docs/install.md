@@ -136,16 +136,16 @@ On an iPhone, the home stands your Cells on the same line as the column on
 your computer:
 
 - **Awake**: every Cell in play, the one you last sent off on top. A row
-  never moves on its own; its light says whether the Cell is flying, has
-  landed, or asks you something (amber). **Sleep** the ones you're done
+  never moves on its own; its icon says whether the Cell is flying, has
+  landed, or asks you something (Input). **Sleep** the ones you're done
   with, now or until a time.
 - **Asleep**: Cells you've slept, the latest first; one asleep until a
   time says when it wakes. **Wake** brings one back.
 
-A Cell that asks you something asks in its own chat: a card over the
-composer holds the question and its answers, and **Where it asked** takes
-you to the spot in the chat. **Not now** puts it off, and the composer
-answers in your own words. An answer leaves at once, and a line says what
+A Cell that asks you something asks in its own chat: a card at the chat's
+end holds the question and its answers, and a tap on one of its lines
+takes you to the reply it came from. **Not now** puts it off, and the
+composer answers in your own words. An answer leaves at once, and a line says what
 you did, with **Undo**; it's sent when the line goes. The app's icon counts
 every ask, and holding Aski's button offers the next one.
 

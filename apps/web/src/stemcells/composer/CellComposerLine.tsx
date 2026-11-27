@@ -9,8 +9,8 @@ import { POINTS_PER_PIXEL } from "../cell/look";
 import { cellNameOf } from "../cell/name";
 import { type Stroking, stroking } from "../cell/stroke";
 import { tellDeed } from "../collection/read";
-import { ChatAsk } from "../needs/ChatAsk";
 import { useCellStage } from "../needs/stream";
+import { CellAskIcon } from "../rail/StatusIcon";
 import { RenameField } from "../rename/RenameField";
 import { CellMark } from "../tabs/CellMark";
 import { ProjectMark } from "../project/ProjectMark";
@@ -107,7 +107,6 @@ export function CellComposerLine() {
   } as const;
   return (
     <div data-stemcells-composer-line="" data-stage={stage ?? undefined}>
-      {cell.draftId === null ? <ChatAsk cell={cell} /> : null}
       <div
         className="composer-line-roof pointer-events-none text-foreground"
         style={{ "--cell-stands-in": `${CELL_STANDS_IN}px` } as CSSProperties}
@@ -158,6 +157,7 @@ export function CellComposerLine() {
           <button {...titleProps} className="composer-line-name" aria-label={`Actions for ${name}`}>
             <span className="composer-line-name-text">{name}</span>
           </button>
+          <CellAskIcon cell={cell} />
           {place && project ? (
             <Tooltip>
               <TooltipTrigger

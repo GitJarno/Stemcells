@@ -321,7 +321,7 @@ describe("cards read from a Cell's prose, with no model", () => {
     });
     // Recommending nothing: "ok the rest" mustn't say the person did what only they can do.
     expect(left.options.map((each) => [each.title, each.consequence, each.recommended])).toEqual([
-      ["Done it", "Sends “Done. Carry on.”", false],
+      ["Done", "Sends “Done. Carry on.”", false],
       ["Reply…", null, false],
       ["Nothing to do", "The Cell sleeps. Nothing is sent.", false],
     ]);
@@ -341,7 +341,7 @@ describe("cards read from a Cell's prose, with no model", () => {
     });
   });
 
-  // About 1 in 5 steps Cells left asked for a decision, which Done it answers with nothing.
+  // About 1 in 5 steps Cells left asked for a decision, which Done answers with nothing.
   it("takes the person's words for a step that asks them to decide", () => {
     const titles = (...steps: ReadonlyArray<string>) =>
       prose("left", steps.join(" · "), { steps }).options.map((each) => each.title);
@@ -353,7 +353,7 @@ describe("cards read from a Cell's prose, with no model", () => {
     ]) {
       expect(titles(step)).toEqual(["Reply…", "Nothing to do"]);
     }
-    expect(titles("pick up the signed form")).toEqual(["Done it", "Reply…", "Nothing to do"]);
+    expect(titles("pick up the signed form")).toEqual(["Done", "Reply…", "Nothing to do"]);
     expect(titles("sign in", "decide whether to keep the old plan")).toEqual([
       "All done",
       "Reply…",

@@ -1,7 +1,7 @@
-// Replaces `features/threads/ThreadDetailScreen.tsx` (`substitutes.cjs`): the chat on screen is
-// told to its words, which name the Cells beside it (`chat/inView.ts`), gives way to the home on
-// return to a Cell settled meanwhile on another device (`chat/useClosesOnReturn.ts`), and hands
-// its pictures to the viewer (`chat/ChatGallery.tsx`).
+// Replaces `features/threads/ThreadDetailScreen.tsx` (`substitutes.cjs`): tells the chat on
+// screen to its words (`chat/inView.ts`) and its feed's end (`line/ChatAsk.tsx`), gives way to the
+// home on return to a Cell settled elsewhere (`chat/useClosesOnReturn.ts`), and hands its
+// pictures to the viewer (`chat/ChatGallery.tsx`).
 import {
   ThreadDetailScreen as UpstreamThreadDetailScreen,
   type ThreadDetailScreenProps,
@@ -9,6 +9,7 @@ import {
 import { ChatGallery } from "../../chat/ChatGallery";
 import { ChatInView } from "../../chat/inView";
 import { useClosesOnReturn } from "../../chat/useClosesOnReturn";
+import { AskChatContext } from "../../line/ChatAsk";
 
 export * from "../../../features/threads/ThreadDetailScreen";
 
@@ -28,7 +29,9 @@ export function ThreadDetailScreen(props: ThreadDetailScreenProps) {
           workspaceRoot: props.threadCwd,
         }}
       >
-        <UpstreamThreadDetailScreen {...props} />
+        <AskChatContext value={{ ...chat, canAnswer: props.canOperateThread }}>
+          <UpstreamThreadDetailScreen {...props} />
+        </AskChatContext>
       </ChatGallery>
     </ChatInView>
   );
