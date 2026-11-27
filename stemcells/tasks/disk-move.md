@@ -45,6 +45,9 @@ switch that doesn't check out is undone before the old copy goes.
 - [x] Web: Settings › Disk offers Move to <drive> on a movable finding, shows
       progress, and lists what's on other drives with Move back.
 - [x] Phone: the same, from the Mac's own HTTP.
+- [x] Agents: `stemcells_disk_moves` reads where things are and the drives with room;
+      `stemcells_disk_move` starts a move or a move back on the same service the page
+      uses, so the cleanup Cell offers a move beside a delete.
 - [x] Translations: English only for now, as `stemcells/seams/rest.md` asks of our layer's words.
 - [ ] Real run: this Mac's simulators to its external drive and back.
 
