@@ -124,6 +124,8 @@ export class StemcellsMoves extends Context.Service<
 const ANSWER_SECONDS = 20;
 const PERMISSION_SECONDS = 5 * 60;
 const TICK = "2 seconds";
+/** `launchctl kickstart`'s exit when a domain has no such service. */
+const NOT_LOADED = 113;
 
 export const makeMoves = Effect.fn("StemcellsMoves.make")(function* (options: {
   readonly tools: MoveTools;
@@ -295,7 +297,8 @@ export const makeMoves = Effect.fn("StemcellsMoves.make")(function* (options: {
     yield* fs.rename(folder, old).pipe(Effect.mapError(fsError));
     yield* fs.symlink(target, folder).pipe(Effect.mapError(fsError));
 
-    if (!(yield* answers(kind, before, folder))) {
+    // Any failure past the switch undoes it, so a move never stops halfway.
+    if (!(yield* answers(kind, before, folder).pipe(Effect.orElseSucceed(() => false)))) {
       yield* fs.remove(folder).pipe(Effect.ignore);
       yield* fs.rename(old, folder).pipe(Effect.ignore);
       if (MOVERS[kind]!.quiet === "simulators") yield* tools.restartSimulators.pipe(Effect.ignore);
@@ -622,20 +625,27 @@ const processTools = Effect.gen(function* () {
         ),
         Effect.orElseSucceed(() => null),
       ),
+    // The service is loaded in the user domain (gui has none, so kickstart there exits 113 "not
+    // found"); in neither, it isn't running and reads the folder afresh when it starts.
     restartSimulators: Effect.gen(function* () {
       const uid = process.getuid?.() ?? 501;
-      const restart = ChildProcess.make(
-        "/bin/launchctl",
-        ["kickstart", "-k", `gui/${uid}/com.apple.CoreSimulator.CoreSimulatorService`],
-        { stdin: "ignore", stderr: "ignore", forceKillAfter: "1 second" },
-      );
-      const code = yield* spawner
-        .exitCode(restart)
-        .pipe(
-          Effect.timeout("20 seconds"),
-          Effect.mapError(moveError("Couldn't restart the simulator service.")),
+      for (const domain of [`user/${uid}`, `gui/${uid}`]) {
+        const restart = ChildProcess.make(
+          "/bin/launchctl",
+          ["kickstart", "-k", `${domain}/com.apple.CoreSimulator.CoreSimulatorService`],
+          { stdin: "ignore", stderr: "ignore", forceKillAfter: "1 second" },
         );
-      if (code !== 0) return yield* fail("Couldn't restart the simulator service.", `exit ${code}`);
+        const code = yield* spawner
+          .exitCode(restart)
+          .pipe(
+            Effect.timeout("20 seconds"),
+            Effect.mapError(moveError("Couldn't restart the simulator service.")),
+          );
+        if (code === 0) return;
+        if (code !== NOT_LOADED) {
+          return yield* fail("Couldn't restart the simulator service.", `exit ${code}`);
+        }
+      }
     }),
     xcodeRunning: string("/usr/bin/pgrep", ["-x", "Xcode|xcodebuild"]).pipe(
       Effect.timeout("5 seconds"),
