@@ -55,28 +55,6 @@ export function enter(from: Element): boolean {
   return true;
 }
 
-/**
- * Lands on the ask `key` in Aski's room, from the column's index of it
- * (stemcells/tasks/aski-asks.md, decision 8); false when the room doesn't show it.
- */
-export function reveal(key: string): boolean {
-  const card = document.querySelector<HTMLElement>(
-    `${FRAME} ${LIST} [data-need-key="${CSS.escape(key)}"]`,
-  );
-  if (card !== null) {
-    land(card);
-    return true;
-  }
-  // Waiting in the line: it comes to the front, and the focus meets it there.
-  const seat = document.querySelector<HTMLElement>(
-    `${FRAME} ${LIST} [data-need-seat="${CSS.escape(key)}"]`,
-  );
-  if (seat === null) return false;
-  seat.closest(ONE)?.setAttribute("data-land-next", "");
-  seat.click();
-  return true;
-}
-
 /** Back to Aski's composer in the frame around `from`. */
 export function leave(from: Element): void {
   from

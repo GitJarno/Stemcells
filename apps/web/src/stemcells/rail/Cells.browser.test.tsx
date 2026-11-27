@@ -21,7 +21,6 @@ const spies = vi.hoisted(() => ({
   settle: vi.fn(),
   wake: vi.fn(),
   open: vi.fn(),
-  openChat: vi.fn(),
   download: vi.fn(async () => true),
   install: vi.fn(async () => true),
   openLink: vi.fn(),
@@ -44,8 +43,6 @@ const changes = vi.hoisted(() => {
     },
   };
 });
-/** Whether Aski's room is in front, its asks open on its right half. */
-const room = vi.hoisted(() => ({ inFront: false }));
 /** The app's update as the desktop reports it; each test sets it in `setup`. */
 const desktop = vi.hoisted(() => ({
   update: null as DesktopUpdateState | null,
@@ -160,7 +157,6 @@ vi.mock("../upstream/needs", () => ({
   COMPOSER_SURFACE_SELECTOR: '[data-chat-composer-surface="true"]',
   usePrimaryEnvironmentId: () => "env",
   useNowMinuteMs: () => NOW,
-  useOpenFromNeeds: () => ({ chat: spies.openChat, providerSetup: () => undefined }),
   useDraftText: () => "",
   observeResize: () => () => undefined,
   openPrimaryStream: () => new Promise(() => undefined),
@@ -202,7 +198,6 @@ vi.mock("../upstream/column", () => ({
   useOpenCell: () => spies.open,
 }));
 
-vi.mock("../aski/inFront", () => ({ useAskiRoomInFront: () => room.inFront }));
 vi.mock("../upstream/settle", () => ({
   useSettleCell: () => spies.settle,
   useWakeCell: () => spies.wake,
@@ -330,7 +325,7 @@ const available: DesktopUpdateState = {
 function setup(update: DesktopUpdateState | null, providers: ReadonlyArray<ProviderOffer> = []) {
   desktop.update = update;
   desktop.providers = providers;
-  useColumnStore.setState({ project: null, stage: "needs" });
+  useColumnStore.setState({ project: null, stage: "awake" });
   useUpdateWanted.setState({ wanted: false });
   useProviderRun.setState({ started: [], failures: {} });
   spies.download.mockClear();
@@ -358,125 +353,21 @@ function Column() {
   );
 }
 
-/** Aski's room as the column finds it: each ask open, where a step onto it lands. */
-function Room() {
-  return (
-    <div data-stemcells-needs-frame="">
-      <div data-stemcells-needs-list="">
-        {needs.map((need) => (
-          <section
-            key={need.key}
-            data-stemcells-need=""
-            data-open=""
-            data-need-key={need.key}
-            tabIndex={-1}
-          >
-            <button type="button" data-need-option="" data-recommended="">
-              {`Answer ${need.threadId}`}
-            </button>
-          </section>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 describe("the Cells' column", () => {
-  it("opens on what needs you: the question asked, counted in the row", async () => {
+  it("opens on every Cell awake, pins first then the latest brought forward, each lit by its state", async () => {
     setup(null);
     await using screen = await render(<Column />);
     await expect
-      .element(screen.getByText("Delete the 214 original PNGs once the WebP copies are in?"))
-      .toBeVisible();
-    await expect
-      .element(screen.getByRole("button", { name: /Input\s*2/ }))
+      .element(screen.getByRole("button", { name: /Awake\s*5/ }))
       .toHaveAttribute("aria-pressed", "true");
-  });
-
-  it("opens an asking Cell's chat from its card, not a peek only Aski's room shows", async () => {
-    setup(null);
-    spies.openChat.mockClear();
-    await using screen = await render(<Column />);
-    // Open chat stands in the age's place once the pointer is on the ask.
-    await userEvent.hover(
-      screen.getByText("Delete the 214 original PNGs once the WebP copies are in?"),
-    );
-    await userEvent.click(screen.getByRole("button", { name: "Open chat" }));
-    expect(spies.openChat).toHaveBeenCalledWith("thread-a");
-  });
-
-  it("opens one ask at a time, and answering it opens the next", async () => {
-    await using screen = await render(<Column />);
-    await expect.element(screen.getByRole("button", { name: /Keep them/ })).toBeVisible();
-    await expect.element(screen.getByText("Which format for the hero images?")).toBeVisible();
-    await expect.element(screen.getByRole("button", { name: /AVIF/ })).not.toBeInTheDocument();
-
-    // The answer folds its card away at once, onto the undo line.
-    await userEvent.click(screen.getByRole("button", { name: /Keep them/ }));
-    await expect.element(screen.getByRole("button", { name: /AVIF/ })).toBeVisible();
-    // Folded to nothing, it stays in place only while Undo can bring it back.
-    await vi.waitFor(() =>
-      expect(document.querySelector('[data-need-thread="thread-a"]')?.clientHeight).toBe(0),
-    );
-    await expect.element(screen.getByText("Answered 1 Cell,")).toBeVisible();
-
-    // Taking the answer back opens its card again, and the next waits.
-    await userEvent.click(screen.getByRole("button", { name: /undo/i }));
-    await expect.element(screen.getByRole("button", { name: /Keep them/ })).toBeVisible();
-    await expect.element(screen.getByRole("button", { name: /AVIF/ })).not.toBeInTheDocument();
-  });
-
-  it("opens a waiting ask when it is clicked", async () => {
-    await using screen = await render(<Column />);
-    await userEvent.click(screen.getByText("Which format for the hero images?"));
-    await expect.element(screen.getByRole("button", { name: /AVIF/ })).toBeVisible();
-    await expect.element(screen.getByRole("button", { name: /Keep them/ })).not.toBeInTheDocument();
-  });
-
-  it("folds every ask to an index in front of Aski's room, and lands on one there when clicked", async () => {
-    room.inFront = true;
-    using _room = { [Symbol.dispose]: () => (room.inFront = false) };
-    await using screen = await render(
-      <>
-        <Column />
-        <Room />
-      </>,
-    );
-    await expect
-      .element(screen.getByText("Delete the 214 original PNGs once the WebP copies are in?"))
-      .toBeVisible();
-    await expect.element(screen.getByRole("button", { name: /Keep them/ })).not.toBeInTheDocument();
-    await userEvent.click(screen.getByText("Which format for the hero images?"));
-    expect(document.activeElement?.textContent).toBe("Answer thread-b");
-    await expect.element(screen.getByRole("button", { name: /AVIF/ })).not.toBeInTheDocument();
-  });
-
-  it("opens the next ask as the keyboard steps onto it", async () => {
-    await using screen = await render(<Column />);
-    screen
-      .getByRole("button", { name: /Keep them/ })
-      .element()
-      .focus();
-    await userEvent.keyboard("{ArrowDown}");
-    await expect.element(screen.getByRole("button", { name: /AVIF/ })).toBeVisible();
-    // The focus went with it, so the next step or answer starts from there.
-    expect(document.activeElement?.closest("[data-stemcells-need]")?.textContent).toContain(
-      "Which format for the hero images?",
-    );
-  });
-
-  it("shows every Cell awake, pins first then the latest brought forward, each lit by its state", async () => {
-    setup(null);
-    await using screen = await render(<Column />);
-    await userEvent.click(screen.getByRole("button", { name: /Awake\s*5/ }));
     const awake = screen.getByRole("list", { name: "Awake" });
     await expect.element(awake.getByText("Chat thread-w")).toBeInViewport();
     await expect.element(awake.getByText("5m").first()).toBeVisible();
     await expect.element(awake.getByText("shop").first()).toBeVisible();
-    // What needs you slid off beside it, a swipe away.
+    // The asks are answered in their chats: only an asking Cell's light says so.
     await expect
       .element(screen.getByText("Delete the 214 original PNGs once the WebP copies are in?"))
-      .not.toBeInViewport();
+      .not.toBeInTheDocument();
     const rows = [...awake.element().querySelectorAll<HTMLElement>("[data-cells-row]")];
     expect(rows.map((row) => row.dataset.cellsThread)).toEqual([
       "thread-l1",
@@ -582,28 +473,20 @@ async function swipe(column: HTMLElement, way: 1 | -1) {
 }
 
 describe("the column's project filter", () => {
-  it("shows one project's Cells, while Input counts every ask and says where they are; New Cell starts there", async () => {
+  it("shows one project's Cells; New Cell starts there", async () => {
     setup(null);
     await using screen = await render(<Column />);
     await userEvent.click(screen.getByRole("button", { name: "All projects" }));
     // The menu opens in a portal, outside the column.
     await userEvent.click(page.getByRole("menuitemradio", { name: "Shop" }));
 
-    // Both asks are Harbor's.
-    await expect.element(screen.getByText("Nothing in Shop needs you.")).toBeVisible();
-    await expect
-      .element(screen.getByText("Delete the 214 original PNGs once the WebP copies are in?"))
-      .not.toBeInTheDocument();
-    await expect.element(screen.getByRole("button", { name: /Input\s*2/ })).toBeVisible();
     await expect.element(screen.getByRole("button", { name: /Awake\s*5/ })).toBeVisible();
     await expect.element(screen.getByRole("button", { name: /Asleep\s*2/ })).toBeVisible();
     await userEvent.click(screen.getByRole("button", { name: "New Cell" }));
     expect(spies.newCellPane).toHaveBeenLastCalledWith({ id: "project-shop" });
 
-    await userEvent.click(screen.getByRole("button", { name: "Also 2 in Harbor" }));
-    await expect
-      .element(screen.getByText("Delete the 214 original PNGs once the WebP copies are in?"))
-      .toBeVisible();
+    await userEvent.click(screen.getByRole("button", { name: "Shop" }));
+    await userEvent.click(page.getByRole("menuitemradio", { name: "All projects" }));
     await expect.element(screen.getByRole("button", { name: "All projects" })).toBeVisible();
     await expect.element(screen.getByRole("button", { name: /Asleep\s*42/ })).toBeVisible();
     await userEvent.click(screen.getByRole("button", { name: "New Cell" }));
@@ -624,7 +507,7 @@ describe("the column at another interface size", () => {
     setup(null);
     await using screen = await render(<Column />);
     const search = screen.container.querySelector<HTMLElement>("[data-cells-search]")!;
-    const stage = screen.getByRole("button", { name: /Input\s*2/ }).element();
+    const stage = screen.getByRole("button", { name: /Awake\s*5/ }).element();
     const measure = () => ({
       plate: search.getBoundingClientRect().height,
       inset: Number.parseFloat(getComputedStyle(search).paddingInlineStart),
@@ -644,26 +527,20 @@ describe("swiping the column", () => {
     setup(null);
     await using screen = await render(<Column />);
     const column = screen.container.querySelector<HTMLElement>("[data-stemcells-cells]")!;
-    await userEvent.click(screen.getByRole("button", { name: /Input\s*2/ }));
     const open = (name: RegExp) =>
       expect.element(screen.getByRole("button", { name })).toHaveAttribute("aria-pressed", "true");
 
-    await swipe(column, 1);
     await open(/Awake\s*5/);
-    await expect.element(screen.getByText("Chat thread-w")).toBeInViewport();
     await swipe(column, 1);
     await open(/Asleep\s*42/);
+    await expect.element(screen.getByText("Nightly report")).toBeInViewport();
     await swipe(column, -1);
     await open(/Awake\s*5/);
-    await swipe(column, -1);
-    await open(/Input\s*2/);
 
     // Past the first stage the column gives a little, and comes back.
     await swipe(column, -1);
-    await open(/Input\s*2/);
-    await expect
-      .element(screen.getByText("Delete the 214 original PNGs once the WebP copies are in?"))
-      .toBeInViewport();
+    await open(/Awake\s*5/);
+    await expect.element(screen.getByText("Chat thread-w")).toBeInViewport();
   });
 });
 
@@ -773,7 +650,7 @@ describe("the column's word that Stemcells gets better", () => {
 });
 
 describe("a Cell moving along the line", () => {
-  /** The stream with each listed Cell at `stage`, and the asks of those that left Input gone. */
+  /** The stream with each listed Cell at `stage`, and the asks of those that stopped asking gone. */
   const moved = (
     before: ReturnType<typeof streamState>,
     to: Record<string, CellStanding["stage"]>,
@@ -792,7 +669,7 @@ describe("a Cell moving along the line", () => {
     const before = streamState();
     stack.defer(() => {
       stream = before;
-      useColumnStore.setState({ stage: "needs" });
+      useColumnStore.setState({ stage: "awake" });
     });
     const key = "limit:claude:unknown";
     const since = "2026-10-26T10:00:00.000Z";
@@ -825,7 +702,9 @@ describe("a Cell moving along the line", () => {
       };
       changes.tell();
     });
-    await userEvent.click(screen.getByRole("button", { name: /Awake\s*1 holding\s*5/ }));
+    await expect
+      .element(screen.getByRole("button", { name: /Awake\s*1 holding\s*5/ }))
+      .toBeVisible();
     await expect.element(screen.getByText("no reset stated")).toBeVisible();
     const awake = screen.getByRole("list", { name: "Awake" });
     await expect.element(awake.getByText("Chat thread-w")).toBeInViewport();
@@ -838,13 +717,12 @@ describe("a Cell moving along the line", () => {
 
   it("moves no row when a Cell lands or asks: only its light changes", async () => {
     setup(null);
-    useColumnStore.setState({ stage: "awake" });
     await using screen = await render(<Column />);
     await using stack = new AsyncDisposableStack();
     const before = streamState();
     stack.defer(() => {
       stream = before;
-      useColumnStore.setState({ stage: "needs" });
+      useColumnStore.setState({ stage: "awake" });
     });
     const order = () =>
       [...document.querySelectorAll<HTMLElement>('[aria-label="Awake"] [data-cells-row]')].map(
@@ -866,19 +744,24 @@ describe("a Cell moving along the line", () => {
     expect(document.querySelector("[data-cells-hop]")).toBeNull();
   });
 
-  it("hops a Cell the person answered into its new stage's count, and is gone once it lands", async () => {
+  it("hops a Cell the person woke into Awake's count, and is gone once it lands", async () => {
+    setup(null);
+    spies.wake.mockReset().mockResolvedValue(true);
+    useColumnStore.setState({ stage: "asleep" });
     await using screen = await render(<Column />);
     await using stack = new AsyncDisposableStack();
     const before = streamState();
     stack.defer(() => {
       stream = before;
     });
-    await userEvent.click(screen.getByRole("button", { name: /Keep them/ }));
+    const asleep = screen.getByRole("list", { name: "Asleep" });
+    await userEvent.hover(asleep.getByText("Nightly report"));
+    await userEvent.click(asleep.getByRole("button", { name: "Wake", exact: true }).first());
     await act(() => {
-      stream = moved(before, { "thread-a": "working" });
+      stream = { ...before, cells: [...before.cells, standing("thread-z", "working", "")] };
       changes.tell();
     });
-    await expect.element(screen.getByRole("button", { name: /Input\s*1/ })).toBeVisible();
+    await expect.element(screen.getByRole("button", { name: /Awake\s*6/ })).toBeVisible();
     await vi.waitFor(() => expect(document.querySelector("[data-cells-hop]")).not.toBeNull());
     await vi.waitFor(() => expect(document.querySelector("[data-cells-hop]")).toBeNull());
   });

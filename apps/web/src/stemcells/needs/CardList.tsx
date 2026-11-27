@@ -1,10 +1,9 @@
-import { useState, type KeyboardEvent as KeyEvent, type ReactNode } from "react";
+import type { KeyboardEvent as KeyEvent, ReactNode } from "react";
 
 import { AutonomyOffer } from "../autonomy/Cards";
 import type { Shown } from "./display";
 import { useHolds } from "./holds";
 import { holds } from "./live";
-import { answerableOf, NeedCard } from "./NeedCard";
 import { OneAsk } from "./OneAsk";
 import type { PageView } from "./page";
 import { leave, step } from "./walk";
@@ -32,64 +31,17 @@ function walkKeys(event: KeyEvent<HTMLDivElement>) {
 }
 
 /**
- * The cards of what needs the person, as Aski's room and the Cells' column
- * show them: the offer to let Aski take some, each card, and the all-clear
- * line once they're gone. A card on its way off folds, and the list closes up.
+ * The asks in Aski's room, one at a time (`OneAsk.tsx`): the offer to let Aski take some, the ask
+ * in front, and the all-clear line once they're gone.
  */
-export function CardList(props: {
-  view: PageView;
-  head: ReactNode;
-  foot?: ReactNode;
-  /** Where a card's Open chat goes: a peek, which only Aski's room shows, unless given. */
-  openChat?: (threadId: string) => void;
-  /**
-   * One card open at a time: the one the person opened, else the first that
-   * takes an answer, so answering one opens the next. The rest show who
-   * asks and what (stemcells/tasks/left-column.md, decision 6).
-   */
-  queue?: boolean;
-  /**
-   * Every card folded, an index of asks shown open elsewhere: opening one
-   * calls this instead (stemcells/tasks/aski-asks.md, decision 8).
-   */
-  reveal?: ((key: string) => void) | undefined;
-  /** The asks this list shows, when not every one: the column's project filter. */
-  only?: ((shown: Shown) => boolean) | undefined;
-  /** One ask whole, the rest a line of their Cells: Aski's room (stemcells/tasks/one-ask.md). */
-  one?: boolean;
-}) {
+export function CardList(props: { view: PageView; head: ReactNode; foot?: ReactNode }) {
   const answers = useHolds(holds);
-  const { view, only } = props;
-  const shown = only ? view.shown.filter(only) : view.shown;
-  const [picked, setPicked] = useState<string | null>(null);
-  const waiting = shown
-    .filter((each) => each.goneAt === null && answerableOf(each, answers.get(each.need.key)))
-    .map((each) => each.need.key);
-  const open = picked !== null && waiting.includes(picked) ? picked : (waiting[0] ?? null);
+  const { view } = props;
   return (
     <div data-stemcells-needs-list="" onKeyDown={walkKeys}>
       {props.head}
       <AutonomyOffer />
-      {props.one ? (
-        <OneAsk shown={shown} answers={answers} seen={view.seen} openChat={props.openChat} />
-      ) : null}
-      {(props.one ? [] : shown).map((each) => (
-        <NeedCard
-          key={each.need.key}
-          shown={each}
-          leaving={each.goneAt !== null}
-          hold={answers.get(each.need.key)}
-          seenAt={view.seen.get(each.need.key) ?? null}
-          openChat={props.openChat}
-          queued={
-            props.reveal
-              ? { open: false, onOpen: () => props.reveal?.(each.need.key) }
-              : props.queue
-                ? { open: each.need.key === open, onOpen: () => setPicked(each.need.key) }
-                : undefined
-          }
-        />
-      ))}
+      <OneAsk shown={view.shown} answers={answers} seen={view.seen} />
       {view.cleared !== null ? <p data-needs-cleared="">{view.cleared}</p> : null}
       {props.foot}
     </div>

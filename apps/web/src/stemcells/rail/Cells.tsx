@@ -20,14 +20,11 @@ import {
   type ReactNode,
 } from "react";
 
-import { useAskiRoomInFront } from "../aski/inFront";
-import { CardList, onListOf } from "../needs/CardList";
+import { onListOf } from "../needs/CardList";
 import { conditionLineOf } from "../needs/conditionLines";
-import type { Shown } from "../needs/display";
 import { useLeaving } from "../needs/leaving";
 import { leaving, page, useSettleAtOnce, useWakeByHand } from "../needs/live";
 import { useNeeds } from "../needs/stream";
-import { reveal } from "../needs/walk";
 import type { CellStanding, Condition } from "../needs/wire";
 import { toneTokenOf } from "../glow/light";
 import { crossing, resweep, sweep } from "../motion/beat";
@@ -51,7 +48,7 @@ import {
   type AsleepCell,
   type ShelvedCell,
 } from "../upstream/column";
-import { useNowMinuteMs, useOpenFromNeeds, usePrimaryEnvironmentId } from "../upstream/needs";
+import { useNowMinuteMs, usePrimaryEnvironmentId } from "../upstream/needs";
 import {
   isElectron,
   openAddProject,
@@ -82,7 +79,7 @@ import {
 } from "../../../../../stemcells/words/awake.ts";
 import { byLaunch, type Launchable, ROW_LIGHT, rowStateOf, type RowState } from "./awake";
 import { useColumnStore, type ColumnStage } from "./column";
-import { elsewhere, elsewhereWords, shows } from "./filter";
+import { shows } from "./filter";
 import { Hops } from "./Hops";
 import { standingsOf, type Standings } from "./moves";
 import { DiskPlate } from "./DiskPlate";
@@ -96,7 +93,6 @@ import { UndoLine } from "./UndoLine";
 import { UnlessBetter, UpdateBanner } from "./UpdateBanner";
 import "../tokens/stemcells.css";
 import "./rail.css";
-import "../needs/needs.css";
 import "./cells.css";
 
 const NO_STANDINGS: Standings = new Map();
@@ -107,9 +103,10 @@ const ASLEEP_SHOWN = 30;
 type Ref = { readonly environmentId: string; readonly threadId: string };
 
 /**
- * The left column as the Cells' line (stemcells/tasks/awake-asleep.md): what needs you, open by
- * default, the Cells awake and those asleep, each stage a row at the foot that opens it in its
- * place. It reads the Cells, never the route, so moving between tabs leaves it as it is.
+ * The left column as the Cells' line (stemcells/tasks/awake-asleep.md): the Cells awake, open by
+ * default, and those asleep, each stage a row at the foot that opens it in its place. An ask is
+ * answered in its Cell's chat, and its Awake row wears Input's light. It reads the Cells, never
+ * the route, so moving between tabs leaves it as it is.
  */
 export function Cells() {
   const navigate = useNavigate();
@@ -155,20 +152,6 @@ export function Cells() {
     };
   }, []);
 
-  // Asks never hide: Input counts every one, and says where those the filter leaves out are.
-  const asking = onList.filter((each) => each.goneAt === null);
-  const waiting = asking.length;
-  const askedElsewhere =
-    environmentId === null
-      ? null
-      : elsewhereWords(
-          elsewhere(
-            project,
-            projects,
-            environmentId,
-            asking.map((each) => each.need),
-          ),
-        );
   const asked = askedSince(onList);
   const awake =
     environmentId === null
@@ -180,7 +163,6 @@ export function Cells() {
   // A Cell a shared stop holds (conditions.md) reads `working` on the wire and isn't flying.
   const held = staying.filter((row) => row.holds !== null);
   const counts: Record<ColumnStage, number> = {
-    needs: waiting,
     awake: staying.length,
     asleep: asleepCount,
   };
@@ -215,16 +197,6 @@ export function Cells() {
           onAim={setAim}
           proxy={proxy}
           pages={{
-            needs: (
-              <NeedsHere
-                waiting={waiting}
-                waitingHere={asking.filter((each) => here(each.need)).length}
-                only={project === null ? undefined : (each) => here(each.need)}
-                project={project?.name ?? null}
-                elsewhere={askedElsewhere}
-                onShowAll={() => setProject(null)}
-              />
-            ),
             awake: (
               <>
                 {(conditions ?? []).map((condition) => (
@@ -255,7 +227,7 @@ export function Cells() {
         />
         <nav data-cells-stages="" aria-label="Stages">
           <UndoLine />
-          {(["needs", "awake", "asleep"] as const).map((each) => (
+          {(["awake", "asleep"] as const).map((each) => (
             <StageRow
               key={each}
               stage={each}
@@ -440,65 +412,6 @@ function StageRow(props: {
       <span data-cells-stage-count="">{props.count}</span>
     </button>
   );
-}
-
-/**
- * What needs you: the cards, each folding away the moment it's answered,
- * slept or gone. In front of Aski's room, which shows every ask open, they
- * fold to an index of it (stemcells/tasks/aski-asks.md, decision 8).
- */
-function NeedsHere(props: {
-  waiting: number;
-  waitingHere: number;
-  only: ((shown: Shown) => boolean) | undefined;
-  /** The project the column shows, when not every one. */
-  project: string | null;
-  elsewhere: string | null;
-  onShowAll: () => void;
-}) {
-  const view = useSyncExternalStore(page.subscribe, page.read, page.read);
-  const index = useAskiRoomInFront();
-  // A peek shows only in Aski's room; from here the chat opens where a Cell lands.
-  const open = useOpenFromNeeds();
-  return (
-    <CardList
-      view={view}
-      openChat={open.chat}
-      queue
-      reveal={index ? revealInRoom : undefined}
-      only={props.only}
-      head={
-        props.waiting === 0 && view.cleared === null ? (
-          <div data-cells-calm="">
-            <b>{EMPTY_WORDS.needs}</b>
-            <span>You’ll hear the moment a Cell does, here and on your phone.</span>
-          </div>
-        ) : !view.live ? (
-          <div data-needs-head="">
-            <span data-needs-still="">Reconnecting…</span>
-          </div>
-        ) : props.project !== null && props.waitingHere === 0 ? (
-          <div data-cells-calm="">
-            <b>Nothing in {props.project} needs you.</b>
-          </div>
-        ) : null
-      }
-      foot={
-        props.elsewhere === null ? null : (
-          <button type="button" data-cells-elsewhere="" onClick={props.onShowAll}>
-            {props.elsewhere}
-          </button>
-        )
-      }
-    />
-  );
-}
-
-/** Lands on an ask in Aski's room; a narrow room shows its asks as a sheet, opened first. */
-function revealInRoom(key: string) {
-  if (reveal(key)) return;
-  page.setSheet(true);
-  requestAnimationFrame(() => reveal(key));
 }
 
 /** What one shared stop holds, and until when (conditions.md), over Awake's rows it holds. */

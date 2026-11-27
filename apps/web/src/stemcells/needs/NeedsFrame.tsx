@@ -105,7 +105,6 @@ export function NeedsFrame(props: {
   const list = (
     <CardList
       view={view}
-      one
       head={
         <>
           {/* Wide, the asks speak for themselves: only what isn't plain from them is said. */}
