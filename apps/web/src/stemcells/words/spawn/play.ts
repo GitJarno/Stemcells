@@ -273,7 +273,31 @@ let clips = 0;
 async function glyphs(layer: Layer, cell: SpawnCell, step: number): Promise<void> {
   const box = cellBoxOf(cell.threadId);
   if (box === null) return;
-  const page = layer.root.ownerDocument;
+  const svg = glyphRows(layer.root.ownerDocument);
+  svg.style.left = `${box.x}px`;
+  svg.style.top = `${box.y}px`;
+  svg.style.width = `${box.width}px`;
+  svg.style.height = `${box.height}px`;
+  layer.root.append(svg);
+  await condense(svg, step);
+}
+
+/**
+ * The same glyphs inside `box`, a Cell's own box in a row of Awake (`rail/Planned.tsx`): they
+ * ride with the row as later arrivals move it down. `from` is when the first glyph shows, a
+ * `performance.now()` time; a box that comes late joins at the glyph due then.
+ */
+export async function glyphsIn(box: HTMLElement, from: number): Promise<void> {
+  if (reducedMotion()) return;
+  const step = timing("formStep");
+  const svg = glyphRows(box.ownerDocument);
+  svg.classList.add("sc-spawn-glyphs-in");
+  box.append(svg);
+  await condense(svg, step, from);
+}
+
+/** The rows of glyphs, cut to the bare Cell's outline, empty until `condense` steps them. */
+function glyphRows(page: Document): SVGSVGElement {
   const svg = page.createElementNS("http://www.w3.org/2000/svg", "svg");
   const id = `sc-spawn-clip-${++clips}`;
   const size = SIZE.height / GLYPH_ROWS;
@@ -281,10 +305,7 @@ async function glyphs(layer: Layer, cell: SpawnCell, step: number): Promise<void
   svg.setAttribute("class", "sc-spawn-glyphs");
   svg.setAttribute("viewBox", `0 0 ${SIZE.width} ${SIZE.height}`);
   svg.setAttribute("preserveAspectRatio", "xMidYMax meet");
-  svg.style.left = `${box.x}px`;
-  svg.style.top = `${box.y}px`;
-  svg.style.width = `${box.width}px`;
-  svg.style.height = `${box.height}px`;
+  svg.dataset.columns = String(columns);
   svg.innerHTML =
     `<clipPath id="${id}"><path d="${path("awake")}"/></clipPath>` +
     `<g clip-path="url(#${id})" font-size="${size}">` +
@@ -292,11 +313,18 @@ async function glyphs(layer: Layer, cell: SpawnCell, step: number): Promise<void
       "",
     ) +
     "</g>";
-  layer.root.append(svg);
+  return svg;
+}
+
+/** Steps `svg`'s rows through the glyphs, one a `step` from `from` (now, unless told), then takes it away. */
+async function condense(svg: SVGSVGElement, step: number, from = performance.now()): Promise<void> {
   const rows = [...svg.querySelectorAll("text")];
-  for (const glyph of GLYPHS) {
-    for (const row of rows) row.textContent = glyph.repeat(columns);
-    await until(performance.now() + step);
+  const columns = Number(svg.dataset.columns);
+  for (let at = 0; at < GLYPHS.length; at++) {
+    const due = from + (at + 1) * step;
+    if (due <= performance.now()) continue;
+    for (const row of rows) row.textContent = GLYPHS[at]!.repeat(columns);
+    await until(due);
   }
   svg.remove();
 }
