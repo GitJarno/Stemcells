@@ -37,6 +37,8 @@ const MAX_PIXEL_RATIO = 2;
 // Reuse nearby probe answers: slow replies arrive too late after touch-end to raise the iOS keyboard.
 const PROBE_REUSE_PX = 24;
 const PROBE_REUSE_MS = 10_000;
+// How long a moving finger waits for the probe to say whether it drags the point or pans the page.
+const DRAG_DECIDE_MS = 250;
 // A sentinel makes backspace fire input; Gboard keydown supplies only keyCode 229.
 const SENTINEL = "\u200b";
 const AGENT_CURSOR_ACTIVE_MS = 700;
@@ -110,12 +112,14 @@ export function start(configuration: PreviewStreamConfiguration) {
     readonly clientX: number;
     readonly clientY: number;
     editable: boolean | null;
+    drags: boolean | null;
     end: "touching" | "acted" | "late" | "panned";
   } | null = null;
   let probeCache: {
     readonly clientX: number;
     readonly clientY: number;
     readonly editable: boolean;
+    readonly drags: boolean;
     readonly time: number;
   } | null = null;
   let keySent = false;
@@ -123,6 +127,11 @@ export function start(configuration: PreviewStreamConfiguration) {
     start: PointerEvent;
     last: PointerEvent;
     panning: boolean;
+    /** Past the tap slop: a mouse drag on what takes one, else page scrolling; "waiting" on the probe. */
+    gesture: "waiting" | "pan" | "drag" | null;
+    decideTimer: ReturnType<typeof setTimeout> | null;
+    /** Where the finger is while the gesture waits; `last` is where input last went. */
+    latest: PointerEvent;
   } | null = null;
   let lastTap: {
     time: number;
@@ -148,6 +157,7 @@ export function start(configuration: PreviewStreamConfiguration) {
     pendingWheel = pendingMouse = null;
     mouseButtons = 0;
     Object.assign(mouseClicks, { left: 1, middle: 1, right: 1, none: 1 });
+    if (touch?.decideTimer) clearTimeout(touch.decideTimer);
     probe = probeCache = touch = lastTap = null;
     keySent = false;
     input.value = SENTINEL;
@@ -190,10 +200,13 @@ export function start(configuration: PreviewStreamConfiguration) {
             clientX: current.clientX,
             clientY: current.clientY,
             editable: result.editable,
+            drags: result.drags,
             time: performance.now(),
           };
           if (current.end === "touching") {
             current.editable = result.editable;
+            current.drags = result.drags;
+            if (touch?.gesture === "waiting") decideGesture(result.drags);
             return;
           }
           probe = null;
@@ -388,7 +401,14 @@ export function start(configuration: PreviewStreamConfiguration) {
       send(mouseInput(event, point, "down", button));
       return;
     }
-    touch = { start: event, last: event, panning: false };
+    touch = {
+      start: event,
+      last: event,
+      latest: event,
+      panning: false,
+      gesture: null,
+      decideTimer: null,
+    };
     const point = pagePoint(event.clientX, event.clientY, false);
     if (!point) {
       probe = null;
@@ -405,6 +425,7 @@ export function start(configuration: PreviewStreamConfiguration) {
       clientX: event.clientX,
       clientY: event.clientY,
       editable: reuse ? cached.editable : null,
+      drags: reuse ? cached.drags : null,
       end: "touching",
     };
     send({ type: "probe", x: point.x, y: point.y });
@@ -449,15 +470,75 @@ export function start(configuration: PreviewStreamConfiguration) {
       return;
     }
     touch.panning = true;
-    const point = pagePoint(event.clientX, event.clientY, true);
-    if (point) {
-      queueWheel(
-        point,
-        (touch.last.clientX - event.clientX) * point.scale,
-        (touch.last.clientY - event.clientY) * point.scale,
-      );
+    if (touch.gesture === null) {
+      touch.gesture = "waiting";
+      touch.latest = event;
+      // Outside the page there is nothing to drag.
+      const drags = probe ? probe.drags : false;
+      if (drags !== null) decideGesture(drags, event);
+      else touch.decideTimer = setTimeout(() => decideGesture(false), DRAG_DECIDE_MS);
+      return;
     }
-    touch.last = event;
+    moveGesture(event);
+  };
+  const touchMouse = (
+    action: MouseInput["action"],
+    at: PointerEvent,
+    buttons: number,
+    clickCount: number,
+  ) => {
+    const point = pagePoint(at.clientX, at.clientY, true);
+    if (!point) return;
+    const input: MouseInput = {
+      type: "mouse",
+      action,
+      x: point.x,
+      y: point.y,
+      button: action === "move" ? (buttons ? "left" : "none") : "left",
+      buttons,
+      clickCount,
+      modifiers: 0,
+    };
+    if (action === "move" && buttons) {
+      pendingMouse = input;
+      mouseFrame ??= requestAnimationFrame(flushMouse);
+      return;
+    }
+    flushMouse();
+    send(input);
+  };
+  /** Starts the drag or the pan from where the finger went down, then follows it to `latest`. */
+  const decideGesture = (drags: boolean, latest?: PointerEvent) => {
+    const current = touch;
+    if (!current || current.gesture !== "waiting") return;
+    if (current.decideTimer !== null) clearTimeout(current.decideTimer);
+    current.decideTimer = null;
+    current.gesture = drags ? "drag" : "pan";
+    if (drags) {
+      flushWheel();
+      touchMouse("move", current.start, 0, 0);
+      touchMouse("down", current.start, 1, 1);
+    }
+    moveGesture(latest ?? current.latest);
+  };
+  const moveGesture = (event: PointerEvent) => {
+    const current = touch;
+    if (!current) return;
+    current.latest = event;
+    if (current.gesture === "waiting") return;
+    if (current.gesture === "drag") touchMouse("move", event, 1, 0);
+    else {
+      // The first pan covers what the finger moved while the gesture waited.
+      const point = pagePoint(event.clientX, event.clientY, true);
+      if (point) {
+        queueWheel(
+          point,
+          (current.last.clientX - event.clientX) * point.scale,
+          (current.last.clientY - event.clientY) * point.scale,
+        );
+      }
+    }
+    current.last = event;
   };
   const releaseMouse = (event: PointerEvent, cancelled: boolean) => {
     let buttons = mouseButtons;
@@ -482,6 +563,8 @@ export function start(configuration: PreviewStreamConfiguration) {
     }
     const ended = touch;
     if (!ended || ended.start.pointerId !== event.pointerId) return;
+    if (ended.decideTimer !== null) clearTimeout(ended.decideTimer);
+    if (ended.gesture === "drag") touchMouse("up", event, 0, 1);
     touch = null;
     const answered = probe;
     if (cancelled || ended.panning) {

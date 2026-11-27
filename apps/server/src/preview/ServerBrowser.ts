@@ -1,4 +1,5 @@
 // @effect-diagnostics nodeBuiltinImport:off globalDate:off globalTimers:off - Playwright callbacks run outside the Effect runtime.
+import * as Stemcells from "../stemcells/browser/dragProbe.ts";
 // Screencasts ignore emulated device scale; real 2x keeps captures sharp.
 // --disable-gpu uses cheaper software compositing while preserving SwiftShader WebGL.
 import {
@@ -325,6 +326,7 @@ export type ServerBrowserViewerOutput =
       readonly x: number;
       readonly y: number;
       readonly editable: boolean;
+      readonly drags?: boolean;
     }
   | { readonly _tag: "clipboard"; readonly text: string }
   | {
@@ -3436,7 +3438,17 @@ const make = Effect.gen(function* () {
           expression: `(${EDITABLE_AT_POINT_SCRIPT})(${x}, ${y})`,
           returnByValue: true,
         });
-        viewer.push({ _tag: "probe", x, y, editable: result.result.value === true });
+        const drags = await session.send("Runtime.evaluate", {
+          expression: `(${Stemcells.DRAGS_AT_POINT_SCRIPT})(${x}, ${y})`,
+          returnByValue: true,
+        });
+        viewer.push({
+          _tag: "probe",
+          x,
+          y,
+          editable: result.result.value === true,
+          drags: drags.result.value === true,
+        });
         return;
       }
     }

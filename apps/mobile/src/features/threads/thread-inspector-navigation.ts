@@ -9,7 +9,7 @@ export type ThreadInspectorMode = "route" | "git" | "files" | "preview";
 
 export type ThreadInspectorTarget = {
   /** "linkedThread" is a thread on a linked environment, read through `linked.viaEnvironmentId`. */
-  readonly type: "thread" | "linkedThread" | "device" | "localPreview";
+  readonly type: "thread" | "linkedThread" | "device" | "localPreview" | "browser";
   readonly environmentId: string;
   readonly threadId: string;
   readonly linked?: {
@@ -20,6 +20,8 @@ export type ThreadInspectorTarget = {
   readonly deviceKey?: string;
   /** The environment's localhost page a "localPreview" shows. */
   readonly url?: string;
+  /** The server browser tab a "browser" shows first. */
+  readonly tabId?: string;
 };
 
 export const ThreadInspectorNavigationContext = createContext<

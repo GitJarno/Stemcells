@@ -181,6 +181,8 @@ export interface PreviewStreamProbe {
   readonly x: number;
   readonly y: number;
   readonly editable: boolean;
+  /** The point takes a drag itself, such as a slider; a touch drag there is a mouse drag. */
+  readonly drags: boolean;
 }
 
 export interface PreviewStreamPointer {
@@ -383,7 +385,7 @@ export function createPreviewStreamClient(
         typeof y === "number" &&
         typeof editable === "boolean"
       ) {
-        events.onProbe?.({ x, y, editable });
+        events.onProbe?.({ x, y, editable, drags: "drags" in message && message.drags === true });
       } else if (
         type === "control" &&
         typeof canOperate === "boolean" &&

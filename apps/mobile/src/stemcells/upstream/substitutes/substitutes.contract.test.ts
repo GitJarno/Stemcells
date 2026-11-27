@@ -278,6 +278,30 @@ const CASES: Readonly<Record<string, Case>> = {
       "apps/mobile/src/features/home/HomeRouteScreen.tsx": ["./HomeScreen", ["HomeScreen"]],
     },
   },
+  "apps/mobile/src/features/browser/browser-preview-button.tsx": {
+    exports: view(
+      "apps/mobile/src/features/browser/browser-preview-button.tsx",
+      "browser-preview-button.tsx",
+    ),
+    importers: {
+      "apps/mobile/src/features/threads/floating-working-control.tsx": [
+        "../browser/browser-preview-button",
+        ["BrowserPreviewButton"],
+      ],
+    },
+  },
+  "apps/mobile/src/features/browser/ThreadBrowserFloat.tsx": {
+    exports: view(
+      "apps/mobile/src/features/browser/ThreadBrowserFloat.tsx",
+      "ThreadBrowserFloat.tsx",
+    ),
+    importers: {
+      "apps/mobile/src/features/threads/ThreadDetailScreen.tsx": [
+        "../browser/ThreadBrowserFloat",
+        ["ThreadBrowserFloat"],
+      ],
+    },
+  },
   "apps/mobile/src/features/home/ThreadListFilters.tsx": {
     exports: view("apps/mobile/src/features/home/ThreadListFilters.tsx", "ThreadListFilters.tsx"),
     importers: {
@@ -785,6 +809,12 @@ describe("the phone's substitutes for upstream modules", () => {
     >();
     expectTypeOf<typeof import("./HomeScreen")>().toEqualTypeOf<
       typeof import("../../../features/home/HomeScreen")
+    >();
+    expectTypeOf<typeof import("./browser-preview-button")>().toEqualTypeOf<
+      typeof import("../../../features/browser/browser-preview-button")
+    >();
+    expectTypeOf<typeof import("./ThreadBrowserFloat")>().toEqualTypeOf<
+      typeof import("../../../features/browser/ThreadBrowserFloat")
     >();
     expectTypeOf<typeof import("./ThreadListFilters")>().toEqualTypeOf<
       typeof import("../../../features/home/ThreadListFilters")

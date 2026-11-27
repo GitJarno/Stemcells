@@ -3,6 +3,7 @@ import { EnvironmentId, ThreadId } from "@t3tools/contracts";
 import { type ReactNode } from "react";
 import { View } from "react-native";
 
+import { BrowserPreviewScreen } from "../browser/BrowserPreviewRouteScreen";
 import { LocalPreviewScreen } from "../browser/LocalPreviewRouteScreen";
 import { DevicePreviewScreen } from "../devices/DevicePreviewRouteScreen";
 import {
@@ -73,6 +74,22 @@ export function ThreadInspectorPreview(props: {
             key={`${target.linked.viaEnvironmentId}:${target.environmentId}:${target.threadId}`}
             thread={target}
             linked={target.linked}
+          />
+        ) : target.type === "browser" ? (
+          <BrowserPreviewScreen
+            key={`${target.environmentId}:${target.threadId}`}
+            environmentId={EnvironmentId.make(target.environmentId)}
+            threadId={ThreadId.make(target.threadId)}
+            initialTabId={target.tabId ?? null}
+            onClose={props.onClose}
+            onMaximize={(tabId) => {
+              props.onOpen({ ...target, tabId: tabId ?? undefined });
+              navigation.navigate("ThreadBrowserPreview", {
+                environmentId: target.environmentId,
+                threadId: target.threadId,
+                ...(tabId === null ? {} : { tabId }),
+              });
+            }}
           />
         ) : target.type === "device" ? (
           <DevicePreviewScreen
