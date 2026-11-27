@@ -1,9 +1,7 @@
 /**
  * A message to Aski that starts, makes or deletes something becomes a plan as it is sent
- * (stemcells/tasks/aski-orchestrator.md, decisions 1 and 2). The message still goes to Aski's
- * chat at once, as written; the server is told a plan is coming, so that chat's turn waits for
- * it and Aski starts nothing itself. Mounted with every composer's editor; only Aski's
- * (`PlanRoom`) reads anything. Talk never comes here: the gate is code, and it is cheap.
+ * (aski-orchestrator.md, decisions 1 and 2). It still goes to Aski's chat at once: the server is
+ * told a plan is coming, so that chat's turn waits for it. Only Aski's composer reads anything.
  */
 import type { TiptapEditorHTMLElement } from "@tiptap/core";
 import { use, useEffect } from "react";

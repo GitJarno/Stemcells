@@ -64,7 +64,7 @@ export function AskiSettingsPanel() {
         <SettingsRow
           id="aski-plans"
           title={ASKI_SWITCHES["aski-plans"].title}
-          description="A message to Aski that starts Cells becomes a plan: one short call reads which Cells you asked for, and code checks it before anything starts. In a new chat, a message that starts several Cells without saying what each does is divided the same way. Off, Aski's chat answers every message itself, and a new chat's message waits until your words say what each Cell does."
+          description="One short call reads which Cells a message asks for, to Aski or in a new chat, and code checks it before any starts. Off, Aski only answers, and a new chat waits for your words."
           control={
             <Switch
               checked={plans}
@@ -76,7 +76,7 @@ export function AskiSettingsPanel() {
         <SettingsRow
           id="aski-plan-check"
           title="Check every plan"
-          description="Off, a Cell starts at once when you named its project and nothing in its words is final; anything Aski is unsure of waits for one tap. On, every Cell waits for your tap. A deletion always waits for your hand held on it, either way."
+          description="Off, a Cell starts at once when you named its project and its words ask nothing final. On, every Cell waits for your tap. A deletion always waits for your held press."
           control={
             <Switch
               checked={always}

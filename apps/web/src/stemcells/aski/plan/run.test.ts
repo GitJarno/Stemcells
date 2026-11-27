@@ -83,7 +83,10 @@ function world() {
   return { calls, runner, stop };
 }
 
-const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
+/** Lets the fake hands, which answer in a microtask, and the store's listeners run. */
+const settle = async () => {
+  for (let turn = 0; turn < 30; turn++) await Promise.resolve();
+};
 
 afterEach(() => {
   for (const id of ["one", "two", "three", "four"]) clearPlannedRows(id);

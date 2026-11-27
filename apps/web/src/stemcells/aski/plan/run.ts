@@ -1,9 +1,7 @@
 /**
- * Carries the window's plans out (stemcells/tasks/aski-orchestrator.md, decision 5): each Cell
- * on its way is started once, with the person's own commands (`upstream/askiPlans.ts`); the
- * server hears what came of each act, so Aski's line names what really started; and the Awake
- * list is told the rows to form (`stemcells/aski/planned.ts`). A deletion is carried out only
- * from `destroy`, which only a hand held on its card calls (`PlanCard.tsx`).
+ * Carries the window's plans out (aski-orchestrator.md, decision 5): each Cell on its way is
+ * started once with the person's own commands, and the server and the Awake list hear of it.
+ * A deletion is carried out only from `destroy`, which only a held hand calls (`PlanCard.tsx`).
  */
 import {
   clearPlannedRows,

@@ -1,4 +1,3 @@
-/* oxlint-disable shadcn/no-unknown-classes -- Stemcells' classes live in its own stylesheet (plan.css), outside upstream's Tailwind entry. */
 /**
  * One plan, as the person reads it (stemcells/tasks/aski-orchestrator.md, decisions 4 and 7): a
  * row per Cell with its name, project, model and the words it is told; a row that waits says why

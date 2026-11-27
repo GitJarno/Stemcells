@@ -17,13 +17,9 @@ import { expectPlan, planOfId, putPlan, settlePlan, unexpectPlan } from "./book.
 import { compile, FIRST_CALL, SECOND_CALL } from "./compile.ts";
 import { forget, learn, Learned, readLearned, withNames } from "./learned.ts";
 
-// POST /api/stemcells/aski/expect: a plan is about to be made from a message to Aski's chat;
-//   that chat's turn waits for it, so the message can go at once.
-// POST /api/stemcells/aski/compile: one message to Aski as a plan (`compile.ts`). It spends a
-//   model call, so it takes the operate scope; the client carries the plan out itself.
-// GET  /api/stemcells/aski/plan?id=…: a plan and what came of it.
-// POST /api/stemcells/aski/outcome: what came of a plan's acts, and the names the person confirmed.
-// GET, DELETE /api/stemcells/aski/learned: the names Aski has learned; forget them.
+// Aski's plan routes (`stemcells/orchestrator/wire.ts` names each). A compile spends a model
+// call, so it and every write take the operate scope; reads take the read scope. The server
+// starts nothing for a plan: the client carries it out with the person's own access.
 
 export const ASKI_PATH = "/api/stemcells/aski";
 const NO_STORE = { "cache-control": "private, no-store" };

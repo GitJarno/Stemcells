@@ -57,11 +57,8 @@ export const CEILING = 12;
 export const DEFAULT_CAP = 6;
 
 /**
- * How a field was read:
- * - `exact`: the person said its name as it is written;
- * - `near`: Aski read it from a word that isn't its name ("harbour");
- * - `picked`: the person named none, and Aski chose;
- * - `new`: a project that doesn't exist yet.
+ * How a field was read. `exact`: said as it is written. `near`: read from a word that isn't its
+ * name ("harbour"). `picked`: none was named, and Aski chose. `new`: a project to make first.
  */
 export type How = "exact" | "near" | "picked" | "new";
 

@@ -169,7 +169,6 @@ export function planOf(input: PlanInput): PlanResult {
     failed.push(`Pieces ${leftOver.join(", ")} appear in no act, in setup or in talk.`);
 
   const mentions = mentionsOf(text, context.places);
-  const placeById = new Map(context.places.map((place) => [place.id, place]));
 
   const placeFor = (
     act: AnswerAct,
@@ -196,11 +195,9 @@ export function planOf(input: PlanInput): PlanResult {
       return { field: { id: entry.id, name: entry.name, heard, how: "picked" }, why: ["place-picked"] };
     if (!saysExactly(heard, entry.name, entry.aliases))
       return { field: { id: entry.id, name: entry.name, heard, how: "near" }, why: ["place-near"] };
-    // Said exactly. It is this Cell's when it is the first place its own words name, or the
-    // last place said before them: how a sentence carries a place forward. A name left hanging
-    // at the end of a piece, with the next item right after it and no punctuation between
-    // ("… the seat map in Ledger one for the tax report"), could belong to either, so it
-    // counts for neither.
+    // Said exactly: this Cell's when its own words name it first, or it was the last place said
+    // before them. A name hanging at a piece's end with the next item right after it ("… the
+    // seat map in Ledger one for the tax report") could be either's, so it counts for neither.
     const own = mine.map((n) => byNumber.get(n)!).sort((a, b) => a.start - b.start);
     const hangs = (m: (typeof mentions)[number]) => {
       const piece = pieces.find((p) => m.at >= p.start && m.at < p.end);

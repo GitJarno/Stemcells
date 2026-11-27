@@ -1,9 +1,7 @@
 /**
- * What Aski's plans take from upstream (`aski/plan`, stemcells/tasks/aski-orchestrator.md): the
- * person's projects, models and awake Cells as a plan's context, the plan routes on this Mac's
- * server, and the hands that carry a plan out with the person's own commands: a Cell started as
- * any multi-Cell send starts one (`launch.ts`), a project made or removed as the palette and
- * Settings do it, a Cell archived as its menu does. `askiPlans.contract.test.ts` pins these.
+ * What Aski's plans take from upstream (`aski/plan`): the person's projects, models and awake
+ * Cells, the plan routes on this Mac's server, and the hands that carry a plan out with the
+ * person's own commands, as the app's own views send them. `askiPlans.contract.test.ts` pins it.
  */
 import { scopeProjectRef, scopeThreadRef } from "@t3tools/client-runtime/environment";
 import { squashAtomCommandFailure } from "@t3tools/client-runtime/state/runtime";
