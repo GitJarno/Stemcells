@@ -4,6 +4,7 @@
 // builds both actions in hot `CommandPalette.tsx`; their words change here on the way through.
 import { buildRootGroups as buildUpstreamRootGroups } from "../../../components/CommandPalette.logic";
 import { CASUAL_CHAT } from "../../../../../../stemcells/words/casualChat.ts";
+import { asBuilt } from "../../../../../../stemcells/words/cells.ts";
 import { COPY_CELL } from "../../../../../../stemcells/words/copyCell.ts";
 
 export * from "../../../components/CommandPalette.logic";
@@ -11,8 +12,10 @@ export * from "../../../components/CommandPalette.logic";
 // Upstream's value for that action. Exported, it would be a name upstream's
 // module lacks; `casualChat.contract.test.ts` pins it in upstream's palette.
 const CASUAL_CHAT_ACTION = "action:new-thread-without-project";
-// Upstream's copy action, titled for a Cell's pull request when it has one.
+// Upstream's copy action, titled for a Cell's pull request when it has one; a build titles
+// upstream's other case in Cell words already.
 const COPY_ACTION = "action:copy-thread-reference";
+const COPY_THREAD = asBuilt("Copy thread");
 // Upstream's Usage page, where our accounts list is: found by its words too.
 const USAGE_ACTION = "action:usage";
 const ACCOUNT_TERMS = ["accounts", "account", "sign in", "login", "plans"];
@@ -30,7 +33,9 @@ export function buildRootGroups(
               title: CASUAL_CHAT.action,
               searchTerms: [...item.searchTerms, ...CASUAL_CHAT.searchTerms],
             }
-          : item.value === COPY_ACTION && item.title === "Copy thread"
+          : item.value === COPY_ACTION &&
+              typeof item.title === "string" &&
+              asBuilt(item.title) === COPY_THREAD
             ? { ...item, title: COPY_CELL.action, searchTerms: [...item.searchTerms, "cell"] }
             : item.value === USAGE_ACTION
               ? {

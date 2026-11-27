@@ -70,7 +70,7 @@ export function CasualOffer(props: {
           "Could not start without a project",
           error instanceof Error
             ? error.message
-            : "The folder for threads without a project could not be created.",
+            : "The folder for Cells without a project could not be created.",
         );
       }
       return;

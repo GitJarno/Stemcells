@@ -4,11 +4,11 @@
  * as it comes and drops only what says nothing: no title, upstream's placeholder, or only the
  * names the line already shows ("garden" beside the garden project).
  */
-import { UNTITLED_THREAD } from "../upstream/titles";
+import { isUntitled } from "../upstream/titles";
 
 export function oneLinerOf(title: string | null, names: readonly string[]): string | null {
   const line = title?.trim() ?? "";
-  if (line === "" || line === UNTITLED_THREAD) return null;
+  if (line === "" || isUntitled(line)) return null;
   return namesOnly(line, names) ? null : line;
 }
 

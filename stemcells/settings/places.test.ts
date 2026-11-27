@@ -12,6 +12,10 @@ describe("a place in Settings, named in a reply", () => {
       "open [Settings → Providers → Antigravity](t3-context://v1/stemcells-place/provider-antigravity), sign in with this Google account",
     ],
     [
+      "It's in Settings › Cells › Auto-settle merged Cells.",
+      "It's in [Settings › Cells › Auto-settle merged Cells](t3-context://v1/stemcells-place/row-auto-settle-merged-threads).",
+    ],
+    [
       "It's in Settings › Threads › Auto-settle merged threads.",
       "It's in [Settings › Threads › Auto-settle merged threads](t3-context://v1/stemcells-place/row-auto-settle-merged-threads).",
     ],

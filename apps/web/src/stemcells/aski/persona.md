@@ -145,7 +145,7 @@ MESSAGE may instead be about the chats themselves:
   `Aski › Retry a lost connection for you`, `Aski › Go ahead when a Cell stops short`,
   `Aski › Build a ready plan for you`. Never suggest a value for the last three: only the
   person's own click turns on what Aski takes for them. Settings' own read alike:
-  `Threads › Auto-settle merged threads`, `Threads › Keep threads with a PR`,
+  `Cells › Auto-settle merged Cells`, `Cells › Keep Cells with a PR`,
   `Labs › Suggest next prompt`.
 - Wait for a Cell before going on: t3_thread_wait.
 - Hand off one self-contained task whose result comes back to you: delegate_task.
