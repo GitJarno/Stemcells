@@ -10,7 +10,6 @@ import {
   EXPECT_PATH,
   type ExpectRequest,
   OUTCOME_PATH,
-  PLAN_PATH,
   thinkWith,
 } from "../../../../../../stemcells/orchestrator/wire.ts";
 import { cellNameOf } from "../../../../../../stemcells/words/cellNames.ts";
@@ -38,9 +37,10 @@ import { DEFAULT_PROVIDER_INTERACTION_MODE } from "../../upstream/planLaunch";
 import { askiChatsOf } from "../chat";
 import { type Carrier, carry, type Hands, type Went } from "./carry";
 import { wasDictated } from "./dictated";
+import { fenceReader } from "./fence";
 import { launchOf } from "./launch";
 import type { PlanDoor } from "./send";
-import { makeTrays, type ToldOutcome } from "./trays";
+import { makeTrays } from "./trays";
 import { placeOfKey, type World, worldOf } from "./world";
 
 export const trays = makeTrays();
@@ -72,27 +72,6 @@ const post = (environmentId: string, path: string, body: unknown, signal?: Abort
     headers: JSON_BODY,
     ...(signal === undefined ? {} : { signal }),
   });
-
-/** A plan and what came of it, as its machine's server has it; `gone` once it has forgotten it. */
-export async function readPlan(
-  environmentId: string,
-  id: string,
-): Promise<
-  | { readonly kind: "plan"; readonly plan: Plan; readonly outcome: ToldOutcome[] | null }
-  | { readonly kind: "gone" }
-  | { readonly kind: "unreachable" }
-> {
-  try {
-    const answer = await askMachine(environmentId, `${PLAN_PATH}?id=${encodeURIComponent(id)}`);
-    if (answer === null) return { kind: "unreachable" };
-    if (answer.status === 404) return { kind: "gone" };
-    if (!answer.ok) return { kind: "unreachable" };
-    const body = (await answer.json()) as { plan: Plan; outcome: ToldOutcome[] | null };
-    return { kind: "plan", plan: body.plan, outcome: body.outcome };
-  } catch {
-    return { kind: "unreachable" };
-  }
-}
 
 /** The Cells a deletion archives: those it names, or every Cell of its project. */
 function cellsOf(environmentId: string, act: DestroyAct): string[] {
@@ -180,28 +159,6 @@ const hands: Hands = {
   },
 };
 
-/** Fences being read, by machine and plan: one request however many views show the fence. */
-const opening = new Map<string, Promise<"plan" | "gone" | "unreachable">>();
-
-/** Reads a fence's plan into the store, once; what it found. */
-export function openPlan(environmentId: string, id: string) {
-  const key = `${environmentId}\u0000${id}`;
-  const held = trays.read().get(id);
-  if (held !== undefined) return Promise.resolve(held.state === "gone" ? "gone" : "plan");
-  const running = opening.get(key);
-  if (running !== undefined) return running;
-  const reading = readPlan(environmentId, id).then((read) => {
-    opening.delete(key);
-    if (read.kind === "plan") {
-      planCarrier();
-      trays.opened(id, environmentId, read.plan, read.outcome);
-    } else if (read.kind === "gone") trays.gone(id, environmentId);
-    return read.kind;
-  });
-  opening.set(key, reading);
-  return reading;
-}
-
 let carrier: Carrier | null = null;
 
 /** The app's one carrier, running from the first plan on. */
@@ -209,6 +166,15 @@ export function planCarrier(): Carrier {
   carrier ??= carry(trays, hands);
   return carrier;
 }
+
+/** Reads a fence's plan into the store, once; what it found. */
+export const openPlan = fenceReader(
+  trays,
+  (environmentId, path) => askMachine(environmentId, path),
+  () => {
+    planCarrier();
+  },
+);
 
 /**
  * The compiler's side of a send from Aski's chat: everything `sendThroughPlan` needs but the
