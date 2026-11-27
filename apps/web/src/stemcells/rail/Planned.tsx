@@ -7,6 +7,7 @@ import { type RefObject, useLayoutEffect, useRef } from "react";
 
 import {
   ARRIVAL_BEAT_MS,
+  ARRIVALS,
   chipWords,
   DECODE_STEPS,
   decodeAt,
@@ -18,9 +19,6 @@ import { cssEasing, LIST_MOTION } from "../motion/listMotion";
 import { reducedMotion } from "../tokens/motion";
 import { glyphsIn } from "../words/spawn/play";
 import type { Arrival } from "./arrivals";
-
-/** Beats from a row's landing to its line's first step: the row it pushed down has cleared it by then. */
-const SETTLE_LEAD = 2;
 
 /** The mark of the field a check row is unsure of. */
 export function Unsure(props: { row: Planned; field: NonNullable<Planned["unsure"]> }) {
@@ -104,7 +102,7 @@ export function useArrivalPlays(line: RefObject<HTMLElement | null>, arrival: Ar
     if (element === null || at === undefined || reducedMotion()) return;
     const box = element.querySelector<HTMLElement>("[data-cells-row-cell]");
     if (box) void glyphsIn(box, at);
-    return settleLine(element, at + SETTLE_LEAD * ARRIVAL_BEAT_MS);
+    return settleLine(element, at + ARRIVALS.settles * ARRIVAL_BEAT_MS);
   }, [line, at]);
 }
 

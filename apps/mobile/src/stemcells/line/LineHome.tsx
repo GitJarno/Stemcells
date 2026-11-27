@@ -10,6 +10,7 @@ import { takeAskedStage, useAskedStage } from "../aski/turn";
 import { DiskFoot } from "../disk/DiskPlate";
 import { useAppBadge } from "../push/badge";
 import { EmptyTab } from "../home/EmptyTab";
+import { useArrivals, useHeldThreads } from "../home/plannedArrivals";
 import { StagePages, useStagePages } from "../home/StagePages";
 import { CellStates, HomeTabsContext, tabChoice } from "../home/state";
 import { type AllClear, useInbox } from "../inbox/useInbox";
@@ -98,6 +99,9 @@ export function LineHome(props: {
     !props.connecting,
     props.picks,
   );
+  // A Cell whose planned row stands at Awake's top (`home/PlannedRows.tsx`) waits there: T3's row for it comes after.
+  const held = useHeldThreads();
+  const planned = useArrivals().length;
   const tab = segments.useTab("awake");
   const stages = useStagePages(STAGES, tab);
   // A pick, or a machine read or dropped, is another view: its asks were never answered here.
@@ -123,7 +127,10 @@ export function LineHome(props: {
   // T3's list narrows to the pickers too; handed only those, an empty segment says so in ours.
   const page = (stage: LineStage) => {
     if (props.connecting) return <EmptyTab words="Connecting…" />;
-    const shown = line[stage].filter(props.inView);
+    const inStage = line[stage].filter(props.inView);
+    const shown = stage === "awake" ? inStage.filter((cell) => !held.has(cell.id)) : inStage;
+    if (stage === "awake" && shown.length === 0 && props.pending === 0 && planned > 0)
+      return <EmptyTab words={null} />;
     const listed =
       shown.length > 0 ||
       (stage === "awake" && props.pending > 0) ||

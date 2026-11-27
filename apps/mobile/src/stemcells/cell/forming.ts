@@ -12,8 +12,16 @@ export const LEAD = 0.6;
 /** Seconds between Cells that start together, so their copies leave one by one. */
 const STAGGER = 0.15;
 
+/** How long a Cell's forming is remembered, seconds: past any wait from its row landing to its chat being listed here. */
+const KEPT = 180;
+
 /** When each Cell's glyphs start, on `clockSeconds`, by thread id. */
 const formings = new Map<string, number>();
+
+/** The Cell of `threadId` forms from `from` on `clockSeconds`, wherever it shows: a planned row's, as it lands (`home/plannedArrivals.ts`). */
+export function formAt(threadId: string, from: number): void {
+  formings.set(threadId, from);
+}
 
 /**
  * When the Cell of `threadId`, whose chat began at `createdAt`, starts to
@@ -27,7 +35,7 @@ export function formingFrom(threadId: string, createdAt: string): number | undef
   const now = clockSeconds();
   let latest = now + LEAD - STAGGER;
   for (const [thread, from] of formings) {
-    if (from < now - 30) formings.delete(thread);
+    if (from < now - KEPT) formings.delete(thread);
     else latest = Math.max(latest, from);
   }
   const from = Math.max(now + LEAD, latest + STAGGER);

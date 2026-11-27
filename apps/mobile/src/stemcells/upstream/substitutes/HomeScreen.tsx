@@ -4,11 +4,14 @@
 // workspace) and searching, T3's.
 import { type ReactNode } from "react";
 import { Platform } from "react-native";
+import Animated from "react-native-reanimated";
 
 import * as Upstream from "../../../features/home/HomeScreen";
 import { askiChatsOf } from "../../aski/chat";
+import { useAwakeGlide } from "../../home/awakeGlide";
 import { HomeFront } from "../../home/HomeFront";
 import { inEffect, NO_PICKS, type Picks } from "../../home/picks";
+import { PlannedHome } from "../../home/PlannedRows";
 import { useMinute } from "../../home/state";
 import { usePicks } from "../../home/usePicks";
 import { LineHome } from "../../line/LineHome";
@@ -52,6 +55,7 @@ export function HomeScreen(props: Props) {
     !catalogState.hasLoadedShellSnapshot &&
     catalogState.connectionError === null;
   const tabbed = ours && (ready || connecting) && props.searchQuery.trim() === "";
+  const glide = useAwakeGlide();
   useKeepReading(props.threads, now, inFront && tabbed);
   // T3's own pick narrows nothing where ours do, or a pick made before ours hides Cells unseen.
   const upstream = ours
@@ -74,31 +78,41 @@ export function HomeScreen(props: Props) {
       thread.lineage.relationshipToParent !== "subagent" &&
       !aski.has(thread.id),
   );
-  const list = (threads: Props["threads"], pending: boolean) => (
-    <FromTheTop>
-      <Upstream.HomeScreen
-        {...upstream}
-        threads={threads}
-        pendingTasks={pending ? props.pendingTasks : []}
-      />
-    </FromTheTop>
-  );
+  const list = (threads: Props["threads"], pending: boolean) => {
+    const page = (
+      <FromTheTop>
+        <Upstream.HomeScreen
+          {...upstream}
+          threads={threads}
+          pendingTasks={pending ? props.pendingTasks : []}
+        />
+      </FromTheTop>
+    );
+    // Awake's list glides as a planned row lands at its top (`home/awakeGlide.ts`).
+    return pending ? <Animated.View style={[{ flex: 1 }, glide]}>{page}</Animated.View> : page;
+  };
+  const plannedHome = {
+    threads: new Map(props.threads.map((thread) => [String(thread.id), thread])),
+    open: props.onSelectThread,
+  };
 
   return (
     <HomeFront inFront={inFront}>
-      <LineHome
-        cells={cells}
-        readings={readings}
-        known={scope.machines.every((id) => readings.has(id))}
-        connecting={!ready}
-        now={now}
-        inView={scope.inView}
-        picks={scope.picks}
-        environmentId={scope.machine}
-        pending={props.pendingTasks.length}
-        olderSettled={olderSettled}
-        renderList={list}
-      />
+      <PlannedHome value={plannedHome}>
+        <LineHome
+          cells={cells}
+          readings={readings}
+          known={scope.machines.every((id) => readings.has(id))}
+          connecting={!ready}
+          now={now}
+          inView={scope.inView}
+          picks={scope.picks}
+          environmentId={scope.machine}
+          pending={props.pendingTasks.length}
+          olderSettled={olderSettled}
+          renderList={list}
+        />
+      </PlannedHome>
     </HomeFront>
   );
 }

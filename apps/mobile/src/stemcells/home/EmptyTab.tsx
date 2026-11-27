@@ -10,6 +10,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppText } from "../upstream/cells";
 import { useHomeSidebar, useWorkspaceTabs } from "../upstream/home";
 import { NativeScrollViewMarker } from "../upstream/substitutes/NativeScrollViewMarker";
+import { PlannedRows } from "./PlannedRows";
 import { StageTop } from "./StagePill";
 
 function HomePage(props: { readonly children: ReactNode }) {
@@ -31,6 +32,7 @@ function HomePage(props: { readonly children: ReactNode }) {
           showsVerticalScrollIndicator={false}
         >
           <StageTop />
+          <PlannedRows />
           {props.children}
         </KeyboardAwareScrollView>
       </NativeScrollViewMarker>
@@ -38,7 +40,9 @@ function HomePage(props: { readonly children: ReactNode }) {
   );
 }
 
-export function EmptyTab(props: { readonly words: string; readonly fact?: string }) {
+/** `words` null: Awake with only the rows Aski's plan is about to start (`PlannedRows.tsx`), which say it themselves. */
+export function EmptyTab(props: { readonly words: string | null; readonly fact?: string }) {
+  if (props.words === null) return <HomePage>{null}</HomePage>;
   return (
     <HomePage>
       <AppText className="mt-8 text-center text-base text-foreground-muted">{props.words}</AppText>
