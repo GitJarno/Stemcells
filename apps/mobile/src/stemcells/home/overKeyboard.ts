@@ -7,7 +7,7 @@ import {
 } from "react-native-keyboard-controller";
 import { useAnimatedStyle, useDerivedValue, useSharedValue } from "react-native-reanimated";
 
-import { useOverSearch } from "../upstream/home";
+import { useOverSearch } from "../upstream/overSearch";
 import { pillBottom } from "./state";
 
 /** Where the home's foot stands (`useOverSearch`), and a style setting a view's foot `over` the pill's. */

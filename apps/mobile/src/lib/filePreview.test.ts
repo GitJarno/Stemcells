@@ -324,6 +324,7 @@ vi.mock("../features/threads/worktree-setup-card", () => ({}));
 vi.mock("../features/threads/CopyTextButton", () => ({ CopyTextButton: () => null }));
 vi.mock("../features/threads/thread-work-log", () => ({ THREAD_DISCLOSURE_TRANSITION_MS: 100 }));
 vi.mock("../stemcells/chat/MailFold", () => ({ MailFold: () => null }));
+vi.mock("../stemcells/line/ChatAsk", () => ({ withAskAtEnd: (footer: ReactNode) => footer }));
 vi.mock("../features/threads/CollapsibleUserMessageBody", () => ({
   CollapsibleUserMessageBody: (props: { children: ReactNode }) => props.children,
 }));
