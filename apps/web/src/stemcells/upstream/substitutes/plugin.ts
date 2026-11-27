@@ -89,6 +89,10 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   "apps/web/src/components/chat/UsageLimitRecoveryBanner.tsx": "UsageLimitRecoveryBanner.tsx",
   // Several Cells' readout stands in the composer's model picker's place.
   "apps/web/src/components/chat/ProviderModelPicker.tsx": "ProviderModelPicker.tsx",
+  // One pick for model and effort (`stemcells/tasks/model-pick.md`): each agent one line of
+  // its models by family, then effort, switches and Access as rows of presses, no menus.
+  "apps/web/src/components/chat/ModelPickerContent.tsx": "ModelPickerContent.tsx",
+  "apps/web/src/components/chat/ComposerModelEffort.tsx": "ComposerModelEffort.tsx",
   // The terminal drawer opens at about ten rows, its buttons in a row of their own.
   "apps/web/src/components/ThreadTerminalDrawer.tsx": "ThreadTerminalDrawer.tsx",
   // The stash sits on the Cell's line, on the row with its name.
