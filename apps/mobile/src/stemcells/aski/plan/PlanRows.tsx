@@ -16,6 +16,7 @@ import {
   drop,
   dropAll,
   held,
+  setModel,
   setNewName,
   setPlace,
   type TrayAct,
@@ -23,6 +24,7 @@ import {
 import { cellNameOf } from "../../../../../../stemcells/words/cellNames.ts";
 import {
   CALL_BACK,
+  DEFAULT_MODEL,
   DICTATED,
   DROP,
   LEFT_OVER,
@@ -178,6 +180,11 @@ export function PlanPanel(props: {
   );
 }
 
+/** The model menu's entry for a project's own default. */
+const DEFAULT_KEY = "default";
+const modelKey = (model: { readonly instanceId: string; readonly id: string }) =>
+  `${model.instanceId}\u0000${model.id}`;
+
 function CellRow(props: {
   readonly id: string;
   readonly one: TrayAct;
@@ -201,6 +208,11 @@ function CellRow(props: {
   const model = modelLine(act, props.models);
   const unsure = waiting ? unsureOf(act) : { place: false, model: false };
   const place = placeLabel(act);
+  const picked = act.selection ?? act.model;
+  const chosen =
+    picked == null
+      ? DEFAULT_KEY
+      : modelKey({ instanceId: picked.instanceId, id: "model" in picked ? picked.model : picked.id });
   const renames = waiting && act.place?.how === "new";
   const rename = () =>
     Dialog.prompt({
@@ -234,17 +246,16 @@ function CellRow(props: {
           <AppText className="font-t3-bold text-sm text-foreground">
             {cellNameOf(act.threadId)}
           </AppText>
+          {/* A waiting Cell's model is a choice, on the line below. */}
           <AppText
             className={
-              unsure.model
-                ? "flex-1 text-xs text-foreground underline decoration-dotted"
-                : model.dim
-                  ? "flex-1 text-xs text-foreground-tertiary"
-                  : "flex-1 text-xs text-foreground-muted"
+              model.dim
+                ? "flex-1 text-xs text-foreground-tertiary"
+                : "flex-1 text-xs text-foreground-muted"
             }
             numberOfLines={1}
           >
-            {model.text}
+            {waiting ? "" : model.text}
           </AppText>
           {waiting ? null : (
             <AppText
@@ -322,6 +333,64 @@ function CellRow(props: {
         ) : (
           placeWords
         )}
+        {waiting ? (
+          <>
+            <AppText className="text-xs text-foreground-muted">on</AppText>
+            <Menu
+              title="Model"
+              actions={[
+                { id: DEFAULT_KEY, title: DEFAULT_MODEL, state: chosen === DEFAULT_KEY ? "on" : "off" },
+                ...props.models.map((each) => ({
+                  id: modelKey(each),
+                  title: each.name,
+                  state: modelKey(each) === chosen ? ("on" as const) : ("off" as const),
+                })),
+              ]}
+              onPressAction={({ nativeEvent }) => {
+                const picked = props.models.find((each) => modelKey(each) === nativeEvent.event);
+                if (picked === undefined && nativeEvent.event !== DEFAULT_KEY) return;
+                trays.change(id, (tray) =>
+                  setModel(
+                    tray,
+                    act.i,
+                    picked === undefined
+                      ? null
+                      : {
+                          instanceId: picked.instanceId,
+                          id: picked.id,
+                          name: picked.name,
+                          effort: null,
+                        },
+                  ),
+                );
+              }}
+              accessibilityLabel={`Model: ${model.text}`}
+              accessibilityRole="button"
+            >
+              <Pressable
+                hitSlop={10}
+                className="flex-1 flex-row items-center gap-1 active:opacity-70"
+              >
+                <AppText
+                  className={
+                    unsure.model
+                      ? "shrink font-t3-medium text-sm text-foreground underline decoration-dotted"
+                      : "shrink text-sm text-foreground-secondary"
+                  }
+                  numberOfLines={1}
+                >
+                  {model.text}
+                </AppText>
+                <SymbolView
+                  name="chevron.down"
+                  size={10}
+                  tintColorClassName="accent-foreground-muted"
+                  type="monochrome"
+                />
+              </Pressable>
+            </Menu>
+          </>
+        ) : null}
       </View>
       {one.status === "failed" && one.reason !== undefined ? (
         <AppText className="text-xs text-danger-foreground">{one.reason}</AppText>

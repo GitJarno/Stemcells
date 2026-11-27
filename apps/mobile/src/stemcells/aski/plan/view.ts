@@ -12,7 +12,6 @@ import {
   canStart,
   counts,
   held,
-  type Status,
   type Tray,
 } from "../../../../../../stemcells/orchestrator/tray.ts";
 import { DEFAULT_MODEL, headline } from "../../../../../../stemcells/words/plans.ts";

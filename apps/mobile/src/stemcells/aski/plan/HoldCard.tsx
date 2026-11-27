@@ -121,7 +121,8 @@ export function HoldCard(props: {
             >
               <Animated.View
                 pointerEvents="none"
-                className="absolute inset-0 bg-danger"
+                // The danger ink, thinned: the card tone alone is too dim on a dark screen.
+                className="absolute inset-0 bg-danger-foreground/25"
                 style={[{ transformOrigin: "left" }, filling]}
               />
               <View className="px-3.5 py-2">
