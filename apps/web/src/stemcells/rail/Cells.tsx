@@ -77,7 +77,7 @@ import {
   WAKE,
   wakesWords,
 } from "../../../../../stemcells/words/awake.ts";
-import { byLaunch, type Launchable, ROW_LIGHT, rowStateOf, type RowState } from "./awake";
+import { byRecent, type Launchable, ROW_LIGHT, rowStateOf, type RowState } from "./awake";
 import { useColumnStore, type ColumnStage } from "./column";
 import { shows } from "./filter";
 import { Hops } from "./Hops";
@@ -156,8 +156,8 @@ export function Cells() {
   const awake =
     environmentId === null
       ? []
-      : awakeOrder((cells ?? []).filter(here), shelves.pinned, shelves.launches).map((cell) =>
-          awakeRowOf(cell, environmentId, sleeping.has(cell.threadId), asked),
+      : awakeOrder((cells ?? []).filter(here), shelves.pinned, shelves.launches, asked).map(
+          (cell) => awakeRowOf(cell, environmentId, sleeping.has(cell.threadId), asked),
         );
   const staying = awake.filter((row) => !row.leaving);
   // A Cell a shared stop holds (conditions.md) reads `working` on the wire and isn't flying.
@@ -277,18 +277,19 @@ export function Cells() {
 
 /**
  * Awake's order (stemcells/tasks/awake-asleep.md, decision 1): pins first, as the person set
- * them, then the latest brought forward. Landing, asking or working never moves a row.
+ * them, then by the time each row shows, latest first.
  */
 function awakeOrder(
   cells: ReadonlyArray<CellStanding>,
   pinned: ReadonlyArray<ShelvedCell>,
   launches: ReadonlyMap<string, Launchable>,
+  asked: ReadonlyMap<string, string>,
 ): CellStanding[] {
   const pins = new Map(pinned.map((cell, index) => [cell.threadId, index]));
   const first = cells
     .filter((cell) => pins.has(cell.threadId))
     .toSorted((a, b) => pins.get(a.threadId)! - pins.get(b.threadId)!);
-  const rest = byLaunch(
+  const rest = byRecent(
     cells
       .filter((cell) => !pins.has(cell.threadId))
       .map((cell) => ({
@@ -296,6 +297,7 @@ function awakeOrder(
         id: cell.threadId,
         cell,
       })),
+    ({ cell }) => sinceOf(cell, asked),
   );
   return [...first, ...rest.map((each) => each.cell)];
 }
@@ -335,9 +337,13 @@ const awakeRowOf = (
   line: cell.line,
   stage: cell.stage,
   holds: cell.holds ?? null,
-  since: cell.stage === "needs-you" ? (asked.get(cell.threadId) ?? null) : (cell.since ?? null),
+  since: sinceOf(cell, asked),
   leaving,
 });
+
+/** The time an awake row shows: since it asked, else since its stage began. */
+const sinceOf = (cell: CellStanding, asked: ReadonlyMap<string, string>): string | null =>
+  cell.stage === "needs-you" ? (asked.get(cell.threadId) ?? null) : (cell.since ?? null);
 
 /**
  * Which project the column shows, quiet until it's pointed at; every one by default. Adding a

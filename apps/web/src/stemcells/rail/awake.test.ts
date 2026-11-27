@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { byLaunch, launchedAt, rowStateOf, type Launchable } from "./awake";
+import { byRecent, launchedAt, rowStateOf, type Launchable } from "./awake";
 
 const at = (minute: number) => new Date(Date.UTC(2026, 10, 26, 12, minute)).toISOString();
 
@@ -54,8 +54,8 @@ describe("launchedAt", () => {
   });
 });
 
-describe("byLaunch", () => {
-  it("puts the latest brought forward first and holds a tie by id", () => {
+describe("byRecent", () => {
+  it("stands each row by the time it shows, else by its launch, and holds a tie by id", () => {
     const old = cell({ id: "old" });
     const tieB = cell({ id: "b", createdAt: at(5) });
     const tieA = cell({ id: "a", createdAt: at(5) });
@@ -64,12 +64,12 @@ describe("byLaunch", () => {
       latestUserAuthoredMessageAt: at(20),
       latestRun: { requestedAt: at(20) },
     });
-    expect(byLaunch([old, tieB, sent, tieA]).map((each) => each.id)).toEqual([
-      "sent",
-      "a",
-      "b",
-      "old",
-    ]);
+    // Woken just now, it shows when it landed: it stands there, not at the top.
+    const woken = cell({ id: "woken", unsettledAt: at(30) });
+    const since = new Map([["woken", at(4)]]);
+    expect(
+      byRecent([old, woken, tieB, sent, tieA], (each) => since.get(each.id)).map((each) => each.id),
+    ).toEqual(["sent", "a", "b", "woken", "old"]);
   });
 });
 

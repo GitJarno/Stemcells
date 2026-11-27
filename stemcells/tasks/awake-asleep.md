@@ -13,17 +13,17 @@ questions; the agent's state shows inside the row.
 | Stage  | Asks                 | Holds                                          | Order                                               |
 | ------ | -------------------- | ---------------------------------------------- | --------------------------------------------------- |
 | Input  | What needs me now?   | Every ask, answerable in place                 | A queue: longest waiting first                      |
-| Awake  | What's in play?      | Every Cell not asleep, flying or landed        | When the person last brought it forward             |
+| Awake  | What's in play?      | Every Cell not asleep, flying or landed        | By the time each row shows, latest first            |
 | Asleep | What did I put away? | Cells slept by hand or by time, and timed ones | Latest asleep first; timed ones show when they wake |
 
 ## Decisions
 
-1. **Rows move only when the person acts.** People find Cells by where they
-   stand. Landing, asking, working and another agent's message change how a
-   row looks, never where it stands. Awake's order is `launchedAt`
-   (`apps/web/src/stemcells/rail/awake.ts`): the latest of when the Cell was
-   made, woken, or sent off from rest by the person's own words. A word sent
-   while it flies leaves it at its flight's start. Pinned Cells stay first.
+1. **Awake reads in time order.** Each row stands by the time it shows
+   (flying, landed or asking since), latest first, so a Cell woken from
+   Asleep that landed a day ago stands among the day-old rows, not at the
+   top. The person asked for this on 2026-11-27, over the first version's
+   rows that moved only when the person acted (`byRecent`,
+   `apps/web/src/stemcells/rail/awake.ts`). Pinned Cells stay first.
 2. **Input is a lens, not a partition.** A Cell asking something keeps its
    place in Awake and wears Input's amber; Input lists the asks. Taking it
    out of Awake would be an agent moving a row.

@@ -34,7 +34,7 @@ export {
 } from "../../../../web/src/stemcells/needs/actions.ts";
 export { type LineStage } from "../../../../web/src/stemcells/rail/moves.ts";
 export {
-  byLaunch,
+  byRecent,
   ROW_LIGHT,
   rowStateOf,
   type Launchable,

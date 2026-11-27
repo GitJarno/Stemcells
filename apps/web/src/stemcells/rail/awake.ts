@@ -1,8 +1,7 @@
 /**
- * Awake holds still (stemcells/tasks/awake-asleep.md): a Cell stands where the person last brought
- * it forward, by making it, waking it (by hand or by a timed sleep's alarm) or sending it off from rest. A word sent while it flies, and
- * anything an agent does (landing, asking, another Cell's message), leaves it where it is. Shared
- * with the phone (`apps/mobile/src/stemcells/line/kit.ts`), so the Mac and the phone agree.
+ * Awake reads in time order (stemcells/tasks/awake-asleep.md, decision 1): each row stands by the
+ * time it shows, so a woken Cell landed a day ago stands among the day-old ones. Shared with the
+ * phone (`apps/mobile/src/stemcells/line/kit.ts`), so the Mac and the phone agree.
  */
 
 export interface Launchable {
@@ -36,9 +35,15 @@ export function launchedAt(cell: Launchable): number {
   );
 }
 
-/** Awake's order: the latest brought forward first, and a tie by id, so it never shuffles. */
-export function byLaunch<C extends Launchable>(cells: ReadonlyArray<C>): C[] {
-  const at = new Map(cells.map((cell) => [cell, launchedAt(cell)]));
+/**
+ * Awake's order: the time each row shows (flying, landed or asking since), latest first; a Cell
+ * with none by when it was last brought forward; a tie by id, so it never shuffles.
+ */
+export function byRecent<C extends Launchable>(
+  cells: ReadonlyArray<C>,
+  sinceOf: (cell: C) => string | null | undefined,
+): C[] {
+  const at = new Map(cells.map((cell) => [cell, msOf(sinceOf(cell)) ?? launchedAt(cell)]));
   // The phone's Hermes has no toSorted.
   return [...cells].sort(
     (a, b) => at.get(b)! - at.get(a)! || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),

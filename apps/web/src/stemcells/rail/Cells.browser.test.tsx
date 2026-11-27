@@ -118,7 +118,7 @@ const cells: CellStanding[] = [
   standing("thread-l2", "done", "Done: #309 merged"),
 ];
 
-/** When the person last brought each Cell forward: Awake's order, after the pin (`rail/awake.ts`). */
+/** When the person last brought each Cell forward: Awake's order where a row shows no time. */
 const launches = new Map(
   (
     [
@@ -354,7 +354,7 @@ function Column() {
 }
 
 describe("the Cells' column", () => {
-  it("opens on every Cell awake, pins first then the latest brought forward, each lit by its state", async () => {
+  it("opens on every Cell awake, pins first then by the time each row shows, each lit by its state", async () => {
     setup(null);
     await using screen = await render(<Column />);
     await expect
@@ -373,8 +373,9 @@ describe("the Cells' column", () => {
       "thread-l1",
       "thread-l2",
       "thread-w",
-      "thread-b",
+      // Asking since the same minute: a tie stands by id.
       "thread-a",
+      "thread-b",
     ]);
     const light = (id: string) => {
       const plate = awake
