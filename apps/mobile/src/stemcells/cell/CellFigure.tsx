@@ -133,6 +133,8 @@ export function CellFigure(props: {
   readonly formingFrom?: number | undefined;
   /** When its last turn landed (ms since the epoch): a cheer seen as it happens plays from its first frame. */
   readonly landedAt?: number | undefined;
+  /** It waits for the person's check: its forming's first blocks, held, until it forms on (`home/PlannedRows.tsx`). */
+  readonly outline?: boolean | undefined;
 }) {
   const points = props.points ?? 2;
   const { name, mood, activity } = props;
@@ -140,7 +142,8 @@ export function CellFigure(props: {
   const plays = props.plays ?? false;
   const reduced = useReducedMotion();
   const still = reduced || props.held === true;
-  const forms = props.formingFrom !== undefined && !reduced;
+  const outline = props.outline === true;
+  const forms = outline || (props.formingFrom !== undefined && !reduced);
   const key = `${worn}|${mood}|${activity ?? ""}|${forms}|${plays ? mannerOf(name).id : ""}`;
   const ready = useComposed(key, () => {
     const look = wornLook(worn === "" ? [] : worn.split("+"));
@@ -178,9 +181,9 @@ export function CellFigure(props: {
   const shown = useSyncExternalStore(drawn !== null && !still ? onBeat : never, () => {
     if (drawn === null || look === null) return null;
     const seconds = still ? undefined : now();
-    const forming = drawn.forms
-      ? formingShown(formedOf(drawn.worn), props.formingFrom, seconds)
-      : undefined;
+    const formed = drawn.forms ? formedOf(drawn.worn) : null;
+    if (outline && formed !== null) return formed.blocks[0]!;
+    const forming = formingShown(formed, props.formingFrom, seconds);
     if (forming !== undefined) return forming;
     // A poke is answered wherever the Cell is drawn, playing or held still.
     const poked =

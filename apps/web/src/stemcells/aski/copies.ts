@@ -173,6 +173,23 @@ export async function flyCopy(
     held?.remove();
     return false;
   }
+  await flyCopyTo(layer, still, from, to, travel, held);
+  return true;
+}
+
+/**
+ * Flies a copy of `still` from Aski's box `from` to `to`, a place that is known already: a Cell's
+ * box, a chip, or the slot at the top of Awake where a planned row forms as it lands
+ * (`rail/arrivals.ts`). Resolves as it lands, the copy gone.
+ */
+export async function flyCopyTo(
+  layer: HTMLElement,
+  still: HTMLCanvasElement,
+  from: Box,
+  to: CopyTarget,
+  travel: { readonly duration: number; readonly easing: string },
+  held: HTMLCanvasElement | null = null,
+): Promise<void> {
   const whole = held !== null;
   const copy = held ?? copyAt(layer, still, from);
   const origin = centreOf(from);
@@ -197,7 +214,6 @@ export async function flyCopy(
     )
     .finished.catch(() => undefined);
   copy.remove();
-  return true;
 }
 
 /**

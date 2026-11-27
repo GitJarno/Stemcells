@@ -14,6 +14,8 @@ import { RecallScope } from "../recall/RecallPills";
 import { subscribeLaunches } from "../upstream/landing";
 import { AskiFigure } from "./AskiFigure";
 import { copiesOut } from "./copies";
+import { awakeInSight } from "../rail/arrivals";
+import { throwTo } from "./throw";
 import { AskiPerch } from "./AskiPerch";
 import { AskiMoments } from "./moments/AskiMoments";
 
@@ -71,11 +73,11 @@ export function AskiPane(props: {
     () =>
       subscribeLaunches((cells) => {
         const figure = room.current?.querySelector("[data-aski-perch-stage]");
-        if (figure)
-          void copiesOut(
-            figure,
-            cells.map((cell) => cell.threadId),
-          );
+        if (!figure) return;
+        const threadIds = cells.map((cell) => cell.threadId);
+        // To its row at Awake's top, where the Cell forms (`rail/arrivals.ts`); with Awake out of sight, to its tab's chip.
+        if (awakeInSight()) throwTo(threadIds, figure);
+        else void copiesOut(figure, threadIds);
       }),
     [],
   );
