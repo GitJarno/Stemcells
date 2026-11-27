@@ -4,6 +4,7 @@
 
 import { createContext, useSyncExternalStore } from "react";
 
+import { drawnMoonPhase } from "../line/kit";
 import type { CellState } from "../line/line";
 
 export interface HomeTabs {
@@ -13,8 +14,6 @@ export interface HomeTabs {
     readonly label: string;
     readonly count: number;
   }>;
-  /** Night falls over Asleep's sky (`StagePill.tsx`, `StageTop`). */
-  readonly night: boolean;
   readonly choose: (tab: string) => void;
   /** The machine the list is narrowed to, whose Aski the header opens. */
   readonly environmentId: string | null;
@@ -120,6 +119,8 @@ export function useFootRoom(): number {
 
 /** What the stages' pill takes of the home's foot (`StagePill.tsx`): its 36 points and a gap. */
 export const PILL_ROOM = 36 + 8;
+/** Room over each stage's first row, under the header's sky (`Sky.tsx`). */
+export const STAGE_ROOM = 8;
 
 /**
  * The pill's foot as the keyboard moves: from `rest` to `above` over the keyboard's top, never
@@ -185,4 +186,9 @@ const onMinute = (listener: () => void) => {
 /** The time, an ISO string, moving each minute on one clock for the whole home: a snooze wakes on it. */
 export function useMinute(): string {
   return useSyncExternalStore(onMinute, () => minute);
+}
+
+/** The moon's drawn phase, on the minute's clock: it changes, and renders, a few times a day. */
+export function useMoonPhase(): number {
+  return useSyncExternalStore(onMinute, () => drawnMoonPhase(Date.parse(minute)));
 }

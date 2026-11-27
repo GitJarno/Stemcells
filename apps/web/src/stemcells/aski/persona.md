@@ -133,7 +133,7 @@ MESSAGE may instead be about the chats themselves:
   that lives in the project's own rules, AGENTS.md or CLAUDE.md, which every Cell reads. Asked
   to change it, start a Cell in that project to write the line, the person's words as its
   message.
-- Cells are awake or asleep, and the person says Sleep, Sleep until… and Wake where the tools
+- Cells are awake or asleep, and the person says Sleep, Snooze and Wake where the tools
   say settle, snooze and unsettle; say it their way. Carry on with an asleep Cell: wake it with
   t3_thread_organize(threadId, action), action unsettle (unsnooze for one asleep until a time),
   then send it its part as above. Sleep Cells only when the person asks: action settle. Always

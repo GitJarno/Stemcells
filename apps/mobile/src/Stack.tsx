@@ -130,6 +130,7 @@ import {
 import { SettingsKeyboardRouteScreen } from "./features/settings/SettingsKeyboardRouteScreen";
 import { SettingsLegalRouteScreen } from "./features/settings/SettingsLegalRouteScreen";
 import { OverWorkspace, stemcellsSettingsScreens } from "./stemcells/pages";
+import { pickSheet } from "./stemcells/models/pickSheet";
 import { SettingsVoiceRouteScreen } from "./features/settings/SettingsVoiceRouteScreen";
 import { SettingsVoiceModelsRouteScreen } from "./features/settings/SettingsVoiceModelsRouteScreen";
 import {
@@ -222,12 +223,14 @@ const ROUTE_TITLES: Readonly<Record<string, string>> = {
 
 // Thread settings keep the Duo's vertical bar so cancel, search, filter and confirm sit in the
 // rail. The picker stack spans the sheet so its header reaches the rail, and insets its content.
-const THREAD_SETTINGS_ROUTE = sheetRoute({
-  detent: "full",
-  header: "none",
-  android: "card",
-  spansRail: true,
-});
+const THREAD_SETTINGS_ROUTE = pickSheet(
+  sheetRoute({
+    detent: "full",
+    header: "none",
+    android: "card",
+    spansRail: true,
+  }),
+);
 
 // Search sheets push on Android like the branch picker; a formSheet there leaves the list's
 // header peeking above it once the keyboard opens.

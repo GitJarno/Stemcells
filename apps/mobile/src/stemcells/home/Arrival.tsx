@@ -17,7 +17,6 @@ import Animated, {
 import { useResolveClassNames } from "uniwind";
 
 import { RowLight } from "../glow/RowLight";
-import { ROW_LIGHT } from "../line/kit";
 import { cellKey } from "../line/line";
 import { useHomeSidebar } from "../upstream/home";
 import type { EnvironmentThreadShell } from "../upstream/cells";
@@ -86,12 +85,7 @@ function Entering(props: {
   return (
     <>
       <Animated.View pointerEvents="none" style={[props.fill, { zIndex: -1 }, lit]}>
-        <RowLight
-          thread={props.thread}
-          light={ROW_LIGHT.news}
-          fill={FILL}
-          anchorX={props.anchorX}
-        />
+        <RowLight thread={props.thread} band={false} fill={FILL} anchorX={props.anchorX} />
       </Animated.View>
       {fades ? (
         <Animated.View

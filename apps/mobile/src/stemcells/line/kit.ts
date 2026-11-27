@@ -1,7 +1,7 @@
 // The Cells' line, its asks and the ask a Cell's chat docks: the web's own plain TypeScript,
 // imported here and nowhere else, as the creature is (`cell/kit.ts`). Cards, commands, stages and
-// their words, Awake's order and light, Input's queue and loop, settles by hand and how rows move
-// are the Mac's, so the two never disagree.
+// their words, Awake's order and light, Input's queue and loop, settles by hand, how rows move and
+// the sky are the Mac's, so the two never disagree.
 
 export {
   type CellStanding,
@@ -35,11 +35,9 @@ export {
 export { type LineStage } from "../../../../web/src/stemcells/rail/moves.ts";
 export {
   byRecent,
-  ROW_LIGHT,
   rowStateOf,
   rowStatusOf,
   type Launchable,
-  type RowLight,
   type RowStatus,
 } from "../../../../web/src/stemcells/rail/awake.ts";
 export {
@@ -48,6 +46,23 @@ export {
   LIST_MOTION,
   type ListReading,
 } from "../../../../web/src/stemcells/motion/listMotion.ts";
+export { drawnMoonPhase, litPath } from "../../../../web/src/stemcells/motion/moon.ts";
+export {
+  CLOUDS,
+  shown,
+  SKY,
+  SKY_AT,
+  SKY_SHAPE,
+  SKY_SPANS,
+  SKY_TURN,
+  skyAtStage,
+  skyStops,
+  skyTurn,
+  type SkyPalette,
+  type Span as SkySpan,
+  starGroups,
+  warmth,
+} from "../../../../web/src/stemcells/motion/sky.ts";
 export {
   EMPTY_WORDS,
   STAGE_WORDS,

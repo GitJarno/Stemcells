@@ -4,7 +4,7 @@
 /**
  * Which edge a row's main swipe stands on. A Cell moves the way the stages run, left to right:
  * Sleep is a swipe right, toward Asleep; Wake, back toward Awake, stays a swipe left, and so
- * does Sleep until…'s menu of times, where a swipe left finds options.
+ * does Snooze's menu of times, where a swipe left finds options.
  */
 export function swipeEdgeOf(primary: string): "leading" | "trailing" {
   return primary === "settle" ? "leading" : "trailing";

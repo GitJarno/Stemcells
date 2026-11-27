@@ -100,7 +100,7 @@
   align-items: center;
   gap: 0.25rem;
   opacity: 0;
-  transition: opacity 200ms;
+  transition: opacity var(--sc-motion-fade-duration) var(--sc-motion-fade-easing);
 }
 .sc-peer-note:hover .sc-peer-hover,
 .sc-peer-hover:focus-within {

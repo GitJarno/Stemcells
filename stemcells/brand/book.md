@@ -196,16 +196,16 @@ a metaphor for becoming, never for medicine.
 
 ### The words
 
-| Word                      | Means                                    |
-| ------------------------- | ---------------------------------------- |
-| Stemcells                 | The app. One word                        |
-| Cell                      | An agent: one chat, one job              |
-| Aski                      | The one you talk to, who runs the others |
-| Subcell                   | A helper a Cell starts                   |
-| throw                     | Send an ask                              |
-| Awake, Asleep             | A Cell's stage, as a person reads it     |
-| Flying, Landed, Input     | An awake Cell's own state                |
-| Sleep, Sleep until…, Wake | Put a Cell away, for a time, and back    |
+| Word                  | Means                                    |
+| --------------------- | ---------------------------------------- |
+| Stemcells             | The app. One word                        |
+| Cell                  | An agent: one chat, one job              |
+| Aski                  | The one you talk to, who runs the others |
+| Subcell               | A helper a Cell starts                   |
+| throw                 | Send an ask                              |
+| Awake, Asleep         | A Cell's stage, as a person reads it     |
+| Flying, Landed, Input | An awake Cell's own state                |
+| Sleep, Snooze, Wake   | Put a Cell away, for a time, and back    |
 
 Labels and buttons stay plain. Wordplay lives in Aski's and the Cells' own
 lines, one at a time, and the best of it is literally true on screen.

@@ -143,7 +143,6 @@ export function LineHome(props: {
   const home = {
     tab,
     options: SEGMENTS.map((segment) => ({ ...segment, count: counts[segment.id] })),
-    night: tab === "asleep",
     choose: (id: string) => {
       stages.show(id as LineStage);
       segments.choose(id as LineStage);
@@ -160,7 +159,7 @@ export function LineHome(props: {
   return (
     <HomeTabsContext value={home}>
       <View style={{ flex: 1 }}>
-        <StagePages home={stages} tab={tab} night={home.night} render={page} />
+        <StagePages home={stages} tab={tab} render={page} />
         <DiskFoot />
         <UndoLine />
       </View>

@@ -105,7 +105,7 @@ The fork exists to keep taking upstream's work for free. The reasoning is in
   person reads are Awake and Asleep; Flying, Landed and Input are an awake
   Cell's own states, and an ask is answered in its chat; never Working or
   Needs you. The verbs are Sleep,
-  Sleep until… and Wake, never Settle, Snooze or "put to sleep". Code, wire
+  Snooze (a sleep with an alarm) and Wake, never Settle or "put to sleep". Code, wire
   values and text only models read keep `working`, `needs-you`, `done` and
   `settled` (`stemcells/tasks/awake-asleep.md`, `stemcells/tasks/input.md`).
 

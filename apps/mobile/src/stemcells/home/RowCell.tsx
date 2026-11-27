@@ -20,7 +20,7 @@ import { formingFrom } from "../cell/forming";
 import { BOX, cellNameOf, clockSeconds } from "../cell/kit";
 import { ThreadCell } from "../cell/ThreadCell";
 import { RowLight } from "../glow/RowLight";
-import { ROW_LIGHT, rowStateOf, type RowStatus, rowStatusOf, STATUS_WORDS } from "../line/kit";
+import { rowStateOf, type RowStatus, rowStatusOf, STATUS_WORDS } from "../line/kit";
 import { cellKey } from "../line/line";
 import { STATUS_SYMBOL } from "../line/StatusSymbol";
 import { ProjectMark } from "../project/ProjectMark";
@@ -202,13 +202,9 @@ function AwakeRow(props: {
   const status = rowStatusOf(rowState, thread.hasPendingApprovals);
   return (
     <View className="flex-row items-center gap-2" style={{ minHeight: ROW_HEIGHT - PADDED.card }}>
-      <RowLight
-        key={key}
-        thread={thread}
-        light={ROW_LIGHT[rowState]}
-        fill={AWAKE_FILL}
-        anchorX={AWAKE_ANCHOR}
-      />
+      {rowState === "flying" ? (
+        <RowLight key={key} thread={thread} band fill={AWAKE_FILL} anchorX={AWAKE_ANCHOR} />
+      ) : null}
       <Figure thread={thread} points={2} />
       <View className="min-w-0 flex-1">{props.children}</View>
       {state?.since ? <Since since={state.since} status={status} /> : null}

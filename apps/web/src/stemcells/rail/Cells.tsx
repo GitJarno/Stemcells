@@ -29,7 +29,8 @@ import { leaving, page, useSettleAtOnce, useWakeByHand } from "../needs/live";
 import { useNeeds } from "../needs/stream";
 import type { CellStanding, Condition } from "../needs/wire";
 import { toneTokenOf } from "../glow/light";
-import { crossing, resweep, sweep } from "../motion/beat";
+import { resweep, rowCrossing, sweep } from "../motion/beat";
+import { drawnMoonPhase } from "../motion/moon";
 import { type Sight, watchSight } from "../motion/sight";
 import { ProjectMark } from "../project/ProjectMark";
 import { CellMark } from "../tabs/CellMark";
@@ -84,7 +85,6 @@ import { clearedWords, STEM_CELL_FACTS } from "../../../../../stemcells/words/in
 import {
   byRecent,
   type Launchable,
-  ROW_LIGHT,
   rowStateOf,
   type RowState,
   type RowStatus,
@@ -101,6 +101,7 @@ import { PlanRing } from "./PlanRing";
 import { RailButton } from "./RailParts";
 import { ProxyTrack } from "../tabs/ProxyTrack";
 import { useRowMotion } from "./rowMotion";
+import { ColumnSky } from "./Sky";
 import { StagePager } from "./StagePager";
 import { useRailUndoNotice } from "./undoNotice";
 import { UndoLine } from "./UndoLine";
@@ -207,6 +208,7 @@ export function Cells() {
   return (
     <div ref={setProxy} data-stemcells-cells="" data-stemcells-proxy="">
       <ProxyTrack>
+        <ColumnSky stage={shownStage} moonPhase={drawnMoonPhase(now)} />
         {/* Upstream's sidebar button, or the window's controls, stand here. */}
         <div data-stemcells-rail-titlebar="" className={cn(isElectron && "drag-region")} />
         <div data-cells-top="">
@@ -677,7 +679,7 @@ function CellLine(props: {
         >
           {light === null ? null : (
             <span data-cells-light="" aria-hidden>
-              <RowBand on={ROW_LIGHT[light.state].band} />
+              <RowBand on={light.state === "flying"} />
             </span>
           )}
           <CellMark cell={ref} />
@@ -730,8 +732,8 @@ const BAND_WIDTH = 48;
 const BAND_LEAN = "skewX(-24deg)";
 
 /**
- * The flying Cell's band, crossing its row on the composer's beat (`motion/beat.ts`), the column
- * standing for the pane it crosses. Only a transform moves; it holds unseen, steps beside
+ * The flying Cell's band, crossing its own row on the composer's beat (`motion/beat.ts`): slowly,
+ * so a list of flying Cells reads as work going on rather than flashes. Only a transform moves; it holds unseen, steps beside
  * another app and stays still with less motion. A landing lets the pass under way finish, so
  * the light comes to rest rather than going out.
  */
@@ -753,9 +755,7 @@ function RowBand(props: { on: boolean }) {
         crossingNow = null;
         return;
       }
-      const pane = column.getBoundingClientRect();
-      const left = plate.getBoundingClientRect().left - pane.left;
-      const { from, to } = crossing(pane.width, left, BAND_WIDTH / 2);
+      const { from, to } = rowCrossing(plate.getBoundingClientRect().width, BAND_WIDTH);
       const stepped = sight === "unfocused";
       if (crossingNow) resweep(crossingNow, from, to, BAND_LEAN, stepped);
       else crossingNow = sweep(band, from, to, BAND_LEAN, stepped);

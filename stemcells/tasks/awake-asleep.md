@@ -27,24 +27,23 @@ questions; the agent's state shows inside the row.
 2. **Input is a lens, not a partition.** A Cell asking something keeps its
    place in Awake and wears Input's amber; Input lists the asks. Taking it
    out of Awake would be an agent moving a row.
-3. **The row's light says the agent's state; its hue says the provider.**
+3. **A flying Cell's row is lit; its hue says the provider.**
    One line per Cell, as Asleep's rows are: the Cell, its project's mark
-   and title, a time. Behind it, the composer's light (`glow/Wave.tsx`,
-   `apps/web/src/stemcells/glow/`) from the Cell outward, in the provider's
-   tone (Claude's orange, Codex's green):
-   - flying: the wash, and the band crossing on the wall clock's beat, in
-     step with the Mac's composer;
-   - landed, not yet opened: the wash, still: the light came to rest;
-   - landed and seen: a faint wash;
-   - needs you: the wash in Input's amber (amber means Input and nothing
-     else, `stemcells/brand/book.md`);
-   - asleep: no light; the Cell sleeps.
-     No provider name or icon in text, and no coloured edge.
-     The time means "how long it's been like this": flying for, landed for,
-     waiting for, asleep for.
+   and title, a time. While the Cell flies, the composer's light
+   (`glow/Wave.tsx`, `apps/web/src/stemcells/glow/`) is a lamp round it in
+   the provider's tone (Claude's orange, Codex's green), and the band
+   crosses the row on the wall clock's beat, slowly, over the row alone. It
+   is the felt sense of work going on; the status icon and the time's
+   colour already say the state, so asking, landed and asleep rows wear no
+   light. The lamp is an ellipse as tall as the row and gone by its edges:
+   lit rows never meet as boxes, and the only box in the list is the open
+   Cell's. A landing lets the light come to rest and go out. No provider
+   name or icon in text, and no coloured edge. The time means "how long
+   it's been like this": flying for, landed for, waiting for, asleep for.
 4. **The verb is Sleep; its reverse is Wake.** It pairs with the stages and
    is what the Mac says of itself. Never "put to sleep": Cells are
-   creatures. Snooze becomes **Sleep until…**, a sleep with an alarm; its
+   creatures. **Snooze** stays, a sleep with an alarm (2026-11-27: "Sleep
+   until…" didn't fit a swipe and said less); its
    wake time shows on the row. Wake already undoes a snooze upstream, and
    now undoes any sleep.
 5. **Words.** Flying and Landed stay the words for an awake Cell's state
@@ -68,14 +67,14 @@ questions; the agent's state shows inside the row.
   Asleep's count takes it.
 - Wake: the Cell opens its eyes and its row stands at Awake's top.
 - Launch: a word from rest lifts the row to the top and its band starts.
-- Asleep keeps the night sky (`home/Night.tsx`).
+- Asleep is night and Awake day, behind the header (`day-night.md`).
 
 ## Plan
 
 - [x] `launchedAt` and `byLaunch`, with their table of cases
 - [ ] Words: `stemcells/words/awake.ts`; the word table's upstream verbs
 - [ ] Phone: three stages, Awake's one-line rows with the light, Sleep on a
-      swipe right, Sleep until… and Wake to the left, Asleep's night
+      swipe right, Snooze and Wake to the left, Asleep's night
 - [ ] Mac: the column's three stages, the same rows and light, Sleep in the
       composer's line and on a closed landed pane, undo notices
 - [ ] Aski: `stemcells_show` stages, the standing tool's words, the persona

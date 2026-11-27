@@ -1,6 +1,7 @@
 // The home's stages, a list each, all kept mounted under the stages' pill at the home's foot
 // (`StagePill.tsx`), so UIKit's segment slides whole; a tap brings the chosen list in on the UI
-// thread. Lists out of sight render nothing new and keep their place.
+// thread, and turns the header's sky (`Sky.tsx`) in the same frame. Lists out of sight render
+// nothing new and keep their place.
 
 import { memo, use, useLayoutEffect, useMemo, useState, type ReactNode } from "react";
 import { StyleSheet, View } from "react-native";
@@ -17,10 +18,12 @@ import { scheduleOnUI } from "react-native-worklets";
 
 import { ScreenVeils } from "../edge/ScreenVeils";
 import { useContentTopInset, useDuoBarBottom, useHomeSidebar } from "../upstream/home";
+import { skyAtStage } from "../line/kit";
 import { CopyLayer } from "./CopyLayer";
 import { enteringX, HomeCellsHeld, HomeInFront, HomeStageContext, StagePageContext } from "./state";
+import { Sky } from "./Sky";
 import { StagePill } from "./StagePill";
-import { useNight } from "./useNight";
+import { turnSky } from "./useSky";
 
 /** As UIKit's segment slides: one short ease-out, whatever the distance. */
 const SWITCH = { duration: 200, easing: Easing.out(Easing.cubic) };
@@ -73,8 +76,11 @@ export function useStagePages<Stage extends string>(stages: readonly Stage[], op
       stages,
       pages,
       /** Called in the tap's own frame, before React renders the chosen stage; `still` at once. */
-      show: (stage: Stage, still = reduced) =>
-        scheduleOnUI(turn, pages, front, stages.indexOf(stage), still),
+      show: (stage: Stage, still = reduced) => {
+        // The sky turns whichever way the list does: the first home to show takes it as it stands.
+        turnSky(skyAtStage(stage), reduced);
+        scheduleOnUI(turn, pages, front, stages.indexOf(stage), still);
+      },
     }),
     [stages, pages, front, reduced],
   );
@@ -83,7 +89,6 @@ export function useStagePages<Stage extends string>(stages: readonly Stage[], op
 export function StagePages<Stage extends string>(props: {
   readonly home: ReturnType<typeof useStagePages<Stage>>;
   readonly tab: Stage;
-  readonly night: boolean;
   readonly render: (stage: Stage) => ReactNode;
 }) {
   const { home, tab } = props;
@@ -93,8 +98,6 @@ export function StagePages<Stage extends string>(props: {
   const held = use(HomeCellsHeld);
   // Where a list rests: under the inset T3's list rests under, at the native header's foot.
   const inset = useContentTopInset();
-  // Night falls over Asleep's sky (`StagePill.tsx`, `StageTop`), wherever the veils are drawn.
-  useNight(props.night);
   // The rest mount once the first has shown, so a switch only ever shows a list.
   const [warm, setWarm] = useState(false);
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Follow a stage chosen without a tap (where the home opens) at once; a tap has turned already.
@@ -126,7 +129,8 @@ export function StagePages<Stage extends string>(props: {
           </Stage>
         );
       })}
-      {sidebar ? null : <ScreenVeils night={props.night} bottom barBottom={barBottom} />}
+      {sidebar ? null : <ScreenVeils bottom barBottom={barBottom} />}
+      <Sky />
       <StagePill />
       <CopyLayer shown={inFront} />
     </View>

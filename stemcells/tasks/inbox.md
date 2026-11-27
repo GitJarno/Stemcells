@@ -41,7 +41,7 @@ Asleep. Going through it is a loop: read the ask, answer, next.
 
 ## Plan
 
-- [x] `no-undo.md`: answers, Sleep, Sleep until… and Wake act at once, with
+- [x] `no-undo.md`: answers, Sleep, Snooze and Wake act at once, with
       no undo line; deleting keeps its undo
 - [x] Input back as a stage on the phone and the Mac, longest waiting first
 - [x] Entering Input opens the top chat where a chat stands beside the list
