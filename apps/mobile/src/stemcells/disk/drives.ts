@@ -16,7 +16,7 @@ type Answer =
   | { readonly ok: false };
 
 /** A JSON request to the machine; null `body` for a GET. */
-async function callLine(
+export async function callLine(
   environmentId: string,
   path: string,
   body: object | null = null,

@@ -15,6 +15,8 @@ import {
 } from "../upstream/disk";
 import { DriveHero } from "./DriveHero";
 import { setLookInside, useDriveReading, useDrives } from "./drives";
+import { useMoves } from "./moves";
+import { MoveButton, MovesSection } from "./MovesPanel";
 import { shelfGroups, useFieldTheme } from "./fieldPicture";
 import {
   bandColor,
@@ -365,6 +367,7 @@ export function DrivePanel(props: {
   const { colors, tones } = useFieldTheme();
   // Once the machine takes the choice, the drive it was made for is measured, if it still shows.
   const lookInsideChoice = useLookInside(environmentId, reached, drive, () => measureAgain(key));
+  const moves = useMoves(environmentId);
   const [width, setWidth] = useState(0);
 
   const volume =
@@ -612,6 +615,13 @@ export function DrivePanel(props: {
                             ? `${finding.note} · ${finding.countLabel}`
                             : finding.note}
                       </AppText>
+                      <MoveButton
+                        environmentId={environmentId}
+                        kind={finding.kind}
+                        bytes={finding.bytes}
+                        drives={known.drives}
+                        moves={moves}
+                      />
                     </View>
                     <AppText textRole="footnote" className="text-foreground" style={NUMBERS}>
                       {diskBytes(finding.bytes)}
@@ -623,6 +633,8 @@ export function DrivePanel(props: {
           })}
         </SettingsSection>
       ) : null}
+
+      {external ? null : <MovesSection environmentId={environmentId} moves={moves} />}
 
       {reading !== null && lookInside ? (
         <AppText textRole="footnote" className="-mt-3 px-2 text-foreground-muted">

@@ -110,6 +110,8 @@ it.layer(NodeServices.layer)("the disk notice's route", (it) => {
         },
         setLookInside: ({ id, on }) =>
           Effect.succeed(id === drive.id ? { ...drive, lookInside: on } : null),
+        place: () => Effect.succeed(null),
+        machine: () => Effect.succeed(null),
       });
       const web = HttpRouter.toWebHandler(
         drivesLayer.pipe(

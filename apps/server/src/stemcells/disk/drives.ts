@@ -46,6 +46,8 @@ export interface DiskInfo {
   readonly internal: boolean;
   readonly solidState: boolean | null;
   readonly filesystem: string | null;
+  /** False on a volume set to ignore file ownership, which simulators can't boot from. */
+  readonly owners: boolean | null;
 }
 
 const XML_ENTITIES: Readonly<Record<string, string>> = {
@@ -79,6 +81,7 @@ export function parseDiskInfo(plist: string): DiskInfo {
     internal: plistBool(plist, "Internal") ?? false,
     solidState: plistBool(plist, "SolidState"),
     filesystem: plistString(plist, "FilesystemType"),
+    owners: plistBool(plist, "GlobalPermissionsEnabled"),
   };
 }
 

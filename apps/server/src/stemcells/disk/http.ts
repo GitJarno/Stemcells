@@ -18,6 +18,8 @@ import {
 } from "./rules.ts";
 import * as StemcellsDisk from "./StemcellsDisk.ts";
 import * as StemcellsDrives from "./StemcellsDrives.ts";
+import * as StemcellsMoves from "./StemcellsMoves.ts";
+import { isMovable } from "./moves.ts";
 import type { DiskItem, DiskVolume } from "./walk.ts";
 import { WarnBelow, writeWarnBelow } from "./warn.ts";
 
@@ -302,8 +304,105 @@ const readLayer = HttpRouter.use((router) =>
   }),
 ).pipe(Layer.provide(StemcellsDisk.layer));
 
+const MoveAway = Schema.Struct({
+  kind: Schema.String.check(Schema.isMaxLength(32)),
+  driveId: Schema.String.check(Schema.isMaxLength(64)),
+});
+const MoveKind = Schema.Struct({ kind: Schema.String.check(Schema.isMaxLength(32)) });
+
+const wireMoves = (status: StemcellsMoves.MovesStatus) => ({
+  ...status,
+  places: status.places.map((place) => ({ ...place, title: FINDING_TITLES[place.kind] })),
+});
+
+/** Starts what a body asks; 202 once it's under way, 409 with the reason when it can't. */
+const moveRoute = Effect.fn("DiskHttp.move")(function* <A>(
+  body: Schema.ConstraintDecoder<A, never>,
+  expected: string,
+  act: (
+    moves: StemcellsMoves.StemcellsMoves["Service"],
+    input: A,
+  ) => Effect.Effect<void, StemcellsMoves.MoveError> | null,
+) {
+  const input = yield* HttpServerRequest.schemaBodyJson(body).pipe(Effect.option);
+  const moves = yield* StemcellsMoves.StemcellsMoves;
+  const run = Option.isNone(input) ? null : act(moves, input.value);
+  if (run === null) return HttpServerResponse.text(expected, { status: 400 });
+  return yield* run.pipe(
+    Effect.andThen(moves.status()),
+    Effect.map((status) =>
+      HttpServerResponse.jsonUnsafe(wireMoves(status), { status: 202, headers: NO_STORE }),
+    ),
+    Effect.catchTags({
+      MoveError: (error) =>
+        Effect.succeed(
+          HttpServerResponse.jsonUnsafe(
+            { reason: error.reason },
+            { status: 409, headers: NO_STORE },
+          ),
+        ),
+    }),
+  );
+});
+
+/**
+ * GET .../moves: where each movable folder lives; POST .../moves/away `{ kind, driveId }`, .../back
+ * and .../fresh `{ kind }`. A finding's kind, never a path; reading sees where, moving is operating.
+ */
+const movesLayer = HttpRouter.use((router) =>
+  Effect.gen(function* () {
+    const moves = yield* StemcellsMoves.StemcellsMoves;
+    const provide = <E, R>(route: Effect.Effect<HttpServerResponse.HttpServerResponse, E, R>) =>
+      route.pipe(Effect.provideService(StemcellsMoves.StemcellsMoves, moves));
+    yield* router.add(
+      "GET",
+      `${DISK_PATH}/moves`,
+      UpstreamDisk.withReadAccess(
+        Effect.map(moves.status(), (status) =>
+          HttpServerResponse.jsonUnsafe(wireMoves(status), { headers: NO_STORE }),
+        ),
+      ),
+    );
+    yield* router.add(
+      "POST",
+      `${DISK_PATH}/moves/away`,
+      UpstreamDisk.withOperateAccess(
+        provide(
+          moveRoute(MoveAway, "Expected { kind, driveId }.", (service, { kind, driveId }) =>
+            isMovable(kind) ? service.moveAway({ kind, driveId }) : null,
+          ),
+        ),
+      ),
+    );
+    yield* router.add(
+      "POST",
+      `${DISK_PATH}/moves/back`,
+      UpstreamDisk.withOperateAccess(
+        provide(
+          moveRoute(MoveKind, "Expected { kind }.", (service, { kind }) =>
+            isMovable(kind) ? service.moveBack(kind) : null,
+          ),
+        ),
+      ),
+    );
+    yield* router.add(
+      "POST",
+      `${DISK_PATH}/moves/fresh`,
+      UpstreamDisk.withOperateAccess(
+        provide(
+          moveRoute(MoveKind, "Expected { kind }.", (service, { kind }) =>
+            isMovable(kind) ? service.startFresh(kind) : null,
+          ),
+        ),
+      ),
+    );
+  }),
+);
+
 export const layer = Layer.mergeAll(
   readLayer,
   choicesLayer,
-  drivesLayer.pipe(Layer.provide(StemcellsDrives.layer)),
+  Layer.mergeAll(drivesLayer, movesLayer.pipe(Layer.provide(StemcellsMoves.layer))).pipe(
+    Layer.provide(StemcellsDrives.layer),
+  ),
 );
