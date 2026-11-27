@@ -268,7 +268,7 @@ export function PickLineup(props: PickLineupProps) {
     <div
       data-model-picker-content="true"
       className={cn(
-        "flex w-screen max-w-96 flex-col",
+        "flex w-screen max-w-104 flex-col",
         props.docked && "max-sm:w-full max-sm:max-w-none",
       )}
     >
