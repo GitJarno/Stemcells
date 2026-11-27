@@ -73,8 +73,8 @@ a search is typed, when the list is the search's.
 A Cell's row stands where the person last brought it forward and moves only
 when they act (`stemcells/tasks/awake-asleep.md`).
 
-- **Its light** is a glow from the Cell in its provider's tone, Input's amber
-  while it asks, faint once its landing is seen. A flying Cell's band crosses
+- **Its light** is a glow from the Cell in its provider's tone, amber while
+  it asks (the ask itself is answered in its chat, `stemcells/tasks/the-ask.md`), faint once its landing is seen. A flying Cell's band crosses
   its row on the composer's beat (`glow-pass`, `glow-rest`), stepped beside
   another app and held off screen. A landing lets the pass under way finish,
   and the glow stays.
@@ -114,7 +114,7 @@ button turns the chat in front over to Aski, and back to where it came from.
 - **The chip.** From a Cell, Aski's composer gets that Cell's chip, only
   into a draft that holds nothing of the person's.
 - **Held**, it opens a menu under the finger: New Aski, New Cell, and the
-  next Cell on Input when one waits.
+  next Cell that asks, when one waits.
 - **A show** (Aski taking the person to a Cell, a Settings place or a
   stage) turns the device the person is talking from, as a tap would.
 

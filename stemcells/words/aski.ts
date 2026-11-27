@@ -17,7 +17,7 @@ export const ASKI_BUTTON = {
     freshHint: "Starts Aski afresh. The chat before settles, still readable.",
     cell: "New Cell",
     /** The next Cell waiting on the person, with how many wait. */
-    input: (count: number) => `Next on Input · ${count}`,
+    input: (count: number) => `Next ask · ${count}`,
   },
   /** When a fresh Aski can't be made. */
   freshFailed: "Couldn't start a new Aski",

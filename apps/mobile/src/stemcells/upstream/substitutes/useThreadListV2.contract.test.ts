@@ -78,21 +78,27 @@ describe("Awake's order", () => {
     cell("pinned", "2026-05-01T00:00:00.000Z", { pinnedAt: NOW }),
   ];
 
-  it("a landing doesn't reorder Awake, where T3's own order would move it", () => {
-    const inFlight = listed(awake(flying));
-    const onLanding = listed(awake(landed));
-    expect(ids(inFlight)).not.toEqual(ids(onLanding));
-    expect(ids(inAwakeOrder(onLanding))).toEqual(ids(inAwakeOrder(inFlight)));
-    expect(ids(inAwakeOrder(onLanding))).toEqual(["pinned", "newest", "middle", "oldest"]);
-  });
+  /** Each row's shown time, as the line reads it from the Cells' machines. */
+  const showing = (since: Record<string, string>) =>
+    new Map(
+      Object.entries(since).map(([id, at]) => [
+        `${environmentId}:${id}`,
+        { stage: "done" as const, since: at },
+      ]),
+    );
 
-  it("lifts a Cell the person sends off from rest to the top, under the pins", () => {
-    const sent = { ...landed, latestUserAuthoredMessageAt: LAUNCHED };
-    expect(ids(inAwakeOrder(listed(awake(sent))))).toEqual([
+  it("stands each row by the time it shows, under the pins: a woken Cell among its own", () => {
+    const woken = { ...landed, unsettledAt: NOW };
+    const states = showing({
+      newest: "2026-06-01T23:30:00.000Z",
+      middle: "2026-06-01T00:30:00.000Z",
+      oldest: "2026-06-01T12:00:00.000Z",
+    });
+    expect(ids(inAwakeOrder(listed(awake(woken)), states))).toEqual([
       "pinned",
-      "middle",
       "newest",
       "oldest",
+      "middle",
     ]);
   });
 });

@@ -10,7 +10,7 @@ import { askiChatsOf } from "../../aski/chat";
 import { HomeFront } from "../../home/HomeFront";
 import { inEffect, NO_PICKS, type Picks } from "../../home/picks";
 import { useMinute } from "../../home/state";
-import { setPicks, usePicks } from "../../home/usePicks";
+import { usePicks } from "../../home/usePicks";
 import { LineHome } from "../../line/LineHome";
 import { useKeepReading, useReadings } from "../../line/readings";
 import {
@@ -93,15 +93,7 @@ export function HomeScreen(props: Props) {
         connecting={!ready}
         now={now}
         inView={scope.inView}
-        projects={scope.everywhere.map((project) => ({
-          key: project.key,
-          name: project.title,
-          memberKeys: project.projectRefs.map((ref) => `${ref.environmentId}:${ref.projectId}`),
-        }))}
-        narrowedTo={scope.narrowedTo}
         environmentId={scope.machine}
-        onShowAll={() => setPicks(NO_PICKS)}
-        settle={props.onSettleThread}
         pending={props.pendingTasks.length}
         olderSettled={olderSettled}
         renderList={list}
@@ -158,9 +150,6 @@ function scopeOf(picks: Picks, props: Props) {
       project.projectRefs.map((ref) => `${ref.environmentId}:${ref.projectId}`),
     ),
   );
-  const machineLabels = props.environments
-    .filter((environment) => pickedMachines.includes(String(environment.environmentId)))
-    .map((environment) => environment.label);
   const olderScopes = props.environments.flatMap(({ environmentId }): OlderSettledScope[] => {
     if (pickedMachines.length > 0 && !pickedMachines.includes(String(environmentId))) return [];
     if (chosen.length === 0) return [{ environmentId, projectIds: null }];
@@ -172,7 +161,6 @@ function scopeOf(picks: Picks, props: Props) {
     return projectIds.length === 0 ? [] : [{ environmentId, projectIds }];
   });
   return {
-    everywhere,
     /** Where the servers' older settled chats are counted: the machines and projects in view. */
     olderScopes,
     machines: pickedMachines.length > 0 ? pickedMachines : allMachines,
@@ -181,16 +169,5 @@ function scopeOf(picks: Picks, props: Props) {
     inView: (place: Place) =>
       (pickedMachines.length === 0 || pickedMachines.includes(String(place.environmentId))) &&
       (projectKeys.size === 0 || projectKeys.has(`${place.environmentId}:${place.projectId}`)),
-    /** What the pickers show, when they narrow the home: "in Harbor", "on Studio". */
-    narrowedTo:
-      chosen.length === 1
-        ? `in ${chosen[0]?.title}`
-        : chosen.length > 1
-          ? "in these projects"
-          : machineLabels.length === 1
-            ? `on ${machineLabels[0]}`
-            : machineLabels.length > 1
-              ? "on these machines"
-              : null,
   };
 }

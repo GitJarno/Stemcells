@@ -270,7 +270,7 @@ it.effect("the icon counts the cards, and falls silently once one is answered", 
     const w = yield* world();
     yield* w.register("aa11");
     yield* TestClock.adjust(HOLD_MS);
-    // A card not yet due still counts, as on the phone's Input segment.
+    // A card not yet due still counts, as the phone's badge counts it.
     yield* Queue.offer(w.lists, listOf(need("a", 0), need("b", HOLD_MS)));
     assert.deepStrictEqual((yield* Queue.take(w.sent)).notice.badge, 2);
 

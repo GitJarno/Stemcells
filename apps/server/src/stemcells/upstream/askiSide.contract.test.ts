@@ -216,10 +216,10 @@ it.effect("stemcells_show answers Aski's own chat and refuses every other caller
     });
 
     for (const caller of [fromThread(cell), fromThread(earlier)]) {
-      expect((yield* show(caller, { stage: "Input" })).refused?.code).toBe("capability_denied");
+      expect((yield* show(caller, { stage: "Awake" })).refused?.code).toBe("capability_denied");
     }
     // A client outside the app isn't offered it, and its call finds no such tool.
-    const outside = yield* Effect.flip(call(fromOutside, { stage: "Input" }));
+    const outside = yield* Effect.flip(call(fromOutside, { stage: "Awake" }));
     expect(outside.message).toBe("Tool 'stemcells_show' not found");
   }).pipe(Effect.provide(layerTest)),
 );
@@ -233,7 +233,7 @@ it.effect(
         Effect.map(show(fromThread(aski), input), (answer) => answer.refused?.code);
 
       expect(yield* refusal({})).toBe("invalid_request");
-      expect(yield* refusal({ cell, stage: "Input" })).toBe("invalid_request");
+      expect(yield* refusal({ cell, stage: "Awake" })).toBe("invalid_request");
       expect(yield* refusal({ settings: "Settings › Nowhere at all" })).toBe("invalid_request");
       expect(yield* refusal({ cell: deleted })).toBe("thread_not_found");
       expect(yield* refusal({ cell: "thread:aski-side:never" })).toBe("thread_not_found");
@@ -272,10 +272,10 @@ it.effect("New Aski pins a fresh chat as Aski's and settles the one before by ha
     ]);
 
     // The chat before shows nothing now; the fresh one does.
-    expect((yield* show(fromThread(aski), { stage: "Input" })).refused?.code).toBe(
+    expect((yield* show(fromThread(aski), { stage: "Awake" })).refused?.code).toBe(
       "capability_denied",
     );
-    expect((yield* show(fromThread(threadId), { stage: "Input" })).shown).toBeDefined();
+    expect((yield* show(fromThread(threadId), { stage: "Awake" })).shown).toBeDefined();
   }).pipe(Effect.provide(layerTest)),
 );
 

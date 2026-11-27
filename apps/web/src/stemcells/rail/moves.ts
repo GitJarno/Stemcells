@@ -17,7 +17,7 @@ export interface Hop {
 }
 
 const STAGE: Record<CellStanding["stage"], LineStage> = {
-  "needs-you": "needs",
+  "needs-you": "awake",
   working: "awake",
   done: "awake",
 };

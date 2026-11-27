@@ -1,5 +1,5 @@
-// The home's one undo line (`held.ts`): an answer's (`LineHome.tsx`) and a hidden disk
-// notice's (`disk/DiskPlate.tsx`).
+// The phone's one undo line (`held.ts`): an answer's (`ChatAsk.tsx`) and a hidden disk notice's
+// (`disk/DiskPlate.tsx`).
 
 import { sendThreadCommand } from "../upstream/needs";
 import { createHeld } from "./held";

@@ -1,5 +1,9 @@
 # Input: the stage word for a Cell that waits on the person
 
+> Since `the-ask.md`, step 2, Input is no stage: it is an awake Cell's state,
+> beside Flying and Landed, and an ask is answered in its chat. The word
+> stays where it names that state.
+
 The person, 2026-10-30, chose "Input" over "Needs you" for the stage, to be
 more concise. The stages a person reads are Input, Flying, Landed, Settled,
 in that order.

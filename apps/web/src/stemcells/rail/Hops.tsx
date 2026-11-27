@@ -28,10 +28,10 @@ const centre = (box: DOMRect) => ({ x: box.left + box.width / 2, y: box.top + bo
 const inColumn = (selector: string) =>
   document.querySelector<HTMLElement>(`[data-stemcells-cells] ${selector}`);
 
-/** Where a hop starts: the Cell's own sprite, card or row while the open list shows it, else its old stage's row. */
+/** Where a hop starts: the Cell's own sprite or row while the open list shows it, else its old stage's row. */
 const startOf = (hop: Hop) => {
   const id = CSS.escape(hop.threadId);
-  const own = inColumn(`[data-cells-thread="${id}"], [data-need-thread="${id}"]`);
+  const own = inColumn(`[data-cells-thread="${id}"]`);
   const sprite = own?.querySelector("[data-stemcells-cell-status]");
   if (sprite) return centre(sprite.getBoundingClientRect());
   if (own !== null) {
@@ -49,7 +49,7 @@ let flown = 0;
 
 /**
  * Each Cell the person moved along the line hops there (stemcells/tasks/left-column-v3.md,
- * decision 6): from its card or row, or its old stage's mark, into its new stage's count, and
+ * decision 6): from its row, or its old stage's mark, into its new stage's count, and
  * the stage catches it. One arc each, then nothing runs; with less motion, or a move the
  * person didn't make, the counts just change.
  */

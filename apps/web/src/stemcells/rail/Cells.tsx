@@ -3,11 +3,15 @@ import {
   ChartNoAxesColumnIcon,
   ChevronDownIcon,
   ChevronsLeftIcon,
+  CircleCheckIcon,
+  CircleDashedIcon,
   FolderPlusIcon,
   ListIcon,
+  MessageCircleQuestionIcon,
   MoonIcon,
   SearchIcon,
   SettingsIcon,
+  ShieldQuestionIcon,
   SquarePenIcon,
   SunIcon,
 } from "lucide-react";
@@ -20,14 +24,11 @@ import {
   type ReactNode,
 } from "react";
 
-import { useAskiRoomInFront } from "../aski/inFront";
-import { CardList, onListOf } from "../needs/CardList";
+import { onListOf } from "../needs/CardList";
 import { conditionLineOf } from "../needs/conditionLines";
-import type { Shown } from "../needs/display";
 import { useLeaving } from "../needs/leaving";
 import { leaving, page, useSettleAtOnce, useWakeByHand } from "../needs/live";
 import { useNeeds } from "../needs/stream";
-import { reveal } from "../needs/walk";
 import type { CellStanding, Condition } from "../needs/wire";
 import { toneTokenOf } from "../glow/light";
 import { crossing, resweep, sweep } from "../motion/beat";
@@ -51,7 +52,7 @@ import {
   type AsleepCell,
   type ShelvedCell,
 } from "../upstream/column";
-import { useNowMinuteMs, useOpenFromNeeds, usePrimaryEnvironmentId } from "../upstream/needs";
+import { useNowMinuteMs, usePrimaryEnvironmentId } from "../upstream/needs";
 import {
   isElectron,
   openAddProject,
@@ -77,12 +78,21 @@ import {
   EMPTY_WORDS,
   SLEEP,
   STAGE_WORDS,
+  STATUS_WORDS,
   WAKE,
   wakesWords,
 } from "../../../../../stemcells/words/awake.ts";
-import { byLaunch, type Launchable, ROW_LIGHT, rowStateOf, type RowState } from "./awake";
+import {
+  byRecent,
+  type Launchable,
+  ROW_LIGHT,
+  rowStateOf,
+  type RowState,
+  type RowStatus,
+  rowStatusOf,
+} from "./awake";
 import { useColumnStore, type ColumnStage } from "./column";
-import { elsewhere, elsewhereWords, shows } from "./filter";
+import { shows } from "./filter";
 import { Hops } from "./Hops";
 import { standingsOf, type Standings } from "./moves";
 import { DiskPlate } from "./DiskPlate";
@@ -96,7 +106,6 @@ import { UndoLine } from "./UndoLine";
 import { UnlessBetter, UpdateBanner } from "./UpdateBanner";
 import "../tokens/stemcells.css";
 import "./rail.css";
-import "../needs/needs.css";
 import "./cells.css";
 
 const NO_STANDINGS: Standings = new Map();
@@ -107,9 +116,10 @@ const ASLEEP_SHOWN = 30;
 type Ref = { readonly environmentId: string; readonly threadId: string };
 
 /**
- * The left column as the Cells' line (stemcells/tasks/awake-asleep.md): what needs you, open by
- * default, the Cells awake and those asleep, each stage a row at the foot that opens it in its
- * place. It reads the Cells, never the route, so moving between tabs leaves it as it is.
+ * The left column as the Cells' line (stemcells/tasks/awake-asleep.md): the Cells awake, open by
+ * default, and those asleep, each stage a row at the foot that opens it in its place. An ask is
+ * answered in its Cell's chat, and its Awake row wears Input's light. It reads the Cells, never
+ * the route, so moving between tabs leaves it as it is.
  */
 export function Cells() {
   const navigate = useNavigate();
@@ -155,32 +165,17 @@ export function Cells() {
     };
   }, []);
 
-  // Asks never hide: Input counts every one, and says where those the filter leaves out are.
-  const asking = onList.filter((each) => each.goneAt === null);
-  const waiting = asking.length;
-  const askedElsewhere =
-    environmentId === null
-      ? null
-      : elsewhereWords(
-          elsewhere(
-            project,
-            projects,
-            environmentId,
-            asking.map((each) => each.need),
-          ),
-        );
   const asked = askedSince(onList);
   const awake =
     environmentId === null
       ? []
-      : awakeOrder((cells ?? []).filter(here), shelves.pinned, shelves.launches).map((cell) =>
-          awakeRowOf(cell, environmentId, sleeping.has(cell.threadId), asked),
+      : awakeOrder((cells ?? []).filter(here), shelves.pinned, shelves.launches, asked).map(
+          (cell) => awakeRowOf(cell, environmentId, sleeping.has(cell.threadId), asked),
         );
   const staying = awake.filter((row) => !row.leaving);
   // A Cell a shared stop holds (conditions.md) reads `working` on the wire and isn't flying.
   const held = staying.filter((row) => row.holds !== null);
   const counts: Record<ColumnStage, number> = {
-    needs: waiting,
     awake: staying.length,
     asleep: asleepCount,
   };
@@ -215,16 +210,6 @@ export function Cells() {
           onAim={setAim}
           proxy={proxy}
           pages={{
-            needs: (
-              <NeedsHere
-                waiting={waiting}
-                waitingHere={asking.filter((each) => here(each.need)).length}
-                only={project === null ? undefined : (each) => here(each.need)}
-                project={project?.name ?? null}
-                elsewhere={askedElsewhere}
-                onShowAll={() => setProject(null)}
-              />
-            ),
             awake: (
               <>
                 {(conditions ?? []).map((condition) => (
@@ -255,7 +240,7 @@ export function Cells() {
         />
         <nav data-cells-stages="" aria-label="Stages">
           <UndoLine />
-          {(["needs", "awake", "asleep"] as const).map((each) => (
+          {(["awake", "asleep"] as const).map((each) => (
             <StageRow
               key={each}
               stage={each}
@@ -305,18 +290,19 @@ export function Cells() {
 
 /**
  * Awake's order (stemcells/tasks/awake-asleep.md, decision 1): pins first, as the person set
- * them, then the latest brought forward. Landing, asking or working never moves a row.
+ * them, then by the time each row shows, latest first.
  */
 function awakeOrder(
   cells: ReadonlyArray<CellStanding>,
   pinned: ReadonlyArray<ShelvedCell>,
   launches: ReadonlyMap<string, Launchable>,
+  asked: ReadonlyMap<string, string>,
 ): CellStanding[] {
   const pins = new Map(pinned.map((cell, index) => [cell.threadId, index]));
   const first = cells
     .filter((cell) => pins.has(cell.threadId))
     .toSorted((a, b) => pins.get(a.threadId)! - pins.get(b.threadId)!);
-  const rest = byLaunch(
+  const rest = byRecent(
     cells
       .filter((cell) => !pins.has(cell.threadId))
       .map((cell) => ({
@@ -324,6 +310,7 @@ function awakeOrder(
         id: cell.threadId,
         cell,
       })),
+    ({ cell }) => sinceOf(cell, asked),
   );
   return [...first, ...rest.map((each) => each.cell)];
 }
@@ -363,9 +350,13 @@ const awakeRowOf = (
   line: cell.line,
   stage: cell.stage,
   holds: cell.holds ?? null,
-  since: cell.stage === "needs-you" ? (asked.get(cell.threadId) ?? null) : (cell.since ?? null),
+  since: sinceOf(cell, asked),
   leaving,
 });
+
+/** The time an awake row shows: since it asked, else since its stage began. */
+const sinceOf = (cell: CellStanding, asked: ReadonlyMap<string, string>): string | null =>
+  cell.stage === "needs-you" ? (asked.get(cell.threadId) ?? null) : (cell.since ?? null);
 
 /**
  * Which project the column shows, quiet until it's pointed at; every one by default. Adding a
@@ -442,65 +433,6 @@ function StageRow(props: {
   );
 }
 
-/**
- * What needs you: the cards, each folding away the moment it's answered,
- * slept or gone. In front of Aski's room, which shows every ask open, they
- * fold to an index of it (stemcells/tasks/aski-asks.md, decision 8).
- */
-function NeedsHere(props: {
-  waiting: number;
-  waitingHere: number;
-  only: ((shown: Shown) => boolean) | undefined;
-  /** The project the column shows, when not every one. */
-  project: string | null;
-  elsewhere: string | null;
-  onShowAll: () => void;
-}) {
-  const view = useSyncExternalStore(page.subscribe, page.read, page.read);
-  const index = useAskiRoomInFront();
-  // A peek shows only in Aski's room; from here the chat opens where a Cell lands.
-  const open = useOpenFromNeeds();
-  return (
-    <CardList
-      view={view}
-      openChat={open.chat}
-      queue
-      reveal={index ? revealInRoom : undefined}
-      only={props.only}
-      head={
-        props.waiting === 0 && view.cleared === null ? (
-          <div data-cells-calm="">
-            <b>{EMPTY_WORDS.needs}</b>
-            <span>You’ll hear the moment a Cell does, here and on your phone.</span>
-          </div>
-        ) : !view.live ? (
-          <div data-needs-head="">
-            <span data-needs-still="">Reconnecting…</span>
-          </div>
-        ) : props.project !== null && props.waitingHere === 0 ? (
-          <div data-cells-calm="">
-            <b>Nothing in {props.project} needs you.</b>
-          </div>
-        ) : null
-      }
-      foot={
-        props.elsewhere === null ? null : (
-          <button type="button" data-cells-elsewhere="" onClick={props.onShowAll}>
-            {props.elsewhere}
-          </button>
-        )
-      }
-    />
-  );
-}
-
-/** Lands on an ask in Aski's room; a narrow room shows its asks as a sheet, opened first. */
-function revealInRoom(key: string) {
-  if (reveal(key)) return;
-  page.setSheet(true);
-  requestAnimationFrame(() => reveal(key));
-}
-
 /** What one shared stop holds, and until when (conditions.md), over Awake's rows it holds. */
 function Holding(props: { condition: Condition; count: number; now: number }) {
   if (props.count === 0) return null;
@@ -550,15 +482,15 @@ function Asleep(props: { cells: ReadonlyArray<AsleepCell>; now: number; more: Re
 
 /**
  * An awake Cell on one line: the Cell, its project's mark and its title, and how long it has
- * been like this. Behind it the composer's light from the Cell outward, in its provider's tone
- * or Input's amber (stemcells/tasks/awake-asleep.md, decision 3); Sleep takes the time's place.
+ * been like this beside T3's icon for what it does or needs. Behind the Cell a lamp in its
+ * provider's tone (stemcells/tasks/awake-asleep.md, decision 3); Sleep takes the time's place.
  */
 function AwakeCell(props: { row: AwakeRow; now: number; onSleep: () => void }) {
   const { row } = props;
   const ref = { ...row.cell, draftId: null };
   const { driver, unseen } = useCellLightFacts(ref);
   const state = rowStateOf(row.holds === null ? row.stage : undefined, unseen);
-  const tone = ROW_LIGHT[state].tone === "input" ? "--sc-needs-you" : toneTokenOf(driver);
+  const tone = toneTokenOf(driver);
   return (
     <CellLine
       cell={row.cell}
@@ -623,6 +555,8 @@ function CellLine(props: {
   const shell = useCellShell(ref);
   const onOpen = () => open(props.cell);
   const { light } = props;
+  const status =
+    light === null ? null : rowStatusOf(light.state, shell?.hasPendingApprovals === true);
   return (
     <li
       data-cells-row=""
@@ -664,9 +598,15 @@ function CellLine(props: {
           {shell === null ? null : <CellProjectMark shell={shell} />}
           <span data-cells-row-title="">{props.title}</span>
           <span data-cells-row-end="">
-            <span data-cells-row-age="">
-              {props.when ??
-                (shell === null ? null : <CellAge shell={shell} settled={light === null} />)}
+            <span
+              data-cells-row-age=""
+              className={status === null ? undefined : STATUS_ICON[status].className}
+            >
+              {light === null ? null : <RowStatusIcon status={status} />}
+              <span data-cells-row-time="">
+                {props.when ??
+                  (shell === null ? null : <CellAge shell={shell} settled={light === null} />)}
+              </span>
             </span>
             <button
               type="button"
@@ -684,6 +624,27 @@ function CellLine(props: {
         </CellCard>
       </div>
     </li>
+  );
+}
+
+/** T3's sidebar status icons and their colours (`components/sidebar/SidebarThreadRow.tsx`). */
+const STATUS_ICON: Readonly<
+  Record<RowStatus, { readonly Icon: typeof CircleDashedIcon; readonly className: string }>
+> = {
+  working: { Icon: CircleDashedIcon, className: "text-info-foreground" },
+  input: { Icon: MessageCircleQuestionIcon, className: "text-indigo-600 dark:text-indigo-300" },
+  approval: { Icon: ShieldQuestionIcon, className: "text-warning-foreground" },
+  done: { Icon: CircleCheckIcon, className: "text-success-foreground" },
+};
+
+/** The icon's place before the time, kept when there is none, so every row's time lines up. */
+function RowStatusIcon(props: { status: RowStatus | null }) {
+  if (props.status === null) return <span data-cells-row-status="" aria-hidden />;
+  const { Icon } = STATUS_ICON[props.status];
+  return (
+    <span data-cells-row-status="" role="img" aria-label={STATUS_WORDS[props.status]}>
+      <Icon aria-hidden />
+    </span>
   );
 }
 

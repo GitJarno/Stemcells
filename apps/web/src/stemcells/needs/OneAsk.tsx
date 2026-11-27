@@ -35,7 +35,6 @@ export function OneAsk(props: {
   shown: ReadonlyArray<Shown>;
   answers: ReadonlyMap<string, Hold>;
   seen: ReadonlyMap<string, number>;
-  openChat?: ((threadId: string) => void) | undefined;
 }) {
   const environmentId = usePrimaryEnvironmentId();
   const now = useNowMinuteMs();
@@ -167,7 +166,6 @@ export function OneAsk(props: {
             hold={props.answers.get(front.need.key)}
             seenAt={props.seen.get(front.need.key) ?? null}
             landed
-            openChat={props.openChat}
           />
         ) : null}
       </div>

@@ -6,8 +6,8 @@ describe("what Aski's show names", () => {
   it.each([
     [{ cell: "thread-1" }, { kind: "cell", environmentId: "mac", threadId: "thread-1" }],
     [{ stage: "Awake" }, { kind: "stage", stage: "awake" }],
-    [{ stage: "Input" }, { kind: "stage", stage: "needs" }],
-    // From a server before the three stages.
+    // From a server before the two stages: an asking Cell stands in Awake.
+    [{ stage: "Input" }, { kind: "stage", stage: "awake" }],
     [{ stage: "Settled" }, { kind: "stage", stage: "asleep" }],
     [{ settings: "Settings › Providers › Codex" }, { kind: "settings", place: "provider-codex" }],
     [{ settings: "Appearance" }, { kind: "settings", place: "page-appearance" }],
@@ -44,7 +44,7 @@ describe("what Aski's show names", () => {
 
 describe("a device turns to a show only when the person is at it", () => {
   const now = 1_000_000;
-  const event = { id: "item-1", at: now - 1_000, show: { kind: "stage", stage: "needs" } as const };
+  const event = { id: "item-1", at: now - 1_000, show: { kind: "stage", stage: "awake" } as const };
   const at = { askiInFront: true, visible: true, lastTouchAt: now - 5_000, now };
 
   it("with Aski in front, shown, touched lately and the show fresh", () => {

@@ -64,7 +64,7 @@ function heldOf(shell: Shell): Held | null {
 /**
  * Each shared stop among the Cells in reach, the oldest first. Left out: a sub-task, as its
  * parent stands for it; what the person put away (settled, snoozed, archived); and a Cell with
- * an ask (`asking`), which is the person's to answer first and stands in Input.
+ * an ask (`asking`), which is the person's to answer first, in its chat.
  */
 export function conditionsOf(
   shells: ReadonlyArray<Shell>,
