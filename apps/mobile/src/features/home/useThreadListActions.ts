@@ -11,6 +11,7 @@ import { msg } from "gt-react-native";
 import { useRef } from "react";
 
 import { withThreadDismissal } from "./thread-dismissal";
+import { pinInPlace } from "../../stemcells/home/pins";
 import * as Dialog from "../../components/ui/Dialog";
 import { m } from "../../i18n/messages";
 import { scopedThreadKey } from "../../lib/scopedEntities";
@@ -512,7 +513,7 @@ export function useThreadListActions(): {
     // Pinning clears snooze, so older Settled or Snoozed undos would fight this pin.
     ThreadUndo.invalidate("settle", scopedThreadKey(thread.environmentId, thread.id));
     ThreadUndo.invalidate("snooze", scopedThreadKey(thread.environmentId, thread.id));
-    const result = await withThreadDismissal(
+    const result = await pinInPlace(
       scopedThreadKey(thread.environmentId, thread.id),
       () =>
         pinMutation({
@@ -549,7 +550,7 @@ export function useThreadListActions(): {
     selectionHaptic();
     const plan = ThreadUndo.planThreadUndo("unpin", thread);
     const claim = ThreadUndo.begin("pin", scopedThreadKey(thread.environmentId, thread.id));
-    const result = await withThreadDismissal(
+    const result = await pinInPlace(
       scopedThreadKey(thread.environmentId, thread.id),
       () =>
         unpinMutation({

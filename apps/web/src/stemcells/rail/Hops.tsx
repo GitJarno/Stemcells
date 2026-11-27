@@ -1,13 +1,12 @@
 import { useEffectEvent, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
+import { cssEasing, LIST_MOTION } from "../motion/listMotion";
 import { takeMovedByHand } from "../needs/byHand";
 import { motionTiming, reducedMotion } from "../tokens/motion";
 import { CellMini } from "./CellMini";
 import { hopsOf, type Hop, type Standings } from "./moves";
 
-/** More Cells than this moving at once hop the first few; the rest just arrive. */
-const MOST_AT_ONCE = 4;
 /** Between one hop's start and the next's, so a few read as a line of them. */
 const STAGGER_MS = 70;
 /** How far above the higher end a hop's arc rises. */
@@ -49,8 +48,8 @@ let flown = 0;
 
 /**
  * Each Cell the person moved along the line hops there (stemcells/tasks/left-column-v3.md,
- * decision 6): from its row, or its old stage's mark, into its new stage's count, and
- * the stage catches it. One arc each, then nothing runs; with less motion, or a move the
+ * decision 6): from its row, or its old stage's mark, into its new stage's count, on the lists'
+ * move (`motion/listMotion.ts`), as its row leaves, and the stage catches it. One arc each, then nothing runs; with less motion, or a move the
  * person didn't make, the counts just change.
  */
 export function Hops(props: { standings: Standings; environmentId: string | null }) {
@@ -66,7 +65,7 @@ export function Hops(props: { standings: Standings; environmentId: string | null
     if (previous === null || previous.size === 0 || reducedMotion()) return;
     const hops = hopsOf(previous, standings, (threadId) => takeMovedByHand(threadId)).slice(
       0,
-      MOST_AT_ONCE,
+      LIST_MOTION.mostAtOnce,
     );
     const launched = hops.flatMap((hop, index): Flight[] => {
       const start = startOf(hop);
@@ -119,7 +118,7 @@ function HopFlight(props: { flight: Flight; environmentId: string; onLanded: () 
     const at = (x: number, y: number, scale = 1) => ({
       transform: `translate(${x}px, ${y}px) scale(${scale})`,
     });
-    const { duration } = motionTiming("travel");
+    const { duration, easing } = LIST_MOTION.move;
     const hop = sprite.animate(
       [
         { ...at(x0, y0), opacity: 0 },
@@ -127,7 +126,7 @@ function HopFlight(props: { flight: Flight; environmentId: string; onLanded: () 
         { ...at((x0 + x1) / 2, peak, 1.15), offset: 0.5 },
         at(x1, y1),
       ],
-      { duration, delay: flight.delay, easing: "cubic-bezier(0.42, 0, 0.58, 1)", fill: "both" },
+      { duration, delay: flight.delay, easing: cssEasing(easing), fill: "both" },
     );
     let live = true;
     void hop.finished.then(

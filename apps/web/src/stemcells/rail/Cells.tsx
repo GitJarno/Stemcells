@@ -97,6 +97,7 @@ import { litFor } from "./lit";
 import { PlanRing } from "./PlanRing";
 import { RailButton } from "./RailParts";
 import { ProxyTrack } from "../tabs/ProxyTrack";
+import { useRowMotion } from "./rowMotion";
 import { StagePager } from "./StagePager";
 import { useRailUndoNotice } from "./undoNotice";
 import { UndoLine } from "./UndoLine";
@@ -172,6 +173,9 @@ export function Cells() {
   const staying = awake.filter((row) => !row.leaving);
   // A Cell a shared stop holds (conditions.md) reads `working` on the wire and isn't flying.
   const held = staying.filter((row) => row.holds !== null);
+  // What the stages list, once read: another project is the list read again (`rowMotion.ts`).
+  const rowsView =
+    cells === null || environmentId === null ? null : `${environmentId}|${projectKey}`;
   const counts: Record<ColumnStage, number> = {
     awake: staying.length,
     asleep: asleepCount,
@@ -217,11 +221,13 @@ export function Cells() {
                     now={now}
                   />
                 ))}
-                <Awake rows={awake} now={now} />
+                <Awake rows={awake} now={now} view={rowsView} shown={stage === "awake"} />
               </>
             ),
             asleep: (
               <Asleep
+                view={rowsView}
+                shown={stage === "asleep"}
                 cells={asleep.slice(0, ASLEEP_SHOWN)}
                 now={now}
                 more={
@@ -445,11 +451,21 @@ function Holding(props: { condition: Condition; count: number; now: number }) {
 }
 
 /** Every Cell awake, each with Sleep, which stops one at work first (`upstream/settle.ts`). */
-function Awake(props: { rows: ReadonlyArray<AwakeRow>; now: number }) {
+function Awake(props: {
+  rows: ReadonlyArray<AwakeRow>;
+  now: number;
+  view: string | null;
+  shown: boolean;
+}) {
   const sleep = useSettleAtOnce();
+  const list = useRowMotion(
+    props.rows.map((row) => row.cell.threadId),
+    props.view,
+    props.shown,
+  );
   if (props.rows.length === 0) return <p data-cells-none="">{EMPTY_WORDS.awake}</p>;
   return (
-    <ol data-cells-rows="" aria-label={STAGE_WORDS.awake}>
+    <ol ref={list} data-cells-rows="" aria-label={STAGE_WORDS.awake}>
       {props.rows.map((row) => (
         <AwakeCell
           key={row.cell.threadId}
@@ -463,12 +479,23 @@ function Awake(props: { rows: ReadonlyArray<AwakeRow>; now: number }) {
 }
 
 /** Every Cell asleep, the latest first, each with Wake. */
-function Asleep(props: { cells: ReadonlyArray<AsleepCell>; now: number; more: ReactNode }) {
+function Asleep(props: {
+  cells: ReadonlyArray<AsleepCell>;
+  now: number;
+  more: ReactNode;
+  view: string | null;
+  shown: boolean;
+}) {
+  const list = useRowMotion(
+    props.cells.map((cell) => cell.threadId),
+    props.view,
+    props.shown,
+  );
   if (props.cells.length === 0 && props.more === null) {
     return <p data-cells-none="">{EMPTY_WORDS.asleep}</p>;
   }
   return (
-    <ol data-cells-rows="" aria-label={STAGE_WORDS.asleep}>
+    <ol ref={list} data-cells-rows="" aria-label={STAGE_WORDS.asleep}>
       {props.cells.map((cell) => (
         <AsleepCellRow key={cell.threadId} cell={cell} now={props.now} />
       ))}

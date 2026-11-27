@@ -51,6 +51,8 @@ const SUBSTITUTES = {
   "apps/mobile/src/features/threads/thread-row-emphasis.ts": "thread-row-emphasis.ts",
   "apps/mobile/src/features/threads/use-thread-list-v2-shelf-preferences.ts":
     "use-thread-list-v2-shelf-preferences.ts",
+  // A row moves to its new slot on the lists' one motion, the Mac's (`home/listMotion.ts`).
+  "apps/mobile/src/features/threads/threadListAnimations.ts": "threadListAnimations.ts",
   // Awake holds still and Asleep lists the latest asleep first: T3's list moves a Cell by its runs.
   "apps/mobile/src/features/threads/useThreadListV2.ts": "useThreadListV2.ts",
   // The usage chart is the Mac's, a smoothed line per agent over a faint fill,

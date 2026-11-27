@@ -1,7 +1,7 @@
 // The Cells' line, its asks and the ask a Cell's chat docks: the web's own plain TypeScript,
-// imported here and nowhere else, as the creature is (`cell/kit.ts`). What a card says and
-// offers, the commands a choice sends, the line's stages and their words, Awake's order and its
-// rows' light and a Cell's latest settle by hand are the Mac's, so the two never disagree.
+// imported here and nowhere else, as the creature is (`cell/kit.ts`). Cards, commands, stages and
+// their words, Awake's order and light, settles by hand and how rows move are the Mac's, so the
+// two never disagree.
 
 export {
   type CellStanding,
@@ -42,6 +42,12 @@ export {
   type RowLight,
   type RowStatus,
 } from "../../../../web/src/stemcells/rail/awake.ts";
+export {
+  type Bezier,
+  enteredRows,
+  LIST_MOTION,
+  type ListReading,
+} from "../../../../web/src/stemcells/motion/listMotion.ts";
 export {
   EMPTY_WORDS,
   sleptWords,
