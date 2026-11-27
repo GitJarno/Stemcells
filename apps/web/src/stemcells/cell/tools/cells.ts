@@ -8,6 +8,7 @@ import * as NodePath from "node:path";
 
 import { PACKS } from "../kit.ts";
 import { castLookOf, dayOf, looksOf } from "../looks.ts";
+import { isPiece } from "../model/body.ts";
 import { NAMES } from "../name.ts";
 import { wornLook } from "../scene.ts";
 import { check, looksOfPack } from "./check.ts";
@@ -23,6 +24,7 @@ import {
   slugOf,
 } from "./draw.ts";
 import { lookbook } from "./lookbook.ts";
+import { modelSheet, modelTurn } from "./model.ts";
 
 const USAGE = `cells: draw, check and lay out Cell art (stemcells/docs/cell-art.md)
 
@@ -39,6 +41,9 @@ const USAGE = `cells: draw, check and lay out Cell art (stemcells/docs/cell-art.
   cells acts [act…]              a sheet of the acts (art/moves, a score each), frame by
                                  frame at both sizes (--look <look>, bare by default;
                                  --ground light); every act by default
+  cells model [piece…]           the 3D model drawn as sprites: a sheet of its acts from
+                                 newborn to grown, and a whole turn moving (--grown 0..1,
+                                 pieces: beanie headphones scarf backpack specs)
   cells check [theme…] [--original]
                                  the rules; exits 1 on a failure. --original adds notes
                                  on the original's art
@@ -155,6 +160,13 @@ function main(argv: readonly string[]): number {
       const ground = flags.get("ground") === "light" ? "light" : "black";
       const name = `acts-${slugOf(spec)}${rest.length > 0 ? `-${rest.map(slugOf).join("-")}` : ""}.png`;
       console.log(write(NodePath.join(out, name), actsSheet(spec, rest, body, ground)));
+      return 0;
+    }
+    case "model": {
+      const grown = Math.min(1, Math.max(0, Number(flags.get("grown") ?? 0) || 0));
+      const worn = rest.filter(isPiece);
+      console.log(write(NodePath.join(out, "model.png"), modelSheet(body)));
+      console.log(write(NodePath.join(out, "model-turn.apng"), modelTurn(body, grown, worn)));
       return 0;
     }
     case "check": {
