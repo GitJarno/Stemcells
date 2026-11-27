@@ -21,10 +21,27 @@ to fix anyway.
 
 ## Plan
 
-- [ ] Find every undo line, notice and toast: ours and T3's (archive,
+- [x] Find every undo line, notice and toast: ours and T3's (archive,
       settle, snooze and their notices), on both clients
-- [ ] Act at once; remove the holds and lines that only served undo
-- [ ] Keep delete's undo; failure feedback in place
+- [x] Act at once; remove the holds and lines that only served undo
+- [x] Keep delete's undo; failure feedback in place
 - [ ] Tests, docs, gates, pull request, merge
 
 ## Review
+
+- Mac: the holds became `needs/answering.ts`, which sends at once and keeps
+  what became of each answer for its card (a failed one says why; words read
+  from Aski's composer still go back when nothing went). Our substitute of
+  upstream's `useThreadActions` lets a settle's and a snooze's undo go as each
+  lands, the way upstream drops one a later act supersedes, so no notice,
+  announcement or ⌘Z stands. Upstream's own undo test of that hook keeps
+  upstream's module. The two seams that added "Answered" to upstream's
+  notice are gone.
+- Phone: `line/answering.ts` sends at once; a failure shows on the chat's
+  card. The `ThreadUndoNotice` substitute draws no notice for a settle or a
+  snooze; T3's store still times it out unseen, since no phone surface
+  undoes by key.
+- Kept: unpin, archive and a discarded draft keep upstream's undo line and
+  ⌘Z on the Mac and T3's notice on the phone; a hidden disk notice keeps its
+  Undo (`line/takeBack.ts`). Deleting a Cell has no undo upstream, before or
+  after. A slept Cell woken within ten seconds still returns to its pane.
