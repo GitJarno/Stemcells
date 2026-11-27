@@ -2,7 +2,7 @@
 // Its box is the miniature's (13 × 14 cells), hats and all, so every Cell stands on the same
 // line; its picture reaches past the box by the margin, taking no room.
 
-import { useState, useSyncExternalStore } from "react";
+import { memo, useState, useSyncExternalStore } from "react";
 import { View } from "react-native";
 import { useReducedMotion } from "react-native-reanimated";
 import Svg, { ClipPath, Defs, G, Path, Text as SvgText } from "react-native-svg";
@@ -220,11 +220,11 @@ export function CellFigure(props: {
             <Glyphs glyph={shown} drawing={drawing} />
           ) : (
             drawing.inks.map((ink) => (
-              <Path
+              <Ink
                 key={`${ink.fill}${ink.opacity}`}
                 d={ink.d}
                 fill={ink.fill}
-                fillOpacity={ink.opacity}
+                opacity={ink.opacity}
               />
             ))
           )}
@@ -233,6 +233,15 @@ export function CellFigure(props: {
     </View>
   );
 }
+
+/** One ink of a frame. A beat moves two or three of a Cell's dozen; the rest keep their path and draw nothing. */
+const Ink = memo(function Ink(props: {
+  readonly d: string;
+  readonly fill: string;
+  readonly opacity: number;
+}) {
+  return <Path d={props.d} fill={props.fill} fillOpacity={props.opacity} />;
+});
 
 /** Rows of glyphs over a forming Cell's box, as the Mac draws them. */
 const GLYPH_ROWS = 3;

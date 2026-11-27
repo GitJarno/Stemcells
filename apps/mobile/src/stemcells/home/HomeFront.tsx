@@ -3,14 +3,18 @@
 
 import type { ReactNode } from "react";
 
+import { HomeSidebarKnown, useHomeSidebar } from "../upstream/home";
 import { HomeCellsHeld, HomeInFront, NoHeaderBand } from "./state";
 
 export function HomeFront(props: { readonly inFront: boolean; readonly children: ReactNode }) {
+  const sidebar = useHomeSidebar();
   return (
-    <HomeInFront value={props.inFront}>
-      <NoHeaderBand value>
-        <HomeCellsHeld value={!props.inFront}>{props.children}</HomeCellsHeld>
-      </NoHeaderBand>
-    </HomeInFront>
+    <HomeSidebarKnown value={sidebar}>
+      <HomeInFront value={props.inFront}>
+        <NoHeaderBand value>
+          <HomeCellsHeld value={!props.inFront}>{props.children}</HomeCellsHeld>
+        </NoHeaderBand>
+      </HomeInFront>
+    </HomeSidebarKnown>
   );
 }

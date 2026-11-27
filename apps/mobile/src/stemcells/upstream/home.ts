@@ -4,10 +4,10 @@
 // keeps its picks, and when a row starts to leave. Where its foot stands: `overSearch.ts`.
 
 import { useAtomValue } from "@effect/atom-react";
-import { use } from "react";
+import { createContext, use } from "react";
 import { Keyboard, useWindowDimensions } from "react-native";
 
-import { usePaneRole } from "../../components/ui/Pane";
+import { PaneContext } from "../../components/ui/Pane";
 import { useBarInset } from "../../components/ui/useBarInset";
 import { useAdaptiveWorkspaceLayout } from "../../features/layout/adaptive-workspace-context";
 import { useWorkspaceTabs } from "../../features/layout/workspace/WorkspaceTabsContext";
@@ -47,9 +47,17 @@ export function useMachineKinds() {
  * `sidebarSurface`). A collapsed split, the folded Duo's, shows its primary column as the page.
  */
 export function useHomeSidebar() {
-  const role = usePaneRole();
-  return use(NativePrimaryColumnContext) !== null && role === "sidebar";
+  const known = use(HomeSidebarKnown);
+  if (known !== null) return known;
+  return use(NativePrimaryColumnContext) !== null && use(PaneContext) === "sidebar";
 }
+
+/**
+ * The home's answer, read once at its top and handed down (`home/HomeFront.tsx`). T3's column
+ * context also names the chat selected, so it changes at every tap on a row: each row reading it
+ * for this drew again whenever the person chose a Cell (stemcells/tasks/phone-snappy.md).
+ */
+export const HomeSidebarKnown = createContext<boolean | null>(null);
 
 /** The phone the home stands upright on as a page, the folded Duo too, or null: a sidebar, an iPad, a phone on its side. */
 export function useUprightPhone(): "phone" | "duo-folded" | null {
