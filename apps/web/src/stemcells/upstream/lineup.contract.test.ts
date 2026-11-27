@@ -51,6 +51,14 @@ describe("lineup", () => {
     expect(selectedIn(entries, "claude-opus-4-8")?.entry.label).toBe("Opus 4.8");
   });
 
+  it("keeps every older model a multi-model pick runs", () => {
+    const entries = lineup(modelsOf("antigravity"), [
+      "gemini-3.6-flash-medium",
+      "gemini-3.8-flash-high",
+    ]);
+    expect(labels(entries)).toEqual(["Carbon", "Argon", "Flash", "Flash 3.6"]);
+  });
+
   it("keeps a legacy-only family a Cell runs, and its baked levels", () => {
     const entries = lineup(modelsOf("antigravity"), "gemini-3.6-flash-medium");
     const older = selectedIn(entries, "gemini-3.6-flash-medium")!;

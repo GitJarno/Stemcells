@@ -3,7 +3,7 @@
 // choice is a press: nothing opens a menu. T3's traits hook reads and writes each option.
 import { useMessages } from "gt-react";
 import { WorkflowIcon } from "lucide-react";
-import type { MouseEvent, ReactNode } from "react";
+import { type MouseEvent, type ReactNode, use } from "react";
 
 import {
   FastBolt,
@@ -11,11 +11,13 @@ import {
   type ProviderOptionDescriptor,
   type RuntimeMode,
   type RuntimeModeOption,
+  RuntimeModeLimitsTargetContext,
   selectableProviderOptionChoices,
   Toggle,
   ToggleGroup,
   type TraitsSelectionInput,
   ULTRATHINK_IN_BODY_NOTE,
+  useProviderRuntimeModeLimits,
   useTraitsSelection,
 } from "../upstream/modelPick";
 import { cn } from "../upstream/ui";
@@ -33,7 +35,16 @@ export function PickEffort(props: { readonly traits: TraitsSelectionInput | null
 
 function EffortRows(props: { readonly traits: TraitsSelectionInput }) {
   const traits = useTraitsSelection(props.traits);
-  if (traits.modelIsUnavailable) return null;
+  if (traits.modelIsUnavailable) {
+    // Nothing to change on a model the agent no longer offers; what it ran with still shows.
+    const values = traits.descriptors.flatMap((descriptor) => {
+      const value = traits.currentLabel(descriptor);
+      return value ? [`${descriptor.label}: ${value}`] : [];
+    });
+    return values.length > 0 ? (
+      <p className={cn(ROW, "text-muted-foreground text-xs")}>{values.join(" · ")}</p>
+    ) : null;
+  }
   const selects = traits.selectDescriptors.filter((descriptor) => descriptor.id !== "serviceTier");
   const effort = selects.find(isReasoningControl);
   const others = selects.filter((descriptor) => descriptor !== effort);
@@ -43,7 +54,7 @@ function EffortRows(props: { readonly traits: TraitsSelectionInput }) {
     effort.id === traits.primarySelectDescriptor?.id &&
     traits.ultrathinkInBodyText;
   return (
-    <div data-model-picker-effort className="flex flex-col">
+    <div className="flex flex-col">
       {effort ? <SelectRow descriptor={effort} traits={traits} locked={locked} effort /> : null}
       {others.map((descriptor) => (
         <SelectRow key={descriptor.id} descriptor={descriptor} traits={traits} locked={false} />
@@ -89,8 +100,9 @@ function SelectRow(props: {
             value={choice.id}
             className="flex-1"
             title={choice.description}
-            // T3's picker focuses the level marked so, the one picked.
+            // T3's picker focuses the level marked so, the one picked, else a row's first.
             data-effort-level={props.effort && choice.id === value ? "" : undefined}
+            data-effort-row={props.effort ? undefined : ""}
           >
             {props.effort ? levelLabel(choice.label) : choice.label}
           </Toggle>
@@ -108,6 +120,8 @@ export function PickFooter(props: {
   readonly onRuntimeModeChange: (mode: RuntimeMode) => void;
 }) {
   const current = props.runtimeModeOptions.find((option) => option.mode === props.runtimeMode);
+  // Mounted only while the pick is open, so this asks again each time, as T3's footer did.
+  useProviderRuntimeModeLimits(use(RuntimeModeLimitsTargetContext), "picker");
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-border/70 px-3 py-2">
       {props.traits ? <Switches traits={props.traits} /> : null}
@@ -175,7 +189,7 @@ function Switches(props: { readonly traits: TraitsSelectionInput }) {
           }}
         >
           {selectableProviderOptionChoices(tier).map((choice) => (
-            <Toggle key={choice.id} value={choice.id} title={choice.description}>
+            <Toggle key={choice.id} value={choice.id} title={choice.description} data-effort-row="">
               {choice.label === "Fast" || choice.label === "Ultrafast" ? (
                 <FastBolt ultra={choice.label === "Ultrafast"} />
               ) : null}
@@ -199,7 +213,7 @@ function Switches(props: { readonly traits: TraitsSelectionInput }) {
           }}
         >
           {[...(thinking ? [thinking] : []), ...switches].map((descriptor) => (
-            <Toggle key={descriptor.id} value={descriptor.id}>
+            <Toggle key={descriptor.id} value={descriptor.id} data-effort-row="">
               {icon(descriptor.id)}
               {descriptor.id === "fastMode" ? "Fast" : descriptor.label}
             </Toggle>

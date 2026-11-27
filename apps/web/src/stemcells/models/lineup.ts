@@ -134,13 +134,18 @@ function groupsOf<M extends LineupModel>(models: readonly M[]): Group<M>[] {
   return [...groups.values()];
 }
 
+/** One selected slug, several (a send to several models), or none. */
+type Selected = string | readonly string[] | null;
+const selectedSet = (selected: Selected): ReadonlySet<string> =>
+  new Set(selected === null ? [] : typeof selected === "string" ? [selected] : selected);
+
 function entryOf<M extends LineupModel>(
   group: Group<M>,
   newest: boolean,
-  selected: string | null,
+  selected: ReadonlySet<string>,
 ): LineupEntry<M> {
   const chosen =
-    group.models.find((model) => model.slug === selected) ??
+    group.models.find((model) => selected.has(model.slug)) ??
     group.models.find((model) => model.isDefault === true) ??
     group.levels.get("") ??
     group.models[0]!;
@@ -163,13 +168,14 @@ function entryOf<M extends LineupModel>(
 }
 
 /**
- * One agent's line: each family's newest current version, then, beside its family, the older
- * one `selected` names when it's one. Models arrive in the provider's order, which the line keeps.
+ * One agent's line: each family's newest current version, then, beside its family, any older
+ * one `selected` names. Models arrive in the provider's order, which the line keeps.
  */
 export function lineup<M extends LineupModel>(
   models: readonly M[],
-  selected: string | null = null,
+  selected: Selected = null,
 ): LineupEntry<M>[] {
+  const picked = selectedSet(selected);
   const groups = groupsOf(models);
   const newestByFamily = new Map<string, Group<M>>();
   for (const group of groups) {
@@ -180,22 +186,21 @@ export function lineup<M extends LineupModel>(
       newestByFamily.set(group.familyKey, group);
     }
   }
-  const selectedGroup = groups.find((group) =>
-    group.models.some((model) => model.slug === selected),
+  const pickedGroups = groups.filter((group) =>
+    group.models.some((model) => picked.has(model.slug)),
   );
   const entries: LineupEntry<M>[] = [];
   const placed = new Set<string>();
   for (const group of groups) {
     if (placed.has(group.familyKey)) continue;
     const newest = newestByFamily.get(group.familyKey);
-    const older =
-      selectedGroup && selectedGroup.familyKey === group.familyKey && selectedGroup !== newest
-        ? selectedGroup
-        : undefined;
-    if (!newest && !older) continue;
+    const older = pickedGroups.filter(
+      (candidate) => candidate.familyKey === group.familyKey && candidate !== newest,
+    );
+    if (!newest && older.length === 0) continue;
     placed.add(group.familyKey);
-    if (newest) entries.push(entryOf(newest, true, selected));
-    if (older) entries.push(entryOf(older, false, selected));
+    if (newest) entries.push(entryOf(newest, true, picked));
+    for (const candidate of older) entries.push(entryOf(candidate, false, picked));
   }
   return entries;
 }
@@ -203,9 +208,10 @@ export function lineup<M extends LineupModel>(
 /** Every family-and-version, each with its version, for search: "Opus 5.5", "Opus 4.8". */
 export function everyVersion<M extends LineupModel>(
   models: readonly M[],
-  selected: string | null = null,
+  selected: Selected = null,
 ): LineupEntry<M>[] {
-  return groupsOf(models).map((group) => entryOf(group, false, selected));
+  const picked = selectedSet(selected);
+  return groupsOf(models).map((group) => entryOf(group, false, picked));
 }
 
 /** The entry a selection lights, and the level within it. */

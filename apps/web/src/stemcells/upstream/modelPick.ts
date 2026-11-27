@@ -17,7 +17,7 @@ export {
 export { formatProviderUpdateRequiredNotice } from "@t3tools/client-runtime/providerUpdateRequiredModels";
 export { ProviderInstanceIcon } from "../../components/chat/ProviderInstanceIcon";
 export { FastBolt } from "../../components/chat/EffortGlyph";
-export type { ModelEsque } from "../../components/chat/providerIconUtils";
+export { getDisplayModelName, type ModelEsque } from "../../components/chat/providerIconUtils";
 export { resolveModelPickerSelectedModel } from "../../components/chat/ModelPickerContent";
 export {
   type TraitsSelectionInput,
@@ -41,3 +41,10 @@ export { hasRuntimeModelCatalog } from "../../providerModels";
 export { SharedTooltipTrigger } from "../../components/ui/shared-tooltip";
 export { Toggle, ToggleGroup } from "../../components/ui/toggle-group";
 export { InlineButton } from "../../components/ui/button";
+export { isCommandPaletteOpen } from "../../commandPaletteBus";
+export { modelPickerJumpIndexFromCommand, resolveShortcutCommand } from "../../keybindings";
+export { primaryServerKeybindingsAtom } from "../../state/server";
+export {
+  RuntimeModeLimitsTargetContext,
+  useProviderRuntimeModeLimits,
+} from "../../state/runtimeModeLimits";

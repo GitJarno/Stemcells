@@ -4,19 +4,22 @@
 // whole catalog stays one tap away for hiding models and browsing every version.
 import { useAtomValue } from "@effect/atom-react";
 import * as Haptics from "expo-haptics";
-import { useMessages } from "gt-react-native";
+import { useLocale, useMessages } from "gt-react-native";
 import { type Context, type ReactNode, use, useState } from "react";
 import { Pressable, ScrollView, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import {
+  ANTIGRAVITY_DEFAULT_MODEL,
   AppText,
   canCommitPendingModel,
   ChatGptSharingStatus,
   Chip,
   Dialog,
   environmentServerConfigsAtom,
+  formatProviderUpdateRequiredNotice,
   getProviderOptionCurrentValue,
+  groupModelsBySubProvider,
   isReasoningControl,
   type ModelOption,
   type ProviderGroup,
@@ -55,16 +58,24 @@ export function CellPick(
   const window = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const configs = useAtomValue(environmentServerConfigsAtom);
+  const messages = useMessages();
+  const locale = useLocale();
   if (!session) return null;
   // The sheet fits its content, so the catalog asks for most of the screen.
   if (catalogOpen) return <View style={{ height: window.height * 0.9 }}>{props.catalog}</View>;
 
   const selection = session.displayedModelSelection;
-  const lines = session.providerGroups.map((group) =>
-    lineOf(group, group.providerKey === selection?.instanceId ? selection.model : null),
+  const lines = session.providerGroups.flatMap((group) =>
+    linesOf(
+      group,
+      group.providerKey === selection?.instanceId ? selection.model : null,
+      group.updateRequired
+        ? formatProviderUpdateRequiredNotice(group.updateRequired, "", messages, locale)
+        : null,
+    ),
   );
-  const activeLine = lines.find((line) => line.group.providerKey === selection?.instanceId);
-  const active = activeLine ? selectedIn(activeLine.entries, selection?.model ?? null) : null;
+  const activeLine = lines.find((line) => line.lit !== null);
+  const active = activeLine ? selectedIn(activeLine.entries, activeLine.selectedSlug) : null;
   const provider = session.environmentId
     ? (configs
         .get(session.environmentId)
@@ -103,24 +114,32 @@ export function CellPick(
         showsVerticalScrollIndicator={false}
       >
         {lines.map((line) => (
-          <View key={line.group.providerKey} className="flex-row items-start gap-3">
+          <View key={line.key} className="flex-row items-start gap-3">
             <View className="h-8 w-6 items-center justify-center">
               <ProviderIcon provider={line.driver} iconUrl={line.iconUrl} size={20} />
             </View>
-            <View className="flex-1 flex-row flex-wrap gap-2">
-              {line.named ? (
-                <AppText textRole="footnote" className="self-center text-foreground-muted">
-                  {line.group.providerLabel}
+            <View className="flex-1 gap-1.5">
+              <View className="flex-row flex-wrap gap-2">
+                {line.label ? (
+                  <AppText textRole="footnote" className="self-center text-foreground-muted">
+                    {line.label}
+                  </AppText>
+                ) : null}
+                {line.entries.map((entry) => (
+                  <Chip
+                    key={entry.key}
+                    label={entry.label}
+                    selected={entry === line.lit}
+                    disabled={entry.model.option.isUnavailable === true}
+                    accessibilityLabel={`${entry.label}, ${line.group.providerLabel}`}
+                    onPress={() => choose(entry.model.option)}
+                  />
+                ))}
+              </View>
+              {line.notes.map((note) => (
+                <AppText key={note} textRole="caption" className="text-foreground-muted">
+                  {note}
                 </AppText>
-              ) : null}
-              {line.entries.map((entry) => (
-                <Chip
-                  key={entry.key}
-                  label={entry.label}
-                  selected={entry === line.lit}
-                  accessibilityLabel={`${entry.label}, ${line.group.providerLabel}`}
-                  onPress={() => choose(entry.model.option)}
-                />
               ))}
             </View>
           </View>
@@ -159,25 +178,68 @@ export function CellPick(
   );
 }
 
-function lineOf(group: ProviderGroup, selectedSlug: string | null) {
-  const models: PickModel[] = group.models.map((option) => ({
-    slug: option.selection.model,
-    name: option.label,
-    isLegacy: option.isLegacy,
-    isDefault: option.isDefault,
-    option,
-  }));
-  const entries: LineupEntry<PickModel>[] = lineup(models, selectedSlug);
+/**
+ * An agent's lines: its own models, then one per backend it runs models on (fx's), each named.
+ * Antigravity's default alias lights the model it stands for; hidden models stay hidden.
+ */
+function linesOf(group: ProviderGroup, selected: string | null, notice: string | null) {
   const first = group.models[0];
-  return {
-    group,
-    entries,
-    lit: selectedIn(entries, selectedSlug)?.entry ?? null,
-    driver: first?.providerDriver,
-    iconUrl: first?.providerIconUrl,
-    // Two accounts of one agent say which is which.
-    named: first?.providerBadge?.showBadge === true,
-  };
+  const driver = first?.providerDriver;
+  const alias = (option: ModelOption) =>
+    driver === "antigravity" && option.selection.model === ANTIGRAVITY_DEFAULT_MODEL;
+  const offered = group.models.filter(
+    (option) => !alias(option) && (!option.isHidden || option.selection.model === selected),
+  );
+  const selectedSlug =
+    driver === "antigravity" && selected === ANTIGRAVITY_DEFAULT_MODEL
+      ? (offered.find((option) => option.isDefault)?.selection.model ?? null)
+      : selected;
+  const split = group.subProviders?.length
+    ? groupModelsBySubProvider(offered, group.subProviders, (option) => option.subtitle)
+    : null;
+  const parts = [
+    { backend: null, options: split ? split.ungrouped : offered },
+    ...(split?.groups.map((part) => ({ backend: part.subProvider, options: part.models })) ?? []),
+  ];
+  return parts
+    .map(({ backend, options }) => {
+      const reasonOnly = backend?.unavailableReason !== undefined;
+      const models: PickModel[] = reasonOnly
+        ? []
+        : options.map((option) => ({
+            slug: option.selection.model,
+            name: withoutBackend(option.label, option.subtitle),
+            isLegacy: option.isLegacy,
+            isDefault: option.isDefault,
+            option,
+          }));
+      const entries: LineupEntry<PickModel>[] = lineup(models, selectedSlug);
+      return {
+        key: `${group.providerKey}\u0000${backend?.name ?? ""}`,
+        group,
+        entries,
+        selectedSlug,
+        lit: selectedIn(entries, selectedSlug)?.entry ?? null,
+        driver,
+        iconUrl: first?.providerIconUrl,
+        // Two accounts of one agent say which is which; a backend says its name.
+        label: backend?.name ?? (first?.providerBadge?.showBadge ? group.providerLabel : null),
+        notes: [backend?.unavailableReason, backend ? null : notice].filter(
+          (note): note is string => typeof note === "string",
+        ),
+      };
+    })
+    .filter((line) => line.entries.length > 0 || line.notes.length > 0);
+}
+
+/** "Anthropic: Opus 5.5" under its backend's name reads "Opus 5.5". */
+function withoutBackend(name: string, backend: string) {
+  const head = name.slice(0, backend.length);
+  const rest = name.slice(backend.length);
+  if (!backend || head.toLowerCase() !== backend.toLowerCase() || !/^[\s.:/-]/.test(rest)) {
+    return name;
+  }
+  return rest.replace(/^\s*[.:/-]?\s*/, "") || name;
 }
 
 /** The model's effort, its other choices, then its switches, from T3's descriptors. */

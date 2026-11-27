@@ -1,8 +1,10 @@
 /** Upstream's sheet parts the phone's pick draws with (`stemcells/tasks/model-pick.md`). */
 export type { ProviderOptionDescriptor, RuntimeMode, ServerProvider } from "@t3tools/contracts";
+export { ANTIGRAVITY_DEFAULT_MODEL } from "@t3tools/contracts";
 export { getProviderOptionCurrentValue } from "@t3tools/shared/model";
 export { isReasoningControl } from "@t3tools/client-runtime/model-traits";
-export { rankModelPickerSearch } from "@t3tools/client-runtime/model-search";
+export { groupModelsBySubProvider } from "@t3tools/client-runtime/providerSubProviders";
+export { formatProviderUpdateRequiredNotice } from "@t3tools/client-runtime/providerUpdateRequiredModels";
 // Types only: the sheet imports the pick, so a value from it here would close a cycle.
 export type {
   ThreadSettingsSessionProps,

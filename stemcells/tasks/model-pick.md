@@ -49,18 +49,26 @@ is shared: the phone imports it as the kits are.
 
 ## Steps
 
-- [ ] 1. The lineup rule, pure, with a table test over the manifest's models
-- [ ] 2. Mac: the picker's list as the lineup (substitute of `ModelPickerContent`)
-- [ ] 3. Mac: effort row, switches and Access in the popup (substitute of
+- [x] 1. The lineup rule, pure, with a table test over the manifest's models
+- [x] 2. Mac: the picker's list as the lineup (substitute of `ModelPickerContent`)
+- [x] 3. Mac: effort row, switches and Access in the popup (substitute of
       `ComposerModelEffort`'s column and footer), stacked under the lineup
-- [ ] 4. Mac: the trigger and every name by family (`providerIconUtils`)
-- [ ] 5. Phone: concise names everywhere (`modelOptions` substitute)
-- [ ] 6. Phone: the pick in the sheet (seam in `ThreadSettingsSheet.tsx`),
+- [x] 4. Mac: the trigger and every name by family (`providerIconUtils`)
+- [x] 5. Phone: concise names everywhere (`modelOptions` substitute)
+- [x] 6. Phone: the pick in the sheet (seam in `ThreadSettingsSheet.tsx`),
       one tap applies, the sheet fits its content
-- [ ] 7. Upstream tests our substitutes change: skip list with reasons
-- [ ] 8. Seams and substitutes recorded; drift; docs where the user guide
+- [x] 7. Upstream tests our substitutes change: skip list with reasons
+- [x] 8. Seams and substitutes recorded; drift; docs where the user guide
       describes the picker
-- [ ] 9. Real-client pass: web lab captures; Duo simulator folded and unfolded
+- [ ] 9. Real-client pass: web captures (done); Duo simulator folded and unfolded (waits on disk)
 - [ ] 10. Checks, pull request, check-local, merge
 
 ## Review
+
+The Mac's pick replaces T3's list and column whole, so a review walked what
+T3's picker did that ours had to keep: picks of several models at once (each
+lit), the provider and jump shortcuts, the effort row taking focus after a
+model, an agent's setup line beside its models, backends (fx's) as lines of
+their own, and the runtime limits' refresh. Each is kept on the Mac; the phone
+keeps backends, update notices and the default alias, and has no multi-pick or
+shortcuts to keep. Not yet seen on a phone: no disk for a simulator build.
