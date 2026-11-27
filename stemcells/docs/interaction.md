@@ -65,9 +65,9 @@ thumb rests, as the Mac keeps its stages at its column's foot
 along the pill. It rides the keyboard with the search field, and leaves while
 a search is typed, when the list is the search's.
 
-- **Asleep** opens on the night sky and its moon, the top of its list, so it
-  scrolls away with the Cells under it; nightfall and dawn play as the stage
-  turns (`home/nightfall.ts`).
+- **The sky** behind the header says the stage: dawn over Input, day over
+  Awake, night over Asleep, with the moon at its real phase. It turns as the
+  stage does, from wherever it stands (`stemcells/tasks/day-night.md`).
 
 ## The column's rows
 
