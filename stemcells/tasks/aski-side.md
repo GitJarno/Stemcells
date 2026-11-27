@@ -26,8 +26,8 @@ can't approve its own requests.
    no second, cramped chat. The button shows where it will take you: Aski
    from a Cell, the Cell's creature from Aski.
 2. **Where it stands.**
-   - Duo unfolded, sideways (home beside a chat): in the rail, just above
-     its tabs.
+   - Duo unfolded, sideways (home beside a chat): in the rail, under its
+     top group (new chat, code), where the thumb reaches (2026-11-27).
    - Every other phone posture (Duo unfolded upright, folded either way, any
      iPhone): floating at the lower right, just over the composer (the
      search field on the home).
