@@ -9,6 +9,7 @@ import { useScreenFocused } from "./aski/railFocus";
 import { CollectionScreen } from "./collection/CollectionScreen";
 import { COLLECTION_ICON, RailTrophy } from "./collection/trophy";
 import { DiskScreen } from "./disk/DiskScreen";
+import { PlanSheet } from "./limits/PlanSheet";
 import { QuietWorkOnce } from "./work/QuietWork";
 import { allowPushes, usePushState } from "./push/PushCoordinator";
 import { openSettings, type SettingsRow } from "./upstream/disk";
@@ -82,13 +83,15 @@ function usePushRow(): Row | null {
 
 /**
  * What stands over the workspace beside its pages, mounted once (`Stack.tsx`): Aski's button, the
- * trophy in the Duo's rail on Usage, and the chat's quieter work log set once.
+ * trophy in the Duo's rail on Usage, the plans' sheet the rings open, and the chat's quieter work
+ * log set once.
  */
 export function OverWorkspace(props: ComponentProps<typeof AskiButton>) {
   return (
     <>
       <AskiButton {...props} />
       <RailTrophy />
+      <PlanSheet />
       <QuietWorkOnce />
     </>
   );

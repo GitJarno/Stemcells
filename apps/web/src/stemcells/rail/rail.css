@@ -169,7 +169,7 @@
   }
 }
 
-/* The plan's rings (PlanRing.tsx). */
+/* The plan's ring (PlanRing.tsx): what its binding window has used, the figure inside. */
 [data-stemcells-gauge] {
   position: relative;
   display: grid;
@@ -186,14 +186,20 @@
 [data-stemcells-gauge-track],
 [data-stemcells-gauge-fill] {
   fill: none;
-  stroke-width: 2.5;
+  stroke-width: 2.25;
   stroke-linecap: round;
 }
 [data-stemcells-gauge-track] {
   stroke: var(--sc-faint);
 }
-[data-stemcells-gauge-fill] {
-  stroke: currentColor;
+[data-stemcells-gauge-figure] {
+  position: relative;
+  font-family: var(--sc-font-ui);
+  font-size: 0.5625rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1;
 }
 /* The disk: a drive and the gigabytes left, side by side in the wide
    column's foot, the figure under the drive on the rail. */

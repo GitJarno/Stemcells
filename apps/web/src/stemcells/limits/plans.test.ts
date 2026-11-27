@@ -1,7 +1,17 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import type { LimitAccount, LimitWindow } from "../upstream/limits";
-import { headlineOf, maskedEmail, readPlan, readPlans, readWindow, ringPlan } from "./plans";
+import type { LimitAccount, LimitWindow } from "../upstream/limitAccounts";
+import {
+  boardOrder,
+  headlineOf,
+  maskedEmail,
+  readPlan,
+  readPlans,
+  readWindow,
+  ringFigure,
+  ringPlan,
+  shortWait,
+} from "./plans";
 
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
@@ -216,5 +226,96 @@ describe("the headline", () => {
       NOW,
     );
     expect(headlineOf(plan, NOW, clock, duration)).toBeNull();
+  });
+});
+
+describe("a plan's card rows", () => {
+  const rowsOf = (windows: ReadonlyArray<LimitWindow>) =>
+    readPlan(account("a", windows), 0, "Claude", NOW).rows.map((row) => ({
+      label: row.label,
+      used: 100 - row.reading.left,
+      tone: row.reading.tone,
+    }));
+
+  it("list the session, the week, then each model's own week, without the month beside it", () => {
+    expect(
+      rowsOf([
+        window("s", "session", "Session", 34, 5, 2),
+        window("w", "weekly", "Weekly", 30, 168, 84),
+        window("f", "weekly", "Weekly · Fable", 95, 168, 84),
+        window("m", "monthly", "Monthly spend", 50, 720, 300),
+      ]),
+    ).toEqual([
+      { label: "Session", used: 34, tone: "fine" },
+      // The plan's own week stays fine; the model running short has its own row.
+      { label: "Week", used: 30, tone: "fine" },
+      { label: "Fable", used: 95, tone: "short" },
+    ]);
+  });
+
+  it("name a scope's windows by their length when it has several, and never list one twice", () => {
+    expect(
+      rowsOf([
+        window("ps", "session", "Pro · Session", 10, 5, 2),
+        window("fs", "session", "Flash · Session", 10, 5, 2),
+        window("pw", "weekly", "Pro · Weekly", 20, 168, 84),
+        window("fw", "weekly", "Flash · Weekly", 20, 168, 84),
+      ]).map((row) => row.label),
+    ).toEqual(["Pro · Session", "Pro · Week", "Flash · Session", "Flash · Week"]);
+    // A lone window of each length is the plan's own, whatever its label.
+    expect(
+      rowsOf([
+        window("s", "session", "Go · Session", 10, 5, 2),
+        window("w", "weekly", "Go · Weekly", 20, 168, 84),
+      ]).map((row) => row.label),
+    ).toEqual(["Session", "Week"]);
+    expect(
+      rowsOf([
+        window("s", "session", "Session", 10, 5, 2),
+        window("f", "weekly", "Weekly · Fable", 20, 168, 84),
+      ]).map((row) => row.label),
+    ).toEqual(["Session", "Week"]);
+  });
+});
+
+describe("the ring", () => {
+  it("shows what the window that stops the plan first has used", () => {
+    const plan = readPlan(
+      account("a", [
+        window("s", "session", "Session", 34, 5, 2),
+        window("w", "weekly", "Weekly", 66, 168, 120),
+      ]),
+      0,
+      "Claude",
+      NOW,
+    );
+    expect(ringFigure(plan, NOW)).toBe("66");
+  });
+
+  it("shows how long until an out plan frees", () => {
+    const plan = readPlan(
+      account("a", [window("s", "session", "Session", 100, 5, 4.25)]),
+      0,
+      "Claude",
+      NOW,
+    );
+    expect(ringFigure(plan, NOW)).toBe("45m");
+    expect(shortWait(3 * HOUR - MINUTE)).toBe("3h");
+    expect(shortWait(30 * HOUR)).toBe("2d");
+  });
+
+  it("lists its plan first, then the most room, the out plans last", () => {
+    const plan = (key: string, used: number) =>
+      readPlan(account(key, [window("w", "weekly", "Weekly", used, 168, 100)]), 0, key, NOW);
+    const on = plan("on", 50);
+    const roomy = plan("roomy", 10);
+    const tight = plan("tight", 40);
+    const out = plan("out", 100);
+    expect(boardOrder([out, tight, on, roomy], on).map((p) => p.account.key)).toEqual([
+      "on",
+      "roomy",
+      "tight",
+      "out",
+    ]);
   });
 });

@@ -2,7 +2,14 @@ import type { ReactNode } from "react";
 
 import { path, SIZE } from "../cell/look";
 import { brandTokenOf } from "../tokens/providers";
-import { headlineOf, type PlanReading, type PlanTone, type WindowReading } from "./plans";
+import {
+  boardOrder,
+  headlineOf,
+  type PlanReading,
+  type PlanRow,
+  type PlanTone,
+  type WindowReading,
+} from "./plans";
 import "./limits.css";
 
 const DAY = 24 * 60 * 60_000;
@@ -18,7 +25,7 @@ export function inkOf(driver: string, tone: PlanTone): string {
 
 type BoardSize = "card" | "page";
 
-interface Clocks {
+export interface Clocks {
   readonly now: number;
   /** "15.40", or "Tue 10.00" once it isn't today. */
   readonly clock: (at: number) => string;
@@ -26,143 +33,125 @@ interface Clocks {
   readonly duration: (ms: number) => string;
 }
 
-function resetOf(resetsAt: number, clocks: Clocks): string {
-  const until = resetsAt - clocks.now;
-  return until < DAY ? clocks.duration(until) : clocks.clock(resetsAt);
-}
-
 /** When it resets; when the pace runs it out first, that, and on the page the reset too. */
 function whenOf(window: WindowReading, clocks: Clocks, size: BoardSize): string {
   if (window.resetsAt === null) return "";
-  if (window.runsOutAt === null) return resetOf(window.resetsAt, clocks);
+  const reset =
+    window.resetsAt - clocks.now < DAY
+      ? clocks.duration(window.resetsAt - clocks.now)
+      : clocks.clock(window.resetsAt);
+  if (window.runsOutAt === null) return reset;
   const out = `out ${clocks.clock(window.runsOutAt)}`;
-  return size === "page" ? `${out} · resets ${clocks.clock(window.resetsAt)}` : out;
+  return size === "page" ? `${out} · resets ${reset}` : out;
 }
 
-function WindowCell(props: {
-  driver: string;
-  window: WindowReading | null;
-  clocks: Clocks;
-  size: BoardSize;
-}) {
-  const { window } = props;
-  if (window === null) return <td data-stemcells-plans-none="" />;
+function Row(props: { driver: string; row: PlanRow; clocks: Clocks; size: BoardSize }) {
+  const { reading } = props.row;
+  const used = 100 - reading.left;
+  const even = reading.evenLeft === null ? null : 100 - reading.evenLeft;
   return (
-    <td>
-      <span data-stemcells-plans-window="" data-tone={window.tone}>
-        <span data-stemcells-plans-bar="">
-          <i style={{ width: `${window.left}%`, background: inkOf(props.driver, window.tone) }} />
-          {window.evenLeft !== null ? <u style={{ left: `${window.evenLeft}%` }} /> : null}
-        </span>
-        <span data-stemcells-plans-left="">{window.left}%</span>
-        <span data-stemcells-plans-when="">
-          {whenOf(window, props.clocks, props.size)}
-          {window.note ? <small> · {window.note}</small> : null}
-        </span>
+    <li data-stemcells-plans-row="" data-tone={reading.tone}>
+      <span data-stemcells-plans-label="">{props.row.label}</span>
+      <span data-stemcells-plans-bar="">
+        <i style={{ width: `${used}%`, background: inkOf(props.driver, reading.tone) }} />
+        {even !== null ? <u style={{ left: `${even}%` }} /> : null}
       </span>
-    </td>
+      <span data-stemcells-plans-used="">{used}%</span>
+      <span data-stemcells-plans-when="">{whenOf(reading, props.clocks, props.size)}</span>
+    </li>
   );
 }
 
 /**
- * Every plan, a row each: its name, then its session (5h) and its week (7d),
- * each a bar of what is left with a tick where an even pace would be, the
- * percent, and when it resets, or when the pace runs it out first. The
- * rail's hover and the Usage page draw the same rows.
+ * Every plan, a block each: its provider's Cell, its name and tier, the Cells on it, then a row
+ * per window (the session, the week, each model's own week), each a bar of what is used with a
+ * tick where an even pace would be, the percent, and when it resets, or when the pace runs it out
+ * first. The ring's card and the Usage page draw the same blocks, the ring's plan first.
  */
 export function PlanBoard(props: {
   plans: ReadonlyArray<PlanReading>;
+  ring: PlanReading | null;
   clocks: Clocks;
   size: BoardSize;
-  /** Anything under a plan's row, as the page's reset credits. */
+  /** Anything under a plan's rows, as the page's reset credits. */
   renderUnder?: (plan: PlanReading) => ReactNode;
 }) {
-  const sessions = props.plans.some((plan) => plan.session !== null);
   return (
-    <table data-stemcells-plans="" data-size={props.size}>
-      <thead>
-        <tr>
-          <th>Plan</th>
-          {sessions ? <th>5h</th> : null}
-          <th>7d</th>
-        </tr>
-      </thead>
-      <tbody>
-        {props.plans.map((plan) => {
-          const driver = String(plan.account.driver);
-          const credits = plan.account.limits.resetCredits?.availableCount ?? 0;
-          const under = props.renderUnder?.(plan) ?? null;
-          return [
-            <tr key={plan.account.key}>
-              <td>
-                <span data-stemcells-plans-name="" data-named={plan.named ? "true" : "false"}>
-                  <svg
-                    viewBox={`0 0 ${SIZE.width} ${SIZE.height}`}
-                    style={{ color: inkOf(driver, "fine") }}
-                    fill="currentColor"
-                    aria-hidden
-                  >
-                    <path d={CELL} />
-                  </svg>
-                  <span>{plan.name}</span>
-                  {plan.working > 0 ? (
-                    <span data-stemcells-plans-chip="">
-                      {plan.working === 1 ? "1 Cell" : `${plan.working} Cells`}
-                    </span>
-                  ) : null}
-                  {credits > 0 && props.size === "card" ? (
-                    <span data-stemcells-plans-chip="">
-                      {credits === 1 ? "1 reset" : `${credits} resets`}
-                    </span>
-                  ) : null}
+    <div data-stemcells-plans="" data-size={props.size}>
+      {boardOrder(props.plans, props.ring).map((plan) => {
+        const driver = String(plan.account.driver);
+        const credits = plan.account.limits.resetCredits?.availableCount ?? 0;
+        return (
+          <section key={plan.account.key} data-stemcells-plans-plan="">
+            <header data-stemcells-plans-name="" data-named={plan.named ? "true" : "false"}>
+              <svg
+                viewBox={`0 0 ${SIZE.width} ${SIZE.height}`}
+                style={{ color: inkOf(driver, "fine") }}
+                fill="currentColor"
+                aria-hidden
+              >
+                <path d={CELL} />
+              </svg>
+              <span>{plan.name}</span>
+              {plan.account.plan && plan.account.plan !== plan.name ? (
+                <small>{plan.account.plan}</small>
+              ) : null}
+              {plan.working > 0 ? (
+                <span data-stemcells-plans-chip="">
+                  {plan.working === 1 ? "1 Cell" : `${plan.working} Cells`}
                 </span>
-              </td>
-              {sessions ? (
-                <WindowCell
+              ) : null}
+              {credits > 0 && props.size === "card" ? (
+                <span data-stemcells-plans-chip="">
+                  {credits === 1 ? "1 reset" : `${credits} resets`}
+                </span>
+              ) : null}
+            </header>
+            <ul>
+              {plan.rows.map((row) => (
+                <Row
+                  key={row.label}
                   driver={driver}
-                  window={plan.session}
+                  row={row}
                   clocks={props.clocks}
                   size={props.size}
                 />
-              ) : null}
-              <WindowCell
-                driver={driver}
-                window={plan.long}
-                clocks={props.clocks}
-                size={props.size}
-              />
-            </tr>,
-            under === null ? null : (
-              <tr key={`${plan.account.key}:under`} data-stemcells-plans-under="">
-                <td colSpan={sessions ? 3 : 2}>{under}</td>
-              </tr>
-            ),
-          ];
-        })}
-      </tbody>
-    </table>
+              ))}
+            </ul>
+            {props.renderUnder?.(plan) ?? null}
+          </section>
+        );
+      })}
+    </div>
   );
 }
 
 /**
- * The rail's hover: when the ring's plan stops you, if it will before its
- * reset, then every plan.
+ * The ring's card: when the ring's plan stops you, if it will before its reset, then every plan,
+ * and a way to the Usage page.
  */
 export function PlanCard(props: {
   plans: ReadonlyArray<PlanReading>;
   ring: PlanReading;
   clocks: Clocks;
+  onUsage: () => void;
 }) {
   const { plans, ring, clocks } = props;
   const headline = headlineOf(ring, clocks.now, clocks.clock, clocks.duration);
   return (
     <div data-stemcells-plans-card="">
+      <div data-stemcells-plans-head="">
+        <h3>Limits</h3>
+        <button type="button" onClick={props.onUsage}>
+          Usage
+        </button>
+      </div>
       {headline ? (
         <p data-stemcells-plans-headline="" data-tone={ring.tone}>
           {headline}
         </p>
       ) : null}
-      <PlanBoard plans={plans} clocks={clocks} size="card" />
+      <PlanBoard plans={plans} ring={ring} clocks={clocks} size="card" />
       {plans.length > 1 && plans.some((plan) => !plan.named) ? (
         <p data-stemcells-plans-hint="">Name your plans in Settings › Providers.</p>
       ) : null}
