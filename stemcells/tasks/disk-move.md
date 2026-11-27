@@ -40,12 +40,26 @@ switch that doesn't check out is undone before the old copy goes.
 
 ## Plan
 
-- [ ] Server: movers, the move service (copy, check, switch, undo), routes
+- [x] Server: movers, the move service (copy, check, switch, undo), routes
       under `/api/stemcells/disk/moves`, tests.
-- [ ] Web: Settings › Disk offers Move to <drive> on a movable finding, shows
+- [x] Web: Settings › Disk offers Move to <drive> on a movable finding, shows
       progress, and lists what's on other drives with Move back.
-- [ ] Phone: the same, from the Mac's own HTTP.
-- [ ] Translations.
+- [x] Phone: the same, from the Mac's own HTTP.
+- [x] Translations: English only for now, as `stemcells/seams/rest.md` asks of our layer's words.
 - [ ] Real run: this Mac's simulators to its external drive and back.
 
 ## Review
+
+- The first probe found a rule the plan missed: a simulator won't boot from a
+  volume with "Ignore ownership" on (Owners Disabled), which is the default for
+  an external drive. Proved with a sparse bundle both ways. The move now refuses
+  such a drive for simulators and says how to change it in Finder.
+- macOS asks once before the simulator service may read an external drive, and
+  the service hangs until someone answers. The switch waits up to five minutes
+  in a phase the page names ("Waiting for macOS…") before undoing.
+- Measuring happens inside the job, not the request: a 20 GB folder takes
+  longer to measure than the phone waits for an answer.
+- Proved in tests (copy, refuse while busy, refuse ownership-ignored drives,
+  undo, move back, start fresh) and on the phone against a lab Mac. Not yet a
+  real 20 GB move on this Mac: that needs the drive's ownership turned on and
+  the app rebuilt.

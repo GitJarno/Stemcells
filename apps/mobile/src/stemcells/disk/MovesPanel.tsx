@@ -42,10 +42,12 @@ export function MoveButton(props: {
       { text: "Cancel", style: "cancel" as const },
     ]);
   return (
-    <View className="items-start">
+    // The button's own padding would indent its words from the row's: pulled back to line up.
+    <View className="-mb-2 -ml-5 items-start">
       <Button
         label={offer.length === 1 ? DISK_MOVE.moveTo(offer[0]!.name) : DISK_MOVE.moveToMenu}
         tone="text"
+        size="compact"
         loading={starting}
         accessibilityHint={DISK_MOVE.moveNote}
         onPress={() => (offer.length === 1 ? void move(offer[0]!.id) : choose())}
@@ -103,12 +105,13 @@ function RowView(props: { readonly environmentId: string; readonly row: MoveRow 
         </View>
       )}
       {row.actions.length === 0 ? null : (
-        <View className="flex-row gap-2">
+        <View className="-mb-2 -ml-5 flex-row">
           {row.actions.map((action) => (
             <Button
               key={action.id}
               label={action.label}
               tone="text"
+              size="compact"
               loading={acting}
               onPress={() => ask(action)}
             />
