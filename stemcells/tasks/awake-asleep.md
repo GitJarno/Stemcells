@@ -1,5 +1,9 @@
 # Input · Awake · Asleep
 
+> Superseded in part by `the-ask.md`, step 2: Input is no longer a stage.
+> An asking Cell keeps its Awake row in amber and is answered in its chat;
+> Awake and Asleep are the stages.
+
 Four stages (Input, Flying, Landed, Settled) become three. Flying and Landed
 split what the person keeps in play by what the agent happens to be doing,
 so Cells changed tabs on their own as they landed, and keeping up with many
