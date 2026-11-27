@@ -390,3 +390,13 @@ limit holds it until the limit lifts.
   seam keeps `enabled` false. Upstream now exports
   `trackPendingWorkspaceDefault`, which retired our copy of its steps and
   a substitute.
+- 2026-11-27, later (65 commits, one conflict): two breaks were ours,
+  from the same day's merges, not upstream's. `check-local` runs only the
+  quick gates, so upstream's phone suites first met them here: an import
+  loop through `stemcells/upstream/home.ts` (a hook that needs the
+  composer surface, beside helpers the rows import), and a feed seam that
+  reached a module upstream's preview test can't load. Keep a hook that
+  imports an upstream component out of an adapter rows import. Upstream's
+  phone moved its default text face to the system's on iOS, with a picker;
+  anything of ours set from one face's metrics reads the face in use
+  (`project/titleMark.ts`).
