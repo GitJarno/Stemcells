@@ -1,3 +1,4 @@
+// @effect-diagnostics anyUnknownInErrorContext:off - every toolkit's handlers pass through the guard, each with channels of its own.
 /**
  * What Aski's chat can't do (stemcells/tasks/aski-orchestrator.md, decision 7). Aski reads
  * every project and whatever a Cell or a web page wrote, so nothing it reads may turn into a

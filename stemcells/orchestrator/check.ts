@@ -202,7 +202,7 @@ export function planOf(input: PlanInput): PlanResult {
     // ("… the seat map in Ledger one for the tax report"), could belong to either, so it
     // counts for neither.
     const own = mine.map((n) => byNumber.get(n)!).sort((a, b) => a.start - b.start);
-    const hangs = (m: { at: number; end: number }) => {
+    const hangs = (m: (typeof mentions)[number]) => {
       const piece = pieces.find((p) => m.at >= p.start && m.at < p.end);
       const next = piece === undefined ? undefined : byNumber.get(piece.n + 1);
       // Within one Cell's own run of pieces the words simply go on.

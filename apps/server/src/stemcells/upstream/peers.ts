@@ -13,6 +13,7 @@ import {
   withMessageSenderNote,
 } from "@t3tools/contracts";
 import { projectComposerContextForProvider } from "@t3tools/shared/composerContextReferences";
+import * as Clock from "effect/Clock";
 import * as DateTime from "effect/DateTime";
 import * as Effect from "effect/Effect";
 
@@ -210,9 +211,10 @@ export const text = Effect.fn("Stemcells.peers.text")(function* (
     ),
   );
   // A message the person wrote to Aski's chat that a plan was made from: Aski reads what came of it.
+  const now = yield* Clock.currentTimeMillis;
   const plan =
     message.senderThreadId === undefined
-      ? yield* Effect.promise(() => planForMessage(threadId, message.text, Date.now()))
+      ? yield* Effect.promise(() => planForMessage(threadId, message.text, now))
       : null;
   const notes = [note, plan === null ? null : planNote(plan.plan)].filter((one) => one !== null);
   return notes.length === 0 ? words : `${notes.join("\n")}\n\nUser message:\n${words}`;

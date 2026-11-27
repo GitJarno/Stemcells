@@ -136,6 +136,7 @@ const handlers = McpToolAccess.toLayer(
             }
             const now = DateTime.toEpochMillis(yield* DateTime.now);
             const plan = proposedPlan({
+              // @effect-diagnostics-next-line cryptoRandomUUIDInEffect:off -- A plan's id only has to be new; the pure checks take plain values.
               id: crypto.randomUUID(),
               cells: input.cells.map((cell) => ({
                 projectId: cell.projectId,
@@ -154,6 +155,7 @@ const handlers = McpToolAccess.toLayer(
                       },
                     }),
               })),
+              // @effect-diagnostics-next-line cryptoRandomUUID:off -- The pure checks take a plain function to mint with.
               mint: () => crypto.randomUUID(),
             });
             putPlan({

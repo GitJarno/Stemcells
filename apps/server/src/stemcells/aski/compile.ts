@@ -97,6 +97,7 @@ export const compile = Effect.fn("AskiCompile.compile")(function* (input: {
   if (pieces.length === 0) return floor([]);
 
   // A thread id is a random UUID, as a client's own would be.
+  // @effect-diagnostics-next-line cryptoRandomUUID:off -- The pure checks take a plain function to mint with.
   const mint = () => crypto.randomUUID();
 
   const tries: Try[] = [];

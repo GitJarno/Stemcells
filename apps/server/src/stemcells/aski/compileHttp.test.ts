@@ -1,3 +1,4 @@
+// @effect-diagnostics anyUnknownInErrorContext:off unsafeEffectTypeAssertion:off - a fake model's answers: values, failures and waits alike.
 // @effect-diagnostics nodeBuiltinImport:off - makes the state folder the learned names live in.
 import * as NodeFS from "node:fs";
 import * as NodeOS from "node:os";
@@ -19,6 +20,7 @@ import {
   configAt,
   scopedAuth as auth,
 } from "../upstream/server.fixture.ts";
+import type { Plan } from "../../../../../stemcells/orchestrator/plan.ts";
 import { clearBook } from "./book.ts";
 import { ASKI_PATH, COMPILE_BODY_MOST, makeLayer, TEXT_MOST } from "./compileHttp.ts";
 
@@ -30,7 +32,7 @@ import { ASKI_PATH, COMPILE_BODY_MOST, makeLayer, TEXT_MOST } from "./compileHtt
 interface Lean {
   readonly prompts: string[];
   readonly models: string[];
-  answers: Array<Effect.Effect<unknown>>;
+  answers: Array<Effect.Effect<unknown, unknown>>;
 }
 
 const registry = (lean: Lean) =>
@@ -77,10 +79,16 @@ function serve(lean: Lean, first = Duration.seconds(5)) {
   return HttpRouter.toWebHandler(routes, { disableLogger: true });
 }
 
+/** A route's answer, as the plan routes give it. */
+const reply = async (response: Promise<Response>) =>
+  (await (await response).json()) as { plan: Plan; outcome: unknown };
+
 const lean = (...answers: Array<unknown>): Lean => ({
   prompts: [],
   models: [],
-  answers: answers.map((answer) => (Effect.isEffect(answer) ? answer : Effect.succeed(answer))),
+  answers: answers.map((answer) =>
+    Effect.isEffect(answer) ? (answer as Lean["answers"][number]) : Effect.succeed(answer),
+  ),
 });
 
 const send = (
@@ -134,8 +142,7 @@ const answer = (second = "Harbor Design") => ({
   setup: [],
   talk: [],
 });
-const tiers = (plan: { acts: Array<{ tier: string; why: string[] }> }) =>
-  plan.acts.map((act) => [act.tier, act.why]);
+const tiers = (plan: Pick<Plan, "acts">) => plan.acts.map((act) => [act.tier, act.why]);
 
 describe("Aski's compile routes", () => {
   it("answer only a caller who may start work", async () => {
@@ -155,13 +162,13 @@ describe("Aski's compile routes", () => {
     const calls = lean(answer());
     const web = serve(calls);
     try {
-      const { plan } = await (await web.handler(send("/compile", asked()))).json();
+      const { plan } = await reply(web.handler(send("/compile", asked())));
       expect(tiers(plan)).toEqual([
         ["start", []],
         ["check", ["place-near"]],
       ]);
       // Not provably setup, so the words stay as said.
-      expect(plan.acts[0].words).toBe("In Harbor fix the header.");
+      expect(plan.acts[0]).toMatchObject({ words: "In Harbor fix the header." });
       expect(calls.models).toEqual(["claude-haiku-5-5"]);
       // The compiler reads the person's projects, never a project's files.
       expect(calls.prompts[0]).toContain("- Harbor Design");
@@ -174,7 +181,7 @@ describe("Aski's compile routes", () => {
     const calls = lean(answer("Lantern"), answer());
     const web = serve(calls);
     try {
-      const { plan } = await (await web.handler(send("/compile", asked()))).json();
+      const { plan } = await reply(web.handler(send("/compile", asked())));
       expect(plan.from).toBe("read");
       expect(calls.models).toEqual(["claude-haiku-5-5", "claude-opus-5-5"]);
       expect(calls.prompts[1]).toContain('"Lantern" is not in Projects');
@@ -187,7 +194,7 @@ describe("Aski's compile routes", () => {
     const calls = lean(Effect.never);
     const web = serve(calls, Duration.millis(50));
     try {
-      const { plan } = await (await web.handler(send("/compile", asked()))).json();
+      const { plan } = await reply(web.handler(send("/compile", asked())));
       expect([plan.from, plan.acts]).toEqual(["floor", []]);
       expect(calls.models).toHaveLength(1);
     } finally {
@@ -224,16 +231,14 @@ describe("Aski's compile routes", () => {
         }),
       );
       expect(told.status).toBe(200);
-      const kept = await (
-        await web.handler(send("/plan?id=plan-0001", undefined, AuthOrchestrationReadScope, "GET"))
-      ).json();
+      const kept = await reply(
+        web.handler(send("/plan?id=plan-0001", undefined, AuthOrchestrationReadScope, "GET")),
+      );
       expect(kept.outcome).toEqual([
         { i: 0, status: "started" },
         { i: 1, status: "started" },
       ]);
-      const again = await (
-        await web.handler(send("/compile", asked({ id: "plan-0002" })))
-      ).json();
+      const again = await reply(web.handler(send("/compile", asked({ id: "plan-0002" }))));
       expect(tiers(again.plan)).toEqual([
         ["start", []],
         ["start", []],

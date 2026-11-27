@@ -18,6 +18,7 @@ import {
 } from "@t3tools/contracts";
 import * as ProviderAdapter from "@t3tools/provider-core/server/ProviderAdapter";
 import { checkpointWorkspace } from "@t3tools/provider-testing/replayWorkspace";
+import * as Clock from "effect/Clock";
 import * as DateTime from "effect/DateTime";
 import * as Effect from "effect/Effect";
 import * as Fiber from "effect/Fiber";
@@ -303,7 +304,12 @@ it.live(
             mint: () => "thread:planned",
           });
           // As the client asked for it: in this chat, from these words, whitespace aside.
-          putPlan({ plan, text: "In Harbor fix the header", threadId: badger, at: Date.now() });
+          putPlan({
+            plan,
+            text: "In Harbor fix the header",
+            threadId: badger,
+            at: yield* Clock.currentTimeMillis,
+          });
           const done = yield* next(badger, "completed");
           yield* orchestrator.dispatch({
             type: "message.dispatch",

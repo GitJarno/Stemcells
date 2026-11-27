@@ -1,3 +1,4 @@
+// @effect-diagnostics globalTimers:off - plain promises a chat's turn waits on, kept outside the Effect runtime so the tools and the routes read one book.
 // The plans Aski has made lately, on this server (stemcells/tasks/aski-orchestrator.md,
 // decisions 1 and 5). A client asks for a plan, carries it out with the person's own access and
 // says what came of it; Aski's chat reads that through `stemcells_plan`, so its one line names
