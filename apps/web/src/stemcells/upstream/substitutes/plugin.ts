@@ -73,7 +73,6 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   // A new chat never starts on Aski's provider instance, nor in its no-project.
   "apps/web/src/lib/chatThreadActions.ts": "chatThreadActions.ts",
   // A send from the new Cell past the last tab waits for its project file's workspace default.
-  "apps/web/src/hooks/useHandleNewThread.ts": "useHandleNewThread.ts",
   // The welcome lists Claude Code among the agents, never Aski's instance.
   "apps/web/src/onboarding/welcomePage.logic.ts": "welcomePage.logic.ts",
   // T3's own tools in the work log say Cell, not thread.

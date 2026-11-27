@@ -375,3 +375,15 @@ limit holds it until the limit lifts.
   list (`malformedRecords`) crashed our usage history at runtime; the
   per-package typecheck passed from its cache and only the gate's own run
   showed it, so trust the gate's typecheck, not a filtered rerun.
+- 2026-11-27 (603 commits, two failed nights): upstream's one shared
+  tooltip (#42671) rewrote every `<Tooltip>` our contract tests read, and
+  most of the sixteen conflicts were our import beside its new one. The
+  contract tests caught three silent breaks in our panes that no test of
+  upstream's would: the minimap now reaches up under a chat header a pane
+  doesn't have, the draft overlay became a flex column (our `align-items`
+  went sideways), and a moved draft now takes its project's workspace.
+  Upstream's analytics took new names and a CI-based default
+  (`Config.option`), so "no default key" alone would have left it on; the
+  seam keeps `enabled` false. Upstream now exports
+  `trackPendingWorkspaceDefault`, which retired our copy of its steps and
+  a substitute.

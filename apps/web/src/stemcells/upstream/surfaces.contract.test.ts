@@ -107,9 +107,10 @@ describe("native surfaces' contracts with upstream", () => {
 
   it("the slot is one box, and it presents again on a new layout version", () => {
     // Our substitute measures upstream's box, the first child of a wrapper
-    // without one, and bumps the version when the pages rest.
-    expect(slot).toContain(
-      "return <div ref={attachSurface} className={className} data-browser-surface-slot={tabId} />;",
+    // without one (the page overlays it carries come after it, or go to a
+    // portal), and bumps the version when the pages rest.
+    expect(slot).toMatch(
+      /return \(\s*<>\s*<div ref=\{attachSurface\} className=\{className\} data-browser-surface-slot=\{tabId\} \/>\s*\{lifted === null\s*\? children/,
     );
     expect(slot).toMatch(
       /const attachSurface = \(element: HTMLDivElement\) => \{[\s\S]*?const rect = element\.getBoundingClientRect\(\);/,

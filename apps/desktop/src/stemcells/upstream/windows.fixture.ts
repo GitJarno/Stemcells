@@ -6,6 +6,7 @@ import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import * as Ref from "effect/Ref";
 import * as SubscriptionRef from "effect/SubscriptionRef";
+import type { DatabaseMigrationProgress } from "@t3tools/contracts";
 
 import * as DesktopEnvironment from "../../app/DesktopEnvironment.ts";
 import * as DesktopState from "../../app/DesktopState.ts";
@@ -39,6 +40,7 @@ export const windowsServices = Effect.fn("windowsServices")(function* (input: {
       primaryBackendStartup: yield* SubscriptionRef.make<DesktopState.PrimaryBackendStartup>({
         _tag: "Ready",
       }),
+      databaseMigrationProgress: yield* Ref.make<DatabaseMigrationProgress | null>(null),
     }),
   );
 });

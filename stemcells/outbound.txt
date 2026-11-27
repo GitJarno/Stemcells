@@ -55,6 +55,7 @@ host schemas.openxmlformats.org Office XML namespaces the document preview match
 host www.idpf.org the EPUB package namespace the document preview matches
 host purl.oclc.org the strict Office XML relationships namespace the document text reader matches
 host json-schema.org the $schema id of t3.json
+host agent-plugins.org the $schema prefix an Antigravity plugin manifest is matched against; a string compared, never fetched
 host www.apple.com the plist DTD id in a generated plist
 host tailwindcss.com the license comment in generated CSS
 host docs.github.com a comment in the GitHub GraphQL config
@@ -114,10 +115,6 @@ host api.openai.com Codex models and sign-in claims
 host auth.openai.com Codex sign-in
 host releases.openai.com Codex's own release channel: a native Codex install's newest version for the update notice, as `codex update` reads it; the person's provider, never T3
 host accounts.google.com Antigravity sign-in
-host oauth2.googleapis.com Antigravity sign-in
-host www.googleapis.com Antigravity account
-host cloudcode-pa.googleapis.com Antigravity usage limits
-host daily-cloudcode-pa.googleapis.com Antigravity usage limits
 host antigravity-cli-auto-updater-974169037036.us-central1.run.app Antigravity's own release channel (Google's, never T3): the CLI's newest version and where to download it, for a person who uses or installs Antigravity
 host accounts.x.ai Grok sign-in
 host auth.x.ai Grok sign-in

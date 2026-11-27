@@ -340,6 +340,12 @@
       "page": "/settings/labs"
     },
     {
+      "id": "workflow-skipped-runs",
+      "title": "Skipped runs kept",
+      "page": "/settings/labs",
+      "anchor": "workflows-beta"
+    },
+    {
       "id": "prompt-suggestions-beta",
       "title": "Suggest next prompt",
       "page": "/settings/labs"
@@ -956,6 +962,16 @@
       "page": "/settings/keybindings"
     },
     {
+      "id": "keybinding-terminal.next",
+      "title": "Terminal",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-terminal.previous",
+      "title": "Terminal",
+      "page": "/settings/keybindings"
+    },
+    {
       "id": "keybinding-terminal.split",
       "title": "Terminal",
       "page": "/settings/keybindings"
@@ -1078,11 +1094,6 @@
       "page": "/settings/keybindings"
     },
     {
-      "id": "keybinding-usage.open",
-      "title": "Usage",
-      "page": "/settings/keybindings"
-    },
-    {
       "id": "keybinding-usage.period.month",
       "title": "Usage: Period",
       "page": "/settings/keybindings"
@@ -1100,6 +1111,11 @@
     {
       "id": "keybinding-usage.period.day",
       "title": "Usage: Period",
+      "page": "/settings/keybindings"
+    },
+    {
+      "id": "keybinding-usage.open",
+      "title": "Usage",
       "page": "/settings/keybindings"
     },
     {

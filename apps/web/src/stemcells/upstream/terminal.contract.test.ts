@@ -44,8 +44,8 @@ describe("the terminal drawer's contracts with upstream", () => {
       'isPanel ? "h-full flex-1" : "z-45 shrink-0 border-t border-border/80"',
     );
     expect(surface).toContain("const CONTENT_PADDING = 4;");
-    expect(surface).toContain(
-      "const grid = terminalGridSize(mount.clientWidth, mount.clientHeight, metrics, CONTENT_PADDING);",
+    expect(surface).toMatch(
+      /const grid = terminalGridSize\(\s*mount\.clientWidth,\s*mount\.clientHeight,\s*metrics,\s*CONTENT_PADDING,?\s*\);/,
     );
   });
 
