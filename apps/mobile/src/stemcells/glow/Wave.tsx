@@ -34,6 +34,7 @@ import {
   bandStops,
   bandWidth,
   crossing,
+  rowCrossing,
   luminanceOf,
   type Rgb,
   strength,
@@ -115,7 +116,7 @@ export function Wave(props: {
               ink={props.ink}
               size={size}
               inSight={props.inSight}
-              feathered={props.glow === true}
+              row={props.glow === true}
             />
           )}
         </>
@@ -132,7 +133,8 @@ function Crossing(props: {
   readonly ink: Rgb;
   readonly size: Size;
   readonly inSight: boolean;
-  readonly feathered: boolean;
+  /** Over one list row: across the row alone, slowly, feathered top and bottom. */
+  readonly row: boolean;
 }) {
   const box = useRef<ViewInstance>(null);
   const [left, setLeft] = useState<number | null>(null);
@@ -141,7 +143,11 @@ function Crossing(props: {
   const awake = useAwake();
   const x = useSharedValue(0);
   const band = bandWidth(props.size);
-  const path = left === null ? null : crossing(screen, left, band / 2);
+  const path = props.row
+    ? rowCrossing(props.size.width, band)
+    : left === null
+      ? null
+      : crossing(screen, left, band / 2);
   const from = path?.from ?? null;
   const to = path?.to ?? null;
   const runs = props.inSight && awake && !reduced;
@@ -191,7 +197,7 @@ function Crossing(props: {
           )}
           width={band}
           height={props.size.height}
-          feathered={props.feathered}
+          feathered={props.row}
         />
       </Animated.View>
     </Animated.View>

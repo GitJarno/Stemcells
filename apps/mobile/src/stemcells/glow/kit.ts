@@ -14,4 +14,4 @@ export {
   washColours,
   washEnds,
 } from "../../../../web/src/stemcells/glow/light.ts";
-export { BEAT_POINTS, crossing } from "../../../../web/src/stemcells/motion/beat.ts";
+export { BEAT_POINTS, crossing, rowCrossing } from "../../../../web/src/stemcells/motion/beat.ts";

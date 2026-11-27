@@ -293,11 +293,11 @@
 }
 
 /* An awake row's light (stemcells/tasks/awake-asleep.md, decision 3): the
-   a lamp in its provider's tone around the Cell, the band crossing it while
-   the Cell flies; its icon says what it does or needs. The lamp is an
-   ellipse as tall as the row, so it is gone by the row's edges and two lit
-   rows never meet as boxes. Seen, there is none. The tone is typed, so a
-   recolour fades. */
+   only a flying Cell's row is lit: a lamp in its provider's tone round the
+   Cell and the band crossing it, the sense of work going on. Its icon and
+   time already say the rest, so asking and landed rows stay dark. The lamp
+   is an ellipse as tall as the row, gone by its edges, so two lit rows
+   never meet as boxes. The tone is typed, so a recolour fades. */
 @property --cells-row-tone {
   syntax: "<color>";
   inherits: true;
@@ -324,7 +324,7 @@
   pointer-events: none;
   transition: opacity var(--sc-motion-fade-duration) var(--sc-motion-fade-easing);
 }
-[data-light="seen"] > [data-cells-light] {
+[data-light]:not([data-light="flying"]) > [data-cells-light] {
   opacity: 0;
 }
 [data-cells-row][data-leaving] [data-cells-light] {
