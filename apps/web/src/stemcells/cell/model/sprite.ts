@@ -42,7 +42,7 @@ const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 export const wholeView = (
   grown: number,
   rows: number,
-  yaw = 0.45,
+  yaw = 0,
   columns = Math.round(rows * 1.25),
 ): View => ({
   rows,
@@ -66,7 +66,7 @@ export const tallerView = (view: View, rows: number): View => ({
 export const faceView = (grown: number, lift: number, rows: number): View => ({
   rows,
   columns: Math.round(rows * 1.25),
-  yaw: 0.45,
+  yaw: 0,
   pitch: 0.24,
   span: lerp(1.8, 1.7, grown),
   aim: lerp(0.74, 1.2, grown) + lift * 0.7,
