@@ -1,5 +1,5 @@
 // Replaces `features/home/ThreadListFilters.tsx` (`substitutes.cjs`), the header of the home's
-// list in the workspace: a stage's top, Asleep's night sky (`home/StagePill.tsx`). On iOS the
+// list in the workspace: a stage's top, the same room on each (`home/StagePill.tsx`). On iOS the
 // workspace header's top right holds the machine and project (`home/scope.tsx`), not T3's chips.
 import { Platform } from "react-native";
 

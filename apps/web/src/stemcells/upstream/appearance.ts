@@ -6,3 +6,8 @@ import type { Ground } from "../cell/keyline";
 export function useCellGround(): Ground {
   return useRenderedAppearance() === "light" ? "light" : "black";
 }
+
+/** The sky's palette (`motion/sky.ts`): light while the app is drawn light, else dark. */
+export function useSkyScheme(): "light" | "dark" {
+  return useRenderedAppearance() === "light" ? "light" : "dark";
+}

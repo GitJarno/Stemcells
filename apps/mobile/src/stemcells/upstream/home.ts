@@ -23,6 +23,7 @@ export type { EnvironmentMachineKind } from "@t3tools/contracts";
 
 export { SegmentedControl } from "../../components/ui/SegmentedControl";
 export { useContentTopInset } from "../../components/ui/useBarInset";
+export { useAppearancePreferences } from "../../features/settings/appearance/AppearancePreferencesProvider";
 export {
   useWorkspaceTabs,
   WorkspaceTabsContext,

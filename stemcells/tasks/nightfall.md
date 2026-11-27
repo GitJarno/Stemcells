@@ -1,5 +1,7 @@
 # Night falls over Settled
 
+> Superseded by `day-night.md`: one sky behind the header for every stage.
+
 On the phone's home, Settled draws a night sky behind Aski's header. It came
 and went at once. The person asked for arriving at Settled to feel like night
 falling, and leaving it like a quick dawn (2026-10-30).
