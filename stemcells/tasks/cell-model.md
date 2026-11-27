@@ -51,9 +51,14 @@ pictures a second.
      own grid (34 × 32), so a pixel of it is a pixel of the old Cell. The
      switch is kept in a file of the phone's own. The phone reads no
      strength yet, so every Cell there is drawn as it is born.
-3. **The wardrobe.** Today's pieces as model pieces, pack by pack; first
-   try lifting the drawn ones (most headwear is a shape turned round its
-   axis). The dressing room on a turning stage.
+3. **The wardrobe.**
+   - **What a Cell wore, it wears** (done). The drawn pieces are stamped on
+     the model's picture where its head stands (`model/worn.ts`), in whole
+     pixels of the picture, so every piece there is carries over at once.
+   - **Then.** Fabrics and an outfit's colours, a tool in the hand, pieces
+     that move; pieces as shapes of the model, pack by pack, where a stamp
+     shows its flatness (most headwear is a shape turned round its axis).
+     The dressing room on a turning stage.
 4. **Everywhere, and the old frames go.** Rows, tabs, the Island and the
    Watch from the same model; the chat's live edge; Cells that turn to
    each other.
@@ -84,6 +89,16 @@ pictures a second.
 - [x] Seen on a simulator: at rest, through a Replay turn, the switch both ways
 - [x] Checks, pull request, merge
 
+## Steps (slice 3, what it wore)
+
+- [x] `model/worn.ts`: where the head stands in a picture, a piece stamped
+      there, room over the picture for a tall one
+- [x] Both figures wear the Cell's look; the switch's words say so
+- [x] Seen: sheets at the phone's size and the Mac's, each growth; the Mac's
+      built app on a lab home
+- [ ] Seen on a phone
+- [x] Checks, pull request, merge
+
 ## Review
 
 Slice 1 landed as planned, with no surface changed. The tests earned their
@@ -108,3 +123,10 @@ second at rest and up to twelve while a part moves. That is fine for the one
 Cell heading a chat and too slow for a list of them: rows need pictures kept
 per act (slice 4). Still open on the phone: reading a Cell's strength, so
 it grows as the Mac's does; a tap on it is not yet answered by the model.
+
+Slice 3, what it wore: a stamp was enough. A piece keeps its drawn pixels,
+doubled on the Mac's 64 rows, and follows the head through a hop and a
+turn of the face; a back piece shows only past the body. Left bare: a
+fabric or an outfit's dye (a knight's plate stays the body's colour), what
+a hand held (the model has its laptop), and a moving piece stands at its
+first frame. Not seen on a phone: no simulator was free that day.
