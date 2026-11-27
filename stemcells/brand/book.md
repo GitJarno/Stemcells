@@ -203,8 +203,8 @@ a metaphor for becoming, never for medicine.
 | Aski                      | The one you talk to, who runs the others |
 | Subcell                   | A helper a Cell starts                   |
 | throw                     | Send an ask                              |
-| Input, Awake, Asleep      | A Cell's stage, as a person reads it     |
-| Flying, Landed            | An awake Cell's own state                |
+| Awake, Asleep             | A Cell's stage, as a person reads it     |
+| Flying, Landed, Input     | An awake Cell's own state                |
 | Sleep, Sleep until…, Wake | Put a Cell away, for a time, and back    |
 
 Labels and buttons stay plain. Wordplay lives in Aski's and the Cells' own
@@ -236,9 +236,9 @@ The rest holds everywhere:
   the system's sans, tight and plain. One monospace is for the mark
   (`stemcells` with a block cursor), small labels, code, and anything made of
   characters.
-- **Colour means something.** Each Cell wears its own. A stage wears the dot
+- **Colour means something.** Each Cell wears its own. A state wears the dot
   the app gives it: Input amber `#FDBE48`, Awake and Asleep as the app's
-  list shows them. Amber means Input and nothing else. Aski, the brand
+  list shows them. Amber means a Cell asks you something and nothing else. Aski, the brand
   and every line of type stay in ink.
 - **Nothing for show.** No gradients, no glow, no shadows, no coloured edge
   stripes. A border is one hairline of ink. Depth is said by size and by

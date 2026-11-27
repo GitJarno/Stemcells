@@ -13,17 +13,14 @@ const at = (threadId: string, stage: CellStanding["stage"]): CellStanding => ({
 });
 
 describe("the hops along the column's line", () => {
-  it("hops an answered Cell into Awake, and a slept one into Asleep", () => {
+  it("hops a slept Cell into Asleep, and leaves an answered one in Awake", () => {
     const before = standingsOf([at("waffle", "needs-you"), at("pancake", "done")], []);
     const after = standingsOf([at("waffle", "working")], [{ threadId: "pancake" }]);
     expect(hopsOf(before, after, () => true)).toEqual([
-      { threadId: "waffle", from: "needs", to: "awake" },
       { threadId: "pancake", from: "awake", to: "asleep" },
     ]);
     // A move the person didn't make only changes the counts.
-    expect(hopsOf(before, after, (threadId) => threadId === "pancake")).toEqual([
-      { threadId: "pancake", from: "awake", to: "asleep" },
-    ]);
+    expect(hopsOf(before, after, (threadId) => threadId === "waffle")).toEqual([]);
   });
 
   it("hops an asleep Cell back up when it's woken or written to", () => {

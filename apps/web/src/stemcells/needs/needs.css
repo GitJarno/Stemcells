@@ -180,32 +180,6 @@
   border-color: transparent;
   opacity: 0;
 }
-/* Waiting its turn in a queue: who asks, then what, up to two lines. */
-[data-stemcells-need][data-queued] {
-  gap: 0.125rem;
-  padding: var(--sc-space-sm);
-  cursor: pointer;
-}
-[data-stemcells-need][data-queued]:hover {
-  background: color-mix(in srgb, var(--sc-hot) 60%, transparent);
-}
-[data-stemcells-need][data-queued] > button[data-need-head] {
-  width: 100%;
-  text-align: start;
-  cursor: inherit;
-}
-[data-stemcells-need][data-queued] > button[data-need-head]:focus-visible {
-  outline: none;
-  text-decoration: underline;
-}
-[data-stemcells-need][data-queued] > [data-need-ask] {
-  display: -webkit-box;
-  overflow: hidden;
-  color: var(--sc-reading);
-  font-weight: 400;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
 @keyframes stemcells-need-in {
   from {
     opacity: 0;

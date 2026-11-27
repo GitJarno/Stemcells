@@ -42,11 +42,12 @@ describe("the left column", () => {
     }
   });
 
-  it("opens on what needs you unless the person opened another stage", () => {
-    expect(parseColumnStage(null)).toBe("needs");
-    expect(parseColumnStage("awake")).toBe("awake");
-    expect(parseColumnStage("snoozed")).toBe("needs");
-    // The four-stage line's stages, and Pinned beside them.
+  it("opens on Awake unless the person opened another stage", () => {
+    expect(parseColumnStage(null)).toBe("awake");
+    expect(parseColumnStage("asleep")).toBe("asleep");
+    expect(parseColumnStage("snoozed")).toBe("awake");
+    // Older lines' stages, and Pinned and Input beside them.
+    expect(parseColumnStage("needs")).toBe("awake");
     expect(parseColumnStage("working")).toBe("awake");
     expect(parseColumnStage("landed")).toBe("awake");
     expect(parseColumnStage("pinned")).toBe("awake");

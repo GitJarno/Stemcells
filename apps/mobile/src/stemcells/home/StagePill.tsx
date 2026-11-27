@@ -13,7 +13,7 @@ import { HomeInFront, HomeStageContext, HomeTabsContext, liftNotices, PILL_ROOM 
 
 /** Asleep's sky over its list, room for the moon and the stars. */
 const SKY = 88;
-/** Room over Input's and Awake's first row. */
+/** Room over Awake's first row. */
 const ROOM = 8;
 /** How far the night reaches over the sky: the header and the status bar, and a pull past the top. */
 const NIGHT_ABOVE = 600;
@@ -46,7 +46,7 @@ export function StagePill() {
   );
 }
 
-/** A stage's list's top: Asleep's night sky, a little room over the others' first row. */
+/** A stage's list's top: Asleep's night sky, a little room over Awake's first row. */
 export function StageTop() {
   const stage = use(HomeStageContext);
   if (stage === null) return null;

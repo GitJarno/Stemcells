@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { answering, enter, leave, reveal, step } from "./walk";
+import { answering, enter, leave, step } from "./walk";
 
 /** A frame with Aski's composer and cards: "r" recommends, "a" recommends an allow, "-" nothing, "x" is answered. */
 function frame(
@@ -74,33 +74,15 @@ describe("the cards' walk", () => {
     expect(focus()).toBe("composer");
   });
 
-  it("reveals an ask the room shows where a step onto it lands, and says when it doesn't", () => {
-    using page = frame("-r");
-    expect(reveal("ask:2")).toBe(true);
-    expect(focus()).toBe("2 Take");
-    expect(reveal("ask:9")).toBe(false);
-    expect(focus()).toBe("2 Take");
-    page.composer.focus();
-  });
-
-  it("one ask at a time: an answer from the keyboard, or a reveal from the line, lands on the next ask once it walks in", () => {
+  it("one ask at a time: an answer from the keyboard lands on the next ask once it walks in", () => {
     using page = frame("r");
     const one = document.createElement("div");
     one.dataset.needsOne = "";
     page.card(1).before(one);
     one.append(page.card(1));
-    const seat = document.createElement("button");
-    seat.dataset.needSeat = "ask:2";
-    let picked = 0;
-    seat.addEventListener("click", () => (picked += 1));
-    one.append(seat);
     enter(page.composer);
     answering(page.card(1));
     expect(focus()).toBe("1 Take");
-    expect(one.hasAttribute("data-land-next")).toBe(true);
-    one.removeAttribute("data-land-next");
-    expect(reveal("ask:2")).toBe(true);
-    expect(picked).toBe(1);
     expect(one.hasAttribute("data-land-next")).toBe(true);
   });
 

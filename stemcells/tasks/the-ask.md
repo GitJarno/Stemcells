@@ -36,7 +36,22 @@ retires Input, the card being where an ask is answered. Until then both stand.
 - [x] Shared model: `chatAskOf`, `askAnchorOf`, with tests
 - [x] Mac: the docked card over `CellComposerLine`, jump and highlight, keys
 - [x] Phone: the docked card over the composer, folded Duo's one line, jump
-- [ ] Gates, pull request, `check-local`, merge
-- [ ] Phone build on the Duo
+- [x] Gates, pull request, `check-local`, merge (#179)
+- [x] Phone build on the Duo
+- [x] Step 2: Input retires as a stage on the Mac, the phone and Aski's
+      `stemcells_show`; Awake and Asleep remain. Finding asks: amber Awake
+      rows, the app icon's count, "Next ask · N" in Aski's menu, and on the
+      Mac Aski's room, which keeps every ask
+- [ ] Step 2: gates, pull request, merge, Duo build
 
 ## Review
+
+- Step 1 shipped in #179. The lab found the card see-through and Escape
+  swallowed by the editor; both fixed before merge, and Escape left to the
+  composer, which already uses it on an empty draft. A review found two
+  per-token costs (the anchor scan, the phone's re-reads); both now key on
+  what moves when a turn starts or ends.
+- Step 2 removes about 1,600 lines: the column's and the phone's Input
+  pages, the queued card, the phone's ask cards beside the docked one, and
+  their tests. The phone loses answering without opening a chat; its badge
+  and Aski's "Next ask" lead to the chat, where the card answers.

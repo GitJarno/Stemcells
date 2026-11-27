@@ -20,14 +20,13 @@ choice between two layouts arrived as two lines of words.
 
 ## Where a question is answered
 
-| Place                                   | Whose | How it shows a preview                                    |
-| --------------------------------------- | ----- | --------------------------------------------------------- |
-| The chat's question panel (web)         | T3's  | A seam: the options stand in our element                  |
-| A need card (web: the column, the room) | ours  | The same box, in `needs/NeedCard.tsx`                     |
-| The chat's question card (phone)        | T3's  | A seam: an option draws our element under its description |
-| An ask on the phone's home              | ours  | The same element, in `line/Ask.tsx`                       |
-| Aski's own chat                         | T3's  | It is upstream's chat: the panel above                    |
-| The desktop app                         | T3's  | It wraps the web: nothing of its own                      |
+| Place                            | Whose | How it shows a preview                                   |
+| -------------------------------- | ----- | -------------------------------------------------------- |
+| The chat's question panel (web)  | T3's  | A seam: the options stand in our element                 |
+| A need card (web: Aski's room)   | ours  | The same box, in `needs/NeedCard.tsx`                    |
+| The chat's question card (phone) | T3's  | Its own: upstream draws an option's preview since a sync |
+| Aski's own chat                  | T3's  | It is upstream's chat: the panel above                   |
+| The desktop app                  | T3's  | It wraps the web: nothing of its own                     |
 
 The need cards read our own wire (`GET /api/stemcells/needs`), which named
 an option's label, description and value only. It now carries `preview`

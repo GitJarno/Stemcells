@@ -1,23 +1,14 @@
-// The phone's home as the Cells' line (stemcells/tasks/awake-asleep.md): Input, Awake and Asleep,
-// as the Mac's column stands each Cell, so the two never disagree. Each machine says how its own
-// Cells are (`read.ts`); Asleep, settled Cells and snoozed ones until they wake, is T3's own, from
-// the chats' shells. Input is a lens over Awake: a Cell that asks keeps its place there.
+// The phone's home as the Cells' line (stemcells/tasks/awake-asleep.md): Awake and Asleep, as the
+// Mac's column stands each Cell, so the two never disagree. Each machine says how its own Cells are
+// (`read.ts`); Asleep, settled Cells and snoozed ones until they wake, is T3's own, from the chats'
+// shells. A Cell that asks stays in Awake, and its ask docks in its chat (`ChatAsk.tsx`).
 
 import { effectiveSnoozed, type EnvironmentThreadShell } from "../upstream/threads";
-import {
-  type CellStanding,
-  chatAskOf,
-  type Elsewhere,
-  type FilterProject,
-  type LineStage,
-  type Need,
-  shows,
-  STAGE_WORDS,
-} from "./kit";
+import { type CellStanding, chatAskOf, type LineStage, type Need, STAGE_WORDS } from "./kit";
 import type { Reading } from "./read";
 
 export const SEGMENTS: ReadonlyArray<{ readonly id: LineStage; readonly label: string }> = (
-  ["needs", "awake", "asleep"] as const
+  ["awake", "asleep"] as const
 ).map((id) => ({ id, label: STAGE_WORDS[id] }));
 
 /** An ask, and the machine it came from: each machine numbers only its own. */
@@ -130,38 +121,18 @@ export function chatAskIn(
   return need === null ? null : { key: askKeyOf(environmentId, need), environmentId, need };
 }
 
-/** How many each segment holds in view: Input counts every ask, wherever it is, read or not. */
+/** The app icon's badge: every ask in reach, wherever it is, read or not. */
+export const askCount = (line: Line<Shell>) => line.asks.length + line.unread.length;
+
+/** How many each segment holds in view. */
 export function countsOf<S extends Shell>(
   line: Line<S>,
   inView: (cell: { readonly environmentId: string; readonly projectId: string }) => boolean,
 ): Readonly<Record<LineStage, number>> {
   return {
-    needs: line.asks.length + line.unread.length,
     awake: line.awake.filter(inView).length,
     asleep: line.asleep.filter(inView).length,
   };
-}
-
-/** Where the asks the filter leaves out are: by project in the picker's order, then the rest. */
-export function elsewhereOf(
-  asks: ReadonlyArray<Ask>,
-  inView: (ask: { readonly environmentId: string; readonly projectId: string }) => boolean,
-  projects: ReadonlyArray<FilterProject>,
-): ReadonlyArray<Elsewhere> {
-  const left = asks.filter((ask) => !inView({ ...ask, projectId: ask.need.projectId }));
-  const where = (ask: Ask) =>
-    projects.findIndex((project) => shows(project, ask.environmentId, ask.need.projectId));
-  const named = projects.flatMap((project, index) => {
-    const count = left.filter((ask) => where(ask) === index).length;
-    return count > 0 ? [{ name: project.name, count }] : [];
-  });
-  const unplaced = left.filter((ask) => where(ask) === -1).length;
-  return unplaced > 0 ? [...named, { name: null, count: unplaced }] : named;
-}
-
-/** Where the home opens: on Input when anything waits, else on Awake. */
-export function opensOn(counts: Readonly<Record<LineStage, number>>): LineStage {
-  return counts.needs > 0 ? "needs" : "awake";
 }
 
 /**

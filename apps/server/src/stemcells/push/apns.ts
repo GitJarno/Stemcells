@@ -72,7 +72,7 @@ export interface Alert {
 }
 
 /**
- * What one push carries: an alert, the app icon's count of Cells at Input, or both. A count
+ * What one push carries: an alert, the app icon's count of asks, or both. A count
  * alone sets the icon's badge without a banner or a sound.
  */
 export interface Notice {

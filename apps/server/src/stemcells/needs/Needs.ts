@@ -189,7 +189,7 @@ export const make = Effect.fn("Needs.make")(function* (source: UpstreamNeeds.Nee
       if (detail.stop != null) stops.set(signal.shell.id, detail.stop);
     }
     settles = settles.filter((settle) => now - settle.at < SETTLES_KEPT_MS);
-    // A Cell with an ask stands in Input, whatever else stopped it.
+    // A Cell with an ask is the person's to answer first, whatever else stopped it.
     const asking = new Set(needs.map((need) => need.parentThreadId ?? need.threadId));
     const conditions = conditionsOf([...shells.values()], now, autoResume, asking);
     const list: NeedsList = {

@@ -48,10 +48,10 @@ import { holds, useSettleAtOnce } from "./live";
 import { openPeek } from "./peeking";
 import { RunFacts } from "./RunFacts";
 import { type Lit, lit, useLit } from "./answers/lit";
-import { linkAddresses, marksUp, plainOf } from "./inline";
+import { linkAddresses, marksUp } from "./inline";
 import { tellAsk } from "./told";
 import { rereadWholeKinds, useShowsWhole } from "./whole";
-import { answering, land } from "./walk";
+import { answering } from "./walk";
 
 /** Who the card is for: the Cell's name, or a subagent's under its parent's. */
 export function whoOf(need: Shown["need"]): string {
@@ -65,10 +65,6 @@ export function answerableOf(shown: Shown, hold: Hold | undefined): boolean {
   if (shown.goneAt !== null || hold === undefined) return shown.goneAt === null;
   return hold.state === "failed" || hold.state === "stale";
 }
-
-/** Whether the keyboard is on `card` or in it, as a walk's step leaves it (walk.ts). */
-const keyedIn = (card: HTMLElement): boolean =>
-  card.matches(":focus-visible") || card.querySelector(":focus-visible") !== null;
 
 /** Where the words of an answer that wasn't sent went. */
 const backLine = (hold: Hold | undefined): string =>
@@ -89,10 +85,6 @@ type NeedCardProps = {
   seenAt: number | null;
   /** It just landed in front of a room of one ask at a time: an allow waits from now. */
   landed?: boolean;
-  /** Opens the asking chat; a peek beside the cards unless the list says otherwise. */
-  openChat?: ((threadId: string) => void) | undefined;
-  /** In a queue, a card that isn't the open one shows only who asks and what. */
-  queued?: { readonly open: boolean; readonly onOpen: () => void } | undefined;
 };
 
 export function NeedCard(props: NeedCardProps) {
@@ -183,24 +175,6 @@ function Card(props: NeedCardProps & { disk: DiskFailure; freeSpace: (() => void
   const ref = cell === null ? null : cellRef(cell.environmentId, cell.threadId);
   const repo = useRepositoryUrl(environmentId, need.projectId);
 
-  // A card Aski is about to take stays open, so its fuse can be seen and stopped.
-  const collapsed =
-    props.queued !== undefined && !props.queued.open && answerable && taking === null;
-
-  // Opened from the keyboard, the card lands the focus where a step would,
-  // once its options are there; opened by pointer, the focus stays put.
-  const landOnOpen = useRef(false);
-  const openQueued = () => {
-    landOnOpen.current = section.current !== null && keyedIn(section.current);
-    props.queued?.onOpen();
-  };
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Land keyboard focus in the card once a keyboard open has rendered its options.
-  useLayoutEffect(() => {
-    if (collapsed || !landOnOpen.current || section.current === null) return;
-    landOnOpen.current = false;
-    land(section.current);
-  }, [collapsed]);
-
   // Later, Sleep and Open chat stand in the age's place while the person is on the ask.
   const tail = (
     <span data-need-tail="">
@@ -236,7 +210,7 @@ function Card(props: NeedCardProps & { disk: DiskFailure; freeSpace: (() => void
         type="button"
         onClick={() => {
           void tellAsk(need.key, "opened");
-          (props.openChat ?? openPeek)(need.threadId);
+          openPeek(need.threadId);
         }}
       >
         Open chat
@@ -273,34 +247,6 @@ function Card(props: NeedCardProps & { disk: DiskFailure; freeSpace: (() => void
     </>
   );
 
-  if (collapsed) {
-    return (
-      <section
-        ref={section}
-        // The walk lands here, and the card opens (walk.ts).
-        tabIndex={-1}
-        data-stemcells-need=""
-        data-need-key={need.key}
-        data-need-thread={need.threadId}
-        data-open=""
-        data-queued=""
-        data-blocks={need.blocks || undefined}
-        data-leaving={props.leaving || undefined}
-        inert={props.leaving}
-        aria-label={`${who}: ${card.headline}`}
-        onFocus={(event) => {
-          if (event.target === event.currentTarget && keyedIn(event.currentTarget)) openQueued();
-        }}
-        onClick={openQueued}
-      >
-        <button type="button" data-need-head="" aria-expanded={false}>
-          {head}
-        </button>
-        <p data-need-ask="">{plainOf(card.headline)}</p>
-      </section>
-    );
-  }
-
   return (
     <section
       ref={section}
@@ -308,7 +254,6 @@ function Card(props: NeedCardProps & { disk: DiskFailure; freeSpace: (() => void
       tabIndex={-1}
       data-stemcells-need=""
       data-need-key={need.key}
-      data-need-thread={need.threadId}
       data-open={answerable || undefined}
       data-blocks={need.blocks || undefined}
       data-leaving={props.leaving || undefined}

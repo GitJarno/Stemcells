@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { Platform } from "react-native";
 
 /**
- * The app icon's count of Cells at Input while the app runs; `null` leaves it as it is. A closed
+ * The app icon's count of asks while the app runs; `null` leaves it as it is. A closed
  * app's count comes with each Mac's pushes (`apps/server/src/stemcells/push/Push.ts`). iOS shows
  * it only with badges allowed, which the notification prompt asks for.
  */

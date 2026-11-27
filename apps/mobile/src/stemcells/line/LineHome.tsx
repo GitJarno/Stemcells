@@ -1,35 +1,27 @@
 // The phone's home on the Cells' line (stemcells/tasks/awake-asleep.md), under Aski, narrowed by
-// the header's picks. Input is the asks themselves, one open at a time; Awake and Asleep hand
-// T3's list their Cells, a list each, all mounted (`home/StagePages.tsx`). Asks never hide: Input
-// counts every one, and says where those the picks leave out are.
+// the header's picks. Awake and Asleep hand T3's list their Cells, a list each, both mounted
+// (`home/StagePages.tsx`). An ask is answered in its Cell's chat (`ChatAsk.tsx`); the app icon
+// counts every one, whatever the picks show.
 
 import { useEffect, useSyncExternalStore, useState, type ReactNode } from "react";
-import { AppState, Pressable, View } from "react-native";
+import { AppState, View } from "react-native";
 
 import { takeAskedStage, useAskedStage } from "../aski/turn";
 import { DiskFoot } from "../disk/DiskPlate";
 import { useAppBadge } from "../push/badge";
-import { EmptyTab, HomePage } from "../home/EmptyTab";
+import { EmptyTab } from "../home/EmptyTab";
 import { StagePages, useStagePages } from "../home/StagePages";
 import { CellStates, HomeTabsContext, tabChoice } from "../home/state";
 import { inTab } from "../home/tabs";
-import {
-  AppText,
-  type EnvironmentThreadShell,
-  resolveThreadWorkingStartedAt,
-} from "../upstream/cells";
-import { useHomeThreadSelection } from "../upstream/home";
-import { settleFromAnyStage } from "../upstream/needs";
+import { type EnvironmentThreadShell, resolveThreadWorkingStartedAt } from "../upstream/cells";
 import { held } from "./heldLine";
-import { answersFor } from "./answer";
-import { AskCard, type AskActs, AskHead, AskLine } from "./Ask";
-import { elsewhereWords, EMPTY_WORDS, type FilterProject, type LineStage } from "./kit";
-import { type Ask, type CellState, countsOf, elsewhereOf, lineOf, opensOn, SEGMENTS } from "./line";
+import { EMPTY_WORDS, type LineStage } from "./kit";
+import { askCount, type CellState, countsOf, lineOf, SEGMENTS } from "./line";
 import type { Reading } from "./read";
 import { UndoLine } from "./UndoLine";
 
 const segments = tabChoice<LineStage>();
-const STAGES = ["needs", "awake", "asleep"] as const satisfies ReadonlyArray<LineStage>;
+const STAGES = ["awake", "asleep"] as const satisfies ReadonlyArray<LineStage>;
 
 type Place = { readonly environmentId: string; readonly projectId: string };
 
@@ -42,8 +34,6 @@ const byRecord =
       : inTab(cell, "working", now)
         ? { stage: "working", since: resolveThreadWorkingStartedAt(cell) }
         : { stage: "done", since: cell.latestRun?.completedAt ?? null };
-
-const UNSTOPPED = "Couldn't stop it, so it's still awake. Try Sleep again once it lands.";
 
 /** The same states while no awake Cell's changed, so a list's rows draw again only for a change. */
 function useSteadyStates(states: ReadonlyMap<string, CellState>) {
@@ -62,19 +52,13 @@ export function LineHome(props: {
   /** The Cells the home lists: T3's chats but Aski's, archived ones and Subcells. */
   readonly cells: ReadonlyArray<EnvironmentThreadShell>;
   readonly readings: ReadonlyMap<string, Reading>;
-  /** Every machine in view has answered once: where the home opens can be chosen. */
+  /** Every machine in view has answered once: the asks can be counted. */
   readonly known: boolean;
   readonly now: string;
   readonly inView: (place: Place) => boolean;
-  /** T3's project groups across every machine, for where the asks left out are. */
-  readonly projects: ReadonlyArray<FilterProject>;
-  /** What the picks show, when they narrow the home: "in Harbor", "on Studio". */
-  readonly narrowedTo: string | null;
   readonly environmentId: string | null;
   /** Its machines haven't sent their Cells yet. */
   readonly connecting: boolean;
-  readonly onShowAll: () => void;
-  readonly settle: (cell: EnvironmentThreadShell) => Promise<boolean>;
   /** New chats on their way, which Awake lists first. */
   readonly pending: number;
   /** Asleep Cells in view that the servers keep back from the phone: settled ones. */
@@ -90,12 +74,10 @@ export function LineHome(props: {
   const states = useSteadyStates(line.states);
   const onPhone = countsOf(line, props.inView);
   const counts = { ...onPhone, asleep: onPhone.asleep + props.olderSettled };
-  const tab = segments.useTab(opensOn(counts), props.known);
+  const tab = segments.useTab("awake");
   const stages = useStagePages(STAGES, tab);
   // Only once every machine has answered: a cold start would clear the icon a closed app was given.
-  useAppBadge(props.known ? counts.needs : null);
-  const openChat = useHomeThreadSelection();
-  const cellOf = (threadId: string) => props.cells.find((cell) => cell.id === threadId);
+  useAppBadge(props.known ? askCount(line) : null);
 
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Forget answered asks the machines stopped asking, as each reading comes in.
   useEffect(() => {
@@ -113,46 +95,9 @@ export function LineHome(props: {
     return () => subscription.remove();
   }, []);
 
-  const actsFor = (ask: Ask, done: () => void): AskActs => {
-    const { need, environmentId } = ask;
-    const cell = cellOf(need.parentThreadId ?? need.threadId);
-    return {
-      ...answersFor(ask, done),
-      settle:
-        cell === undefined
-          ? null
-          : () => {
-              void held.letGo();
-              held.aside(ask.key);
-              done();
-              void settleFromAnyStage(environmentId, cell.id, () => props.settle(cell)).then(
-                (end) => {
-                  if (end !== "settled") held.back(ask.key, end === "unstopped" ? UNSTOPPED : null);
-                },
-              );
-            },
-      openChat: () => openChat({ environmentId, id: need.threadId }),
-    };
-  };
-
   // T3's list narrows to the pickers too; handed only those, an empty segment says so in ours.
   const page = (stage: LineStage) => {
     if (props.connecting) return <EmptyTab words="Connecting…" />;
-    if (stage === "needs")
-      return (
-        <NeedsYou
-          asks={line.asks.filter((ask) => props.inView({ ...ask, projectId: ask.need.projectId }))}
-          unread={line.unread.filter(props.inView)}
-          onOpenChat={openChat}
-          waiting={counts.needs}
-          elsewhere={elsewhereWords(elsewhereOf(line.asks, props.inView, props.projects))}
-          narrowedTo={props.narrowedTo}
-          onShowAll={props.onShowAll}
-          now={Date.parse(props.now)}
-          cellOf={cellOf}
-          actsFor={actsFor}
-        />
-      );
     const shown = line[stage].filter(props.inView);
     const listed =
       shown.length > 0 ||
@@ -190,90 +135,5 @@ export function LineHome(props: {
         <UndoLine held={held} />
       </View>
     </HomeTabsContext>
-  );
-}
-
-/** What needs you: the asks in view, one open at a time; answering one opens the next. */
-function NeedsYou(props: {
-  readonly asks: ReadonlyArray<Ask>;
-  /** Cells in view that ask, on a machine that hasn't said what yet: each opens its chat. */
-  readonly unread: ReadonlyArray<EnvironmentThreadShell>;
-  readonly onOpenChat: (cell: EnvironmentThreadShell) => void;
-  /** Every ask in reach, the ones the pickers leave out too. */
-  readonly waiting: number;
-  readonly elsewhere: string | null;
-  readonly narrowedTo: string | null;
-  readonly onShowAll: () => void;
-  readonly now: number;
-  readonly cellOf: (threadId: string) => EnvironmentThreadShell | undefined;
-  readonly actsFor: (ask: Ask, done: () => void) => AskActs;
-}) {
-  const [openKey, setOpenKey] = useState<string | null>(null);
-  const open = props.asks.find((ask) => ask.key === openKey) ?? props.asks[0];
-  // The open ask stays under a finger: a reading that brings an older ask doesn't open in its place.
-  if (open !== undefined && open.key !== openKey) setOpenKey(open.key);
-  return (
-    <HomePage>
-      <View className="pt-3">
-        {props.asks.length === 0 && props.unread.length === 0 ? (
-          <View className="mt-5 items-center gap-1 px-8">
-            <AppText className="text-center text-base text-foreground">
-              {props.waiting > 0 && props.narrowedTo !== null
-                ? `Nothing ${props.narrowedTo} needs you.`
-                : EMPTY_WORDS.needs}
-            </AppText>
-            {props.waiting === 0 ? (
-              <AppText className="text-center text-sm text-foreground-muted">
-                You’ll hear the moment a Cell does.
-              </AppText>
-            ) : null}
-          </View>
-        ) : null}
-        {props.asks.map((ask, index) => (
-          <AskCard
-            key={ask.key}
-            ask={ask}
-            cell={props.cellOf(ask.need.parentThreadId ?? ask.need.threadId)}
-            now={props.now}
-            open={ask.key === open?.key}
-            onOpen={() => setOpenKey(ask.key)}
-            acts={props.actsFor(ask, () =>
-              setOpenKey((props.asks[index + 1] ?? props.asks[index - 1])?.key ?? null),
-            )}
-          />
-        ))}
-        {props.unread.map((cell) => (
-          <Pressable
-            key={`${cell.environmentId}:${cell.id}`}
-            accessibilityRole="button"
-            accessibilityHint="Opens its chat"
-            onPress={() => props.onOpenChat(cell)}
-            className="mx-3 mb-2 rounded-[20px] bg-grouped-card py-3 pl-3 pr-4 active:opacity-70"
-          >
-            <AskHead
-              cell={cell}
-              place={cell}
-              title={cell.title}
-              over={null}
-              ask={<AskLine>Its machine hasn’t answered yet.</AskLine>}
-              corner="Asks you"
-              urgent
-            />
-          </Pressable>
-        ))}
-        {props.elsewhere === null ? null : (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityHint="Shows every machine and project"
-            onPress={props.onShowAll}
-            className="mt-2 self-center px-6 py-2 active:opacity-70"
-          >
-            <AppText className="text-center text-sm text-foreground-muted">
-              {props.elsewhere}
-            </AppText>
-          </Pressable>
-        )}
-      </View>
-    </HomePage>
   );
 }

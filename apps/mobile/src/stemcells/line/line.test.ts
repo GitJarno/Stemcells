@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { elsewhereWords, type CellStanding, type Need } from "./kit";
-import { chatAskIn, countsOf, elsewhereOf, lineOf, opensOn, readsNextPage } from "./line";
+import type { CellStanding, Need } from "./kit";
+import { askCount, chatAskIn, countsOf, lineOf, readsNextPage } from "./line";
 import type { Reading } from "./read";
 
 const NOW = "2026-10-27T12:00:00.000Z";
@@ -115,7 +115,7 @@ describe("the phone's home on the Cells' line", () => {
     ]);
     expect(line.states.get("mini:m-done")?.stage).toBe("done");
     expect(line.unread.map((each) => each.id)).toEqual(["m-asks"]);
-    expect(countsOf(line, () => true).needs).toBe(1);
+    expect(askCount(line)).toBe(1);
   });
 
   it("lists every machine's asks oldest first, but the ones just answered", () => {
@@ -138,7 +138,7 @@ describe("the phone's home on the Cells' line", () => {
     expect(chatAskIn({ state: "none" }, "mac", "a", new Set())).toBeNull();
   });
 
-  it("counts every ask whatever the pickers show, and the rest only in view", () => {
+  it("counts the Cells in view, and every ask whatever the pickers show", () => {
     const readings = new Map([
       [
         "mac",
@@ -151,34 +151,8 @@ describe("the phone's home on the Cells' line", () => {
     const cells = [cell("w1", { projectId: "shop" }), cell("w2", { projectId: "blog" })];
     const line = lineOf(cells, readings, NOW, new Set(), byRecord);
     const onlyShop = (place: { projectId: string }) => place.projectId === "shop";
-    expect(countsOf(line, onlyShop)).toEqual({ needs: 2, awake: 1, asleep: 0 });
-  });
-
-  it("says where the asks the pickers leave out are, as the Mac's column words it", () => {
-    const shop = { key: "shop", name: "Shop", memberKeys: ["mac:shop", "mini:shop-copy"] };
-    const blog = { key: "blog", name: "Blog", memberKeys: ["mac:blog"] };
-    const asks = [
-      { key: "1", environmentId: "mac", need: need("a", NOW, "blog") },
-      { key: "2", environmentId: "mini", need: need("b", NOW, "shop-copy") },
-      { key: "3", environmentId: "mac", need: need("c", NOW, "blog") },
-      { key: "4", environmentId: "mini", need: need("d", NOW, "gone") },
-    ];
-    // The machine picker on the Mac: the Mini's shop counts under Shop, wherever it is.
-    const onMac = (place: { environmentId: string }) => place.environmentId === "mac";
-    expect(elsewhereWords(elsewhereOf(asks, onMac, [shop, blog]))).toBe(
-      "Also 1 in Shop and 1 elsewhere",
-    );
-    const inBlog = (place: { environmentId: string; projectId: string }) =>
-      blog.memberKeys.includes(`${place.environmentId}:${place.projectId}`);
-    expect(elsewhereWords(elsewhereOf(asks, inBlog, [shop, blog]))).toBe(
-      "Also 1 in Shop and 1 elsewhere",
-    );
-    expect(elsewhereWords(elsewhereOf(asks, () => true, [shop, blog]))).toBeNull();
-  });
-
-  it("opens on Input when anything waits, else on Awake", () => {
-    expect(opensOn({ needs: 1, awake: 3, asleep: 0 })).toBe("needs");
-    expect(opensOn({ needs: 0, awake: 0, asleep: 9 })).toBe("awake");
+    expect(countsOf(line, onlyShop)).toEqual({ awake: 1, asleep: 0 });
+    expect(askCount(line)).toBe(2);
   });
 
   it("reads Asleep's next page only while Cells are left and none is on its way", () => {

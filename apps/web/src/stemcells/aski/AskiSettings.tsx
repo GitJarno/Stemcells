@@ -42,7 +42,7 @@ export function AskiSettingsPanel() {
         <SettingsRow
           id="aski-tab-on"
           title="Aski's tab"
-          description="Aski's chat, first in the tab strip, with what needs you beside it. Off, there is no Aski tab and no Aski chat is started; the Cells' column still lists what needs you."
+          description="Aski's chat, first in the tab strip, with what needs you beside it. Off, there is no Aski tab and no Aski chat is started; a Cell that asks still glows in Awake and asks in its chat."
           control={
             <Switch
               checked={askiTab}

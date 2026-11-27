@@ -108,17 +108,6 @@ describe("your own act never waits", () => {
     });
   });
 
-  it("brings an ask set aside to settle back, saying why when its Cell wouldn't stop", () => {
-    const { held } = setup();
-    held.aside("a");
-    expect(held.read().answered).toEqual(new Set(["a"]));
-    held.back("a", "Couldn't stop it to settle it.");
-    expect(held.read()).toEqual({
-      answered: new Set(),
-      line: { kind: "said", words: "Couldn't stop it to settle it.", about: null },
-    });
-  });
-
   it("takes an act already done back on Undo, and lets it go untouched for the next act", async () => {
     let takenBack = 0;
     const done = { key: "disk:mac", words: "Disk notice hidden", takeBack: () => takenBack++ };

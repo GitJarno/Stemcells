@@ -76,8 +76,8 @@ const needYou = (count: number) => (count === 1 ? "1 needs you" : `${count} need
 /**
  * Aski's room: its chat on the left half, the ask in front on the right and the rest in line
  * (stemcells/tasks/aski-asks.md, decision 2; one-ask.md); narrow, a count that opens them as a
- * sheet; on two screens, the second screen. The Cells' column lists the same asks as an index
- * meanwhile (aski-asks.md, decision 8).
+ * sheet; on two screens, the second screen. Each ask also waits in its own chat
+ * (stemcells/tasks/the-ask.md).
  */
 export function NeedsFrame(props: {
   /** Aski's chat, whose composer holds the page still while it has text. */
@@ -105,7 +105,6 @@ export function NeedsFrame(props: {
   const list = (
     <CardList
       view={view}
-      one
       head={
         <>
           {/* Wide, the asks speak for themselves: only what isn't plain from them is said. */}

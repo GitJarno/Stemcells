@@ -109,7 +109,7 @@ export const make = Effect.fn("Push.make")(function* (
   let needs: ReadonlyArray<Need> = [];
   let conditions: ReadonlyArray<Condition> = [];
   const pushed = new Set<string>();
-  /** The count of Cells at Input the phones' icons last took from this Mac; null until one did. */
+  /** The count of asks the phones' icons last took from this Mac; null until one did. */
   let badged: number | null = null;
   /** How many Cells are flying here, as the last list said. */
   let flying = 0;
@@ -227,7 +227,7 @@ export const make = Effect.fn("Push.make")(function* (
     const now = yield* Clock.currentTimeMillis;
     if (key === null || devices.length === 0) return;
     yield* lookAtBattery(now);
-    // The icon counts what the phone's Input segment counts of this Mac: every card.
+    // The icon counts every ask of this Mac's, as the phone's badge does.
     const count = needs.length;
     const waiting = due(needs, pushed, now);
     const held = dueConditions(conditions, pushed, now);

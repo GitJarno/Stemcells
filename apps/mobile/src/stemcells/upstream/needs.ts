@@ -1,7 +1,7 @@
 // What the phone's asks take from upstream (stemcells/tasks/phone-line.md): its thread commands,
-// run as its chat runs them, the settle a Cell at work stops for first, T3's notice, the views an
-// ask is drawn with, and a chat's messages and jump for the ask it docks. Only `respond` with an
-// allow decision can approve, and only a tap reaches it.
+// run as its chat runs them, T3's notice, the views an ask is drawn with, and a chat's messages
+// and jump for the ask it docks. Only `respond` with an allow decision can approve, and only a
+// tap reaches it.
 
 import { scopeThreadRef } from "@t3tools/client-runtime/environment";
 import {
@@ -28,7 +28,6 @@ import { environmentThreadShells, threadEnvironment } from "../../state/threads"
 import { useQuietThreadStructure } from "../../state/use-thread-detail";
 import { buildPlanMessage, type ChatMessage, type ThreadCommand } from "../line/kit";
 
-export { AppTextInput } from "../../components/ui/AppText";
 export { Toast } from "../../components/ui/Toast";
 export * as Dialog from "../../components/ui/Dialog";
 export {
@@ -175,46 +174,4 @@ export function jumpToMessage(environmentIdText: string, threadIdText: string, m
     scopedThreadKey(environmentIdText as EnvironmentId, ThreadId.make(threadIdText)),
     MessageId.make(messageId),
   );
-}
-
-const RUNNING = new Set(["preparing", "starting", "running", "waiting"]);
-/** How long a stopped Cell has to end its run before its settle gives up. */
-const STOP_WAIT_MS = 15_000;
-
-/**
- * Settles a Cell with `settle` (upstream's own, with its notice), from any stage: upstream
- * refuses a thread that runs or waits on an answer, so a Cell at work stops first, as the
- * column's Settle does (`apps/web/src/stemcells/upstream/settle.ts`).
- */
-export async function settleFromAnyStage(
-  environmentIdText: string,
-  threadIdText: string,
-  settle: () => Promise<boolean>,
-): Promise<"settled" | "unstopped" | "refused"> {
-  const ref = scopeThreadRef(environmentIdText as EnvironmentId, ThreadId.make(threadIdText));
-  const atom = environmentThreadShells.threadShellAtom(ref);
-  const runs = () => RUNNING.has(appAtomRegistry.get(atom)?.source.status ?? "");
-  const asking = appAtomRegistry.get(atom)?.source.pendingRuntimeRequest ?? null;
-  if (runs() || (asking !== null && asking.blocking !== false)) {
-    const stopped = await run(threadEnvironment.interruptTurn, {
-      environmentId: ref.environmentId,
-      input: { threadId: ref.threadId },
-    });
-    if (!stopped.ok) return "unstopped";
-    const ended = await new Promise<boolean>((resolve) => {
-      if (!runs()) return resolve(true);
-      const timer = setTimeout(() => done(false), STOP_WAIT_MS);
-      const unsubscribe = appAtomRegistry.subscribe(atom, () => {
-        if (!runs()) done(true);
-      });
-      function done(value: boolean) {
-        clearTimeout(timer);
-        unsubscribe();
-        resolve(value);
-      }
-    });
-    if (!ended) return "unstopped";
-  }
-  // Upstream's settle says itself why it refused.
-  return (await settle()) ? "settled" : "refused";
 }

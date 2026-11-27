@@ -1,14 +1,15 @@
 // The home's stages in their own order over T3's list (`substitutes/useThreadListV2.ts`,
-// stemcells/tasks/awake-asleep.md). Awake holds still: pins first in T3's order, then the latest
-// brought forward, so a landing, an ask or a flight moves no row. Asleep lists the latest asleep
-// first, and a timed sleep says when it wakes. The stage is the shelf, so T3's shelf rows go.
+// stemcells/tasks/awake-asleep.md). Awake reads in time order: pins first in T3's order, then by
+// the time each row shows, latest first. Asleep lists the latest asleep first, and a timed sleep
+// says when it wakes. The stage is the shelf, so T3's shelf rows go.
 
 import { snoozeWakeLabel } from "@t3tools/client-runtime/state/thread-settled";
 import { resolveSettledThreadTimestamp } from "@t3tools/client-runtime/state/thread-sort";
 import type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/shell";
 
 import type { ThreadListV2ListItem } from "../../features/threads/threadListV2";
-import { byLaunch, type Launchable, wakesWords } from "../line/kit";
+import { byRecent, type Launchable, wakesWords } from "../line/kit";
+import { cellKey, type CellState } from "../line/line";
 
 type ThreadItem = Extract<ThreadListV2ListItem, { readonly type: "v2-thread" }>;
 
@@ -28,15 +29,19 @@ function launchableOf(item: ThreadItem): Launchable & { readonly item: ThreadIte
   };
 }
 
-/** Awake: new chats on their way, the pins in T3's order, then the latest brought forward. */
-export function inAwakeOrder(items: ReadonlyArray<ThreadListV2ListItem>): ThreadListV2ListItem[] {
+/** Awake: new chats on their way, the pins in T3's order, then by the time each row shows. */
+export function inAwakeOrder(
+  items: ReadonlyArray<ThreadListV2ListItem>,
+  states: ReadonlyMap<string, CellState>,
+): ThreadListV2ListItem[] {
   const threads = items.filter(isThread);
   return [
     ...items.filter((item) => item.type === "v2-pending"),
     ...threads.filter((item) => item.item.pinned),
-    ...byLaunch(threads.filter((item) => !item.item.pinned).map(launchableOf)).map(
-      (launched) => launched.item,
-    ),
+    ...byRecent(
+      threads.filter((item) => !item.item.pinned).map(launchableOf),
+      ({ item }) => states.get(cellKey(item.item.thread))?.since,
+    ).map((launched) => launched.item),
   ];
 }
 
