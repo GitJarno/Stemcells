@@ -157,19 +157,20 @@
   padding: var(--sc-space-md) var(--sc-space-lg);
   color: var(--sc-faint);
 }
-/* A Cell's row folds away as it leaves its stage (Sleep, Wake): its height
-   and its light go together, once; with less motion it only fades. */
+/* A Cell's row folds away as it leaves its stage (Sleep, Wake), the lists'
+   leave (`motion/listMotion.ts`): its height and its light go together, once,
+   on the move's curve; with less motion it only fades. */
 [data-cells-row] {
   display: grid;
   grid-template-rows: 1fr;
   list-style: none;
-  transition: opacity var(--sc-motion-leave-duration) var(--sc-motion-leave-easing);
+  transition: opacity var(--sc-motion-recede-duration) var(--sc-motion-recede-easing);
 }
 @media (prefers-reduced-motion: no-preference) {
   [data-cells-row] {
     transition:
-      grid-template-rows var(--sc-motion-leave-duration) var(--sc-motion-leave-easing),
-      opacity var(--sc-motion-leave-duration) var(--sc-motion-leave-easing);
+      grid-template-rows var(--sc-motion-recede-duration) var(--sc-motion-recede-easing),
+      opacity var(--sc-motion-recede-duration) var(--sc-motion-recede-easing);
   }
 }
 [data-cells-row-fold] {
@@ -321,6 +322,37 @@
     transparent
   );
   transform: translateX(-100vw);
+}
+/* A row entering its stage blooms once (`rowMotion.ts` animates
+   `--cells-bloom`): its light at full over the row's own, then gone. Asleep's
+   rows wear no light of their own, so theirs is the accent's. */
+@property --cells-bloom {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+[data-cells-open] {
+  position: relative;
+  isolation: isolate;
+}
+[data-cells-open]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse 7.5rem 42% at var(--cells-row-cell-x, calc(var(--sc-space-md) + 0.6rem)) 50%,
+    color-mix(in srgb, color-mix(in srgb, var(--cells-bloom-tone), white 12%) 30%, transparent),
+    color-mix(in srgb, var(--cells-bloom-tone) 9%, transparent) 55%,
+    transparent
+  );
+  opacity: var(--cells-bloom);
+  pointer-events: none;
+  --cells-bloom-tone: var(--cells-row-tone);
+}
+[data-cells-open]:not([data-light])::before {
+  --cells-bloom-tone: var(--sc-accent);
 }
 [data-cells-more] {
   padding: var(--sc-space-sm) var(--sc-space-md);

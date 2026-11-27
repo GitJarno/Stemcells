@@ -13,6 +13,7 @@ import { EmptyTab } from "../home/EmptyTab";
 import { StagePages, useStagePages } from "../home/StagePages";
 import { CellStates, HomeTabsContext, tabChoice } from "../home/state";
 import { inTab } from "../home/tabs";
+import { useLineMotion } from "../home/useLineMotion";
 import { type EnvironmentThreadShell, resolveThreadWorkingStartedAt } from "../upstream/cells";
 import { held } from "./heldLine";
 import { EMPTY_WORDS, type LineStage } from "./kit";
@@ -73,7 +74,10 @@ export function LineHome(props: {
   const line = lineOf(props.cells, props.readings, props.now, answered, byRecord(props.now));
   const states = useSteadyStates(line.states);
   const onPhone = countsOf(line, props.inView);
-  const counts = { ...onPhone, asleep: onPhone.asleep + props.olderSettled };
+  const counts = useLineMotion(line, props.cells, props.inView, {
+    ...onPhone,
+    asleep: onPhone.asleep + props.olderSettled,
+  });
   const tab = segments.useTab("awake");
   const stages = useStagePages(STAGES, tab);
   // Only once every machine has answered: a cold start would clear the icon a closed app was given.

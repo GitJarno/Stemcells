@@ -555,7 +555,7 @@ library's dependency (above); the rest are substitutes:
   header's top right, where the seam in `WorkspaceToolbar.tsx` hands
   its trailing items a projects menu and, with two machines or more, a
   machines menu, each staying open while you tick (`home/scope.tsx`). Where the list has no header (Android, outside the
-  workspace) and while searching, the home is T3's own. Two more substitutes: the row tokens make cards on the
+  workspace) and while searching, the home is T3's own. T3's lists move a row to its new slot on the lists' one move (`threadListAnimations.ts`, `home/listMotion.ts`). Two more substitutes: the row tokens make cards on the
   phone's own screen (`thread-list-v2-row-appearance.ts`; Android's file
   and the iPad's sidebar stay T3's), no row recedes (`thread-row-emphasis.ts`: T3 fades a
   working Cell's card to 55%, where an awake row's light says it flies), and on the home's tabs

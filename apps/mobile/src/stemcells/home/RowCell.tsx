@@ -33,9 +33,12 @@ import {
   ProjectFavicon,
 } from "../upstream/home";
 import { relativeTime } from "../upstream/needs";
+import { Arrival } from "./Arrival";
 import { sendCopy } from "./copies";
+import { useLifted } from "./hops";
 import { CellStates, HomeCellsHeld, HomeInFront, HomeStageContext, useMinute } from "./state";
 import { isAway } from "./tabs";
+import { useDeparture } from "./useDeparture";
 
 function Figure(props: { readonly thread: EnvironmentThreadShell; readonly points: number }) {
   const { thread } = props;
@@ -47,6 +50,9 @@ function Figure(props: { readonly thread: EnvironmentThreadShell; readonly point
   const inFront = use(HomeInFront);
   const held = use(HomeCellsHeld);
   const box = useRef<ViewInstance>(null);
+  // Sleep and Wake take the Cell out of its row to its stage (`hops.ts`); its place stands empty.
+  useDeparture(thread, box, !aski);
+  const lifted = useLifted(cellKey(thread));
   // Asked on every draw, not kept: a list row is handed another chat as it scrolls. A Cell about to form here gets its copy of Aski (`copies.ts`).
   const forming =
     aski || reduced || !inFront ? undefined : formingFrom(thread.id, thread.createdAt);
@@ -61,7 +67,7 @@ function Figure(props: { readonly thread: EnvironmentThreadShell; readonly point
   useEffect(sendFor, [thread.id, forming]);
   if (aski) return <AskiFigure height={props.points * 14} ink={ink} ground={card} />;
   return (
-    <View ref={box} onLayout={sendFor}>
+    <View ref={box} onLayout={sendFor} style={lifted ? LIFTED : undefined}>
       <ThreadCell
         thread={thread}
         points={props.points}
@@ -73,6 +79,8 @@ function Figure(props: { readonly thread: EnvironmentThreadShell; readonly point
     </View>
   );
 }
+
+const LIFTED: ViewStyle = { opacity: 0 };
 
 /** A card's marks: its machine and pull request in its bottom right, its project before its title. */
 export interface CardMarks {
@@ -152,6 +160,7 @@ export function CellBesideRow(props: {
           ) : null}
         </View>
       </View>
+      <Arrival thread={props.thread} fill={AWAKE_FILL} anchorX={CARD_ANCHOR} />
     </View>
   );
 }
@@ -164,6 +173,10 @@ const ROW_HEIGHT = 52;
 const PADDED = { card: 24, slim: 16 } as const;
 /** The Cell's middle from the card's left edge. */
 const AWAKE_ANCHOR = 12 + BOX.width;
+/** A two-line card's Cell stands in the middle of its 52-point column. */
+const CARD_ANCHOR = 12 + 26;
+/** A slim row, from its Cell's own box: the row's `pl-3 py-2`, and on past its end, where the card clips. */
+const SLIM_FILL = { position: "absolute", top: -8, bottom: -8, left: -12, width: 800 } as const;
 
 /** An awake Cell's row: the Cell, its title in one line, how long it's been like this, its light. */
 function AwakeRow(props: {
@@ -180,6 +193,7 @@ function AwakeRow(props: {
       <Figure thread={thread} points={2} />
       <View className="min-w-0 flex-1">{props.children}</View>
       {state?.since ? <Since since={state.since} /> : null}
+      <Arrival thread={thread} fill={AWAKE_FILL} anchorX={AWAKE_ANCHOR} />
     </View>
   );
 }
@@ -307,6 +321,7 @@ export function SlimRowCell(props: {
       style={tabs ? { minHeight: ROW_HEIGHT - PADDED.slim } : undefined}
     >
       <Figure thread={props.thread} points={2} />
+      <Arrival thread={props.thread} fill={SLIM_FILL} anchorX={12 + BOX.width} />
     </View>
   );
 }

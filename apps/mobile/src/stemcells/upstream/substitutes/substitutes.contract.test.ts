@@ -334,6 +334,22 @@ const CASES: Readonly<Record<string, Case>> = {
       ],
     },
   },
+  "apps/mobile/src/features/threads/threadListAnimations.ts": {
+    exports: view(
+      "apps/mobile/src/features/threads/threadListAnimations.ts",
+      "threadListAnimations.ts",
+    ),
+    importers: {
+      "apps/mobile/src/features/home/HomeScreen.tsx": [
+        "../threads/threadListAnimations",
+        ["THREAD_LIST_ROW_LAYOUT"],
+      ],
+      "apps/mobile/src/features/threads/ThreadNavigationSidebar.tsx": [
+        "./threadListAnimations",
+        ["THREAD_LIST_ROW_LAYOUT"],
+      ],
+    },
+  },
   "apps/mobile/src/features/threads/use-thread-list-v2-shelf-preferences.ts": {
     exports: view(
       "apps/mobile/src/features/threads/use-thread-list-v2-shelf-preferences.ts",
@@ -742,6 +758,9 @@ describe("the phone's substitutes for upstream modules", () => {
     >();
     expectTypeOf<typeof import("./thread-row-emphasis").shouldRecedeThreadRow>().toEqualTypeOf<
       typeof import("../../../features/threads/thread-row-emphasis").shouldRecedeThreadRow
+    >();
+    expectTypeOf<typeof import("./threadListAnimations")>().toEqualTypeOf<
+      typeof import("../../../features/threads/threadListAnimations")
     >();
     expectTypeOf<typeof import("./use-thread-list-v2-shelf-preferences")>().toEqualTypeOf<
       typeof import("../../../features/threads/use-thread-list-v2-shelf-preferences")
