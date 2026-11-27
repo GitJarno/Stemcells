@@ -1,11 +1,18 @@
-// Where the stages' pill stands: on an upright phone under the header, with the sky behind it,
-// where the eye starts (stemcells/tasks/awake-asleep.md); elsewhere at the home's foot, over its
-// search, riding the keyboard (`StagePill.tsx`).
+// Where the stages' pill stands (stemcells/tasks/awake-asleep.md): on an upright phone under the
+// header with the sky behind it, going up with the title on a candybar phone and staying on the
+// folded Duo; elsewhere at the home's foot over its search, riding the keyboard (`StagePill.tsx`).
 
-import { useUprightPhoneHome } from "../upstream/home";
+import { useUprightPhone } from "../upstream/home";
 import { PILL_ROOM, STAGE_ROOM } from "./state";
 
-export const usePillOnTop = useUprightPhoneHome;
+export function usePillOnTop(): boolean {
+  return useUprightPhone() !== null;
+}
+
+/** Whether the pill on top stays as the list scrolls: on the folded Duo, not a candybar phone. */
+export function usePillStays(): boolean {
+  return useUprightPhone() === "duo-folded";
+}
 
 /** The room over each stage's first row, under the header: the pill's too when it stands there. */
 export function useStageRoom(): number {

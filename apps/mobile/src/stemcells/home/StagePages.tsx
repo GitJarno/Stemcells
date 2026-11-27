@@ -42,7 +42,7 @@ import {
   STAGE_ROOM,
   StagePageContext,
 } from "./state";
-import { usePillOnTop } from "./pillPlace";
+import { usePillStays } from "./pillPlace";
 import { Sky } from "./Sky";
 import { StagePill } from "./StagePill";
 import { riseSky, turnSky } from "./useSky";
@@ -133,7 +133,7 @@ export function StagePages<Stage extends string>(props: {
   const { home, tab } = props;
   const sidebar = useHomeSidebar();
   const barBottom = useDuoBarBottom();
-  const pillOnTop = usePillOnTop();
+  const pillStays = usePillStays();
   const inFront = use(HomeInFront);
   const held = use(HomeCellsHeld);
   // Where a list rests: under the inset T3's list rests under, at the native header's foot.
@@ -205,7 +205,7 @@ export function StagePages<Stage extends string>(props: {
       <ScreenVeils
         bottom={!sidebar}
         barBottom={barBottom}
-        chromeBottom={pillOnTop ? inset + STAGE_ROOM + PILL_HEIGHT : undefined}
+        chromeBottom={pillStays ? inset + STAGE_ROOM + PILL_HEIGHT : undefined}
       />
       <Sky />
       <StagePill top={inset} />

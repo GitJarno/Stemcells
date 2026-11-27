@@ -53,12 +53,13 @@ export function useHomeSidebar() {
   return use(NativePrimaryColumnContext) !== null && role === "sidebar";
 }
 
-/** Whether the home stands upright on a phone, the folded Duo's too, as a page and not a sidebar. */
-export function useUprightPhoneHome() {
+/** The phone the home stands upright on as a page, the folded Duo too, or null: a sidebar, an iPad, a phone on its side. */
+export function useUprightPhone(): "phone" | "duo-folded" | null {
   const sidebar = useHomeSidebar();
   const deviceType = useDeviceType();
   const { width, height } = useWindowDimensions();
-  return !sidebar && (deviceType === "phone" || deviceType === "duo-folded") && height > width;
+  if (sidebar || height <= width) return null;
+  return deviceType === "phone" || deviceType === "duo-folded" ? deviceType : null;
 }
 
 /** Where the header's bar ends on the Duo, under the camera's band rather than a status bar. */
