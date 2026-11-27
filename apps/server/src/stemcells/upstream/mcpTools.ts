@@ -7,6 +7,7 @@ import * as Layer from "effect/Layer";
 import type { toolkitRegistration } from "../../mcp/McpHttpServer.ts";
 import * as Needs from "../needs/Needs.ts";
 import { registerArcsTool } from "./arcsTool.ts";
+import { registerMoveTools } from "./diskMoveTool.ts";
 import { registerDiskTool } from "./diskTool.ts";
 import { registerPeerTool } from "./peerTool.ts";
 import { registerSettingsTool } from "./settingsTool.ts";
@@ -17,6 +18,7 @@ export const registerStemcellsTools = (register: typeof toolkitRegistration) =>
   Layer.mergeAll(
     registerPeerTool(register),
     registerDiskTool(register),
+    registerMoveTools(register),
     registerStandingTool(register).pipe(Layer.provide(Needs.layer)),
     registerArcsTool(register),
     registerSettingsTool(register),
