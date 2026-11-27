@@ -1,9 +1,11 @@
 import * as Haptics from "expo-haptics";
 import { useState } from "react";
 import { View, type ViewStyle } from "react-native";
+import Animated from "react-native-reanimated";
 import { useResolveClassNames } from "uniwind";
 
 import { DISK_FULL, DISK_NOTICE } from "../../../../../stemcells/words/disk.ts";
+import { useOverKeyboard } from "../home/overKeyboard";
 import { PILL_ROOM, setFootRoom } from "../home/state";
 import { held } from "../line/heldLine";
 import {
@@ -17,7 +19,6 @@ import {
   useMachines,
   withThreadDismissal,
 } from "../upstream/disk";
-import { useOverSearch } from "../upstream/home";
 import { diskPressure, freeFigure, FULL_BELOW, noticeShown } from "./kit";
 import { setNoticeHidden, useHiddenAt } from "./notice";
 import { useFreeSpace } from "./useFreeSpace";
@@ -49,12 +50,12 @@ const useConnected = () => useMachines().filter((machine) => machine.connection 
 /** Every machine's card over the list's foot, whose height the list scrolls past. */
 export function DiskFoot() {
   // Where T3's own notice stands, over the stages' pill (`line/UndoLine.tsx`).
-  const bottom = useOverSearch().pill + PILL_ROOM;
+  const { style } = useOverKeyboard(PILL_ROOM);
   const machines = useConnected();
   return (
-    <View
+    <Animated.View
       className="absolute inset-x-0"
-      style={{ bottom }}
+      style={style}
       pointerEvents="box-none"
       onLayout={({ nativeEvent }) => setFootRoom(nativeEvent.layout.height)}
     >
@@ -65,7 +66,7 @@ export function DiskFoot() {
           label={machine.label}
         />
       ))}
-    </View>
+    </Animated.View>
   );
 }
 

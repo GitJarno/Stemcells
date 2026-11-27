@@ -4,10 +4,10 @@
 // place of T3's.
 
 import { useEffect, useSyncExternalStore } from "react";
-import { View } from "react-native";
+import Animated from "react-native-reanimated";
 
+import { useOverKeyboard } from "../home/overKeyboard";
 import { PILL_ROOM } from "../home/state";
-import { useOverSearch } from "../upstream/home";
 import { dismissThreadUndoNotice, Toast, useThreadUndoNotice } from "../upstream/needs";
 import type { HeldStore } from "./held";
 
@@ -15,7 +15,8 @@ export function UndoLine(props: { readonly held: HeldStore }) {
   const { held } = props;
   const { line } = useSyncExternalStore(held.subscribe, held.read);
   const notice = useThreadUndoNotice();
-  const place = useOverSearch();
+  // Where T3's own notice stands, over the stages' pill (`home/StagePill.tsx`).
+  const { place, style } = useOverKeyboard(PILL_ROOM);
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Keep one undo line: T3's notice lets ours go.
   useEffect(() => {
     if (notice !== null) void held.letGo();
@@ -25,13 +26,11 @@ export function UndoLine(props: { readonly held: HeldStore }) {
     if (line !== null && line.kind !== "said") dismissThreadUndoNotice();
   }, [line]);
   if (line === null) return null;
-  // Where T3's own notice stands, over the stages' pill (`home/StagePill.tsx`).
-  const bottom = place.pill + PILL_ROOM;
   return (
-    <View
+    <Animated.View
       collapsable={false}
       className="absolute z-[100]"
-      style={{ bottom, left: place.left, right: place.right }}
+      style={[{ left: place.left, right: place.right }, style]}
       pointerEvents="box-none"
     >
       {line.kind !== "said" ? (
@@ -46,6 +45,6 @@ export function UndoLine(props: { readonly held: HeldStore }) {
       ) : (
         <Toast message={line.words} dismissMode="swipe" onDismiss={() => void held.letGo()} />
       )}
-    </View>
+    </Animated.View>
   );
 }
