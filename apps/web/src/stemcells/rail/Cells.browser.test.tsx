@@ -5,6 +5,12 @@ import type { ReactElement, ReactNode } from "react";
 import { describe, expect, it, vi } from "vite-plus/test";
 import { page, userEvent } from "vite-plus/test/browser";
 
+import {
+  clearPlannedRows,
+  onPlannedRowOpened,
+  type PlannedRow,
+  setPlannedRows,
+} from "../../../../../stemcells/aski/planned.ts";
 import { APP_NAME } from "../brand/name";
 import { needFixture, NOW, requestFixture } from "../needs/fixtures";
 import type { CellStanding, Condition, Need } from "../needs/wire";
@@ -221,6 +227,7 @@ vi.mock("../upstream/cellRow", async () => {
     compactAge: () => "12m",
     wakeIn: () => "3h",
     CellProjectMark: () => <span data-cells-row-project="">shop</span>,
+    CellProjectMarkOf: () => <span data-cells-row-project="">shop</span>,
     CellCard: (props: { trigger: ReactElement; children: ReactNode }) =>
       cloneElement(props.trigger, undefined, props.children),
   };
@@ -321,6 +328,23 @@ const available: DesktopUpdateState = {
     },
   ],
 };
+
+/** A row of Aski's plan, as the plan tray sets it. */
+const planned = (
+  threadId: string,
+  tier: PlannedRow["tier"],
+  unsure?: PlannedRow["unsure"],
+): PlannedRow => ({
+  threadId,
+  projectId: "project-shop",
+  projectName: "Shop",
+  title: "Rework the film page",
+  modelName: "Fable 5.2",
+  effort: "high",
+  tier,
+  ...(unsure === undefined ? {} : { unsure }),
+  born: NOW,
+});
 
 function setup(update: DesktopUpdateState | null, providers: ReadonlyArray<ProviderOffer> = []) {
   desktop.update = update;
@@ -749,6 +773,68 @@ describe("a Cell moving along the line", () => {
     );
     expect(order()).toEqual(was);
     expect(document.querySelector("[data-cells-hop]")).toBeNull();
+  });
+
+  it("stands a planned row under the pin, and the machine's row takes it over in place", async () => {
+    setup(null);
+    await using screen = await render(<Column />);
+    await using stack = new AsyncDisposableStack();
+    const before = streamState();
+    stack.defer(() => {
+      stream = before;
+      clearPlannedRows("plan");
+    });
+    const rows = () => [
+      ...document.querySelectorAll<HTMLElement>('[aria-label="Awake"] [data-cells-row]'),
+    ];
+    await expect.element(screen.getByRole("button", { name: /Awake\s*5/ })).toBeVisible();
+    await act(() => setPlannedRows("plan", [planned("thread-new", "start")]));
+    await vi.waitFor(() =>
+      expect(
+        rows()
+          .slice(0, 2)
+          .map((row) => row.dataset.cellsThread),
+      ).toEqual(["thread-l1", "thread-new"]),
+    );
+    const row = rows()[1]!;
+    expect(row.dataset.born).toBe("");
+    expect(row.textContent).toContain("Fable 5.2 · high");
+    expect(row.querySelector("[data-cells-act]")).toBeNull();
+    // The plan's Cell is not one of the machine's yet: Awake counts what it lists.
+    await expect.element(screen.getByRole("button", { name: /Awake\s*5/ })).toBeVisible();
+
+    await act(() => {
+      stream = { ...before, cells: [...before.cells, standing("thread-new", "working", "")] };
+      changes.tell();
+    });
+    await vi.waitFor(() =>
+      expect(row.querySelector<HTMLElement>("[data-cells-open]")?.dataset.light).toBe("flying"),
+    );
+    expect(rows()[1]).toBe(row);
+    expect(row.isConnected).toBe(true);
+    expect(row.dataset.born).toBe("");
+    expect(rows().filter((each) => each.dataset.cellsThread === "thread-new")).toHaveLength(1);
+    expect(row.querySelector("[data-cells-act]")).not.toBeNull();
+  });
+
+  it("draws a Cell that waits for the person's check as an outline that leads to Aski's plan", async () => {
+    setup(null);
+    await using screen = await render(<Column />);
+    await using stack = new AsyncDisposableStack();
+    const opened: string[] = [];
+    stack.defer(onPlannedRowOpened((row) => opened.push(row.threadId)));
+    stack.defer(() => clearPlannedRows("plan"));
+    await act(() => setPlannedRows("plan", [planned("thread-check", "check", "model")]));
+    const row = screen.getByRole("listitem").filter({ hasText: "Rework the film page" });
+    await expect.element(row).toHaveAttribute("data-outline", "");
+    await expect.element(row.getByRole("img", { name: "Check the model" })).toBeVisible();
+    spies.open.mockClear();
+    await row.getByRole("button").click();
+    expect(opened).toEqual(["thread-check"]);
+    // Its own chat doesn't exist yet: nothing opens it.
+    expect(spies.open).not.toHaveBeenCalledWith(
+      expect.objectContaining({ threadId: "thread-check" }),
+    );
   });
 
   it("hops a Cell the person woke into Awake's count, and is gone once it lands", async () => {

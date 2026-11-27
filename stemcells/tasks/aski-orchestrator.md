@@ -412,7 +412,13 @@ Each lands on the Mac and the phone together where a person sees it.
        Check, Call back, Cells without tabs. Aski's chat can't launch.
 4. [x] **Hold.** `destroy`, the press-and-hold confirm, the server's
        refusals for Aski's instance, risky sentences as Checks.
-5. [x] **The spawn in the Awake list.**
+5. [x] **The spawn in the Awake list**, Mac, phone and Duo.
+       Review: a row lands where Aski's copy does, 150 ms apart and four
+       forming at most, and its line settles in five beats; forming six
+       while two chats stream dropped no frame in the built app (ten runs).
+       The phone holds a born row out of T3's list until Awake is out of
+       sight, as the list's own insert blinked; the Duo's column wasn't
+       seen on a simulator (no disk for one).
 6. [x] **New projects and heard names.** A new project as a Check, near
        names as Checks, names learned from confirms.
 7. [x] **Recall.** Cards, the search, the pills under a question,

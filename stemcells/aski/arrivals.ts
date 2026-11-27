@@ -18,6 +18,8 @@ export const ARRIVALS = {
   most: 4,
   /** How long a Cell forms before it has its own pixels, in beats: its glyphs, then its blocks. */
   forming: GLYPHS.length + 4,
+  /** Beats from a row's landing to its line's first step: the row it pushed down has cleared it by then. */
+  settles: 2,
   /** How long a started row's line says its name and model once its Cell is listed, ms: the plan's call back stands as long. */
   linger: 10_000,
   /** How long a started row waits for the machine to list its Cell before it gives up, ms. */
@@ -141,11 +143,13 @@ export interface ArrivalDeps<From, Slot> {
   /** Where the next row lands: its Cell's box at the top of Awake; null while Awake is out of sight. */
   readonly slot: () => Slot | null;
   readonly ready: (from: From) => void;
-  readonly playThrow: (from: From, to: Slot) => void;
+  readonly playThrow: (from: From, to: Slot, threadId: string) => void;
   /** The Cell of a row that landed at `at` forms from then: its glyphs, then its blocks, or its outline. */
   readonly forms: (threadId: string, at: number) => void;
   /** A confirmed check's Cell fills in from its outline, from `at`. */
   readonly fills: (threadId: string, at: number) => void;
+  /** How long a listed row's birth words take to go, ms, where it isn't the lists' leave. */
+  readonly fade?: number;
 }
 
 /** The arrivals of the planned rows `rows()` holds, told of each change by `sync`. */
@@ -192,7 +196,7 @@ export function createArrivals<From, Slot>(
         if (rowOf(threadId) !== undefined) over.add(threadId);
         publish();
       },
-      stays ? ARRIVALS.fade : ARRIVALS.fold,
+      stays ? (deps.fade ?? ARRIVALS.fade) : ARRIVALS.fold,
     );
     publish();
   };
@@ -238,7 +242,7 @@ export function createArrivals<From, Slot>(
       setTimeout(
         () => {
           const to = deps.slot();
-          if (to !== null && rowOf(threadId) !== undefined) deps.playThrow(from, to);
+          if (to !== null && rowOf(threadId) !== undefined) deps.playThrow(from, to, threadId);
         },
         lands - lead - now,
       );

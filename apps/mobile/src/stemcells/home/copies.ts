@@ -53,6 +53,9 @@ function origin(): ViewInstance | null {
   return last ?? aski;
 }
 
+/** Whether an Aski stands where a copy could bud off it. */
+export const askiInSight = (): boolean => origin() !== null;
+
 /** Sends a copy from Aski to the Cell of `threadId`, standing in `to`, to land at `lands`; none while no Aski stands in view. */
 export function sendCopy(threadId: string, to: Box, lands: number): void {
   const from = origin();
