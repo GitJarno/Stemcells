@@ -6,6 +6,8 @@
 export const NEEDS_YOU = "#FDBE48";
 export const WORKING = "#8393FF";
 export const DONE = "#2AD394";
+/** What has run out: a spent plan's ring and its percent (`--sc-error`). */
+export const ERROR = "#F24E71";
 /** A chart's series, in their fixed order (`--sc-data-hue-1` to `-4`): never cycled. */
 export const DATA_HUES = ["#5071DE", "#B38C15", "#009F7D", "#BB2C54"] as const;
 /** A change's added and removed lines, as the web's diff counts colour them. */

@@ -1,7 +1,7 @@
 // The home's scope in its header's top right: projects, and with two machines or more, machines,
-// each a menu that stays open while you tick any number (`picks.ts`). Unticked, a plain glyph;
-// ticked, the projects' own icons or the machine's symbol, tinted. T3's workspace toolbar hands
-// its trailing items here at its seam (`features/layout/workspace/WorkspaceToolbar.tsx`).
+// each a menu that stays open while you tick any number (`picks.ts`), then the plan ring. Unticked,
+// a plain glyph; ticked, the projects' own icons or the machine's symbol, tinted. T3's workspace
+// toolbar hands its trailing items here at its seam (`features/layout/workspace/WorkspaceToolbar.tsx`).
 
 import { type ReactElement } from "react";
 import { View } from "react-native";
@@ -10,8 +10,10 @@ import { chargeWords } from "../../../../../stemcells/words/battery.ts";
 import { fillColour } from "../battery/marks";
 import { useBatteries } from "../battery/useBatteries";
 import { useAppearancePreferences } from "../upstream/battery";
+import { PlanRing } from "../limits/PlanRing";
 import { ProjectMark } from "../project/ProjectMark";
 import { buildHomeProjectScopes } from "../upstream/cells";
+import { useHasLimits } from "../upstream/limits";
 import {
   ENVIRONMENT_MACHINE_SYMBOLS,
   Menu,
@@ -127,6 +129,7 @@ function MachinesButton() {
 }
 
 export function useHomeScopeItems(): ReactElement[] {
+  const hasLimits = useHasLimits();
   const projects = useProjects();
   const machines = useMachineList();
   const { options } = useHomeListOptions(new Set(machines.map((machine) => machine.id)));
@@ -188,12 +191,20 @@ export function useHomeScopeItems(): ReactElement[] {
       </ScopeButton>
     </Toolbar.Custom>,
   ];
-  if (machines.length < 2) return items;
-  items.push(
-    <Toolbar.Custom key="machine">
-      <MachinesButton />
-    </Toolbar.Custom>,
-  );
+  if (machines.length > 1) {
+    items.push(
+      <Toolbar.Custom key="machine">
+        <MachinesButton />
+      </Toolbar.Custom>,
+    );
+  }
+  if (hasLimits) {
+    items.push(
+      <Toolbar.Custom key="plan">
+        <PlanRing />
+      </Toolbar.Custom>,
+    );
+  }
   return items;
 }
 
