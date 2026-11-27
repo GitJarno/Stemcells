@@ -1,11 +1,12 @@
 // What the phone's list can't do of the lists' one motion (`listMotion.ts`): a slept or woken
-// row's Cell flies to its new stage's count, handed over as T3's dismissal starts and waiting
-// over its row until the line says where it went (or fading, if it went nowhere); and a row new
-// to a stage enters there the first time it's seen (`Arrival.tsx`).
+// row's Cell flies to its new stage's count as T3's dismissal starts, at once when the move says
+// where (`toward`), else once the line does (fading if it went nowhere); and a row new to a stage
+// enters there the first time it's seen (`Arrival.tsx`).
 
 import { useSyncExternalStore } from "react";
 
 import type { EnvironmentThreadShell } from "../upstream/cells";
+import { withThreadDismissal } from "../upstream/dismissal";
 import type { Box } from "./copies";
 import { segmentOf } from "./flight";
 import { LIST_MOTION, type LineStage } from "../line/kit";
@@ -43,6 +44,14 @@ interface Departure {
 }
 
 const departures = new Map<string, Departure>();
+/** The stage a move the person chose takes its Cell to, while T3 starts the row's dismissal. */
+const heading = new Map<string, HopStage>();
+const STAGE_OF: Readonly<Record<string, HopStage>> = {
+  settle: "asleep",
+  snooze: "asleep",
+  unsettle: "awake",
+  unsnooze: "awake",
+};
 const hops = new Map<string, Hop>();
 const arrivals = new Map<string, { readonly stage: LineStage; readonly at: number }>();
 let pill: { readonly view: Measurable; readonly stages: readonly string[] } | null = null;
@@ -68,6 +77,23 @@ export function pillStandsIn(view: Measurable | null, stages: readonly string[])
 }
 
 /**
+ * In place of `withThreadDismissal` for T3's row actions (`features/home/useThreadListActions.ts`):
+ * a sleep, snooze or wake tells the Cell lifting out of its row where it goes.
+ */
+export function toward(action: string) {
+  return <T>(key: string, run: () => Promise<T>, succeeded: (result: T) => boolean) => {
+    const stage = STAGE_OF[action];
+    if (stage !== undefined) heading.set(key, stage);
+    // T3 calls the row's dismissals before its first await, so they read the heading.
+    try {
+      return withThreadDismissal(key, run, succeeded);
+    } finally {
+      heading.delete(key);
+    }
+  };
+}
+
+/**
  * The row of `key` leaves `fromStage` by the person's hand, and its Cell lifts out of `figure`;
  * with too many in the air, only its count ticks. Returns the way back, for a move that failed.
  */
@@ -80,9 +106,12 @@ export function departs(
   if (hops.delete(key)) changed();
   if (hops.size >= LIST_MOTION.mostAtOnce) return () => undefined;
   const departure: Departure = { fromStage };
+  const known = heading.get(key);
+  const toStage = known === other(fromStage) ? known : null;
   departures.set(key, departure);
   figure.measureInWindow((x, y, width, height) => {
     if (width === 0 || departures.get(key) !== departure) return;
+    if (toStage !== null) departures.delete(key);
     const from = { x, y, width, height };
     departed += 1;
     const hop: Hop = {
@@ -91,12 +120,13 @@ export function departs(
       thread,
       from,
       fromStage,
-      toStage: null,
+      toStage,
       to: null,
       fades: false,
     };
     hops.set(key, hop);
     changed();
+    if (toStage !== null) aim(key, toStage);
   });
   setTimeout(() => {
     if (departures.get(key) !== departure) return;
@@ -137,28 +167,33 @@ export function resolveHops(
     if (hop === undefined) continue;
     hops.set(key, { ...hop, toStage });
     changed();
-    const standing = pill;
-    if (standing === null) {
-      hopLanded(key);
-      continue;
-    }
-    setTimeout(() => {
-      const waiting = hops.get(key);
-      if (waiting?.toStage === toStage && waiting.to === null) hopLanded(key);
-    }, PILL_MS);
-    standing.view.measureInWindow((x, y, width, height) => {
-      const flying = hops.get(key);
-      if (flying?.toStage !== toStage) return;
-      const index = standing.stages.indexOf(toStage);
-      if (width === 0 || index < 0) {
-        hopLanded(key);
-        return;
-      }
-      const to = segmentOf({ x, y, width, height }, index, standing.stages.length);
-      hops.set(key, { ...flying, to });
-      changed();
-    });
+    aim(key, toStage);
   }
+}
+
+/** The Cell of `key` goes to `toStage`: it flies once its segment of the pill is measured. */
+function aim(key: string, toStage: HopStage): void {
+  const standing = pill;
+  if (standing === null) {
+    hopLanded(key);
+    return;
+  }
+  setTimeout(() => {
+    const waiting = hops.get(key);
+    if (waiting?.toStage === toStage && waiting.to === null) hopLanded(key);
+  }, PILL_MS);
+  standing.view.measureInWindow((x, y, width, height) => {
+    const flying = hops.get(key);
+    if (flying?.toStage !== toStage) return;
+    const index = standing.stages.indexOf(toStage);
+    if (width === 0 || index < 0) {
+      hopLanded(key);
+      return;
+    }
+    const to = segmentOf({ x, y, width, height }, index, standing.stages.length);
+    hops.set(key, { ...flying, to });
+    changed();
+  });
 }
 
 /** The Cell of `key` has landed in its stage's count: the count takes it with a bump. */

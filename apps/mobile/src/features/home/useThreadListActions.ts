@@ -10,7 +10,7 @@ import * as Haptics from "expo-haptics";
 import { msg } from "gt-react-native";
 import { useRef } from "react";
 
-import { withThreadDismissal } from "./thread-dismissal";
+import { toward } from "../../stemcells/home/hops";
 import { pinInPlace } from "../../stemcells/home/pins";
 import * as Dialog from "../../components/ui/Dialog";
 import { m } from "../../i18n/messages";
@@ -173,7 +173,7 @@ function useThreadActionExecutor(
       }
       if (action === "unsettle") ThreadUndo.invalidate("settle", key);
       onStarted?.();
-      const result = await withThreadDismissal(
+      const result = await toward(action)(
         key,
         async () =>
           action === "unsettle"
@@ -405,7 +405,7 @@ export function useThreadListActions(): {
 
       selectionHaptic();
       const claim = ThreadUndo.begin("snooze", key);
-      const result = await withThreadDismissal(
+      const result = await toward("snooze")(
         key,
         () =>
           snoozeMutation({
@@ -458,7 +458,7 @@ export function useThreadListActions(): {
 
       selectionHaptic();
       ThreadUndo.invalidate("snooze", key);
-      const result = await withThreadDismissal(
+      const result = await toward("unsnooze")(
         key,
         () =>
           unsnoozeMutation({

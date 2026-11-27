@@ -43,6 +43,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { AppText as Text } from "../../components/ui/AppText";
+import { AT_REST, type Flick, reach, sampled } from "../../stemcells/home/swipes";
 import type { MessageResolver } from "../../i18n/messages";
 import { useScaledTextRole } from "../settings/appearance/useScaledTextRole";
 import { SwipeRowActivationContext, type SwipeRowActivation } from "./swipe-row-activation";
@@ -257,6 +258,8 @@ interface ThreadSwipeableProps {
   readonly threadTitle: string;
   /** Stemcells seam: "leading" puts the primary on a swipe right, the secondary alone on the left. */
   readonly primaryEdge?: "leading" | "trailing";
+  /** Stemcells seam: the full swipe always dismisses, so the row leaves as the finger lifts. */
+  readonly leavesOnRelease?: boolean;
 }
 
 const COLLAPSED_ROW_STYLE = { height: 0, overflow: "hidden" } as const;
@@ -290,6 +293,11 @@ export function ThreadSwipeable(props: ThreadSwipeableProps) {
   const collapse = useSharedValue(0);
   const fallbackTranslation = useSharedValue(0);
   const actionOpacity = useSharedValue(1);
+  const flick = useSharedValue<Flick>(AT_REST);
+  // The dismissal a row that left at release waits for, and whether it has slid out.
+  const joined = useSharedValue(0);
+  const slidOut = useSharedValue(false);
+  const leavesOnRelease = props.leavesOnRelease === true;
   const primaryAction = props.primaryAction;
   const onDelete = props.onDelete;
   const onSwipeableClose = props.onSwipeableClose;
@@ -307,11 +315,13 @@ export function ThreadSwipeable(props: ThreadSwipeableProps) {
       fallbackTranslation.set(0);
       collapse.set(0);
       actionOpacity.set(1);
+      joined.set(0);
+      slidOut.set(false);
       dismissing.set(false);
     })(swipeableRef.current);
     setIsDismissing(false);
     setCollapsedInList(false);
-  }, [actionOpacity, collapse, dismissing, fallbackTranslation]);
+  }, [actionOpacity, collapse, dismissing, fallbackTranslation, joined, slidOut]);
 
   const finishDismiss = useCallback((id?: number) => {
     const pending = pendingDismissRef.current;
@@ -357,10 +367,36 @@ export function ThreadSwipeable(props: ThreadSwipeableProps) {
     }
   }, [props.dormant, restoreRow]);
 
+  const fold = useCallback(
+    (id: number) => {
+      "worklet";
+      // LegendList re-measures rows only on React commits, so a UI-thread height animation
+      // reaches it in late jumps. Collapse through React and let its transition move rows.
+      if (listAnimatesLayout) {
+        runOnJS(collapseInList)(id);
+        return;
+      }
+      collapse.set(
+        withTiming(
+          1,
+          { duration: 180, easing: Easing.out(Easing.cubic), reduceMotion: ReduceMotion.System },
+          (collapsed) => {
+            if (collapsed) runOnJS(finishDismiss)(id);
+          },
+        ),
+      );
+    },
+    [collapse, collapseInList, finishDismiss, listAnimatesLayout],
+  );
   const dismiss = useCallback(
     (translation: SharedValue<number>, id: number) => {
       "worklet";
-      if (dismissing.value) return;
+      // Stemcells: a row let go past its full swipe leaves at once (id 0); T3's dismissal joins it.
+      if (id !== 0) joined.set(id);
+      if (dismissing.value) {
+        if (id !== 0 && slidOut.value) fold(id);
+        return;
+      }
       dismissing.set(true);
       const timing = {
         duration: 220,
@@ -376,29 +412,12 @@ export function ThreadSwipeable(props: ThreadSwipeableProps) {
       translation.set(
         withTiming(to, timing, (finished) => {
           if (!finished) return;
-          // LegendList re-measures rows only on React commits, so a UI-thread height animation
-          // reaches it in late jumps. Collapse through React and let its transition move rows.
-          if (listAnimatesLayout) {
-            runOnJS(collapseInList)(id);
-            return;
-          }
-          collapse.set(
-            withTiming(1, { ...timing, duration: 180 }, (collapsed) => {
-              if (collapsed) runOnJS(finishDismiss)(id);
-            }),
-          );
+          slidOut.set(true);
+          if (joined.value !== 0) fold(joined.value);
         }),
       );
     },
-    [
-      actionOpacity,
-      collapse,
-      collapseInList,
-      dismissing,
-      finishDismiss,
-      listAnimatesLayout,
-      rowWidth,
-    ],
+    [actionOpacity, dismissing, fold, joined, rowWidth, slidOut],
   );
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- registers this row's animated dismissal in the module-level thread dismissal registry
   useLayoutEffect(
@@ -438,27 +457,6 @@ export function ThreadSwipeable(props: ThreadSwipeableProps) {
     primaryAction.onPress();
     if (!pendingDismissRef.current) swipeableRef.current?.close();
   }, [content, primaryAction]);
-  // RNGH lifecycle events call the latest handler, so commit from this release.
-  const commitFullSwipe = useCallback(() => {
-    if (!mountedRef.current || contentRef.current !== content) return;
-    if (fullSwipeAction === "primary") commitPrimaryAction();
-    else {
-      swipeableRef.current?.close();
-      onDelete();
-    }
-  }, [commitPrimaryAction, content, fullSwipeAction, onDelete]);
-  const handleRelease = useCallback(
-    (translation: SharedValue<number>, canceled: boolean) => {
-      "worklet";
-      if (dismissing.value) return true;
-      if (!canceled && (leading ? translation.value : -translation.value) >= fullSwipeThreshold) {
-        runOnJS(commitFullSwipe)();
-        return true;
-      }
-      return false;
-    },
-    [commitFullSwipe, dismissing, fullSwipeThreshold, leading],
-  );
   const handleFullSwipeArmedChange = useCallback(
     (armed: boolean) => {
       if (mountedRef.current && contentRef.current === content && armed) {
@@ -466,6 +464,52 @@ export function ThreadSwipeable(props: ThreadSwipeableProps) {
       }
     },
     [content],
+  );
+  // RNGH lifecycle events call the latest handler, so commit from this release.
+  const commitFullSwipe = useCallback(
+    (flung: boolean) => {
+      if (!mountedRef.current) return;
+      // Stemcells: a stale release may have slid out a row the list has since reused.
+      if (contentRef.current !== content) {
+        if (leavesOnRelease && dismissalRef.current === null) restoreRow();
+        return;
+      }
+      // Stemcells: a flick never armed the full swipe; a row leaving at release arms it as it slides.
+      if (flung && !leavesOnRelease) handleFullSwipeArmedChange(true);
+      if (fullSwipeAction === "primary") commitPrimaryAction();
+      else {
+        swipeableRef.current?.close();
+        onDelete();
+      }
+      if (leavesOnRelease && !pendingDismissRef.current) restoreRow();
+    },
+    [
+      commitPrimaryAction,
+      content,
+      fullSwipeAction,
+      handleFullSwipeArmedChange,
+      leavesOnRelease,
+      onDelete,
+      restoreRow,
+    ],
+  );
+  const handleRelease = useCallback(
+    (translation: SharedValue<number>, canceled: boolean) => {
+      "worklet";
+      if (dismissing.value) return true;
+      const out = leading ? 1 : -1;
+      // Stemcells: a quick flick carries as far as a full swipe (`stemcells/home/swipes.ts`).
+      if (
+        !canceled &&
+        out * reach(flick.value, translation.value, Date.now()) >= fullSwipeThreshold
+      ) {
+        if (leavesOnRelease) dismiss(translation, 0);
+        runOnJS(commitFullSwipe)(out * translation.value < fullSwipeThreshold);
+        return true;
+      }
+      return false;
+    },
+    [commitFullSwipe, dismiss, dismissing, flick, fullSwipeThreshold, leading, leavesOnRelease],
   );
   const { dormant, onSwipeableWillOpen, backgroundColor, containerStyle } = props;
   const handleWillOpen = useCallback(() => {
@@ -529,6 +573,7 @@ export function ThreadSwipeable(props: ThreadSwipeableProps) {
           fullSwipeThreshold={fullSwipeThreshold}
           onFullSwipeArmedChange={handleFullSwipeArmedChange}
           primaryAction={leading ? null : { ...primaryAction, onPress: commitPrimaryAction }}
+          flick={leading ? undefined : flick}
           secondaryAction={resolveSecondaryAction({
             close: () => methods.close(),
             onDelete,
@@ -577,6 +622,7 @@ export function ThreadSwipeable(props: ThreadSwipeableProps) {
           fullSwipeThreshold={fullSwipeThreshold}
           onFullSwipeArmedChange={handleFullSwipeArmedChange}
           primaryAction={{ ...primaryAction, onPress: commitPrimaryAction }}
+          flick={flick}
           secondaryAction={null}
           translation={translation}
         />
@@ -892,8 +938,16 @@ function ThreadSwipeActions(props: {
   readonly rowHeight: number;
   readonly secondaryAction: ThreadSwipeSecondaryAction | null;
   readonly translation: SharedValue<number>;
+  /** Stemcells: given only to the full swipe's edge, so one reaction samples the row's speed. */
+  readonly flick?: SharedValue<Flick>;
 }) {
   const { edge, fullSwipeThreshold, onFullSwipeArmedChange, secondaryAction, translation } = props;
+  const { flick } = props;
+  // Stemcells: the row's speed under the finger, for a flick's reach.
+  useAnimatedReaction(
+    () => translation.value,
+    (x) => flick?.set(sampled(flick.value, x, Date.now())),
+  );
   const fullSwipeIsPrimary = props.fullSwipeAction === "primary" || secondaryAction === null;
   const actionsWidth = swipeActionsWidth(secondaryAction !== null && props.primaryAction !== null);
   useAnimatedReaction(

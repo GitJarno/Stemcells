@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vite-plus/test";
 
 import type { EnvironmentThreadShell } from "../upstream/cells";
+import { registerThreadDismissal } from "../upstream/dismissal";
 import { alongBow, poseAt, segmentOf } from "./flight";
 import {
   arrivalDone,
@@ -14,6 +15,7 @@ import {
   inbound,
   pillStandsIn,
   resolveHops,
+  toward,
 } from "./hops";
 
 const at = (x: number, y: number, width: number, height: number) => ({
@@ -46,6 +48,33 @@ describe("a Cell moved by hand", () => {
     hopLanded("env:waffle");
     expect(hopOf("env:waffle")).toBeUndefined();
     expect(bumpNow()?.stage).toBe("asleep");
+  });
+
+  it("leaps at once when slept by the person's hand, not waiting for the line", async () => {
+    const lift = (key: string) =>
+      registerThreadDismissal(key, () => ({
+        finished: Promise.resolve(),
+        restore: departs(key, thread, "awake", figure),
+      }));
+    const slept = lift("env:crumpet");
+    const archived = lift("env:scone");
+    const sent = toward("settle")(
+      "env:crumpet",
+      async () => true,
+      () => true,
+    );
+    expect(hopOf("env:crumpet")).toMatchObject({ toStage: "asleep", to: { x: 186 } });
+    await sent;
+    await toward("archive")(
+      "env:scone",
+      async () => true,
+      () => true,
+    );
+    expect(hopOf("env:scone")).toMatchObject({ toStage: null, to: null });
+    slept();
+    archived();
+    hopLanded("env:crumpet");
+    hopFaded("env:scone");
   });
 
   it("starts a new flight when moved again mid-air, not the old one's end", () => {
