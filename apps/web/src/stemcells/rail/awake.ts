@@ -50,22 +50,24 @@ export function byRecent<C extends Launchable>(
   );
 }
 
-/** What an awake Cell's row says by its light: flying, asking, landed and not yet opened, or seen. */
+/** What an awake Cell's row says: flying, asking, landed and not yet opened, or seen. */
 export type RowState = "flying" | "needs" | "news" | "seen";
 
+/**
+ * An awake row's light: a lamp in its provider's tone behind the Cell, whatever it says; its
+ * status icon says the rest (`ROW_STATUS`).
+ */
 export interface RowLight {
-  /** The provider's tone, or Input's amber, which means Input and nothing else. */
-  readonly tone: "provider" | "input";
   readonly strength: "full" | "faint";
   /** The band crossing on the wall clock's beat, in step with the composer's. */
   readonly band: boolean;
 }
 
 export const ROW_LIGHT: Readonly<Record<RowState, RowLight>> = {
-  flying: { tone: "provider", strength: "full", band: true },
-  needs: { tone: "input", strength: "full", band: false },
-  news: { tone: "provider", strength: "full", band: false },
-  seen: { tone: "provider", strength: "faint", band: false },
+  flying: { strength: "full", band: true },
+  needs: { strength: "full", band: false },
+  news: { strength: "full", band: false },
+  seen: { strength: "faint", band: false },
 };
 
 /** A row's state from the machine's word on its Cell and whether its last landing was opened. */
@@ -76,4 +78,14 @@ export function rowStateOf(
   if (stage === "needs-you") return "needs";
   if (stage === "working") return "flying";
   return unseen ? "news" : "seen";
+}
+
+/** What an awake row's icon says beside its time, as T3's sidebar draws it. A seen row has none. */
+export type RowStatus = "working" | "input" | "approval" | "done";
+
+/** A row's status from its state, and whether what it needs of the person is an approval. */
+export function rowStatusOf(state: RowState, approval: boolean): RowStatus | null {
+  if (state === "flying") return "working";
+  if (state === "needs") return approval ? "approval" : "input";
+  return state === "news" ? "done" : null;
 }
