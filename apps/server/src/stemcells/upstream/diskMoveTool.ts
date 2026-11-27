@@ -16,6 +16,7 @@ import { diskBytes } from "../../../../../stemcells/words/disk.ts";
 import type { toolkitRegistration } from "../../mcp/McpHttpServer.ts";
 import * as McpInvocationContext from "../../mcp/McpInvocationContext.ts";
 import * as McpToolAccess from "../../mcp/McpToolAccess.ts";
+import * as ThreadManagement from "../../orchestration-v2/ThreadManagementService.ts";
 import * as StemcellsDrives from "../disk/StemcellsDrives.ts";
 import * as StemcellsMoves from "../disk/StemcellsMoves.ts";
 import type { MovableKind } from "../disk/moves.ts";
@@ -50,7 +51,10 @@ const MoveTool = Tool.make("stemcells_disk_move", {
   success: Report,
   failure: OrchestratorMcpFailure,
   failureMode: "return",
-  dependencies: [McpInvocationContext.McpInvocationContext],
+  dependencies: [
+    McpInvocationContext.McpInvocationContext,
+    ThreadManagement.ThreadManagementService,
+  ],
 })
   .annotate(Tool.Title, "Move a folder to another drive")
   .annotate(Tool.Readonly, false)
@@ -121,12 +125,10 @@ const handlers = McpToolAccess.toLayer(
                 (drive) => drive.role !== "startup" && (drive.id === to || drive.name === to),
               );
               if (named.length !== 1)
-                return yield* Effect.fail(
-                  failure(
-                    named.length === 0
-                      ? `No connected drive is named ${to}. Read stemcells_disk_moves for the drives.`
-                      : `More than one drive is named ${to}: use its id.`,
-                  ),
+                return yield* failure(
+                  named.length === 0
+                    ? `No connected drive is named ${to}. Read stemcells_disk_moves for the drives.`
+                    : `More than one drive is named ${to}: use its id.`,
                 );
               yield* moves.moveAway({ kind, driveId: named[0]!.id });
             }
