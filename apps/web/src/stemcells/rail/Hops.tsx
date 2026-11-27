@@ -186,11 +186,17 @@ function HopFlight(props: { flight: Flight; environmentId: string; onLanded: () 
       ? leapAnimation(sprite, [awake.current, shut.current], box, flight)
       : [flyAnimation(sprite, box, flight)];
     let live = true;
+    // A leap is caught as it touches down, then sinks into the count; a flight as it lands.
+    const touches = sleeps ? hop[1]! : hop[0]!;
+    void touches.finished.then(
+      () => {
+        if (live) catchIt(flight.toStage);
+      },
+      () => undefined,
+    );
     void hop[0]!.finished.then(
       () => {
-        if (!live) return;
-        catchIt(flight.toStage);
-        landed();
+        if (live) landed();
       },
       () => undefined,
     );
@@ -245,8 +251,8 @@ function flyAnimation(sprite: HTMLElement, box: DOMRect, flight: Flight): Animat
 }
 
 /**
- * A slept Cell's leap, its poses as keyframes run linearly (they carry its gravity), and its
- * open eyes until just past its top, then its shut ones.
+ * A slept Cell's leap, its poses as keyframes run linearly (they carry its gravity); a mark that
+ * ends as it touches down; and its open eyes until just past its top, then its shut ones.
  */
 function leapAnimation(
   sprite: HTMLElement,
@@ -280,8 +286,9 @@ function leapAnimation(
     { opacity: 1 - before, offset: at },
     { opacity: 1 - before },
   ];
+  const touches = sprite.animate([], { duration: leap.contact, delay: flight.delay });
   const eyes = [open?.animate(step(1), timing), shut?.animate(step(0), timing)];
-  return [hop, ...eyes.filter((each) => each !== undefined)];
+  return [hop, touches, ...eyes.filter((each) => each !== undefined)];
 }
 
 /**

@@ -4,6 +4,8 @@
 // enters there the first time it's seen (`Arrival.tsx`).
 
 import { useSyncExternalStore } from "react";
+import type { View } from "react-native";
+import type { AnimatedRef } from "react-native-reanimated";
 
 import type { EnvironmentThreadShell } from "../upstream/cells";
 import { withThreadDismissal } from "../upstream/dismissal";
@@ -23,6 +25,8 @@ const WAIT_MS = 1500;
 const PILL_MS = 500;
 /** An entrance not seen in this long is forgotten. */
 const ARRIVAL_MS = 10 * 60_000;
+/** A swipe's throw stands for its Cell's departure this long after the finger lifts. */
+const THROW_MS = 600;
 
 export interface Hop {
   readonly key: string;
@@ -37,6 +41,12 @@ export interface Hop {
   readonly to: Box | null;
   /** It went nowhere: it fades where it waits. */
   readonly fades: boolean;
+  /** How fast across (pt/s) the swipe that let it go threw its row; 0 when not thrown. */
+  readonly thrown: number;
+  /** It has touched down in its count, which counts it now, and is sinking into it. */
+  readonly caught: boolean;
+  /** Its place in its row, which a swipe may still be carrying, read again as it takes off. */
+  readonly track: AnimatedRef<View> | null;
 }
 
 interface Departure {
@@ -53,6 +63,7 @@ const STAGE_OF: Readonly<Record<string, HopStage>> = {
   unsnooze: "awake",
 };
 const hops = new Map<string, Hop>();
+const throws = new Map<string, { readonly speed: number; readonly at: number }>();
 const arrivals = new Map<string, { readonly stage: LineStage; readonly at: number }>();
 let pill: { readonly view: Measurable; readonly stages: readonly string[] } | null = null;
 let shown: readonly Hop[] = [];
@@ -94,6 +105,20 @@ export function toward(action: string) {
 }
 
 /**
+ * A swipe let the row of `key` go at `speed` across (pt/s): its Cell leaves it thrown. Called
+ * from the release, before the move it commits starts the row's dismissal.
+ */
+export function thrown(key: string, speed: number, now = Date.now()): void {
+  throws.set(key, { speed, at: now });
+}
+
+function throwOf(key: string, now: number): number {
+  const at = throws.get(key);
+  throws.delete(key);
+  return at !== undefined && now - at.at < THROW_MS ? at.speed : 0;
+}
+
+/**
  * The row of `key` leaves `fromStage` by the person's hand, and its Cell lifts out of `figure`;
  * with too many in the air, only its count ticks. Returns the way back, for a move that failed.
  */
@@ -102,12 +127,14 @@ export function departs(
   thread: EnvironmentThreadShell,
   fromStage: HopStage,
   figure: Measurable,
+  track: AnimatedRef<View> | null = null,
 ): () => void {
   if (hops.delete(key)) changed();
   if (hops.size >= LIST_MOTION.mostAtOnce) return () => undefined;
   const departure: Departure = { fromStage };
   const known = heading.get(key);
   const toStage = known === other(fromStage) ? known : null;
+  const speed = throwOf(key, Date.now());
   departures.set(key, departure);
   figure.measureInWindow((x, y, width, height) => {
     if (width === 0 || departures.get(key) !== departure) return;
@@ -123,6 +150,9 @@ export function departs(
       toStage,
       to: null,
       fades: false,
+      thrown: speed,
+      caught: false,
+      track,
     };
     hops.set(key, hop);
     changed();
@@ -196,12 +226,25 @@ function aim(key: string, toStage: HopStage): void {
   });
 }
 
-/** The Cell of `key` has landed in its stage's count: the count takes it with a bump. */
+function bumped(stage: HopStage): void {
+  bump = { stage, count: (bump?.count ?? 0) + 1 };
+}
+
+/** The Cell of `key` has touched down in its count: the count takes it now, as it sinks in. */
+export function hopCaught(key: string): void {
+  const hop = hops.get(key);
+  if (hop === undefined || hop.caught || hop.toStage === null) return;
+  hops.set(key, { ...hop, caught: true });
+  bumped(hop.toStage);
+  changed();
+}
+
+/** The Cell of `key` is in its stage's count: the count takes it with a bump, if it hasn't yet. */
 export function hopLanded(key: string): void {
   const hop = hops.get(key);
   if (hop === undefined) return;
   hops.delete(key);
-  if (hop.toStage !== null) bump = { stage: hop.toStage, count: (bump?.count ?? 0) + 1 };
+  if (hop.toStage !== null && !hop.caught) bumped(hop.toStage);
   changed();
 }
 
@@ -229,7 +272,7 @@ export function inbound(
   stage: HopStage,
   counted: (key: string) => boolean,
 ) {
-  return flying.filter((hop) => hop.toStage === stage && counted(hop.key)).length;
+  return flying.filter((hop) => hop.toStage === stage && !hop.caught && counted(hop.key)).length;
 }
 
 const subscribe = (listener: () => void) => {

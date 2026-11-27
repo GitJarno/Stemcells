@@ -2,9 +2,9 @@
 // (`hops.ts`): the Cell lifts out of `figure` and flies to its count. With less motion it stays
 // in its row, and the count only ticks.
 
-import { use, useLayoutEffect, type RefObject } from "react";
-import type { ViewInstance } from "react-native";
-import { useReducedMotion } from "react-native-reanimated";
+import { use, useLayoutEffect } from "react";
+import type { View } from "react-native";
+import { type AnimatedRef, useReducedMotion } from "react-native-reanimated";
 
 import { cellKey } from "../line/line";
 import type { EnvironmentThreadShell } from "../upstream/cells";
@@ -14,7 +14,7 @@ import { awakeRows, HomeInFront, HomeStageContext } from "./state";
 
 export function useDeparture(
   thread: EnvironmentThreadShell,
-  figure: RefObject<ViewInstance | null>,
+  figure: AnimatedRef<View>,
   enabled: boolean,
 ) {
   const stage = use(HomeStageContext);
@@ -30,7 +30,7 @@ export function useDeparture(
       const view = figure.current;
       return {
         finished: Promise.resolve(),
-        restore: view === null ? () => undefined : departs(key, thread, from, view),
+        restore: view === null ? () => undefined : departs(key, thread, from, view, figure),
       };
     });
   }, [enabled, inFront, stage, key, thread, reduced, figure]);
