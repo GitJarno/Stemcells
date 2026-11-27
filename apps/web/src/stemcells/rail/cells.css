@@ -26,6 +26,42 @@
   flex-direction: column;
 }
 
+/* The column's sky (Sky.tsx, stemcells/tasks/day-night.md): one progress, 0 day to 1 night, that
+   every layer reads; registered so it transitions, and set from script, which times each turn. */
+@property --sky-night {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+/* Behind the head, as its ground: under everything in the column's frame, which is sticky, so
+   stacks its own. */
+[data-cells-sky] {
+  --sky-moves: 1;
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: calc(
+    var(--workspace-topbar-height) + var(--stemcells-rail-plate) + var(--sc-space-md) +
+      var(--sky-tail)
+  );
+  overflow: hidden;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-cells-sky] {
+    --sky-moves: 0;
+  }
+}
+[data-cells-sky-layer] {
+  position: absolute;
+  inset: 0;
+}
+[data-cells-sky-body] {
+  position: absolute;
+}
+
 [data-cells-top] {
   display: flex;
   flex-shrink: 0;

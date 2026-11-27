@@ -1,8 +1,8 @@
 /**
- * The sky behind the phone's header and the column's head: day over Awake, night over Asleep, a
- * sunset or sunrise between (stemcells/tasks/day-night.md). Plain numbers and colours, so the
- * phone reads them too (`line/kit.ts`). One progress, 0 day to 1 night, drives every layer; the
- * phone runs these functions on its UI thread, hence the worklet marks.
+ * The sky behind the phone's header and the column's head (stemcells/tasks/day-night.md): dawn over
+ * Input, day over Awake, night over Asleep. Plain numbers and colours, so the phone reads them too
+ * (`line/kit.ts`). One progress, 0 day to 1 night, drives every layer, and dawn stands on the way:
+ * the sun at the horizon, as at sunset. The phone runs these on its UI thread, hence the worklets.
  */
 
 import type { Bezier } from "./listMotion";
@@ -10,32 +10,47 @@ import type { Bezier } from "./listMotion";
 export type Span = readonly [from: number, to: number];
 export type Scheme = "light" | "dark";
 
-/** A whole turn's length either way (a partial one takes its share), and its one curve. */
+/** Where each stage holds the sky: dawn is the turn's warmest moment, the sun at the horizon. */
+export const SKY_AT = { day: 0, dawn: 0.4, night: 1 } as const;
+
+/** The sky a stage stands under: Input's dawn, Asleep's night, and day over the rest. */
+export function skyAtStage(stage: string): number {
+  return stage === "input" ? SKY_AT.dawn : stage === "asleep" ? SKY_AT.night : SKY_AT.day;
+}
+
+/**
+ * How long a turn takes for the whole way, day to night or back (a partial one takes its share),
+ * and its one curve. `rise` is dawn's whole way into day when the last ask is answered.
+ */
 export const SKY_TURN = {
   nightfall: 1100,
   daybreak: 800,
-  /** Reduce Motion's crossfade, either way. */
+  rise: 1400,
+  /** Reduce Motion's crossfade, from anywhere to anywhere. */
   crossfade: 200,
   /** The shortest turn: a tap that only nudges the sky still eases. */
   least: 120,
   easing: [0.37, 0, 0.63, 1] as Bezier,
 } as const;
 
-/** Each layer's span of the progress. A sunrise plays them back: stars first, the sun last. */
+/**
+ * Each layer's span of the progress, played forward into night and back into day. At dawn the
+ * sun is low and faint, the warmth at its height, and the brightest stars are the last ones out.
+ */
 export const SKY_SPANS = {
-  sunSinks: [0, 0.45],
-  sunGoes: [0.2, 0.45],
+  sunSinks: [0, 0.5],
+  sunGoes: [0.2, 0.5],
   sunWarms: [0, 0.3],
-  horizon: [0.05, 0.8],
+  horizon: [0.05, 0.75],
   nightDeepens: [0.1, 0.7],
   cloudsGo: [0.15, 0.6],
   dayLifts: [0.25, 0.9],
-  moonRises: [0.45, 0.85],
-  moonComes: [0.45, 0.65],
+  moonRises: [0.55, 0.9],
+  moonComes: [0.55, 0.75],
   stars: [
-    [0.55, 0.85],
-    [0.65, 0.95],
-    [0.75, 1],
+    [0.25, 0.6],
+    [0.5, 0.85],
+    [0.6, 1],
   ],
 } as const satisfies Record<string, Span | readonly Span[]>;
 
@@ -45,35 +60,36 @@ function along(p: number, span: Span): number {
   return Math.min(1, Math.max(0, (p - span[0]) / (span[1] - span[0])));
 }
 
-/** How far a layer has come in at `p`, eased in and out; under Reduce Motion, the progress itself. */
-export function shown(p: number, span: Span, reduced: boolean): number {
+/** How far a layer has come in at `p`, eased in and out. */
+export function shown(p: number, span: Span): number {
   "worklet";
-  if (reduced) return p;
   const t = along(p, span);
   return t * t * (3 - 2 * t);
 }
 
-/** The horizon's warmth at `p`: none at either end, at its height mid-turn; never under Reduce Motion. */
-export function warmth(p: number, reduced: boolean): number {
+/** The horizon's warmth at `p`: none by day or night, at its height at dawn. */
+export function warmth(p: number): number {
   "worklet";
-  return reduced ? 0 : Math.sin(Math.PI * along(p, SKY_SPANS.horizon));
+  return Math.sin(Math.PI * along(p, SKY_SPANS.horizon));
 }
 
 /**
- * The turn from `at` toward night or day, or none when the sky stands there. It sets off from
- * where it is, never from an end, and takes the whole way's time times the distance left.
+ * The turn from `at` to `to`, or none when the sky stands there. It sets off from where it is and
+ * takes its share of the whole way's time: night's pace toward night, day's toward day, or the
+ * slower `rise` out of dawn. Under Reduce Motion, one short linear crossfade.
  */
 export function skyTurn(
   at: number,
-  night: boolean,
+  to: number,
   reduced: boolean,
+  rise = false,
 ): { readonly to: number; readonly ms: number; readonly eased: boolean } | null {
   "worklet";
-  const to = night ? 1 : 0;
   const way = Math.abs(to - at);
   if (way === 0) return null;
-  if (reduced) return { to, ms: SKY_TURN.crossfade * way, eased: false };
-  const whole = night ? SKY_TURN.nightfall : SKY_TURN.daybreak;
+  if (reduced) return { to, ms: SKY_TURN.crossfade, eased: false };
+  const whole =
+    to > at ? SKY_TURN.nightfall : rise ? SKY_TURN.rise / SKY_AT.dawn : SKY_TURN.daybreak;
   return { to, ms: Math.max(SKY_TURN.least, whole * way), eased: true };
 }
 
@@ -96,6 +112,7 @@ export interface SkyPalette {
   /** The horizon's warmth, at its height mid-turn. */
   readonly warm: { readonly inner: string; readonly outer: string; readonly peak: number };
   readonly cloud: { readonly colour: string; readonly alpha: number };
+  readonly star: string;
   /** The stars' alphas are scaled by this: a light dusk needs them brighter. */
   readonly starLight: number;
   /** The header's ink and the ground under the sky, as the app's theme sets them. */
@@ -114,6 +131,7 @@ export const SKY: Readonly<Record<Scheme, SkyPalette>> = {
     halo: 0.22,
     warm: { inner: "#E9845E", outer: "#9E4C7A", peak: 0.42 },
     cloud: { colour: "#FFFFFF", alpha: 0.075 },
+    star: "#FFFFFF",
     starLight: 1,
     ink: "#F5F5F5",
     ground: "#0D0D0D",
@@ -128,6 +146,7 @@ export const SKY: Readonly<Record<Scheme, SkyPalette>> = {
     halo: 0.5,
     warm: { inner: "#F5A27F", outer: "#D98AA8", peak: 0.5 },
     cloud: { colour: "#FFFFFF", alpha: 0.5 },
+    star: "#FFFFFF",
     starLight: 2,
     ink: "#27272A",
     ground: "#FCFCFC",
@@ -189,6 +208,12 @@ export function mix(a: string, b: string, t: number): string {
         .padStart(2, "0"),
     )
     .join("")}`;
+}
+
+/** `hex` at `alpha`, as CSS writes it. */
+export function withAlpha(hex: string, alpha: number): string {
+  const [r, g, b] = channels(hex);
+  return `rgb(${r} ${g} ${b} / ${Math.round(alpha * 1000) / 1000})`;
 }
 
 /** WCAG's contrast between two colours. */

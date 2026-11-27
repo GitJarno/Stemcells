@@ -85,7 +85,7 @@ export function LineHome(props: {
     props.picks,
   );
   const tab = segments.useTab("awake");
-  const stages = useStagePages(STAGES, tab, "asleep");
+  const stages = useStagePages(STAGES, tab);
   // Only once every machine has answered: a cold start would clear the icon a closed app was given.
   useAppBadge(props.known ? askCount(line) : null);
 

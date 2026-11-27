@@ -1,5 +1,5 @@
-// The sky behind the home's header (stemcells/tasks/day-night.md): day over Awake, night over
-// Asleep, a sunset or sunrise between. Drawn once, in layers whose opacity and place alone follow
+// The sky behind the home's header (stemcells/tasks/day-night.md): dawn over Input, day over
+// Awake, night over Asleep, and the sun rising or setting between. Drawn once, in layers whose opacity and place alone follow
 // the one progress (`useSky.ts`), on the UI thread; while it stands, nothing moves or redraws.
 
 import { memo, type ReactNode, use, useState } from "react";
@@ -24,6 +24,8 @@ import Svg, {
 
 import {
   CLOUDS,
+  litPath,
+  moonPhase,
   shown,
   SKY,
   SKY_SHAPE,
@@ -39,7 +41,6 @@ import {
   useAppearancePreferences,
   useContentTopInset,
 } from "../upstream/home";
-import { litPath, moonPhase } from "./moon";
 import { STAGE_ROOM, useMinute } from "./state";
 import { fallen } from "./useSky";
 
@@ -138,7 +139,7 @@ const Heavens = memo(function Heavens(props: {
                 cx={star.x * width}
                 cy={star.y * reach}
                 r={star.r}
-                fill="#FFFFFF"
+                fill={palette.star}
                 fillOpacity={Math.min(1, star.alpha * palette.starLight)}
               />
             ))}
@@ -225,9 +226,8 @@ function Fades(props: {
   readonly children: ReactNode;
 }) {
   const { span, out = false } = props;
-  const reduced = useReducedMotion();
   const fades = useAnimatedStyle(() => {
-    const p = shown(fallen.get(), span, reduced);
+    const p = shown(fallen.get(), span);
     return { opacity: out ? 1 - p : p };
   });
   return <Animated.View style={[props.style, fades]}>{props.children}</Animated.View>;
@@ -240,8 +240,7 @@ function Warms(props: {
   readonly children: ReactNode;
 }) {
   const { peak } = props;
-  const reduced = useReducedMotion();
-  const warms = useAnimatedStyle(() => ({ opacity: warmth(fallen.get(), reduced) * peak }));
+  const warms = useAnimatedStyle(() => ({ opacity: warmth(fallen.get()) * peak }));
   return <Animated.View style={[props.style, warms]}>{props.children}</Animated.View>;
 }
 
@@ -277,8 +276,9 @@ function Sun(props: { readonly x: number; readonly y: number; readonly palette: 
   const sets = useAnimatedStyle(() => {
     const p = fallen.get();
     return {
-      opacity: 1 - shown(p, SKY_SPANS.sunGoes, reduced),
-      transform: [{ translateY: reduced ? 0 : shown(p, SKY_SPANS.sunSinks, reduced) * SINKS }],
+      opacity: 1 - shown(p, SKY_SPANS.sunGoes),
+      // Under Reduce Motion nothing moves: the sun and the moon only fade where they stand.
+      transform: [{ translateY: reduced ? 0 : shown(p, SKY_SPANS.sunSinks) * SINKS }],
     };
   });
   const { palette } = props;
@@ -300,10 +300,8 @@ function Moon(props: { readonly x: number; readonly y: number; readonly palette:
   const rises = useAnimatedStyle(() => {
     const p = fallen.get();
     return {
-      opacity: shown(p, SKY_SPANS.moonComes, reduced),
-      transform: [
-        { translateY: reduced ? 0 : (1 - shown(p, SKY_SPANS.moonRises, reduced)) * RISES },
-      ],
+      opacity: shown(p, SKY_SPANS.moonComes),
+      transform: [{ translateY: reduced ? 0 : (1 - shown(p, SKY_SPANS.moonRises)) * RISES }],
     };
   });
   const { palette } = props;

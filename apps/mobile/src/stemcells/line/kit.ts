@@ -48,13 +48,16 @@ export {
   LIST_MOTION,
   type ListReading,
 } from "../../../../web/src/stemcells/motion/listMotion.ts";
+export { litPath, moonPhase } from "../../../../web/src/stemcells/motion/moon.ts";
 export {
   CLOUDS,
   shown,
   SKY,
+  SKY_AT,
   SKY_SHAPE,
   SKY_SPANS,
   SKY_TURN,
+  skyAtStage,
   skyStops,
   skyTurn,
   type SkyPalette,

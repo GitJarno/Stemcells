@@ -1,6 +1,18 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { contrast, mix, shown, SKY, SKY_SPANS, skyOver, skyStops, skyTurn, warmth } from "./sky";
+import {
+  contrast,
+  mix,
+  shown,
+  SKY,
+  SKY_AT,
+  SKY_SPANS,
+  skyAtStage,
+  skyOver,
+  skyStops,
+  skyTurn,
+  warmth,
+} from "./sky";
 
 const steps = Array.from({ length: 101 }, (_, n) => n / 100);
 const bodies = [SKY_SPANS.sunGoes, SKY_SPANS.moonComes] as const;
@@ -9,52 +21,63 @@ const day = [SKY_SPANS.dayLifts, SKY_SPANS.sunGoes, SKY_SPANS.cloudsGo];
 
 describe("the sky's turn", () => {
   it.each([
-    [0, true, false, { to: 1, ms: 1100, eased: true }],
-    [1, true, false, null],
-    [0, false, false, null],
-    [1, false, false, { to: 0, ms: 800, eased: true }],
-    // Turned back partway, it sets off from there and takes its share of the time.
-    [0.5, true, false, { to: 1, ms: 550, eased: true }],
-    [0.25, false, false, { to: 0, ms: 200, eased: true }],
-    // A nudge still eases.
-    [0.02, false, false, { to: 0, ms: 120, eased: true }],
-    [0.5, true, true, { to: 1, ms: 100, eased: false }],
-    [1, false, true, { to: 0, ms: 200, eased: false }],
-  ])("turns from %s toward night %s (reduced %s)", (at, toNight, reduced, expected) => {
-    expect(skyTurn(at, toNight, reduced)).toEqual(expected);
+    // Day to night and back, whole.
+    [0, 1, false, false, { to: 1, ms: 1100, eased: true }],
+    [1, 0, false, false, { to: 0, ms: 800, eased: true }],
+    [1, 1, false, false, null],
+    // Dawn to day and to night take their share; turned back partway, it sets off from there.
+    [0.4, 0, false, false, { to: 0, ms: 320, eased: true }],
+    [0.4, 1, false, false, { to: 1, ms: 660, eased: true }],
+    [0.7, 0.4, false, false, { to: 0.4, ms: 240, eased: true }],
+    // The last ask answered: dawn rises into day, slower; from partway, its share.
+    [0.4, 0, false, true, { to: 0, ms: 1400, eased: true }],
+    [0.2, 0, false, true, { to: 0, ms: 700, eased: true }],
+    // A nudge still eases; Reduce Motion crossfades from anywhere.
+    [0.02, 0, false, false, { to: 0, ms: 120, eased: true }],
+    [0.5, 1, true, false, { to: 1, ms: 200, eased: false }],
+  ])("turns from %s to %s (reduced %s, rise %s)", (at, to, reduced, rise, expected) => {
+    const turn = skyTurn(at, to, reduced, rise);
+    expect(turn === null ? null : { ...turn, ms: Math.round(turn.ms) }).toEqual(expected);
   });
 
-  it("is all day at 0 and all night at 1", () => {
+  it("holds each stage's sky: Input at dawn, Awake by day, Asleep at night", () => {
+    expect(["input", "awake", "asleep"].map(skyAtStage)).toEqual([
+      SKY_AT.dawn,
+      SKY_AT.day,
+      SKY_AT.night,
+    ]);
     for (const part of [...night, ...day]) {
-      expect(shown(0, part, false)).toBe(0);
-      expect(shown(1, part, false)).toBe(1);
+      expect(shown(SKY_AT.day, part)).toBe(0);
+      expect(shown(SKY_AT.night, part)).toBe(1);
     }
-    expect(warmth(0, false)).toBe(0);
-    expect(warmth(1, false)).toBeCloseTo(0, 12);
+    expect(warmth(SKY_AT.day)).toBe(0);
+    expect(warmth(SKY_AT.night)).toBeCloseTo(0, 12);
+  });
+
+  it("dawns with the sun low and faint, the horizon warm and only the brightest stars", () => {
+    const p = SKY_AT.dawn;
+    const sun = 1 - shown(p, SKY_SPANS.sunGoes);
+    expect(sun).toBeGreaterThan(0);
+    expect(sun).toBeLessThan(0.5);
+    expect(shown(p, SKY_SPANS.sunSinks)).toBeGreaterThan(0.8);
+    expect(warmth(p)).toBeGreaterThan(0.9);
+    const [brightest, ...rest] = SKY_SPANS.stars;
+    expect(shown(p, brightest)).toBeGreaterThan(0.2);
+    expect(shown(p, brightest)).toBeLessThan(0.6);
+    for (const stars of rest) expect(shown(p, stars)).toBe(0);
+    expect(shown(p, SKY_SPANS.moonComes)).toBe(0);
   });
 
   it("never lets the ground show through the two skies mid-turn", () => {
     for (const p of steps) {
-      const dayLeft = 1 - shown(p, SKY_SPANS.dayLifts, false);
-      const nightIn = shown(p, SKY_SPANS.nightDeepens, false);
+      const dayLeft = 1 - shown(p, SKY_SPANS.dayLifts);
+      const nightIn = shown(p, SKY_SPANS.nightDeepens);
       expect(1 - (1 - dayLeft) * (1 - nightIn)).toBeGreaterThan(0.9);
     }
   });
 
-  it("shows one body at a time, and at daybreak lets the stars go before the sun comes", () => {
-    for (const p of steps) {
-      const sun = 1 - shown(p, bodies[0], false);
-      const moon = shown(p, bodies[1], false);
-      expect(Math.min(sun, moon)).toBe(0);
-      if (sun > 0) for (const stars of SKY_SPANS.stars) expect(shown(p, stars, false)).toBe(0);
-    }
-  });
-
-  it("warms the horizon only mid-turn, and not under Reduce Motion", () => {
-    const peak = steps.reduce((best, p) => (warmth(p, false) > warmth(best, false) ? p : best));
-    expect(peak).toBeGreaterThan(0.3);
-    expect(peak).toBeLessThan(0.55);
-    expect(Math.max(...steps.map((p) => warmth(p, true)))).toBe(0);
+  it("never shows the sun and the moon together", () => {
+    for (const p of steps) expect(Math.min(1 - shown(p, bodies[0]), shown(p, bodies[1]))).toBe(0);
   });
 });
 
@@ -89,9 +112,9 @@ describe("the sky's look", () => {
       const nightHere = at(palette.night);
       for (const p of steps) {
         const behind = mix(
-          mix(palette.ground, dayHere, 1 - shown(p, SKY_SPANS.dayLifts, false)),
+          mix(palette.ground, dayHere, 1 - shown(p, SKY_SPANS.dayLifts)),
           nightHere,
-          shown(p, SKY_SPANS.nightDeepens, false),
+          shown(p, SKY_SPANS.nightDeepens),
         );
         expect(contrast(palette.ink, behind)).toBeGreaterThanOrEqual(4.5);
       }

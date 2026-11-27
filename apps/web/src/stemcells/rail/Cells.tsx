@@ -101,6 +101,7 @@ import { PlanRing } from "./PlanRing";
 import { RailButton } from "./RailParts";
 import { ProxyTrack } from "../tabs/ProxyTrack";
 import { useRowMotion } from "./rowMotion";
+import { ColumnSky } from "./Sky";
 import { StagePager } from "./StagePager";
 import { useRailUndoNotice } from "./undoNotice";
 import { UndoLine } from "./UndoLine";
@@ -187,6 +188,7 @@ export function Cells() {
   return (
     <div ref={setProxy} data-stemcells-cells="" data-stemcells-proxy="">
       <ProxyTrack>
+        <ColumnSky stage={shownStage} now={now} />
         {/* Upstream's sidebar button, or the window's controls, stand here. */}
         <div data-stemcells-rail-titlebar="" className={cn(isElectron && "drag-region")} />
         <div data-cells-top="">

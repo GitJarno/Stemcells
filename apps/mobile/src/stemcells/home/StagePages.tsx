@@ -17,6 +17,7 @@ import { scheduleOnUI } from "react-native-worklets";
 
 import { ScreenVeils } from "../edge/ScreenVeils";
 import { NativePrimaryColumnContext, useContentTopInset } from "../upstream/home";
+import { skyAtStage } from "../line/kit";
 import { CopyLayer } from "./CopyLayer";
 import { enteringX, HomeCellsHeld, HomeInFront, HomeStageContext, StagePageContext } from "./state";
 import { Sky } from "./Sky";
@@ -65,11 +66,10 @@ function turn(
   }
 }
 
-/** The stages' pages, in the segments' order, and a turn to one of them from a tap; `night`'s sky is night. */
+/** The stages' pages, in the segments' order, and a turn to one of them from a tap. */
 export function useStagePages<Stage extends string>(
   stages: readonly [Stage, Stage],
   opening: Stage,
-  night: Stage,
 ) {
   const at = stages.indexOf(opening);
   const a = usePage(at === 0);
@@ -84,11 +84,11 @@ export function useStagePages<Stage extends string>(
       /** Called in the tap's own frame, before React renders the chosen stage; `still` at once. */
       show: (stage: Stage, still = reduced) => {
         // The sky turns whichever way the list does: the first home to show takes it as it stands.
-        turnSky(stage === night, reduced);
+        turnSky(skyAtStage(stage), reduced);
         scheduleOnUI(turn, pages, front, stages.indexOf(stage), still);
       },
     };
-  }, [stages, a, b, front, reduced, night]);
+  }, [stages, a, b, front, reduced]);
 }
 
 export function StagePages<Stage extends string>(props: {
