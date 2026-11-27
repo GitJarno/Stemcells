@@ -50,6 +50,8 @@ import * as UpstreamDraftHeroProjectHeading from "../../../components/chat/Draft
 import * as UpstreamTimelineLogic from "../../../components/chat/MessagesTimeline.logic";
 import * as UpstreamProviderInstanceIcon from "../../../components/chat/ProviderInstanceIcon";
 import * as UpstreamProviderModelPicker from "../../../components/chat/ProviderModelPicker";
+import * as UpstreamModelPickerContent from "../../../components/chat/ModelPickerContent";
+import * as UpstreamComposerModelEffort from "../../../components/chat/ComposerModelEffort";
 import * as UpstreamProviderSubagentBar from "../../../components/chat/ProviderSubagentBar";
 import * as UpstreamTimelineSystemDivider from "../../../components/chat/TimelineSystemDivider";
 import * as UpstreamTimelineOverlays from "../../../components/chat/TimelineOverlays";
@@ -92,6 +94,8 @@ import * as OurWelcomePageLogic from "./welcomePage.logic";
 import * as OurDraftHeroProjectHeading from "./DraftHeroProjectHeading";
 import * as OurProviderInstanceIcon from "./ProviderInstanceIcon";
 import * as OurProviderModelPicker from "./ProviderModelPicker";
+import * as OurModelPickerContent from "./ModelPickerContent";
+import * as OurComposerModelEffort from "./ComposerModelEffort";
 import * as OurFavicon from "./favicon";
 import * as OurStarPrompt from "./GitHubStarPrompt";
 import * as OurTimelineLogic from "./MessagesTimeline.logic";
@@ -714,6 +718,28 @@ const CASES: Readonly<Record<string, Case>> = {
       "apps/web/src/components/settings/ScheduledTasksSettings.tsx": [
         "../chat/ProviderModelPicker",
         ["ProviderModelPicker"],
+      ],
+    },
+  },
+  "apps/web/src/components/chat/ModelPickerContent.tsx": {
+    upstream: UpstreamModelPickerContent,
+    substitute: OurModelPickerContent satisfies RendersOrNothing<typeof UpstreamModelPickerContent>,
+    importers: {
+      "apps/web/src/components/chat/ProviderModelPicker.tsx": [
+        "./ModelPickerContent",
+        ["ModelPickerContent"],
+      ],
+    },
+  },
+  "apps/web/src/components/chat/ComposerModelEffort.tsx": {
+    upstream: UpstreamComposerModelEffort,
+    substitute: OurComposerModelEffort satisfies RendersOrNothing<
+      typeof UpstreamComposerModelEffort
+    >,
+    importers: {
+      "apps/web/src/components/chat/ComposerControlsBar.tsx": [
+        "./ComposerModelEffort",
+        ["ComposerEffortColumn", "ComposerPickerFooter"],
       ],
     },
   },

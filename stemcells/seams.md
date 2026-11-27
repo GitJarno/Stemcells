@@ -252,12 +252,49 @@ The names are changed where the web shows them, not where they come from:
   stop finding Sol 6.1).
 
 So: one helper most views already name a model with, plus the four views
-that don't use it. The mobile app still shows upstream's names; it needs the
-rule in a `packages/stemcells-*` package once it gets a layer of ours.
+that don't use it. The phone imports the same rule from the web's folder
+(`apps/mobile/src/stemcells/models/kit.ts`), as its other kits do, and its
+`lib/modelOptions.ts` substitute names every option with it.
 
 To offer upstream: one function every view names a model through. Then a
 fork's naming is that one function instead of a seam and five
 substitutes.
+
+### One pick for model and effort
+
+T3's picker serves every provider's whole catalogue: tabs per provider and
+Favorites, a legacy fold, an effort column, Permissions in a menu inside
+it; on the phone a full-screen list with Options under it, each pushing a
+page, and a Save. Ours is one surface (`stemcells/tasks/model-pick.md`):
+each agent one line of its models by family, the model's effort as one row,
+its switches and Access as rows of presses. The rule that turns a catalogue
+into lines is `apps/web/src/stemcells/models/lineup.ts`, shared with the
+phone.
+
+- **The Mac: substitutes, no seam.** `ModelPickerContent` draws the lines
+  with its props (`PickLineup.tsx`); `ComposerModelEffort`'s column and
+  footer draw rows (`PickControls.tsx`), its trigger suffix stays
+  upstream's. `ProviderModelPicker`'s substitute hands T3's docked popup a
+  null column, which keeps the docked behaviour (open after a pick, focus
+  on effort, its shortcuts' targets) while upstream draws no column, and
+  hands the column and footer to the lines through `PickSlots`. Settings'
+  pickers, undocked, get the lines and close on a pick, as T3's did.
+- **The phone: two seams.** `ThreadSettingsSheet.tsx` renders our
+  `CellPick` inside its own session provider, handing it the session's
+  context and its old navigator as the catalog the pick opens for every
+  version and hiding; it exports the two session types, which our adapter
+  takes as types only, so no import cycle. `Stack.tsx` wraps the sheet's
+  route options so iOS fits the sheet to the pick.
+- **The button** names a current model by family ("Opus") through the
+  `providerIconUtils` substitute on the Mac and the `modelOptions` one on
+  the phone; every other view keeps the version ("Opus 5.5").
+
+Upstream's tests of the list, the column and the footer menu pin their
+shapes; those cases are on `stemcells/upstream-skips.txt`, and
+`stemcells/upstream/modelPick.browser.test.tsx` pins ours.
+
+To offer upstream: a compact mode of its picker that lists families and
+folds effort baked into names, with no tabs.
 
 ### The app's name
 

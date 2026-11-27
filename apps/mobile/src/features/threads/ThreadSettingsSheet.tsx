@@ -126,6 +126,7 @@ import {
 } from "./thread-settings-sheet-state";
 import { formatProviderUpdateRequiredNotice } from "@t3tools/client-runtime/providerUpdateRequiredModels";
 import type { MessageResolver } from "../../i18n/messages";
+import { CellPick } from "../../stemcells/models/CellPick";
 
 const PRIMARY_PROVIDER_DRIVERS: ReadonlySet<string> = new Set([
   "claudeAgent",
@@ -286,7 +287,7 @@ type ThreadSettingsSubmenuPage =
   | { readonly kind: "descriptor"; readonly id: string }
   | { readonly kind: "runtime" };
 
-type ThreadSettingsSessionProps = {
+export type ThreadSettingsSessionProps = {
   readonly environmentId: EnvironmentId | null;
   readonly projectId: ProjectId | null;
   readonly cwd: string | null;
@@ -312,7 +313,7 @@ export type ExistingThreadSettingsRouteParams = {
   readonly draftKey: string;
 };
 
-type ThreadSettingsSessionValue = {
+export type ThreadSettingsSessionValue = {
   readonly environmentId: EnvironmentId | null;
   readonly providerInstanceId?: ProviderInstanceId;
   readonly providerGroups: ReadonlyArray<ProviderGroup>;
@@ -1499,7 +1500,11 @@ export function ThreadSettingsPickerScreen(
 ) {
   return (
     <ThreadSettingsSessionProvider {...props}>
-      <ThreadSettingsPickerNavigator onClose={props.onClose} />
+      <CellPick
+        {...props}
+        session={ThreadSettingsSessionContext}
+        catalog={<ThreadSettingsPickerNavigator onClose={props.onClose} />}
+      />
     </ThreadSettingsSessionProvider>
   );
 }
