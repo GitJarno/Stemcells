@@ -25,7 +25,6 @@ import Svg, {
 import {
   CLOUDS,
   litPath,
-  moonPhase,
   shown,
   SKY,
   SKY_SHAPE,
@@ -41,7 +40,7 @@ import {
   useAppearancePreferences,
   useContentTopInset,
 } from "../upstream/home";
-import { STAGE_ROOM, useMinute } from "./state";
+import { STAGE_ROOM, useMoonPhase } from "./state";
 import { fallen } from "./useSky";
 
 /** Where the sun and moon stand: clear of two trailing header buttons, in the bar's row. */
@@ -302,8 +301,7 @@ function Sun(props: { readonly x: number; readonly y: number; readonly palette: 
 
 /** The moon at tonight's phase, rising into place as the sun goes. */
 function Moon(props: { readonly x: number; readonly y: number; readonly palette: SkyPalette }) {
-  // Held to a few hundred phases, so the path redraws a few times a day, not each minute.
-  const phase = Math.round(moonPhase(Date.parse(useMinute())) * 240) / 240;
+  const phase = useMoonPhase();
   const reduced = useReducedMotion();
   const rises = useAnimatedStyle(() => {
     const p = fallen.get();

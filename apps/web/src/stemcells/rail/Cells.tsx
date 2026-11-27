@@ -32,6 +32,7 @@ import { useNeeds } from "../needs/stream";
 import type { CellStanding, Condition } from "../needs/wire";
 import { toneTokenOf } from "../glow/light";
 import { crossing, resweep, sweep } from "../motion/beat";
+import { drawnMoonPhase } from "../motion/moon";
 import { type Sight, watchSight } from "../motion/sight";
 import { CellMark } from "../tabs/CellMark";
 import { openNewCellPane } from "../tabs/commands";
@@ -188,7 +189,7 @@ export function Cells() {
   return (
     <div ref={setProxy} data-stemcells-cells="" data-stemcells-proxy="">
       <ProxyTrack>
-        <ColumnSky stage={shownStage} now={now} />
+        <ColumnSky stage={shownStage} moonPhase={drawnMoonPhase(now)} />
         {/* Upstream's sidebar button, or the window's controls, stand here. */}
         <div data-stemcells-rail-titlebar="" className={cn(isElectron && "drag-region")} />
         <div data-cells-top="">

@@ -48,7 +48,7 @@ export {
   LIST_MOTION,
   type ListReading,
 } from "../../../../web/src/stemcells/motion/listMotion.ts";
-export { litPath, moonPhase } from "../../../../web/src/stemcells/motion/moon.ts";
+export { drawnMoonPhase, litPath } from "../../../../web/src/stemcells/motion/moon.ts";
 export {
   CLOUDS,
   shown,

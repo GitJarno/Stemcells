@@ -1,7 +1,7 @@
 import { type CSSProperties, useLayoutEffect, useRef } from "react";
 
 import { cssEasing } from "../motion/listMotion";
-import { litPath, moonPhase } from "../motion/moon";
+import { litPath } from "../motion/moon";
 import {
   CLOUDS,
   SKY,
@@ -68,7 +68,7 @@ const STARS = starGroups(BODY_ACROSS);
  * sets off from where the sky stands, on the shared timings, and `rise` takes dawn into day at the
  * rise's slower pace.
  */
-export function ColumnSky(props: { stage: string; now: number; rise?: boolean }) {
+export function ColumnSky(props: { stage: string; moonPhase: number; rise?: boolean }) {
   const palette = SKY[useSkyScheme()];
   const ref = useRef<HTMLDivElement>(null);
   const drawn = useRef(false);
@@ -83,14 +83,20 @@ export function ColumnSky(props: { stage: string; now: number; rise?: boolean })
       ? skyTurn(Number.isFinite(shows) ? shows : to, to, reducedMotion(), rise)
       : null;
     drawn.current = true;
+    if (turn !== null && Number.isFinite(shows)) {
+      // Hold the sky where it stands first, so a turn mid-turn sets off from rest rather than
+      // reversing the running transition, which the browser shortens and starts partway along.
+      sky.style.transition = "none";
+      sky.style.setProperty("--sky-night", String(shows));
+      void sky.offsetWidth;
+    }
     sky.style.transition =
       turn === null
         ? "none"
         : `--sky-night ${turn.ms}ms ${turn.eased ? cssEasing(SKY_TURN.easing) : "linear"}`;
     sky.style.setProperty("--sky-night", String(to));
   }, [to, rise]);
-  // Held to a few hundred phases, so the path redraws a few times a day, not each minute.
-  const phase = Math.round(moonPhase(props.now) * 240) / 240;
+  const phase = props.moonPhase;
   const middle = BOX / 2;
   return (
     <div

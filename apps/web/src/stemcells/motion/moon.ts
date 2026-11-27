@@ -14,6 +14,14 @@ export function moonPhase(ms: number): number {
 }
 
 /**
+ * The phase as a sky draws it: held to a few hundred steps, so the moon's path redraws a few
+ * times a day, not each minute.
+ */
+export function drawnMoonPhase(ms: number): number {
+  return Math.round(moonPhase(ms) * 240) / 240;
+}
+
+/**
  * The lit part of a moon of radius `r` centred on the origin at `phase`, as
  * seen from the north: it waxes from the right. One edge is the limb, a half
  * circle; the other the terminator, a half ellipse whose width follows the

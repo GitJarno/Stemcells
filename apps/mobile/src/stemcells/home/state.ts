@@ -4,6 +4,7 @@
 
 import { createContext, useSyncExternalStore } from "react";
 
+import { drawnMoonPhase } from "../line/kit";
 import type { CellState } from "../line/line";
 
 export interface HomeTabs {
@@ -182,4 +183,9 @@ const onMinute = (listener: () => void) => {
 /** The time, an ISO string, moving each minute on one clock for the whole home: a snooze wakes on it. */
 export function useMinute(): string {
   return useSyncExternalStore(onMinute, () => minute);
+}
+
+/** The moon's drawn phase, on the minute's clock: it changes, and renders, a few times a day. */
+export function useMoonPhase(): number {
+  return useSyncExternalStore(onMinute, () => drawnMoonPhase(Date.parse(minute)));
 }
