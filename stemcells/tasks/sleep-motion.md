@@ -70,10 +70,27 @@ change, and an entering row's light still blooms.
   a linear clock (`home/Hop.tsx`, `poseAt` in `home/flight.ts`); the eyes
   close from an animated reaction at the pose's moment. The Mac plays them as
   one linear WAAPI animation, open-eyed then shut-eyed (`rail/Hops.tsx`).
-  The Mac leaps as the person presses Sleep, from the row as it folds (a
-  settle can take seconds while a Cell at work stops); the phone's Cell waits
-  over its row for the line, as before. A Cell moved again mid-air starts a
-  new flight.
+  Both leap as the person sleeps a Cell, not when its machine answers (a
+  settle can take seconds while a Cell at work stops): the Mac from the row
+  as it folds, the phone from wherever its row has carried it. On the phone
+  T3's sleep, snooze and wake say where the Cell goes (`toward` in
+  `home/hops.ts`); an archive or delete still waits over its row for the
+  line. A move that fails brings its row back after its Cell has gone. A
+  Cell moved again mid-air starts a new flight.
+
+## The swipe
+
+Sleep on the phone is mostly a swipe right, so its release is the leap's
+start (2026-11-27: a quick swipe felt slow). Three things made it lag: a
+flick short of 58% of the row only showed the button; the row stood still
+at the release until the JS thread ran the action, which streaming Cells
+keep busy; and the Cell waited for the server. Now a release carries the
+row's speed (`reach` in `home/swipes.ts`, 0.15 s of it), so a flick sleeps;
+the row starts leaving on the UI thread as the finger lifts, and T3's
+dismissal joins it there (`leavesOnRelease`); and the Cell leaps at once.
+A flick that never crossed the threshold gives the armed haptic as it
+commits. Slow drags are unchanged: past the threshold they arm, short of it
+they show the button.
 
 ## Plan
 

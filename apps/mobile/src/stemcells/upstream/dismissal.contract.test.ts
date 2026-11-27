@@ -32,4 +32,19 @@ describe("a row's dismissal", () => {
     unregister();
     expect(said).toEqual(["lifts", "sent", "lifts", "sent", "back", "other"]);
   });
+
+  it("lifts the row in the same tick it's asked, so a move can say where it goes (`toward`)", () => {
+    let lifted = false;
+    const unregister = registerThreadDismissal("env:chat", () => {
+      lifted = true;
+      return { finished: Promise.resolve(), restore: () => undefined };
+    });
+    void withThreadDismissal(
+      "env:chat",
+      async () => undefined,
+      () => true,
+    );
+    expect(lifted).toBe(true);
+    unregister();
+  });
 });
