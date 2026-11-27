@@ -57,6 +57,8 @@ const COMPACT_ACTION_ICON_SIZE = 13;
 const ACTION_LABEL_MAX_FONT_SCALE = 1.1;
 const ACTION_LABEL_MIN_HEIGHT = 14;
 const ACTION_LABEL_OFFSET = 2;
+// A short row's circle sits on its middle line, level with the title; its label hangs below.
+const COMPACT_LABEL_GAP = 1;
 
 const THREAD_SWIPE_ACTIONS_WIDTH = ACTION_ITEM_WIDTH * 2;
 const THREAD_SWIPE_SPRING = {
@@ -671,7 +673,8 @@ function SwipeActionButton(props: {
   // leading to the room left under the circle.
   const labelRoom =
     props.compact && props.rowHeight > 0
-      ? (props.rowHeight - circleSize) / Math.min(fontScale, ACTION_LABEL_MAX_FONT_SCALE)
+      ? ((props.rowHeight - circleSize) / 2 - COMPACT_LABEL_GAP) /
+        Math.min(fontScale, ACTION_LABEL_MAX_FONT_SCALE)
       : Infinity;
   const labelLineHeight = Math.min(useScaledTextRole("micro").lineHeight, labelRoom);
   // Android scales lineHeight by the full font scale, past maxFontSizeMultiplier.
@@ -820,11 +823,20 @@ function SwipeActionButton(props: {
       {/* An offset, not padding: padding would grow the box and move the circle at 1x. */}
       <Animated.View
         style={[
-          {
-            justifyContent: "center",
-            minHeight: ACTION_LABEL_MIN_HEIGHT,
-            top: props.compact ? 0 : ACTION_LABEL_OFFSET,
-          },
+          props.compact
+            ? {
+                alignItems: "center",
+                left: 0,
+                marginTop: circleSize / 2 + COMPACT_LABEL_GAP,
+                position: "absolute",
+                right: 0,
+                top: "50%",
+              }
+            : {
+                justifyContent: "center",
+                minHeight: ACTION_LABEL_MIN_HEIGHT,
+                top: ACTION_LABEL_OFFSET,
+              },
           labelStyle,
         ]}
       >
