@@ -8,7 +8,6 @@ import {
   SKY_SHAPE,
   SKY_SPANS,
   SKY_TURN,
-  skyAtStage,
   skyStops,
   skyTurn,
   starGroups,
@@ -64,20 +63,23 @@ const STARS = starGroups(BODY_ACROSS);
 
 /**
  * The column's sky (stemcells/tasks/day-night.md): behind the window's controls, the search and
- * New Cell, at the sky of the stage the column is headed to; the phone's sky, drawn in CSS. A turn
- * sets off from where the sky stands, on the shared timings, and `rise` takes dawn into day at the
- * rise's slower pace.
+ * New Cell, at `at`, the sky the column is headed to (`inbox/sky.ts`, `skyOver`); the phone's sky,
+ * drawn in CSS. A turn sets off from where the sky stands, on the shared timings; one with `rises`
+ * grown is the sunrise, at the rise's slower pace.
  */
-export function ColumnSky(props: { stage: string; moonPhase: number; rise?: boolean }) {
+export function ColumnSky(props: { at: number; rises: number; moonPhase: number }) {
   const palette = SKY[useSkyScheme()];
   const ref = useRef<HTMLDivElement>(null);
   const drawn = useRef(false);
-  const to = skyAtStage(props.stage);
-  const rise = props.rise ?? false;
+  const risen = useRef(props.rises);
+  const to = props.at;
+  const { rises } = props;
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Turns the sky's CSS transition from the value it shows now, which only the browser knows mid-turn.
   useLayoutEffect(() => {
     const sky = ref.current;
     if (sky === null) return;
+    const rise = rises !== risen.current;
+    risen.current = rises;
     const shows = Number.parseFloat(getComputedStyle(sky).getPropertyValue("--sky-night"));
     const turn = drawn.current
       ? skyTurn(Number.isFinite(shows) ? shows : to, to, reducedMotion(), rise)
@@ -95,7 +97,7 @@ export function ColumnSky(props: { stage: string; moonPhase: number; rise?: bool
         ? "none"
         : `--sky-night ${turn.ms}ms ${turn.eased ? cssEasing(SKY_TURN.easing) : "linear"}`;
     sky.style.setProperty("--sky-night", String(to));
-  }, [to, rise]);
+  }, [to, rises]);
   const phase = props.moonPhase;
   const middle = BOX / 2;
   return (

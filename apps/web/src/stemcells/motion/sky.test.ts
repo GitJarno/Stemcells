@@ -41,7 +41,7 @@ describe("the sky's turn", () => {
   });
 
   it("holds each stage's sky: Input at dawn, Awake by day, Asleep at night", () => {
-    expect(["input", "awake", "asleep"].map(skyAtStage)).toEqual([
+    expect(["needs", "awake", "asleep"].map(skyAtStage)).toEqual([
       SKY_AT.dawn,
       SKY_AT.day,
       SKY_AT.night,

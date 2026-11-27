@@ -55,7 +55,6 @@ export {
   SKY_SHAPE,
   SKY_SPANS,
   SKY_TURN,
-  skyAtStage,
   skyStops,
   skyTurn,
   type SkyPalette,
@@ -78,10 +77,14 @@ export {
   LOOP_AT_REST,
   type Loop,
   opened,
-  progressOf,
   read,
   unfollowed,
   waitingSince,
 } from "../../../../web/src/stemcells/inbox/loop.ts";
-export { allClear, publishProgress } from "../../../../web/src/stemcells/inbox/sky.ts";
+export {
+  publishInbox,
+  readInboxSky,
+  skyOver,
+  useInboxSky,
+} from "../../../../web/src/stemcells/inbox/sky.ts";
 export { clearedWords, factAfter, STEM_CELL_FACTS } from "../../../../../stemcells/words/inbox.ts";

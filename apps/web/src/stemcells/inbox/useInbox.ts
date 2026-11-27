@@ -12,17 +12,8 @@ import { afterPaint } from "../tabs/afterPaint";
 import { openCellHere } from "../tabs/commands";
 import { focusedPane, type Workspace } from "../tabs/layout";
 import { readWorkspace, useWorkspaceStore } from "../tabs/store";
-import {
-  entered,
-  left,
-  LOOP_AT_REST,
-  type Loop,
-  opened,
-  progressOf,
-  read,
-  unfollowed,
-} from "./loop";
-import { allClear, publishProgress } from "./sky";
+import { entered, left, LOOP_AT_REST, type Loop, opened, read, unfollowed } from "./loop";
+import { publishInbox } from "./sky";
 
 const FACT_STORAGE_KEY = "stemcells.inbox.fact";
 
@@ -127,8 +118,7 @@ export function useInbox(input: {
         openCellHere({ environmentId, threadId: step.open, draftId: null }));
     const loop = opens ? step.loop : unfollowed(step.loop);
     set({ loop, fact: step.allClear ? nextFact() : inbox.fact });
-    publishProgress(progressOf(loop));
-    if (step.allClear) allClear();
+    publishInbox(loop, step.allClear);
     // The chat it opened has landed: the next answer starts without a click.
     if (before.landing && !loop.landing && loop.following === open) focusComposer();
   }, [queueKey, view, open, stage, environmentId]);

@@ -13,9 +13,9 @@ export type Scheme = "light" | "dark";
 /** Where each stage holds the sky: dawn is the turn's warmest moment, the sun at the horizon. */
 export const SKY_AT = { day: 0, dawn: 0.4, night: 1 } as const;
 
-/** The sky a stage stands under: Input's dawn, Asleep's night, and day over the rest. */
+/** The sky a stage stands under: Input's dawn (`needs`), Asleep's night, and day over the rest. */
 export function skyAtStage(stage: string): number {
-  return stage === "input" ? SKY_AT.dawn : stage === "asleep" ? SKY_AT.night : SKY_AT.day;
+  return stage === "needs" ? SKY_AT.dawn : stage === "asleep" ? SKY_AT.night : SKY_AT.day;
 }
 
 /**

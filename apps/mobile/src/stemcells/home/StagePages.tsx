@@ -3,7 +3,16 @@
 // thread, and turns the header's sky (`Sky.tsx`) in the same frame. Lists out of sight render
 // nothing new and keep their place.
 
-import { memo, use, useLayoutEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  memo,
+  use,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
@@ -18,12 +27,12 @@ import { scheduleOnUI } from "react-native-worklets";
 
 import { ScreenVeils } from "../edge/ScreenVeils";
 import { useContentTopInset, useDuoBarBottom, useHomeSidebar } from "../upstream/home";
-import { skyAtStage } from "../line/kit";
+import { readInboxSky, skyOver, useInboxSky } from "../line/kit";
 import { CopyLayer } from "./CopyLayer";
 import { enteringX, HomeCellsHeld, HomeInFront, HomeStageContext, StagePageContext } from "./state";
 import { Sky } from "./Sky";
 import { StagePill } from "./StagePill";
-import { turnSky } from "./useSky";
+import { riseSky, turnSky } from "./useSky";
 
 /** As UIKit's segment slides: one short ease-out, whatever the distance. */
 const SWITCH = { duration: 200, easing: Easing.out(Easing.cubic) };
@@ -78,7 +87,7 @@ export function useStagePages<Stage extends string>(stages: readonly Stage[], op
       /** Called in the tap's own frame, before React renders the chosen stage; `still` at once. */
       show: (stage: Stage, still = reduced) => {
         // The sky turns whichever way the list does: the first home to show takes it as it stands.
-        turnSky(skyAtStage(stage), reduced);
+        turnSky(skyOver(stage, readInboxSky()), reduced);
         scheduleOnUI(turn, pages, front, stages.indexOf(stage), still);
       },
     }),
@@ -104,6 +113,17 @@ export function StagePages<Stage extends string>(props: {
   useLayoutEffect(() => {
     home.show(tab, true);
   }, [home, tab]);
+  const inbox = useInboxSky();
+  const reduced = useReducedMotion();
+  const risen = useRef(inbox.clears);
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Turn the UI thread's sky as Input's dawn lifts with each answer, and rise at its all-clear.
+  useEffect(() => {
+    if (inbox.clears === risen.current) turnSky(skyOver(tab, inbox), reduced);
+    else {
+      risen.current = inbox.clears;
+      riseSky(reduced);
+    }
+  }, [inbox, tab, reduced]);
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Mount the other stages' lists once the first has drawn its first frame.
   useLayoutEffect(() => {
     if (warm) return;

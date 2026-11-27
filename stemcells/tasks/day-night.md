@@ -78,11 +78,13 @@ between dawn and night would read wrong.
   toward day; a turn takes its share (dawn to day 320 ms, dawn to night
   660 ms), on one ease in and out. The sun is gone before the moon comes: one
   body at a time.
-- **The rise.** When the person answers the last ask, dawn rises into day at
-  its own slower pace, 1400 ms from dawn (`SKY_TURN.rise`). On the phone,
-  `riseSky(reduced)` (`home/useSky.ts`); on the Mac, `ColumnSky`'s `rise`
-  with the column's stage at day. The inbox calls it; nothing does yet. A
-  later stage change to Awake finds the sky there already and does nothing.
+- **The rise.** Each answer lifts Input's dawn a step, half of its way to
+  day across the clearing; when the person answers the last ask, the rest
+  rises into day at its own slower pace (`SKY_TURN.rise`). Input with
+  nothing waiting stands by day. Where it stands is `skyOver` in
+  `inbox/sky.ts`; the rise is `riseSky(reduced)` on the phone
+  (`home/StagePages.tsx`) and `ColumnSky`'s `rises` on the Mac. A later
+  stage change to Awake finds the sky there already and does nothing.
 - **The warmth is a bump, not a colour mix.** The day and night skies cross
   by opacity, never by interpolated colour per frame; the warm band's opacity
   is `sin(π t)` over its span, at its height at dawn and gone by day and

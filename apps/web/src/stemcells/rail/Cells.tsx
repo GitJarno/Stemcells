@@ -23,6 +23,7 @@ import {
 import { onListOf } from "../needs/CardList";
 import { conditionLineOf } from "../needs/conditionLines";
 import { inputOf, waitingSince } from "../inbox/loop";
+import { skyOver, useInboxSky } from "../inbox/sky";
 import { inboxOpened, useInbox } from "../inbox/useInbox";
 import { useLeaving } from "../needs/leaving";
 import { leaving, page, useSettleAtOnce, useWakeByHand } from "../needs/live";
@@ -183,6 +184,7 @@ export function Cells() {
   // What the stages list, once read: another project is the list read again (`rowMotion.ts`).
   const rowsView =
     cells === null || environmentId === null ? null : `${environmentId}|${projectKey}`;
+  const inboxSky = useInboxSky();
   const { loop, fact } = useInbox({
     queue: asking.map((row) => row.cell.threadId),
     view: rowsView,
@@ -208,7 +210,11 @@ export function Cells() {
   return (
     <div ref={setProxy} data-stemcells-cells="" data-stemcells-proxy="">
       <ProxyTrack>
-        <ColumnSky stage={shownStage} moonPhase={drawnMoonPhase(now)} />
+        <ColumnSky
+          at={skyOver(shownStage, inboxSky)}
+          rises={inboxSky.clears}
+          moonPhase={drawnMoonPhase(now)}
+        />
         {/* Upstream's sidebar button, or the window's controls, stand here. */}
         <div data-stemcells-rail-titlebar="" className={cn(isElectron && "drag-region")} />
         <div data-cells-top="">

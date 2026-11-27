@@ -46,8 +46,8 @@ Asleep. Going through it is a loop: read the ask, answer, next.
 - [x] Input back as a stage on the phone and the Mac, longest waiting first
 - [x] Entering Input opens the top chat where a chat stands beside the list
 - [x] The loop: answered, the row leaves Input, the next opens
-- [x] Progress in the count; the all-clear moment and its facts. The dawn
-      and sunrise wait for `day-night.md`, which reads `inbox/sky.ts`
+- [x] Progress in the count and the dawn; the all-clear moment, its
+      sunrise and its facts
 - [x] Words, docs, tests; Aski's `stemcells_show` takes Input again
 - [ ] Gates, pull request, merge, seen on the Duo, an iPhone and the Mac
 
@@ -70,6 +70,7 @@ Asleep. Going through it is a loop: read the ask, answer, next.
   machines read) is part of each reading: another starts the loop afresh,
   so a switch or a machine dropping off never reads as answers. A clearing
   that ends away from Input ends quietly.
-- The sky (`day-night.md`) reads `useInboxSky()`: `progress` for the dawn's
-  steps, `clears` growing for the sunrise. `allClear()` in `inbox/sky.ts` is
-  where its `riseSky()` call goes.
+- The sky (`day-night.md`) stands where `skyOver` says (`inbox/sky.ts`):
+  dawn over Input, lifting half its way to day across a clearing, day once
+  nothing waits. The loop's step and its all-clear reach the sky in one
+  change, so the last answer is always the slow sunrise.

@@ -14,7 +14,7 @@ describe("the column's sky", () => {
   it("shows day by Awake, the horizon's warmth at dawn and night by Asleep", async () => {
     await using screen = await render(
       <div style={{ position: "relative", width: 280, height: 400 }}>
-        <ColumnSky stage="awake" moonPhase={0} />
+        <ColumnSky at={SKY_AT.day} rises={0} moonPhase={0} />
       </div>,
       // A bare view: the sky reads no route.
       { router: false },
