@@ -32,6 +32,13 @@ export const NOTE_MS = 2 * 60_000;
 const MOST = 200;
 
 const entries = new Map<string, BookEntry>();
+/** Plans a client said are coming: asked for, not yet made. */
+const expected = new Map<
+  string,
+  { readonly threadId: string; readonly text: string; readonly at: number; readonly made: Array<() => void> }
+>();
+/** How long a plan may be on its way before a message stops waiting for it. */
+export const MAKING_MS = 40_000;
 const waiting = new Map<string, Array<(outcome: ReadonlyArray<ActOutcome>) => void>>();
 
 function prune(now: number) {
@@ -42,6 +49,28 @@ function prune(now: number) {
 export function putPlan(entry: Omit<BookEntry, "outcome">): void {
   prune(entry.at);
   entries.set(entry.plan.id, { ...entry, outcome: null });
+  for (const tell of expected.get(entry.plan.id)?.made ?? []) tell();
+  expected.delete(entry.plan.id);
+}
+
+/**
+ * A client says a plan is being made from a message it is about to send to Aski's chat. The
+ * message can then reach the chat first: its turn waits for the plan (`planForMessage`).
+ */
+export function expectPlan(input: {
+  readonly id: string;
+  readonly threadId: string;
+  readonly text: string;
+  readonly at: number;
+}): void {
+  for (const [id, one] of expected) if (input.at - one.at > MAKING_MS) expected.delete(id);
+  if (!entries.has(input.id)) expected.set(input.id, { ...input, made: [] });
+}
+
+/** A plan that will never come (its compile failed before it began): nothing waits for it. */
+export function unexpectPlan(id: string): void {
+  for (const tell of expected.get(id)?.made ?? []) tell();
+  expected.delete(id);
 }
 
 export const planOfId = (id: string): BookEntry | null => entries.get(id) ?? null;
@@ -78,23 +107,51 @@ export function outcomeOf(id: string, ms: number): Promise<ReadonlyArray<ActOutc
   });
 }
 
-/**
- * The plan a message to Aski's chat belongs to: the latest one made in that chat from the same
- * words, within `NOTE_MS`, that has something to carry out.
- */
-export function planForMessage(threadId: string, text: string, now: number): BookEntry | null {
-  const words = flat(text);
+function madeFor(threadId: string, words: string, now: number): BookEntry | null {
   let found: BookEntry | null = null;
   for (const entry of entries.values()) {
     if (entry.threadId !== threadId || now - entry.at > NOTE_MS) continue;
-    if (entry.plan.acts.length === 0 || flat(entry.text) !== words) continue;
+    if (flat(entry.text) !== words) continue;
     if (found === null || entry.at >= found.at) found = entry;
   }
   return found;
+}
+
+/**
+ * The plan a message to Aski's chat belongs to: the latest one made in that chat from the same
+ * words, within `NOTE_MS`, that has something to carry out. A plan still being made is waited
+ * for, at most `MAKING_MS`. Null when there is none: the message is Aski's chat's alone.
+ */
+export async function planForMessage(
+  threadId: string,
+  text: string,
+  now: number,
+): Promise<BookEntry | null> {
+  const words = flat(text);
+  const coming = [...expected.values()].filter(
+    (one) => one.threadId === threadId && flat(one.text) === words && now - one.at <= MAKING_MS,
+  );
+  if (coming.length > 0)
+    await Promise.all(
+      coming.map(
+        (one) =>
+          new Promise<void>((resolve) => {
+            const timer = setTimeout(resolve, MAKING_MS);
+            one.made.push(() => {
+              clearTimeout(timer);
+              resolve();
+            });
+          }),
+      ),
+    );
+  // A plan made while this waited is younger than `now`.
+  const found = madeFor(threadId, words, now + (coming.length > 0 ? MAKING_MS : 0));
+  return found !== null && found.plan.acts.length > 0 ? found : null;
 }
 
 /** For tests: forget every plan. */
 export function clearBook(): void {
   entries.clear();
   waiting.clear();
+  expected.clear();
 }

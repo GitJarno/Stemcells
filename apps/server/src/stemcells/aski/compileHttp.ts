@@ -13,10 +13,12 @@ import { appendPlan } from "../planner/history.ts";
 import * as UpstreamDisk from "../upstream/disk.ts";
 import * as Upstream from "../upstream/planner.ts";
 import { ModelSelection } from "../upstream/planner.ts";
-import { planOfId, putPlan, settlePlan } from "./book.ts";
+import { expectPlan, planOfId, putPlan, settlePlan, unexpectPlan } from "./book.ts";
 import { compile, FIRST_CALL, SECOND_CALL } from "./compile.ts";
 import { forget, learn, Learned, readLearned, withNames } from "./learned.ts";
 
+// POST /api/stemcells/aski/expect: a plan is about to be made from a message to Aski's chat;
+//   that chat's turn waits for it, so the message can go at once.
 // POST /api/stemcells/aski/compile: one message to Aski as a plan (`compile.ts`). It spends a
 //   model call, so it takes the operate scope; the client carries the plan out itself.
 // GET  /api/stemcells/aski/plan?id=…: a plan and what came of it.
@@ -81,8 +83,17 @@ const OutcomeRequest = Schema.Struct({
   ),
   learned: Schema.optionalKey(Learned),
 });
+const ExpectRequest = Schema.Struct({
+  id: Schema.String.check(Schema.isMinLength(8), Schema.isMaxLength(64)),
+  threadId: Name,
+  text: Schema.String.check(Schema.isMaxLength(TEXT_MOST)),
+});
+const decodeExpect = Schema.decodeUnknownEffect(Schema.fromJsonString(ExpectRequest));
 const decodeCompile = Schema.decodeUnknownEffect(Schema.fromJsonString(CompileRequest));
 const decodeOutcome = Schema.decodeUnknownEffect(Schema.fromJsonString(OutcomeRequest));
+
+/** The plan a body names, read loosely: for telling its waiters it won't come. */
+const idOfBody = (text: string): string => /"id"\s*:\s*"([^"]{1,64})"/.exec(text)?.[1] ?? "";
 
 const json = (body: unknown, status = 200) =>
   HttpServerResponse.jsonUnsafe(body, { status, headers: NO_STORE });
@@ -102,10 +113,16 @@ const compileRoute = Effect.fn("AskiHttp.compile")(function* (times: {
   const text = yield* boundedText(request, COMPILE_BODY_MOST);
   if (Option.isNone(text)) return json({ error: "The message is too large." }, 413);
   const body = yield* decodeCompile(text.value).pipe(Effect.option);
-  if (Option.isNone(body))
+  if (Option.isNone(body)) {
+    // Whatever was waiting for this plan waits no longer.
+    unexpectPlan(idOfBody(text.value));
     return json({ error: "A compile takes a message, what the person has, and a model." }, 400);
+  }
   const asked = body.value;
-  if (asked.text.length > TEXT_MOST) return json({ error: "The message is too long." }, 413);
+  if (asked.text.length > TEXT_MOST) {
+    unexpectPlan(asked.id);
+    return json({ error: "The message is too long." }, 413);
+  }
   const learned = yield* readLearned(yield* askiFolder);
   const context = withNames(
     {
@@ -135,6 +152,16 @@ const compileRoute = Effect.fn("AskiHttp.compile")(function* (times: {
     now,
   ).pipe(Effect.ignore);
   return json({ plan, ms: now - started });
+});
+
+const expectRoute = Effect.gen(function* () {
+  const request = yield* HttpServerRequest.HttpServerRequest;
+  const text = yield* boundedText(request, COMPILE_BODY_MOST);
+  if (Option.isNone(text)) return json({ error: "The message is too large." }, 413);
+  const body = yield* decodeExpect(text.value).pipe(Effect.option);
+  if (Option.isNone(body)) return json({ error: "Name the plan, the chat and the message." }, 400);
+  expectPlan({ ...body.value, at: yield* Clock.currentTimeMillis });
+  return json({ ok: true });
 });
 
 const planRoute = Effect.gen(function* () {
@@ -185,6 +212,7 @@ export const makeLayer = (
   HttpRouter.use((router) =>
     Effect.gen(function* () {
       const operate = UpstreamDisk.withOperateAccess;
+      yield* router.add("POST", `${ASKI_PATH}/expect`, operate(expectRoute));
       yield* router.add("POST", `${ASKI_PATH}/compile`, operate(compileRoute(times)));
       yield* router.add("GET", `${ASKI_PATH}/plan`, UpstreamDisk.withReadAccess(planRoute));
       yield* router.add("POST", `${ASKI_PATH}/outcome`, operate(outcomeRoute));

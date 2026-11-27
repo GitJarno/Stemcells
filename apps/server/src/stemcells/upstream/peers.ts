@@ -212,7 +212,7 @@ export const text = Effect.fn("Stemcells.peers.text")(function* (
   // A message the person wrote to Aski's chat that a plan was made from: Aski reads what came of it.
   const plan =
     message.senderThreadId === undefined
-      ? planForMessage(threadId, message.text, DateTime.toEpochMillis(yield* DateTime.now))
+      ? yield* Effect.promise(() => planForMessage(threadId, message.text, Date.now()))
       : null;
   const notes = [note, plan === null ? null : planNote(plan.plan)].filter((one) => one !== null);
   return notes.length === 0 ? words : `${notes.join("\n")}\n\nUser message:\n${words}`;
