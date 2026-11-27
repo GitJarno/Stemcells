@@ -227,10 +227,22 @@ describe("Aski's compile routes", () => {
             { i: 0, status: "started" },
             { i: 1, status: "started" },
           ],
-          learned: { places: [{ heard: "harbour design", name: "Harbor Design" }], models: [] },
+          learned: {
+            places: [
+              { heard: "harbour design", name: "Harbor Design" },
+              // A word that is no mishearing of the name is never kept, whoever sends it.
+              { heard: "fix", name: "Harbor Design" },
+            ],
+            models: [],
+          },
         }),
       );
       expect(told.status).toBe(200);
+      expect(
+        await (
+          await web.handler(send("/learned", undefined, AuthOrchestrationReadScope, "GET"))
+        ).json(),
+      ).toEqual({ places: [{ heard: "harbour design", name: "Harbor Design" }], models: [] });
       const kept = await reply(
         web.handler(send("/plan?id=plan-0001", undefined, AuthOrchestrationReadScope, "GET")),
       );

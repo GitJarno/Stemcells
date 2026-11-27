@@ -348,6 +348,19 @@ describe("the tier of a Cell", () => {
     expect(starts(p)[0]!.words).toBe("fix the header");
   });
 
+  it("drops a model read from a word that doesn't sound like it", () => {
+    const p = made(
+      plan("Harbor: fix the header", (n) => ({
+        acts: [
+          { kind: "start", pieces: [n("header")], place: "Harbor", placeHeard: "Harbor", model: "Fable 5.1", modelHeard: "header" },
+        ],
+        setup: [],
+        talk: [],
+      })),
+    );
+    expect([starts(p)[0]!.model, starts(p)[0]!.tier]).toEqual([null, "start"]);
+  });
+
   it("waits on a risky sentence, and lets the other Cells start", () => {
     const p = made(
       plan("In Harbor fix the header. In Atlas drop the staging database", (n) => ({
@@ -535,6 +548,16 @@ describe("a plan as a client carries it out", () => {
     expect(learnedOf(confirm(tray, 1)).places).toEqual([
       { heard: "harbour design", name: "Harbor Design" },
     ]);
+    // A word that only stood in the message teaches nothing: "fix" would then mean that project.
+    const odd = {
+      ...tray,
+      acts: tray.acts.map((one) =>
+        one.act.kind === "start" && one.act.place?.how === "near"
+          ? { ...one, act: { ...one.act, place: { ...one.act.place, heard: "fix" } } }
+          : one,
+      ),
+    };
+    expect(learnedOf(confirm(odd, 1)).places).toEqual([]);
     // A place they picked instead teaches nothing: the word wasn't that project.
     const picked = confirm(setPlace(tray, 1, { id: "p-atlas", name: "Atlas" }), 1);
     expect(learnedOf(picked)).toEqual({ places: [], models: [] });

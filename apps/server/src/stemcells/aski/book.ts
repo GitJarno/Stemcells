@@ -101,7 +101,9 @@ export function outcomeOf(id: string, ms: number): Promise<ReadonlyArray<ActOutc
       resolve(outcome);
     };
     const timer = setTimeout(() => {
-      waiting.set(id, (waiting.get(id) ?? []).filter((one) => one !== tell));
+      const left = (waiting.get(id) ?? []).filter((one) => one !== tell);
+      if (left.length === 0) waiting.delete(id);
+      else waiting.set(id, left);
       resolve(null);
     }, ms);
     waiting.set(id, [...(waiting.get(id) ?? []), tell]);

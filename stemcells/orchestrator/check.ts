@@ -3,6 +3,7 @@
 // person's own projects and models before it becomes a plan, and each act's tier is set by
 // what a mistake would cost, never by how sure the model sounds.
 
+import { HEARD, nearness } from "../recall/byEar.ts";
 import { riskFindings } from "../risk/floor.ts";
 import { clampEffort, findQuote, nameWords, said, saysExactly } from "./names.ts";
 import type { Piece } from "./pieces.ts";
@@ -243,6 +244,12 @@ export function planOf(input: PlanInput): PlanResult {
       saysExactly(act.modelHeard, entry.name, [...names(entry), entry.provider]) ||
       // "Fable 5" for Fable 5.1, "the fable model": the family is said.
       nameWords(act.modelHeard).includes(nameWords(entry.name)[0] ?? "");
+    // A misheard model ("table" for Fable) has to sound like it: any other word of the message
+    // names no model, and the Cell runs on its project's default.
+    const heardNear = [entry.name, ...names(entry)].some(
+      (name) => nearness(act.modelHeard!, name) >= HEARD,
+    );
+    if (!exact && !heardNear) return null;
     const level =
       act.effort !== undefined && effortSaid(act.effort) ? clampEffort(act.effort, entry.efforts) : null;
     return {

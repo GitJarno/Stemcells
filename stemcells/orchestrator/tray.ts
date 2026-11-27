@@ -3,7 +3,7 @@
 // and what came of each. Plain data and plain functions, shared by the Mac and the phone, so
 // both carry a plan out the same way. The client does the starting, with the person's access.
 
-import { said } from "./names.ts";
+import { mishearingOf, modelSaid, said } from "./names.ts";
 import type { Act, DestroyAct, ModelField, PlaceField, Plan, StartAct, Why } from "./plan.ts";
 
 /**
@@ -164,9 +164,20 @@ export function learnedOf(tray: Tray): {
     if (one.act.kind !== "start" || one.learned !== true) continue;
     if (one.status !== "starting" && one.status !== "started") continue;
     const { place, model } = one.act;
-    if (place !== null && place.how === "near" && place.heard !== null && said(place.heard) !== said(place.name))
+    if (
+      place !== null &&
+      place.how === "near" &&
+      place.heard !== null &&
+      said(place.heard) !== said(place.name) &&
+      mishearingOf(place.heard, [place.name])
+    )
       places.push({ heard: place.heard, name: place.name });
-    if (model !== null && model.how === "near" && said(model.heard) !== said(model.name))
+    if (
+      model !== null &&
+      model.how === "near" &&
+      said(model.heard) !== said(model.name) &&
+      mishearingOf(model.heard, modelSaid(model.name))
+    )
       models.push({ heard: model.heard, name: model.name });
   }
   return { places, models };

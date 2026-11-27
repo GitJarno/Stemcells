@@ -2,6 +2,8 @@
 // must be said as it is written, case, dashes and humps aside. Anything else was only heard
 // near, and waits for the person.
 
+import { nearness } from "../recall/byEar.ts";
+
 /**
  * A name's words: camel humps split, a [bracket note] removed, a possessive shed, dashes and
  * underscores as spaces. "PriceDrop" and "price-drop's" are both "price drop".
@@ -99,3 +101,16 @@ export function clampEffort(level: string, efforts: readonly string[]): string |
   }
   return best;
 }
+
+/** The least nearness at which a heard word is learned as a name's other name. */
+const LEARNABLE = 0.6;
+
+/**
+ * Whether `heard` could be one of `names` misheard ("harbour" for Harbor). Only such a word is
+ * learned: one that merely stood in the message ("fix") would send every later message there.
+ */
+export const mishearingOf = (heard: string, names: readonly string[]): boolean =>
+  names.some((name) => nearness(heard, name) >= LEARNABLE);
+
+/** What a model is called aloud: its name, or its family alone ("Fable" for Fable 5.1). */
+export const modelSaid = (name: string): string[] => [name, nameWords(name)[0] ?? name];

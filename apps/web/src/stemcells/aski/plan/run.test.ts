@@ -6,8 +6,9 @@ import type {
   Plan,
   StartAct,
 } from "../../../../../../stemcells/orchestrator/plan.ts";
+import { trayOf } from "../../../../../../stemcells/orchestrator/tray.ts";
 import { createRunner, type RunnerHands } from "./run";
-import { beginPlan, clearPlans, planOf, planRead, subscribePlans } from "./store";
+import { adoptPlan, beginPlan, clearPlans, planOf, planRead, subscribePlans } from "./store";
 import { capOf } from "./settings";
 
 const cell = (i: number, over: Partial<StartAct> = {}): StartAct => ({
@@ -150,7 +151,8 @@ describe("carrying a plan out", () => {
     expect(calls.removed).toEqual([]);
     expect(calls.started).toEqual([]);
     expect(runner.waitingIn("env/aski")).toBeNull();
-    await runner.destroy("three", 0);
+    // Two holds landing together delete once.
+    await Promise.all([runner.destroy("three", 0), runner.destroy("three", 0)]);
     expect(calls.removed).toEqual(["atlas"]);
     expect(planOf("three")?.tray?.acts[0]?.status).toBe("done");
     runner.confirmAll("three");
@@ -159,6 +161,20 @@ describe("carrying a plan out", () => {
     // A second call deletes nothing again.
     await runner.destroy("three", 0);
     expect(calls.removed).toEqual(["atlas"]);
+    stop();
+  });
+
+  it("Enter starts what a message's own plan waits on, never a plan Aski proposed", async () => {
+    const { calls, runner, stop } = world();
+    const waiting = cell(0, { tier: "check", why: ["proposed"] });
+    adoptPlan("env/aski", trayOf(planWith("one", [waiting])), 1);
+    await settle();
+    expect(runner.waitingIn("env/aski")).toBeNull();
+    beginPlan("two", "env/aski", 2);
+    planRead("two", planWith("two", [cell(1, { tier: "check", why: ["place-near"] })]));
+    await settle();
+    expect(runner.waitingIn("env/aski")).toBe("two");
+    expect(calls.started).toEqual([]);
     stop();
   });
 

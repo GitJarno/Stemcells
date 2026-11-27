@@ -86,6 +86,8 @@ export function createRunner(hands: () => RunnerHands | null) {
   const leaving = new Map<string, ReturnType<typeof setTimeout>>();
   /** The project each act started in, as `plan/i`: one a plan made has no key until then. */
   const startedIn = new Map<string, string>();
+  /** Deletions being carried out, as `plan/i`: a second hold while one runs does nothing. */
+  const destroying = new Set<string>();
 
   const startOne = async (planId: string, act: StartAct) => {
     const use = hands();
@@ -199,11 +201,15 @@ export function createRunner(hands: () => RunnerHands | null) {
     confirmAll: (planId: string) => changePlan(planId, confirmAll),
     drop: (planId: string, i: number) => changePlan(planId, (tray) => drop(tray, i)),
     dropAll: (planId: string) => changePlan(planId, dropAll),
-    /** Whether any plan of `chat` has a Cell waiting that Enter could start. */
+    /**
+     * The plan of `chat` with a Cell waiting that Enter could start. Only a message's own plan:
+     * a proposed one holds words Aski wrote, and starts by a tap on its card.
+     */
     waitingIn: (chat: string): string | null =>
       readPlans().find(
         (plan) =>
           plan.chat === chat &&
+          plan.source === "message" &&
           plan.tray !== null &&
           !held(plan.tray) &&
           plan.tray.acts.some(
@@ -228,6 +234,9 @@ export function createRunner(hands: () => RunnerHands | null) {
       const one = planOf(planId)?.tray?.acts.find((each) => each.act.i === i);
       if (use === null || one === undefined || one.act.kind !== "destroy") return;
       if (one.status !== "waiting") return;
+      const key = `${planId}/${i}`;
+      if (destroying.has(key)) return;
+      destroying.add(key);
       const { act } = one;
       const placeId = act.place?.id ?? null;
       const result =
@@ -242,6 +251,7 @@ export function createRunner(hands: () => RunnerHands | null) {
                   ? []
                   : use.cellsIn(placeId),
             );
+      destroying.delete(key);
       if (!result.ok) return use.report("Nothing was deleted", result.error);
       changePlan(planId, (tray) => done(tray, i));
     },

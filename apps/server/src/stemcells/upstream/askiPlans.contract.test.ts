@@ -24,7 +24,7 @@ import { McpInvocationContext as InvocationContext } from "../../mcp/McpInvocati
 import * as McpToolAccess from "../../mcp/McpToolAccess.ts";
 import { clearBook, planOfId, settlePlan } from "../aski/book.ts";
 import { projectsOf } from "./planner.fixture.ts";
-import { agentsDeleteNothing } from "./askiTools.ts";
+import { guardStands } from "./askiTools.ts";
 import { registerPlanTools } from "./planTool.ts";
 
 const environmentId = EnvironmentId.make("environment:aski-plans");
@@ -32,10 +32,15 @@ const askis = ProviderInstanceId.make("aski");
 const codex = ProviderInstanceId.make("codex");
 
 // Upstream's own tools by name, standing in for them: the guard reads only the name and the caller.
-const stand = (name: string, parameters: Schema.Struct<never> = Schema.Struct({ action: Schema.optional(Schema.String) }) as never) =>
+const stand = (name: string) =>
   Tool.make(name, {
     description: "Stands in for upstream's tool of this name.",
-    parameters,
+    parameters: Schema.Struct({
+      action: Schema.optional(Schema.String),
+      projectId: Schema.optional(Schema.String),
+      scheduledTaskId: Schema.optional(Schema.String),
+      bindToCurrentThread: Schema.optional(Schema.Boolean),
+    }),
     success: Schema.Struct({ ran: Schema.Boolean }),
     failure: OrchestratorMcpFailure,
     failureMode: "return",
@@ -46,6 +51,8 @@ const Upstreams = Toolkit.make(
   stand("t3_project_delete"),
   stand("t3_thread_organize"),
   stand("t3_thread_list"),
+  stand("schedule_task"),
+  stand("t3_workflow"),
 );
 const ran = McpToolAccess.reads(() => Effect.succeed({ ran: true }));
 const upstreams = McpToolAccess.toLayer(Upstreams, {
@@ -53,6 +60,8 @@ const upstreams = McpToolAccess.toLayer(Upstreams, {
   t3_project_delete: ran,
   t3_thread_organize: ran,
   t3_thread_list: ran,
+  schedule_task: ran,
+  t3_workflow: ran,
 });
 
 const layerTest = Layer.mergeAll(
@@ -79,11 +88,12 @@ const client = McpSchema.McpServerClient.of({
 const from = (
   providerInstanceId: ProviderInstanceId,
   subagent = false,
+  threadId = `thread:${providerInstanceId}`,
 ): McpInvocationContext.McpInvocationScope => ({
   environmentId,
   requestNamespace: `session:${providerInstanceId}`,
   thread: {
-    threadId: ThreadId.make(`thread:${providerInstanceId}`),
+    threadId: ThreadId.make(threadId),
     providerSessionId: `session:${providerInstanceId}`,
     providerInstanceId,
     ...(subagent ? { subagent } : {}),
@@ -91,6 +101,23 @@ const from = (
   client: undefined,
   capabilities: new Set(["orchestration"]),
   issuedAt: 1,
+});
+
+/** The chats the guard can look up: each one's instance and the chat that started it. */
+const threadsOf = (
+  chats: Record<string, { readonly on: ProviderInstanceId; readonly parent: string | null }>,
+) => ({
+  getThreadShell: (id: ThreadId) =>
+    Effect.succeed(
+      chats[id] === undefined
+        ? null
+        : ({
+            id,
+            projectId: "askis-project",
+            providerInstanceId: chats[id].on,
+            lineage: { parentThreadId: chats[id].parent },
+          } as never),
+    ),
 });
 
 /** What tool `name` answers `caller`: its result, or the refusal's words. */
@@ -137,13 +164,69 @@ it.layer(layerTest)("Aski's chat and plans", (it) => {
   it.effect("lets no agent delete a project while Stemcells' server stands", () =>
     Effect.scoped(
       Effect.gen(function* () {
-        yield* agentsDeleteNothing;
+        yield* guardStands(threadsOf({ "thread:codex": { on: codex, parent: null } }));
         expect(yield* call(from(codex), "t3_project_delete")).toMatchObject({
           refused: expect.stringContaining("No Cell deletes a project"),
         });
         // A Cell still starts Cells and reads: only the deletion is the person's.
         expect(yield* call(from(codex), "t3_thread_launch")).toEqual({ ok: { ran: true } });
         expect(yield* call(from(codex), "t3_thread_list")).toEqual({ ok: { ran: true } });
+      }),
+    ),
+  );
+
+  it.effect("refuses a helper of Aski's what it refuses Aski, however far down and on any instance", () =>
+    Effect.scoped(
+      Effect.gen(function* () {
+        yield* guardStands(
+          threadsOf({
+            "thread:aski": { on: askis, parent: null },
+            helper: { on: codex, parent: "thread:aski" },
+            "helper's helper": { on: codex, parent: "helper" },
+            "thread:codex": { on: codex, parent: null },
+            "a Cell's helper": { on: codex, parent: "thread:codex" },
+          }),
+        );
+        for (const helper of ["helper", "helper's helper"]) {
+          expect(yield* call(from(codex, true, helper), "t3_thread_launch")).toMatchObject({
+            refused: expect.stringContaining("Aski's chat starts no Cell"),
+          });
+          expect(
+            yield* call(from(codex, true, helper), "t3_thread_organize", { action: "archive" }),
+          ).toHaveProperty("refused");
+        }
+        expect(yield* call(from(codex, true, "a Cell's helper"), "t3_thread_launch")).toEqual({
+          ok: { ran: true },
+        });
+      }),
+    ),
+  );
+
+  it.effect("lets Aski schedule a reminder to its own chat, and no other work", () =>
+    Effect.scoped(
+      Effect.gen(function* () {
+        yield* guardStands(threadsOf({ "thread:aski": { on: askis, parent: null } }));
+        const schedule = (input: Record<string, unknown>) => call(from(askis), "schedule_task", input);
+        expect(yield* schedule({})).toEqual({ ok: { ran: true } });
+        expect(yield* schedule({ projectId: "askis-project" })).toEqual({ ok: { ran: true } });
+        // A schedule in another project, or one that makes its own chat, is a Cell on a timer.
+        for (const input of [
+          { projectId: "harbor" },
+          { bindToCurrentThread: false },
+          { scheduledTaskId: "the person's own schedule" },
+        ]) {
+          expect(yield* schedule(input)).toMatchObject({
+            refused: expect.stringContaining("only a new reminder"),
+          });
+        }
+        expect(yield* call(from(codex), "schedule_task", { projectId: "harbor" })).toEqual({
+          ok: { ran: true },
+        });
+        // A workflow run starts agents; reading runs is Aski's to do.
+        expect(yield* call(from(askis), "t3_workflow", { action: "read" })).toEqual({
+          ok: { ran: true },
+        });
+        expect(yield* call(from(askis), "t3_workflow", { action: "start" })).toHaveProperty("refused");
       }),
     ),
   );

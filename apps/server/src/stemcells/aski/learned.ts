@@ -7,7 +7,7 @@ import * as FileSystem from "effect/FileSystem";
 import * as Path from "effect/Path";
 import * as Schema from "effect/Schema";
 
-import { said } from "../../../../../stemcells/orchestrator/names.ts";
+import { mishearingOf, modelSaid, said } from "../../../../../stemcells/orchestrator/names.ts";
 import type { CompileContext } from "../../../../../stemcells/orchestrator/plan.ts";
 
 const Heard = Schema.Struct({ heard: Schema.String, name: Schema.String });
@@ -60,9 +60,16 @@ export function withLearned(
 export const learn = Effect.fn("AskiLearned.learn")(function* (folder: string, more: Learned) {
   const fs = yield* FileSystem.FileSystem;
   const known = yield* readLearned(folder);
+  // A client's word for it isn't enough: only a mishearing of the name itself is kept.
   const next: Learned = {
-    places: withLearned(known.places, more.places),
-    models: withLearned(known.models, more.models),
+    places: withLearned(
+      known.places,
+      more.places.filter((one) => mishearingOf(one.heard, [one.name])),
+    ),
+    models: withLearned(
+      known.models,
+      more.models.filter((one) => mishearingOf(one.heard, modelSaid(one.name))),
+    ),
   };
   yield* fs.makeDirectory(folder, { recursive: true });
   yield* fs.writeFileString(yield* fileIn(folder), yield* encode(next));
