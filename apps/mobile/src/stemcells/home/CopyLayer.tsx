@@ -1,7 +1,7 @@
-// The copies of Aski in flight (`copies.ts`): each buds off Aski at half its height, flies along
-// a bow to its Cell's card, shrinking to the Cell's size, and fades as the Cell's glyphs start. A
-// layer over the window that no touch meets, so a copy from Aski's chat crosses to the home beside
-// it; there only while one flies.
+// What flies over the home: Aski's copies (`copies.ts`), budding off Aski and shrinking along a bow
+// to their Cells' cards, and slept or woken Cells on their way to their stage (`Hop.tsx`). A layer
+// over the window that no touch meets, so a copy from Aski's chat crosses to the home beside it;
+// there only while one flies.
 
 import { useEffect, useRef, useState } from "react";
 import { Platform, StyleSheet, View, type ViewInstance } from "react-native";
@@ -19,6 +19,9 @@ import { AskiFigure } from "../aski/AskiFigure";
 import { VIEW } from "../aski/drawing";
 import { clockSeconds } from "../cell/kit";
 import { copyLanded, type Flight, useCopies } from "./copies";
+import { alongBow } from "./flight";
+import { HopFlight } from "./Hop";
+import { type Hop, useHops } from "./hops";
 
 /** A copy's own height, points; it is scaled from there. */
 const HEIGHT = 48;
@@ -53,13 +56,13 @@ function Copy(props: { readonly flight: Flight; readonly origin: { x: number; y:
   const bow = Math.hypot(to.x - from.x, to.y - from.y) * BOW;
   const style = useAnimatedStyle(() => {
     const p = progress.get();
-    const height = from.height + (to.height - from.height) * p;
+    const at = alongBow(from, to, bow, p);
     return {
       opacity: p < 0.8 ? 1 : (1 - p) / 0.2,
       transform: [
-        { translateX: from.x + (to.x - from.x) * p - WIDTH / 2 },
-        { translateY: from.y + (to.y - from.y) * p - bow * Math.sin(Math.PI * p) - HEIGHT / 2 },
-        { scale: height / HEIGHT },
+        { translateX: at.x - WIDTH / 2 },
+        { translateY: at.y - HEIGHT / 2 },
+        { scale: at.height / HEIGHT },
       ],
     };
   });
@@ -73,18 +76,18 @@ function Copy(props: { readonly flight: Flight; readonly origin: { x: number; y:
 /** `shown` while the home is on screen: a copy still in flight as a chat covers it flies on unseen. */
 export function CopyLayer(props: { readonly shown: boolean }) {
   const copies = useCopies();
-  if (copies.length === 0) return null;
+  const hops = useHops();
+  if (copies.length === 0 && hops.length === 0) return null;
+  const flying = <Flying copies={copies} hops={hops} shown={props.shown} />;
   // iOS: over both columns and the bars, where the window's points are the layer's own.
-  return Platform.OS === "ios" ? (
-    <FullWindowOverlay>
-      <Copies copies={copies} shown={props.shown} />
-    </FullWindowOverlay>
-  ) : (
-    <Copies copies={copies} shown={props.shown} />
-  );
+  return Platform.OS === "ios" ? <FullWindowOverlay>{flying}</FullWindowOverlay> : flying;
 }
 
-function Copies(props: { readonly copies: readonly Flight[]; readonly shown: boolean }) {
+function Flying(props: {
+  readonly copies: readonly Flight[];
+  readonly hops: readonly Hop[];
+  readonly shown: boolean;
+}) {
   const layer = useRef<ViewInstance>(null);
   const [origin, setOrigin] = useState({ x: 0, y: 0 });
   return (
@@ -96,6 +99,9 @@ function Copies(props: { readonly copies: readonly Flight[]; readonly shown: boo
     >
       {props.copies.map((flight) => (
         <Copy key={flight.threadId} flight={flight} origin={origin} />
+      ))}
+      {props.hops.map((hop) => (
+        <HopFlight key={hop.key} hop={hop} origin={origin} />
       ))}
     </View>
   );
