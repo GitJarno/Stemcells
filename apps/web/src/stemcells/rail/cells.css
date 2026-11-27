@@ -652,3 +652,8 @@ a[data-better-item]:focus-visible > svg {
   pointer-events: none;
   will-change: transform;
 }
+/* A leaping Cell's open eyes over its shut ones (Hops.tsx), until its top. */
+[data-cells-hop-awake] {
+  position: absolute;
+  inset: 0;
+}

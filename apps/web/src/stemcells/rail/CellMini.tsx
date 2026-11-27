@@ -13,7 +13,13 @@ import { useCellDriver } from "../upstream/providers";
  * It wears what its tab deals it while a tab shows it, else what it is dealt
  * alone, as everywhere else.
  */
-export function CellMini(props: { environmentId: string; threadId: string; points?: number }) {
+export function CellMini(props: {
+  environmentId: string;
+  threadId: string;
+  points?: number;
+  /** A scene's telling frame in place of its rest (`CellStill`): `asleep`, its eyes shut. */
+  scene?: string;
+}) {
   const cell = { environmentId: props.environmentId, threadId: props.threadId, draftId: null };
   const provider = useCellDriver(cell);
   const ground = useCellGround();
@@ -27,6 +33,7 @@ export function CellMini(props: { environmentId: string; threadId: string; point
       provider={provider}
       points={props.points ?? 1}
       ground={ground}
+      scene={props.scene}
     />
   );
 }

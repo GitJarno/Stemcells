@@ -1,7 +1,14 @@
 import { useEffectEvent, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { cssEasing, LIST_MOTION } from "../motion/listMotion";
+import {
+  catchAt,
+  catchLength,
+  cssEasing,
+  leapFrames,
+  leapOf,
+  LIST_MOTION,
+} from "../motion/listMotion";
 import { takeMovedByHand } from "../needs/byHand";
 import { motionTiming, reducedMotion } from "../tokens/motion";
 import { CellMini } from "./CellMini";
@@ -11,6 +18,10 @@ import { hopsOf, type Hop, type Standings } from "./moves";
 const STAGGER_MS = 70;
 /** How far above the higher end a hop's arc rises. */
 const RISE_PX = 22;
+/** A leaping Cell lands this small in Asleep's count, of its own height. */
+const LANDING = 0.8;
+/** How far Asleep's row gives under the Cell it catches. */
+const GIVE_PX = 2.5;
 
 interface Flight {
   readonly key: string;
@@ -47,10 +58,9 @@ const landingOf = (hop: Hop) => inColumn(`[data-cells-stage="${hop.to}"] [data-c
 let flown = 0;
 
 /**
- * Each Cell the person moved along the line hops there (stemcells/tasks/left-column-v3.md,
- * decision 6): from its row, or its old stage's mark, into its new stage's count, on the lists'
- * move (`motion/listMotion.ts`), as its row leaves, and the stage catches it. One arc each, then nothing runs; with less motion, or a move the
- * person didn't make, the counts just change.
+ * Each Cell the person moved hops from its row into its new stage's count (left-column-v3.md,
+ * decision 6): a woken one on the lists' move, a slept one in a leap (`leapOf`). One each, then
+ * nothing runs; with less motion, or a move the person didn't make, the counts just change.
  */
 export function Hops(props: { standings: Standings; environmentId: string | null }) {
   const before = useRef<Standings | null>(null);
@@ -83,7 +93,13 @@ export function Hops(props: { standings: Standings; environmentId: string | null
         },
       ];
     });
-    if (launched.length > 0) setFlights((current) => [...current, ...launched]);
+    // A Cell moved again mid-air (a Wake, an undo) leaves its old flight where it is.
+    const moved = new Set(launched.map((flight) => flight.threadId));
+    if (launched.length > 0)
+      setFlights((current) => [
+        ...current.filter((flight) => !moved.has(flight.threadId)),
+        ...launched,
+      ]);
   }, [standings]);
 
   if (environmentId === null || flights.length === 0) return null;
@@ -103,33 +119,20 @@ export function Hops(props: { standings: Standings; environmentId: string | null
 function HopFlight(props: { flight: Flight; environmentId: string; onLanded: () => void }) {
   const { flight } = props;
   const element = useRef<HTMLSpanElement>(null);
+  const awake = useRef<HTMLSpanElement>(null);
   const landed = useEffectEvent(props.onLanded);
+  const sleeps = flight.toStage === "asleep";
 
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Run the hop animation from measured rects, hiding its landing place until it lands; cancel on unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Run the hop animation from measured rects; cancel on unmount.
   useLayoutEffect(() => {
     const sprite = element.current;
     if (sprite === null) return;
     const box = sprite.getBoundingClientRect();
-    const x0 = flight.from.x - box.width / 2;
-    const y0 = flight.from.y - box.height / 2;
-    const x1 = flight.to.x - box.width / 2;
-    const y1 = flight.to.y - box.height / 2;
-    const peak = Math.min(y0, y1) - RISE_PX;
-    const at = (x: number, y: number, scale = 1) => ({
-      transform: `translate(${x}px, ${y}px) scale(${scale})`,
-    });
-    const { duration, easing } = LIST_MOTION.move;
-    const hop = sprite.animate(
-      [
-        { ...at(x0, y0), opacity: 0 },
-        { ...at(x0, y0), opacity: 1, offset: 0.1 },
-        { ...at((x0 + x1) / 2, peak, 1.15), offset: 0.5 },
-        at(x1, y1),
-      ],
-      { duration, delay: flight.delay, easing: cssEasing(easing), fill: "both" },
-    );
+    const hop = sleeps
+      ? leapAnimation(sprite, awake.current, box, flight)
+      : [flyAnimation(sprite, box, flight)];
     let live = true;
-    void hop.finished.then(
+    void hop[0]!.finished.then(
       () => {
         if (!live) return;
         catchIt(flight.toStage);
@@ -139,23 +142,112 @@ function HopFlight(props: { flight: Flight; environmentId: string; onLanded: () 
     );
     return () => {
       live = false;
-      hop.cancel();
+      for (const each of hop) each.cancel();
     };
-  }, [flight]);
+  }, [flight, sleeps]);
 
   return (
     <span ref={element} data-cells-hop="" aria-hidden>
-      <CellMini environmentId={props.environmentId} threadId={flight.threadId} />
+      {sleeps ? (
+        <>
+          <CellMini environmentId={props.environmentId} threadId={flight.threadId} scene="asleep" />
+          <span ref={awake} data-cells-hop-awake="">
+            <CellMini environmentId={props.environmentId} threadId={flight.threadId} />
+          </span>
+        </>
+      ) : (
+        <CellMini environmentId={props.environmentId} threadId={flight.threadId} />
+      )}
     </span>
   );
 }
 
-/** The stage catches the Cell, once: its mark nods, the row glows, the count ticks up. */
+/** A woken Cell's flight: a low arc on the lists' move. */
+function flyAnimation(sprite: HTMLElement, box: DOMRect, flight: Flight): Animation {
+  const x0 = flight.from.x - box.width / 2;
+  const y0 = flight.from.y - box.height / 2;
+  const x1 = flight.to.x - box.width / 2;
+  const y1 = flight.to.y - box.height / 2;
+  const peak = Math.min(y0, y1) - RISE_PX;
+  const at = (x: number, y: number, scale = 1) => ({
+    transform: `translate(${x}px, ${y}px) scale(${scale})`,
+  });
+  const { duration, easing } = LIST_MOTION.move;
+  return sprite.animate(
+    [
+      { ...at(x0, y0), opacity: 0 },
+      { ...at(x0, y0), opacity: 1, offset: 0.1 },
+      { ...at((x0 + x1) / 2, peak, 1.15), offset: 0.5 },
+      at(x1, y1),
+    ],
+    { duration, delay: flight.delay, easing: cssEasing(easing), fill: "both" },
+  );
+}
+
+/**
+ * A slept Cell's leap, its poses as keyframes run linearly (they carry its gravity), and its
+ * open eyes over its shut ones until just past its top. It shows itself during its crouch,
+ * where its row has already folded away.
+ */
+function leapAnimation(
+  sprite: HTMLElement,
+  open: HTMLElement | null,
+  box: DOMRect,
+  flight: Flight,
+): Animation[] {
+  const leap = leapOf(
+    { ...flight.from, height: box.height },
+    { ...flight.to, height: box.height * LANDING },
+  );
+  const { step, poses } = leapFrames(leap);
+  const timing = {
+    duration: leap.total,
+    delay: flight.delay,
+    easing: "linear",
+    fill: "both",
+  } as const;
+  const hop = sprite.animate(
+    poses.map((pose, k) => ({
+      transform: `translate(${pose.x - box.width / 2}px, ${pose.y - box.height / 2}px) rotate(${pose.rotate}deg) scale(${pose.scaleX}, ${pose.scaleY})`,
+      opacity: pose.opacity * Math.min(1, (2 * k * step) / leap.launch),
+    })),
+    timing,
+  );
+  const shut = leap.eyes / leap.total;
+  const eyes = open?.animate(
+    [{ opacity: 1 }, { opacity: 1, offset: shut }, { opacity: 0, offset: shut }, { opacity: 0 }],
+    timing,
+  );
+  return eyes === undefined ? [hop] : [hop, eyes];
+}
+
+/**
+ * The stage catches the Cell, once, and its count ticks up. Asleep gives under it and rebounds,
+ * like a hammock (`catchAt`), a second catch adding to one under way; Awake's mark nods and its
+ * row glows.
+ */
 function catchIt(stage: Hop["to"]) {
   const row = inColumn(`[data-cells-stage="${stage}"]`);
   if (row === null) return;
   const { duration, easing } = motionTiming("settle");
   const once = { duration, easing };
+  row
+    .querySelector("[data-cells-stage-count]")
+    ?.animate(
+      [{ transform: "scale(1)" }, { transform: "scale(1.35)" }, { transform: "scale(1)" }],
+      once,
+    );
+  if (stage === "asleep") {
+    const length = catchLength();
+    const n = Math.ceil(length / (1000 / 60));
+    row.animate(
+      Array.from({ length: n + 1 }, (_, k) => ({
+        translate: `0 ${GIVE_PX * catchAt((length * k) / n)}px`,
+      })),
+      { duration: length, composite: "add" },
+    );
+    return;
+  }
   row
     .querySelector("[data-cells-stage-mark]")
     ?.animate(
@@ -164,12 +256,6 @@ function catchIt(stage: Hop["to"]) {
         { transform: "scale(1.5) translateY(-1px)" },
         { transform: "scale(1)" },
       ],
-      once,
-    );
-  row
-    .querySelector("[data-cells-stage-count]")
-    ?.animate(
-      [{ transform: "scale(1)" }, { transform: "scale(1.35)" }, { transform: "scale(1)" }],
       once,
     );
   row.animate(

@@ -43,6 +43,9 @@ export {
 export {
   type Bezier,
   enteredRows,
+  leapFrames,
+  leapOf,
+  type LeapPose,
   LIST_MOTION,
   type ListReading,
 } from "../../../../web/src/stemcells/motion/listMotion.ts";

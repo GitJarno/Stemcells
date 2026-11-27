@@ -316,6 +316,10 @@
   --sc-motion-land-damping: 1;
   --sc-motion-nudge-response: 0.16;
   --sc-motion-nudge-damping: 1;
+  /* Asleep catching a Cell that leaps to sleep (listMotion.ts, `catch`):
+     a soft spring, so the count rebounds once past its place, like a hammock. */
+  --sc-motion-catch-response: 0.36;
+  --sc-motion-catch-damping: 0.5;
   --sc-motion-light-duration: 3200ms;
   --sc-motion-light-easing: cubic-bezier(0.3, 0.1, 0.7, 0.9);
   --sc-motion-reflow-duration: 0ms;

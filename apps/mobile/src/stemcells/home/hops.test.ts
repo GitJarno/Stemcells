@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vite-plus/test";
 
 import type { EnvironmentThreadShell } from "../upstream/cells";
-import { alongBow, segmentOf } from "./flight";
+import { alongBow, poseAt, segmentOf } from "./flight";
 import {
   arrivalDone,
   arrive,
@@ -46,6 +46,14 @@ describe("a Cell moved by hand", () => {
     hopLanded("env:waffle");
     expect(hopOf("env:waffle")).toBeUndefined();
     expect(bumpNow()?.stage).toBe("asleep");
+  });
+
+  it("starts a new flight when moved again mid-air, not the old one's end", () => {
+    departs("env:pancake", thread, "awake", figure);
+    const leaping = hopOf("env:pancake")!.id;
+    departs("env:pancake", thread, "asleep", figure);
+    expect(hopOf("env:pancake")?.id).not.toBe(leaping);
+    hopFaded("env:pancake");
   });
 
   it("moves when woken, though its machine hasn't listed it awake yet", () => {
@@ -119,6 +127,15 @@ describe("a flight's way", () => {
     expect(alongBow(from, to, 40, 0)).toEqual(from);
     expect(alongBow(from, to, 40, 1)).toMatchObject({ x: 200, height: 13 });
     expect(alongBow(from, to, 40, 0.5)).toEqual({ x: 100, y: 260, height: 20.5 });
+  });
+
+  it("leaps between its poses, landing on the last", () => {
+    const pose = (x: number) => ({ x, y: x, scaleX: 1, scaleY: 1, rotate: 0, opacity: 1 });
+    const frames = { step: 10, poses: [pose(0), pose(4), pose(10)] };
+    expect(poseAt(frames, -5).x).toBe(0);
+    expect(poseAt(frames, 15).x).toBe(7);
+    expect(poseAt(frames, 20).x).toBe(10);
+    expect(poseAt(frames, 25).x).toBe(10);
   });
 
   it("finds a segment inside the control's track, the segments equal", () => {
