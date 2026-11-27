@@ -149,6 +149,22 @@ it.layer(NodeServices.layer)("moving a folder to another drive", (it) => {
       }),
   );
 
+  it.effect(
+    "won't start on a drive whose top this account can't write to, and says how to fix it",
+    () =>
+      Effect.gen(function* () {
+        const lab = setup();
+        NodeFS.chmodSync(lab.mount, 0o555);
+        const error = yield* Effect.gen(function* () {
+          const { service } = yield* lab.make;
+          return yield* Effect.flip(service.moveAway({ kind: "simulators", driveId: drive.id }));
+        }).pipe(Effect.ensuring(Effect.sync(() => NodeFS.chmodSync(lab.mount, 0o755))));
+        expect(error.reason).toContain("give yourself Read & Write");
+        expect(NodeFS.lstatSync(lab.devices).isDirectory()).toBe(true);
+        expect(NodeFS.existsSync(lab.onDrive)).toBe(false);
+      }),
+  );
+
   it.effect("undoes a switch the simulators don't open from, before the original goes", () =>
     Effect.gen(function* () {
       const lab = setup({ answers: false });

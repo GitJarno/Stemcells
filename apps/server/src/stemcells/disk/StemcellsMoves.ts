@@ -180,6 +180,20 @@ export const makeMoves = Effect.fn("StemcellsMoves.make")(function* (options: {
 
   const exists = (path: string) => fs.exists(path).pipe(Effect.orElseSucceed(() => true));
 
+  /** Whether the deepest folder that exists on the way from `mount` to `dir` lets this account write. */
+  const canWriteToward = Effect.fn("StemcellsMoves.canWriteToward")(function* (
+    mount: string,
+    dir: string,
+  ) {
+    let at = dir;
+    while (at.length > mount.length && !(yield* isFolder(at)))
+      at = at.slice(0, at.lastIndexOf("/"));
+    return yield* fs.access(at, { writable: true }).pipe(
+      Effect.as(true),
+      Effect.orElseSucceed(() => false),
+    );
+  });
+
   const recordOf = (kind: MovableKind) => records.find((each) => each.kind === kind);
 
   /** For simulators, the service is restarted and must list the devices it listed before. */
@@ -406,6 +420,11 @@ export const makeMoves = Effect.fn("StemcellsMoves.make")(function* (options: {
     const target = `${place.mount}/${driveRelative(machine, MOVERS[kind]!.path)}`;
     if (yield* exists(target)) {
       return yield* fail(`${place.drive.name} already holds a moved copy. Remove it there first.`);
+    }
+    if (!(yield* canWriteToward(place.mount, `${place.mount}/Stemcells/${machine}`))) {
+      return yield* fail(
+        `This Mac's account can't write at the top of ${place.drive.name}: it belongs to another user. In Finder, choose the drive, File › Get Info, click the lock, and under Sharing & Permissions give yourself Read & Write. Then try again.`,
+      );
     }
     const reason = yield* busy(kind);
     if (reason !== null) return yield* fail(reason);
