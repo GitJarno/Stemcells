@@ -118,15 +118,25 @@ export function useFootRoom(): number {
 /** What the stages' pill takes of the home's foot (`StagePill.tsx`): its 36 points and a gap. */
 export const PILL_ROOM = 36 + 8;
 
+/**
+ * The pill's foot as the keyboard moves: from `rest` to `above` over the keyboard's top, never
+ * under its rest, in step with the keyboard's `progress` as T3's composer moves
+ * (`KeyboardStickyView`). `keyboard` is the keyboard's height now.
+ */
+export function pillBottom(rest: number, above: number, keyboard: number, progress: number) {
+  "worklet";
+  return rest + Math.max(0, keyboard + progress * (above - rest));
+}
+
 const lifts = new Map<object, number>();
 let lift = 0;
 const liftListeners = new Set<() => void>();
 const tellLift = () => {
-  lift = Math.max(0, ...lifts.values());
+  lift = lifts.size === 0 ? 0 : Math.max(...lifts.values());
   for (const listener of liftListeners) listener();
 };
 
-/** The stages' pill stands where T3's notice would, so the notice stands `by` higher. */
+/** The stages' pill stands where T3's notice would, so the notice stands `by` higher (or lower). */
 export function liftNotices(by: number): () => void {
   const key = {};
   lifts.set(key, by);
