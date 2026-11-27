@@ -81,6 +81,9 @@ const SUBSTITUTES = {
   "apps/mobile/src/components/ui/Dialog.tsx": "Dialog.tsx",
   // A picture tapped in a chat pages through every picture in the chat, not its message's alone.
   "apps/mobile/src/components/ui/FilePreviewGallery.tsx": "FilePreviewGallery.tsx",
+  // A Share of a host file shows its download, with a Cancel, and an unchanged file isn't
+  // downloaded twice (`share/downloads.ts`).
+  "apps/mobile/src/lib/attachmentDownload.ts": "attachmentDownload.ts",
 };
 
 /** Package upstream's code imports, by name, to its substitute in this folder. */

@@ -207,6 +207,7 @@ export async function downloadAttachmentForPreview(input: {
   readonly url: string;
   readonly attachment: AttachmentFileMetadata;
   readonly signal: AbortSignal;
+  readonly onProgress?: (progress: { bytesWritten: number; totalBytes: number }) => void;
 }): Promise<AttachmentPreviewFile | null> {
   if (input.signal.aborted) return null;
   const { File } = await import("expo-file-system");
@@ -216,7 +217,10 @@ export async function downloadAttachmentForPreview(input: {
       cached.preview.dispose();
       return null;
     }
-    await File.downloadFileAsync(input.url, cached.file, { signal: input.signal });
+    await File.downloadFileAsync(input.url, cached.file, {
+      signal: input.signal,
+      ...(input.onProgress ? { onProgress: input.onProgress } : {}),
+    });
     if (input.signal.aborted) {
       cached.preview.dispose();
       return null;

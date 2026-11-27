@@ -19,6 +19,7 @@ import * as Schema from "effect/Schema";
 import { Atom, AsyncResult } from "effect/reactivity";
 
 import { environmentCatalog } from "../connection/catalog";
+import { minted } from "../stemcells/share/mints";
 import { connectionAtomRuntime } from "../connection/runtime";
 import { projectFaviconDatabaseCache } from "../lib/projectFaviconDatabaseCache";
 import { type AssetUrlState, deriveAssetUrlState } from "./asset-url-state";
@@ -112,7 +113,7 @@ export function useRefreshAssetUrl(
       await createUrl({ environmentId, input: { resource } }),
       httpBaseUrl,
     );
-    return state._tag === "Success" ? state.url : null;
+    return state._tag === "Success" ? minted(environmentId, resource, state) : null;
   };
 }
 
@@ -139,7 +140,7 @@ export async function refreshAssetUrl(
   const connection = appAtomRegistry.get(connectionAtom);
   if (connection._tag === "None") return null;
   const state = assetUrlStateFromResult(result, connection.value.httpBaseUrl);
-  return state._tag === "Success" ? state.url : null;
+  return state._tag === "Success" ? minted(environmentId, resource, state) : null;
 }
 
 export interface AuthorizedAssetUrl {
