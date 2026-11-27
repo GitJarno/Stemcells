@@ -1,7 +1,7 @@
 // The Cells' line, its asks and the ask a Cell's chat docks: the web's own plain TypeScript,
 // imported here and nowhere else, as the creature is (`cell/kit.ts`). Cards, commands, stages and
-// their words, Awake's order and light, settles by hand, how rows move and the sky are the Mac's,
-// so the two never disagree.
+// their words, Awake's order and light, Input's queue and loop, settles by hand, how rows move and
+// the sky are the Mac's, so the two never disagree.
 
 export {
   type CellStanding,
@@ -58,7 +58,6 @@ export {
   SKY_SHAPE,
   SKY_SPANS,
   SKY_TURN,
-  skyAtStage,
   skyStops,
   skyTurn,
   type SkyPalette,
@@ -72,3 +71,23 @@ export {
   STATUS_WORDS,
   wakesWords,
 } from "../../../../../stemcells/words/awake.ts";
+export {
+  byWaiting,
+  type Cleared,
+  entered,
+  inputOf,
+  left,
+  LOOP_AT_REST,
+  type Loop,
+  opened,
+  read,
+  unfollowed,
+  waitingSince,
+} from "../../../../web/src/stemcells/inbox/loop.ts";
+export {
+  publishInbox,
+  readInboxSky,
+  skyOver,
+  useInboxSky,
+} from "../../../../web/src/stemcells/inbox/sky.ts";
+export { clearedWords, factAfter, STEM_CELL_FACTS } from "../../../../../stemcells/words/inbox.ts";

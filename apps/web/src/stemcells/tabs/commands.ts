@@ -9,6 +9,7 @@ import type { CellRef } from "./layout";
 let newCellTab: (() => void) | null = null;
 let newCellPane: ((scope: NewCellScope | null) => void) | null = null;
 let cellBeside: ((cell: CellRef) => void) | null = null;
+let cellHere: ((cell: CellRef) => void) | null = null;
 let cellPlaces: CellPlaces | null = null;
 
 /** The strip's +: a new tab with a new Cell in it. */
@@ -46,6 +47,21 @@ export function provideCellBeside(run: (cell: CellRef) => void): () => void {
 export function openCellBeside(cell: CellRef): boolean {
   if (!cellBeside) return false;
   cellBeside(cell);
+  return true;
+}
+
+/** Input's next ask (`inbox/useInbox.ts`): the chat in the focused pane, in place of its chat. */
+export function provideCellHere(run: (cell: CellRef) => void): () => void {
+  cellHere = run;
+  return () => {
+    if (cellHere === run) cellHere = null;
+  };
+}
+
+/** Opens a chat in the focused pane; false while no workspace is mounted. */
+export function openCellHere(cell: CellRef): boolean {
+  if (!cellHere) return false;
+  cellHere(cell);
   return true;
 }
 

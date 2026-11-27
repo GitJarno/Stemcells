@@ -32,6 +32,9 @@ export const HomeTabsContext = createContext<HomeTabs | null>(null);
  */
 export const HomeStageContext = createContext<string | null>(null);
 
+/** Whether a stage's rows are Awake's: Input's are too, a lens over it (stemcells/tasks/inbox.md). */
+export const awakeRows = (stage: string | null): boolean => stage === "awake" || stage === "needs";
+
 /** Each awake Cell's state on the line, by `environmentId:id`, for its row's light and time. */
 export const CellStates = createContext<ReadonlyMap<string, CellState>>(new Map());
 

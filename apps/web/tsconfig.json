@@ -80,6 +80,7 @@
     "../../stemcells/words/copyCell.ts",
     "../../stemcells/words/disk.ts",
     "../../stemcells/words/feats.ts",
+    "../../stemcells/words/inbox.ts",
     "../../stemcells/words/marks.ts",
     "../../stemcells/words/prose.ts",
     "../../stemcells/words/subcells.ts"

@@ -1,14 +1,14 @@
-// The home's stages in their own order over T3's list (`substitutes/useThreadListV2.ts`,
-// stemcells/tasks/awake-asleep.md). Awake reads in time order: pins first in T3's order, then by
-// the time each row shows, latest first. Asleep lists the latest asleep first, and a timed sleep
-// says when it wakes. The stage is the shelf, so T3's shelf rows go.
+// The home's stages in their own order over T3's list (`substitutes/useThreadListV2.ts`): Input
+// as the Mac's, the longest waiting first (stemcells/tasks/inbox.md); Awake pins first, then by
+// the time each row shows, latest first (awake-asleep.md); Asleep the latest asleep first, a timed
+// sleep saying when it wakes. The stage is the shelf, so T3's shelf rows go.
 
 import { snoozeWakeLabel } from "@t3tools/client-runtime/state/thread-settled";
 import { resolveSettledThreadTimestamp } from "@t3tools/client-runtime/state/thread-sort";
 import type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/shell";
 
 import type { ThreadListV2ListItem } from "../../features/threads/threadListV2";
-import { byRecent, type Launchable, wakesWords } from "../line/kit";
+import { byRecent, inputOf, type Launchable, wakesWords } from "../line/kit";
 import { cellKey, type CellState } from "../line/line";
 
 type ThreadItem = Extract<ThreadListV2ListItem, { readonly type: "v2-thread" }>;
@@ -27,6 +27,16 @@ function launchableOf(item: ThreadItem): Launchable & { readonly item: ThreadIte
     latestRun: requestedAt === null ? null : { requestedAt },
     item,
   };
+}
+
+/** Input as the line holds it (`inputOf`); pins and new chats have no place. */
+export function inInputOrder(
+  items: ReadonlyArray<ThreadListV2ListItem>,
+  states: ReadonlyMap<string, CellState>,
+): ThreadListV2ListItem[] {
+  const asked = new Map<string, string>();
+  for (const [key, state] of states) if (state.asked !== null) asked.set(key, state.asked);
+  return inputOf(items.filter(isThread), (item) => cellKey(item.item.thread), asked);
 }
 
 /** Awake: new chats on their way, the pins in T3's order, then by the time each row shows. */

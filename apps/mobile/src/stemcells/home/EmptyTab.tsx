@@ -1,5 +1,6 @@
-// A page of the home that isn't T3's list: a stage with no Cells in it (`line/LineHome.tsx`). Its
-// top rests where T3's list's does on iOS, under its stage's top (`StagePill.tsx`).
+// A page of the home that isn't T3's list: a stage with no Cells in it (`line/LineHome.tsx`), and
+// on Input after a clearing, a short fact under its line. Its top rests where T3's list's does on
+// iOS, under its stage's top (`StagePill.tsx`).
 
 import type { ReactNode } from "react";
 import { View } from "react-native";
@@ -37,10 +38,15 @@ function HomePage(props: { readonly children: ReactNode }) {
   );
 }
 
-export function EmptyTab(props: { readonly words: string }) {
+export function EmptyTab(props: { readonly words: string; readonly fact?: string }) {
   return (
     <HomePage>
       <AppText className="mt-8 text-center text-base text-foreground-muted">{props.words}</AppText>
+      {props.fact === undefined ? null : (
+        <AppText className="mx-8 mt-3 text-center text-sm text-foreground-muted">
+          {props.fact}
+        </AppText>
+      )}
     </HomePage>
   );
 }

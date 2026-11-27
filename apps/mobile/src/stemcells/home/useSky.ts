@@ -22,7 +22,7 @@ function fall(to: number, reduced: boolean, rise: boolean) {
 }
 
 /**
- * Turns the sky to `to` (`SKY_AT`, or a stage's by `skyAtStage`). The first home to show takes it
+ * Turns the sky to `to` (`SKY_AT`, or a stage's by `skyOver`). The first home to show takes it
  * as it stands, unanimated.
  */
 export function turnSky(to: number, reduced: boolean, rise = false) {

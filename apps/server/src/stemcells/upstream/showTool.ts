@@ -28,7 +28,7 @@ const ShowTool = Tool.make(SHOW_TOOL, {
         description: "A place as Settings names it, such as `Settings › Providers › Codex`.",
       }),
     ),
-    stage: Schema.optionalKey(Schema.Literals(["Awake", "Asleep"])),
+    stage: Schema.optionalKey(Schema.Literals(["Input", "Awake", "Asleep"])),
   }),
   success: Schema.Struct({ shown: Schema.String }),
   failure: OrchestratorMcpFailure,

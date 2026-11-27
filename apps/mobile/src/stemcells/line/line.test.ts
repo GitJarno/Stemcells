@@ -77,10 +77,12 @@ describe("the phone's home on the Cells' line", () => {
     expect(line.states.get("mac:asking")).toEqual({
       stage: "needs-you",
       since: "2026-10-27T11:50:00.000Z",
+      asked: "2026-10-27T11:50:00.000Z",
     });
     expect(line.states.get("mac:busy")).toEqual({
       stage: "working",
       since: "2026-10-27T11:00:00.000Z",
+      asked: null,
     });
   });
 
@@ -138,21 +140,72 @@ describe("the phone's home on the Cells' line", () => {
     expect(chatAskIn({ state: "none" }, "mac", "a", new Set())).toBeNull();
   });
 
-  it("counts the Cells in view, and every ask whatever the pickers show", () => {
+  it("counts the Cells in view, Input those that ask, and every ask whatever the pickers show", () => {
     const readings = new Map([
       [
         "mac",
         read(
           [need("a", NOW, "shop"), need("b", NOW, "blog")],
-          [standing("w1", "working"), standing("w2", "working")],
+          [
+            standing("w1", "working"),
+            standing("w2", "working"),
+            standing("a", "needs-you"),
+            standing("b", "needs-you"),
+          ],
         ),
       ],
     ]);
-    const cells = [cell("w1", { projectId: "shop" }), cell("w2", { projectId: "blog" })];
+    const cells = [
+      cell("w1", { projectId: "shop" }),
+      cell("w2", { projectId: "blog" }),
+      cell("a", { projectId: "shop" }),
+      cell("b", { projectId: "blog" }),
+    ];
     const line = lineOf(cells, readings, NOW, new Set(), byRecord);
     const onlyShop = (place: { projectId: string }) => place.projectId === "shop";
-    expect(countsOf(line, onlyShop)).toEqual({ awake: 1, asleep: 0 });
+    expect(countsOf(line, onlyShop)).toEqual({ needs: 1, awake: 2, asleep: 0 });
     expect(askCount(line)).toBe(2);
+  });
+
+  it("lists in Input the Cells with an ask open, longest waiting first, as the Mac does", () => {
+    const readings = new Map<string, Reading>([
+      [
+        "mac",
+        read(
+          [
+            need("recent", "2026-10-27T11:50:00.000Z"),
+            need("oldest", "2026-10-27T09:00:00.000Z"),
+            need("answered", "2026-10-27T08:00:00.000Z"),
+            // A Subcell's ask is its Cell's.
+            { ...need("sub", "2026-10-27T10:00:00.000Z"), parentThreadId: "parent" } as Need,
+          ],
+          [
+            standing("recent", "needs-you"),
+            standing("oldest", "needs-you"),
+            standing("answered", "needs-you"),
+            standing("parent", "needs-you"),
+            standing("busy", "working"),
+          ],
+        ),
+      ],
+      ["mini", { state: "unreachable", list: null }],
+    ]);
+    const cells = [
+      cell("recent"),
+      cell("oldest"),
+      cell("answered"),
+      cell("parent"),
+      cell("busy"),
+      // Its machine hasn't been read: its own record says it asks, but no ask is known yet.
+      cell("unread", { environmentId: "mini" }),
+    ];
+    const line = lineOf(cells, readings, NOW, new Set(["mac:answered:ask"]), (each) => ({
+      stage: each.id === "unread" ? "needs-you" : "done",
+      since: each.id === "unread" ? "2026-10-27T09:30:00.000Z" : null,
+    }));
+    expect(line.needs.map((each) => each.id)).toEqual(["oldest", "parent", "recent"]);
+    // Still awake, in its time slot: Input is a lens.
+    expect(line.awake.map((each) => each.id)).toContain("answered");
   });
 
   it("reads Asleep's next page only while Cells are left and none is on its way", () => {

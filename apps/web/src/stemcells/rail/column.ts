@@ -10,8 +10,11 @@ import { windowsBridge } from "../windows/bridge";
 
 export type ColumnWidth = "cells" | "rail" | "list";
 
-/** A stage of the line (stemcells/tasks/awake-asleep.md): Cells awake, Cells asleep. */
-export type ColumnStage = "awake" | "asleep";
+/**
+ * A stage of the line: the Cells that ask (Input, `stemcells/tasks/inbox.md`), Cells awake,
+ * Cells asleep (`stemcells/tasks/awake-asleep.md`).
+ */
+export type ColumnStage = "needs" | "awake" | "asleep";
 
 const COLUMN_STORAGE_KEY = "stemcells.leftColumn";
 const STAGE_STORAGE_KEY = "stemcells.leftColumn.stage";
@@ -33,11 +36,10 @@ export function startingWidth(stored: string | null, leads: boolean): ColumnWidt
 const leadsAtStart = windowsBridge()?.boot.lead ?? true;
 
 /** The stages in the line's order: the order a swipe goes through them. */
-export const COLUMN_STAGES: ReadonlyArray<ColumnStage> = ["awake", "asleep"];
+export const COLUMN_STAGES: ReadonlyArray<ColumnStage> = ["needs", "awake", "asleep"];
 
-/** A stage remembered from an older line, Pinned and Input beside it, reads as its stage now. */
+/** A stage remembered from an older line, Pinned beside it, reads as its stage now. */
 const WAS: Readonly<Record<string, ColumnStage>> = {
-  needs: "awake",
   working: "awake",
   landed: "awake",
   pinned: "awake",

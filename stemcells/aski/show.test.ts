@@ -6,8 +6,7 @@ describe("what Aski's show names", () => {
   it.each([
     [{ cell: "thread-1" }, { kind: "cell", environmentId: "mac", threadId: "thread-1" }],
     [{ stage: "Awake" }, { kind: "stage", stage: "awake" }],
-    // From a server before the two stages: an asking Cell stands in Awake.
-    [{ stage: "Input" }, { kind: "stage", stage: "awake" }],
+    [{ stage: "Input" }, { kind: "stage", stage: "needs" }],
     [{ stage: "Settled" }, { kind: "stage", stage: "asleep" }],
     [{ settings: "Settings › Providers › Codex" }, { kind: "settings", place: "provider-codex" }],
     [{ settings: "Appearance" }, { kind: "settings", place: "page-appearance" }],

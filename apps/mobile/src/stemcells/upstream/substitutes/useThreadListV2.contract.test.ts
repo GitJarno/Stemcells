@@ -6,7 +6,7 @@ import {
   buildThreadListV2ListItems,
 } from "../../../features/threads/threadListV2";
 import { makeThreadShellFixture } from "../../../test-fixtures";
-import { inAsleepOrder, inAwakeOrder } from "../listOrder";
+import { inAsleepOrder, inAwakeOrder, inInputOrder } from "../listOrder";
 
 /**
  * Contract: on the home's stages T3's list stands in each stage's own order (`useThreadListV2.ts`,
@@ -83,7 +83,7 @@ describe("Awake's order", () => {
     new Map(
       Object.entries(since).map(([id, at]) => [
         `${environmentId}:${id}`,
-        { stage: "done" as const, since: at },
+        { stage: "done" as const, since: at, asked: null },
       ]),
     );
 
@@ -100,6 +100,30 @@ describe("Awake's order", () => {
       "oldest",
       "middle",
     ]);
+  });
+});
+
+describe("Input's order", () => {
+  it("lists the longest waiting first by its oldest open ask, a pinned Cell in its turn", () => {
+    // Its stage's time isn't its ask's: a Cell flying while its Subcell asks.
+    const asking = (asked: Record<string, string>) =>
+      new Map(
+        Object.entries(asked).map(([id, at]) => [
+          `${environmentId}:${id}`,
+          { stage: "working" as const, since: NOW, asked: at },
+        ]),
+      );
+    const items = listed([
+      cell("recent", "2026-06-01T01:00:00.000Z"),
+      cell("pinned", "2026-05-01T00:00:00.000Z", { pinnedAt: NOW }),
+      cell("oldest", "2026-06-01T03:00:00.000Z"),
+    ]);
+    const states = asking({
+      recent: "2026-06-01T23:30:00.000Z",
+      pinned: "2026-06-01T22:00:00.000Z",
+      oldest: "2026-06-01T20:00:00.000Z",
+    });
+    expect(ids(inInputOrder(items, states))).toEqual(["oldest", "pinned", "recent"]);
   });
 });
 

@@ -8,8 +8,8 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
 const isText = (value: unknown): value is string => typeof value === "string" && value.length > 0;
 
-/** The home's stages as both homes' code names them (Awake, Asleep). */
-export const SHOW_STAGES = ["awake", "asleep"] as const;
+/** The home's stages as both homes' code names them (Input, Awake, Asleep). */
+export const SHOW_STAGES = ["needs", "awake", "asleep"] as const;
 export type ShowStage = (typeof SHOW_STAGES)[number];
 
 export type AskiShow =
@@ -32,14 +32,14 @@ export interface ShowInput {
   /** A place in Settings as Settings words it (`Settings › Providers › Codex`), or a place key. */
   readonly settings?: string;
   /** A stage as the person reads it. */
-  readonly stage?: "Awake" | "Asleep";
+  readonly stage?: "Input" | "Awake" | "Asleep";
 }
 
 const STAGE_OF: ReadonlyMap<string, ShowStage> = new Map([
+  ["Input", "needs"],
   ["Awake", "awake"],
   ["Asleep", "asleep"],
-  // A server from before names an earlier line's stages; an asking Cell stands in Awake.
-  ["Input", "awake"],
+  // A server from before the three stages names the four-stage line's.
   ["Flying", "awake"],
   ["Landed", "awake"],
   ["Settled", "asleep"],

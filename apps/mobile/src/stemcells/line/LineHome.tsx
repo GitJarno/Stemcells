@@ -1,7 +1,7 @@
 // The phone's home on the Cells' line (stemcells/tasks/awake-asleep.md), under Aski, narrowed by
-// the header's picks. Awake and Asleep hand T3's list their Cells, a list each, both mounted
-// (`home/StagePages.tsx`). An ask is answered in its Cell's chat (`ChatAsk.tsx`); the app icon
-// counts every one, whatever the picks show.
+// the header's picks. Input, Awake and Asleep hand T3's list their Cells, a list each, all mounted
+// (`home/StagePages.tsx`). An ask is answered in its Cell's chat (`ChatAsk.tsx`), and Input's loop
+// opens the next (`inbox/useInbox.ts`); the app icon counts every ask, whatever the picks show.
 
 import { useEffect, useSyncExternalStore, useState, type ReactNode } from "react";
 import { View } from "react-native";
@@ -12,24 +12,25 @@ import { useAppBadge } from "../push/badge";
 import { EmptyTab } from "../home/EmptyTab";
 import { StagePages, useStagePages } from "../home/StagePages";
 import { CellStates, HomeTabsContext, tabChoice } from "../home/state";
+import { type AllClear, useInbox } from "../inbox/useInbox";
 import { inTab } from "../home/tabs";
 import { useLineMotion } from "../home/useLineMotion";
 import { type EnvironmentThreadShell, resolveThreadWorkingStartedAt } from "../upstream/cells";
 import { answering } from "./answer";
-import { EMPTY_WORDS, type LineStage } from "./kit";
-import { askCount, type CellState, countsOf, lineOf, SEGMENTS } from "./line";
+import { clearedWords, EMPTY_WORDS, type LineStage, STEM_CELL_FACTS } from "./kit";
+import { askCount, type CellState, cellKey, countsOf, lineOf, SEGMENTS } from "./line";
 import type { Reading } from "./read";
 import { UndoLine } from "./UndoLine";
 
 const segments = tabChoice<LineStage>();
-const STAGES = ["awake", "asleep"] as const satisfies ReadonlyArray<LineStage>;
+const STAGES = ["needs", "awake", "asleep"] as const satisfies ReadonlyArray<LineStage>;
 
 type Place = { readonly environmentId: string; readonly projectId: string };
 
 /** How a Cell's own record has it, as T3's tabs read it, while its machine hasn't said. */
 const byRecord =
   (now: string) =>
-  (cell: EnvironmentThreadShell): CellState =>
+  (cell: EnvironmentThreadShell): Omit<CellState, "asked"> =>
     inTab(cell, "input", now)
       ? { stage: "needs-you", since: cell.pendingUserInputAt ?? null }
       : inTab(cell, "working", now)
@@ -43,10 +44,23 @@ function useSteadyStates(states: ReadonlyMap<string, CellState>) {
     kept.size === states.size &&
     [...states].every(([key, state]) => {
       const before = kept.get(key);
-      return before?.stage === state.stage && before.since === state.since;
+      return (
+        before?.stage === state.stage &&
+        before.since === state.since &&
+        before.asked === state.asked
+      );
     });
   if (!same) keep(states);
   return same ? kept : states;
+}
+
+/** Input after a clearing: what it did, the Cells awake now flying again, and its fact. */
+function allClearOf(
+  { cleared, fact }: AllClear,
+  awake: ReadonlyArray<{ readonly environmentId: string; readonly id: string }>,
+) {
+  const flying = awake.filter((cell) => cleared.cells.has(cellKey(cell))).length;
+  return { words: clearedWords(flying, cleared.ms), fact: STEM_CELL_FACTS[fact] };
 }
 
 export function LineHome(props: {
@@ -86,6 +100,14 @@ export function LineHome(props: {
   );
   const tab = segments.useTab("awake");
   const stages = useStagePages(STAGES, tab);
+  // A pick, or a machine read or dropped, is another view: its asks were never answered here.
+  const read = [...props.readings]
+    .filter(([, reading]) => reading.state !== "none" && reading.list !== null)
+    .map(([id]) => id)
+    .sort()
+    .join(" ");
+  const view = props.known && !props.connecting ? `${props.picks}|${read}` : null;
+  const cleared = useInbox(line.needs.filter(props.inView), view, tab === "needs");
   // Only once every machine has answered: a cold start would clear the icon a closed app was given.
   useAppBadge(props.known ? askCount(line) : null);
 
@@ -106,9 +128,14 @@ export function LineHome(props: {
       shown.length > 0 ||
       (stage === "awake" && props.pending > 0) ||
       (stage === "asleep" && props.olderSettled > 0);
-    if (!listed) return <EmptyTab words={EMPTY_WORDS[stage]} />;
-    return stage === "awake" ? (
-      <CellStates value={states}>{props.renderList(shown, true)}</CellStates>
+    if (!listed)
+      return stage === "needs" && cleared !== null ? (
+        <EmptyTab {...allClearOf(cleared, line.awake)} />
+      ) : (
+        <EmptyTab words={EMPTY_WORDS[stage]} />
+      );
+    return stage !== "asleep" ? (
+      <CellStates value={states}>{props.renderList(shown, stage === "awake")}</CellStates>
     ) : (
       props.renderList(shown, false)
     );

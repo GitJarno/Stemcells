@@ -1,11 +1,11 @@
 /**
  * The stages a person reads and the verbs between them (`stemcells/tasks/awake-asleep.md`).
- * Flying, Landed and Input are an awake Cell's own state (`cells.ts`): an ask is answered in
- * its chat (`stemcells/tasks/the-ask.md`), so it is no stage of its own.
+ * Flying and Landed are an awake Cell's own state (`cells.ts`); Input lists the awake Cells that
+ * ask, longest waiting first (`stemcells/tasks/inbox.md`).
  */
 import { FLYING } from "./cells.ts";
 
-export const STAGE_WORDS = { awake: "Awake", asleep: "Asleep" } as const;
+export const STAGE_WORDS = { needs: "Input", awake: "Awake", asleep: "Asleep" } as const;
 
 /** What an awake row's status icon says, to one who can't see it. */
 export const STATUS_WORDS = {
@@ -20,6 +20,7 @@ export const SLEEP = "Sleep";
 export const WAKE = "Wake";
 
 export const EMPTY_WORDS = {
+  needs: "Nothing needs you.",
   awake: "No Cells awake.",
   asleep: "No Cells asleep.",
 } as const;

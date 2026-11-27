@@ -10,7 +10,7 @@ import { cellKey } from "../line/line";
 import type { EnvironmentThreadShell } from "../upstream/cells";
 import { registerThreadDismissal } from "../upstream/home";
 import { departs } from "./hops";
-import { HomeInFront, HomeStageContext } from "./state";
+import { awakeRows, HomeInFront, HomeStageContext } from "./state";
 
 export function useDeparture(
   thread: EnvironmentThreadShell,
@@ -23,12 +23,14 @@ export function useDeparture(
   const key = cellKey(thread);
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Register with T3's dismissals for this row's chat while the row stands on a stage in sight.
   useLayoutEffect(() => {
-    if (!enabled || reduced || !inFront || (stage !== "awake" && stage !== "asleep")) return;
+    if (!enabled || reduced || !inFront || (!awakeRows(stage) && stage !== "asleep")) return;
+    // An asking Cell slept from Input leaves Awake too: it flies from there.
+    const from = stage === "asleep" ? "asleep" : "awake";
     return registerThreadDismissal(key, () => {
       const view = figure.current;
       return {
         finished: Promise.resolve(),
-        restore: view === null ? () => undefined : departs(key, thread, stage, view),
+        restore: view === null ? () => undefined : departs(key, thread, from, view),
       };
     });
   }, [enabled, inFront, stage, key, thread, reduced, figure]);
