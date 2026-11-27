@@ -130,7 +130,7 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   // context, read off the entries it draws.
   "apps/web/src/components/chat/MessagesTimeline.tsx": "MessagesTimeline.tsx",
   // A settle the person sends marks itself, so its pane closes and an
-  // auto-settle's never does.
+  // auto-settle's never does; a settle and a snooze keep no undo.
   "apps/web/src/hooks/useThreadActions.ts": "useThreadActions.ts",
   // Attachments carried between chats: a chat takes a carry as it takes
   // files off the disk, and a transcript's pictures and videos are carried
@@ -156,6 +156,8 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
 export const UPSTREAM_TESTS_OF_UPSTREAM: ReadonlyArray<string> = [
   // The star prompt our substitute never shows.
   "apps/web/src/components/GitHubStarPrompt.test.ts",
+  // The settle and snooze undo our substitute lets go as each lands.
+  "apps/web/src/hooks/useThreadActions.undo.test.ts",
 ];
 
 /**

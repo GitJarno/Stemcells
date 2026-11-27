@@ -425,7 +425,7 @@ export function CellWorkspace(props: {
 
   /**
    * Closes a pane. A landed Cell's close settles it: the pane leaves as a
-   * settle's does, so upstream's Undo brings it back (`settled.ts`).
+   * settle's does, so a Wake right after brings it back (`settled.ts`).
    */
   const closeOrSettle = (paneId: string) => {
     const cell = settlesOnClose(readWorkspace(), paneId, landed);

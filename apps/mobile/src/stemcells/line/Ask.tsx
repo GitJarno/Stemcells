@@ -43,14 +43,6 @@ export const chooserOf =
   (option: CardOption, given?: Given) =>
     option.choice.kind === "freeSpace" ? void freeSpace?.() : choose(option, given);
 
-export function Quiet(props: { readonly label: string; readonly onPress: () => void }) {
-  return (
-    <Pressable accessibilityRole="button" onPress={props.onPress} hitSlop={8}>
-      <AppText className="text-sm text-foreground-muted">{props.label}</AppText>
-    </Pressable>
-  );
-}
-
 /** An option's button: filled when it's the one to take. */
 export function Pill(props: {
   readonly title: string;

@@ -1,7 +1,7 @@
 // Aski's button (stemcells/tasks/aski-side.md): a tap swaps the chat in front with Aski through
 // it, as down a pipe; held, it offers a fresh Aski, a new Cell, and the next Cell that asks. In the
-// Duo's side rail where the bars run down the side, over the composer elsewhere. Mounted once over
-// the workspace (`Stack.tsx`, `stemcells/seams/mobile.md`).
+// Duo's side rail with its upper buttons, under the thumb; over the composer elsewhere. Mounted once
+// over the workspace (`Stack.tsx`, `stemcells/seams/mobile.md`).
 
 import * as Haptics from "expo-haptics";
 import * as Linking from "expo-linking";
@@ -71,10 +71,15 @@ const SIZE = 52;
 const OVER_COMPOSER = 76;
 const SIDE = 16;
 /** UIKit sets the side rail's buttons on a line 14 pt in from the screen's edge, and starts its
- * tab group 0.649 of the way down in every posture (measured on the Duo); the button stands just above it. */
+ * tab group 0.649 of the way down in every posture (measured on the Duo). */
 const RAIL_EDGE_INSET = 14;
 const RAIL_TABS_START = 0.649;
 const RAIL_GAP = 14;
+/** Unfolded (regular width), the rail's top group (new chat, then code) centres its first button
+ * 156 pt down and the next 63 pt below (measured on the Duo); the button takes the place after
+ * them. Folded, the group starts lower and ends just above the tabs, so the button stands there. */
+const RAIL_TOP_GROUP_START = 156;
+const RAIL_TOP_GROUP_PITCH = 63;
 
 /** Each show is acted on once, however often its chat's items come round. */
 const shown = new Set<string>();
@@ -296,11 +301,12 @@ function Button(props: { readonly here: Where; readonly aski: EnvironmentThreadS
           >
             <Animated.View style={{ transform: [{ scale: pop }] }}>
               <GlassSurface
-                ref={inAski ? undefined : askiStandsIn}
                 className="items-center justify-center rounded-full"
                 style={{ width: SIZE, height: SIZE }}
               >
+                {/* Copies measure this View: on iOS's glass, GlassSurface's ref is Expo's view, which can't measure. */}
                 <View
+                  ref={inAski ? undefined : askiStandsIn}
                   className="items-center justify-center overflow-hidden rounded-full"
                   style={{ width: SIZE, height: SIZE }}
                 >
@@ -367,7 +373,7 @@ function paneLeft(metrics: ReturnType<typeof useNativeLayoutMetrics>): number {
   return division === undefined ? 0 : division.x + division.width;
 }
 
-/** Where the button stands: in the side rail above its tabs where the bars run down the side, else over the composer. */
+/** Where the button stands: in the side rail under its top group where the bars run down the side, else over the composer. */
 function Place(props: { readonly children: React.ReactNode }) {
   const metrics = useNativeLayoutMetrics();
   const insets = useSafeAreaInsets();
@@ -379,7 +385,10 @@ function Place(props: { readonly children: React.ReactNode }) {
     rail >= SIZE
       ? {
           [edge]: (rail + RAIL_EDGE_INSET - SIZE) / 2,
-          top: window.height * RAIL_TABS_START - RAIL_GAP - SIZE,
+          top:
+            metrics!.horizontalSizeClass === "regular"
+              ? RAIL_TOP_GROUP_START + 2 * RAIL_TOP_GROUP_PITCH - SIZE / 2
+              : window.height * RAIL_TABS_START - RAIL_GAP - SIZE,
         }
       : { right: insets.right + SIDE, bottom: insets.bottom + OVER_COMPOSER };
   return (

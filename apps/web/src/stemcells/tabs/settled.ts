@@ -1,7 +1,7 @@
 /**
  * A Cell the person settles leaves the slate (stemcells/tasks/aski-manager.md, decision 10): its
- * pane closes, and its tab with its last pane. While upstream's Undo is on offer the place it left
- * is kept, so Undo brings it back to its tab if still open, else a tab of its own where it stood.
+ * pane closes, and its tab with its last pane. For a moment the place it left is kept, so a Wake
+ * right after brings it back to its tab if still open, else a tab of its own where it stood.
  */
 import { useSyncExternalStore } from "react";
 
@@ -61,7 +61,7 @@ export function settlesOnClose(
   return showing.length === 1 && landed(cell) ? cell : null;
 }
 
-/** Where a settled Cell stood, kept while its settle can be undone. */
+/** Where a settled Cell stood, kept for a Wake right after. */
 export interface Left {
   readonly cell: CellRef;
   readonly tabId: string;
@@ -71,7 +71,7 @@ export interface Left {
   readonly at: number;
 }
 
-/** Upstream offers Undo for 5 s; a slow server's answer gets a little more. */
+/** How long a Wake brings a slept Cell back to where it stood. */
 export const COME_BACK_MS = 10_000;
 
 /** The workspace without the pane, and where it stood. */

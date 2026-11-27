@@ -1255,7 +1255,7 @@ describe("Stemcells' substitutes for upstream modules", () => {
       // Upstream's own test of a module we replace still gets upstream's, and
       // nothing but such a test does.
       for (const test of UPSTREAM_TESTS_OF_UPSTREAM) {
-        const module = test.replace(/\.test\.tsx?$/, "");
+        const module = test.replace(/(\.\w+)?\.test\.tsx?$/, "");
         const upstream = Object.keys(SUBSTITUTES).find(
           (file) => file.replace(/\.tsx?$/, "") === module,
         );

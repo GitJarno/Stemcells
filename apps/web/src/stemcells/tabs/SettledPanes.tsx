@@ -48,7 +48,7 @@ export function useLeavesWhenSettled(pane: Pane, enabled: boolean): void {
 }
 
 /**
- * Watches each Cell that left the slate while its settle can be undone,
+ * Watches each Cell that left the slate for a moment after its settle,
  * and brings it back where it stood once it is unsettled. A pane closed by
  * its × leaves before its settle lands, so the Cell comes back only once it
  * was seen settled.
