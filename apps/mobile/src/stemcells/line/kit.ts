@@ -1,7 +1,7 @@
 // The Cells' line, its asks and the ask a Cell's chat docks: the web's own plain TypeScript,
 // imported here and nowhere else, as the creature is (`cell/kit.ts`). What a card says and
 // offers, the commands a choice sends, the line's stages and their words, Awake's order and its
-// rows' light, the filter's words and a Cell's latest settle by hand are the Mac's, so the two never disagree.
+// rows' light and a Cell's latest settle by hand are the Mac's, so the two never disagree.
 
 export {
   type CellStanding,
@@ -18,14 +18,7 @@ export {
 } from "../../../../web/src/stemcells/needs/inChat.ts";
 export { dockedButtonsOf } from "../../../../web/src/stemcells/needs/docked.ts";
 export { handSettledAtFrom } from "../../../../web/src/stemcells/tabs/handSettles.ts";
-export {
-  cardOf,
-  LATER,
-  NOTHING_TO_DO,
-  type Card,
-  type CardOption,
-  type CardQuestion,
-} from "../../../../web/src/stemcells/needs/card.ts";
+export { cardOf, type CardOption } from "../../../../web/src/stemcells/needs/card.ts";
 export { type Fact } from "../../../../web/src/stemcells/needs/facts.ts";
 export {
   repositoryUrlOf,
@@ -49,14 +42,7 @@ export {
 } from "../../../../web/src/stemcells/rail/awake.ts";
 export {
   EMPTY_WORDS,
-  SLEEP,
   sleptWords,
   STAGE_WORDS,
   wakesWords,
 } from "../../../../../stemcells/words/awake.ts";
-export {
-  elsewhereWords,
-  shows,
-  type Elsewhere,
-  type FilterProject,
-} from "../../../../web/src/stemcells/rail/filter.ts";

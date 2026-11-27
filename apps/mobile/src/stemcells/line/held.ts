@@ -28,8 +28,8 @@ export interface Done {
 export type UndoLine =
   | { readonly kind: "held"; readonly act: Act }
   | ({ readonly kind: "done" } & Done)
-  /** What became of an act (`about`), or of a settle (null). */
-  | { readonly kind: "said"; readonly words: string; readonly about: Act | null };
+  /** What became of an act (`about`). */
+  | { readonly kind: "said"; readonly words: string; readonly about: Act };
 
 export interface HeldDeps {
   readonly send: (
@@ -96,7 +96,7 @@ export function createHeld(deps: HeldDeps) {
   }
 
   /** A line of what became of an act, unless a newer act's line stands. */
-  function say(words: string, about: Act | null) {
+  function say(words: string, about: Act) {
     if (state.line === null || state.line.kind === "said") show({ kind: "said", words, about });
   }
 
@@ -133,16 +133,6 @@ export function createHeld(deps: HeldDeps) {
       show(null);
     },
     letGo,
-    /** Takes an ask off the list while its Cell settles, as an answer does; `back` if it didn't. */
-    aside(key: string) {
-      since.set(key, deps.now());
-      set({ answered: new Set([...state.answered, key]) });
-    },
-    /** The ask comes back, with a line saying why when `why` does. */
-    back(key: string, why: string | null = null) {
-      set({ answered: without(key) });
-      if (why !== null) say(why, null);
-    },
     /**
      * Forgets answered asks their machines no longer ask, so a new ask under the same key
      * shows, and any still asked a while after its answer went: that answer didn't take.

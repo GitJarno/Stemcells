@@ -1,5 +1,5 @@
 // Aski's button (stemcells/tasks/aski-side.md): a tap swaps the chat in front with Aski through
-// it, as down a pipe; held, it offers a fresh Aski, a new Cell, and the next Cell on Input. In the
+// it, as down a pipe; held, it offers a fresh Aski, a new Cell, and the next Cell that asks. In the
 // Duo's side rail where the bars run down the side, over the composer elsewhere. Mounted once over
 // the workspace (`Stack.tsx`, `stemcells/seams/mobile.md`).
 

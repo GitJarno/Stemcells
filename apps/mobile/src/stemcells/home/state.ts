@@ -2,7 +2,7 @@
 // line's segments (`line/line.ts`). The tab is the person's for the app's run; until they pick
 // one, the home opens where `opens` says, and holds it from there.
 
-import { createContext, useEffect, useSyncExternalStore } from "react";
+import { createContext, useSyncExternalStore } from "react";
 
 import type { CellState } from "../line/line";
 
@@ -59,29 +59,23 @@ export const HomeInFront = createContext(false);
  */
 export const HomeCellsHeld = createContext(false);
 
-/** One set of tabs' choice: the person's, else where the home opens, held once known. */
+/** One set of tabs' choice: the person's, else where the home opens. */
 export function tabChoice<Tab extends string>() {
   let chosen: Tab | null = null;
   const listeners = new Set<() => void>();
-  const choose = (tab: Tab) => {
-    if (chosen === tab) return;
-    chosen = tab;
-    for (const listener of listeners) listener();
-  };
   const subscribe = (listener: () => void) => {
     listeners.add(listener);
     return () => void listeners.delete(listener);
   };
   return {
-    choose,
-    /** The tab shown: the person's, else `opens`, chosen for good once `known`. */
-    useTab(opens: Tab, known: boolean): Tab {
-      const tab = useSyncExternalStore(subscribe, () => chosen);
-      // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Choose the opening tab in the shared tab store once the counts are known.
-      useEffect(() => {
-        if (known && chosen === null) choose(opens);
-      }, [known, opens]);
-      return tab ?? opens;
+    choose(tab: Tab) {
+      if (chosen === tab) return;
+      chosen = tab;
+      for (const listener of listeners) listener();
+    },
+    /** The tab shown: the person's, else `opens`. */
+    useTab(opens: Tab): Tab {
+      return useSyncExternalStore(subscribe, () => chosen) ?? opens;
     },
   };
 }

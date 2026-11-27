@@ -35,7 +35,7 @@ export function cellsToDress<Shell extends CrewShell>(
 type WaitingShell = Parameters<typeof inTab>[0] &
   Pick<EnvironmentThreadShell, "environmentId" | "archivedAt">;
 
-/** Whether a Cell of `environmentId` waits on the person at `now` (an ISO time): its stage is Input. */
+/** Whether a Cell of `environmentId` waits on the person at `now` (an ISO time): its state is Input. */
 export function waitsOnPerson(
   threads: ReadonlyArray<WaitingShell>,
   environmentId: string,

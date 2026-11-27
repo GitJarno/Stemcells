@@ -119,7 +119,7 @@ function Dock(props: DockProps & FailureDisk) {
         <SymbolView name="chevron.up" size={11} tintColorClassName="accent-icon" />
       </Pressable>
     );
-  const { choose, later } = answersFor(ask, () => undefined);
+  const { choose, later } = answersFor(ask);
   const { primary, rest, notNow } = dockedButtonsOf(card);
   const pick = chooserOf(choose, props.freeSpace);
   const steps = card.steps.slice(0, STEPS);
@@ -168,19 +168,16 @@ function Dock(props: DockProps & FailureDisk) {
       ) : null}
       {props.canAnswer && (primary !== null || rest.length > 0 || notNow !== null) ? (
         <View className="flex-row flex-wrap items-center gap-2 pt-1">
-          {primary ? (
-            <Pill small filled title={primary.title} onPress={() => pick(primary)} />
-          ) : null}
+          {primary ? <Pill filled title={primary.title} onPress={() => pick(primary)} /> : null}
           {rest.map((option) => (
             <Pill
               key={option.id}
-              small
               filled={false}
               title={option.title}
               onPress={() => pick(option)}
             />
           ))}
-          {notNow ? <Pill small filled={false} title="Not now" onPress={later} /> : null}
+          {notNow ? <Pill filled={false} title="Not now" onPress={later} /> : null}
         </View>
       ) : null}
     </View>
