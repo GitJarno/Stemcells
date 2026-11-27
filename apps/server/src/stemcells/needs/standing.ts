@@ -111,6 +111,28 @@ function landed(cell: CellStanding): string {
   return [...said, ...how, ...facts(cell.brief)].map((part) => ` · ${part}`).join("");
 }
 
+/** The room as a Cell may hear it: only the projects `inReach` keeps, and their counts. */
+export function standingWithin(
+  list: NeedsList,
+  inReach: (projectId: string) => boolean,
+): NeedsList {
+  const kept = <Row extends { readonly projectId: string }>(rows: ReadonlyArray<Row>) =>
+    rows.filter((row) => inReach(row.projectId));
+  return {
+    ...list,
+    needs: kept(list.needs),
+    later: kept(list.later),
+    cells: kept(list.cells),
+    ...(list.conditions === undefined
+      ? {}
+      : {
+          conditions: list.conditions
+            .map((condition) => ({ ...condition, cells: kept(condition.cells) }))
+            .filter((condition) => condition.cells.length > 0),
+        }),
+  };
+}
+
 export function standingOf(list: NeedsList, projectTitles: ReadonlyMap<string, string>): Standing {
   const project = (projectId: string) => projectTitles.get(projectId) ?? projectId;
   const titles = new Map(list.cells.map((cell) => [cell.threadId, cell.title]));
