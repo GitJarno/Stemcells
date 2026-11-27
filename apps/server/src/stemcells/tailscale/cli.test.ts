@@ -8,6 +8,7 @@ import { describe, expect, it, vi } from "vite-plus/test";
 import {
   authUrlOf,
   consentUrlOf,
+  moveOf,
   phonesOf,
   runCli,
   startServe,
@@ -34,7 +35,7 @@ describe("where a phone's way in over Tailscale stands", () => {
       kind: "ready",
       baseUrl: "https://mac.example.ts.net",
     });
-    // Another app's Serve on the port is never taken over.
+    // Another app's Serve on the port: moved aside by `moveOf`, never served over.
     expect(stepOf(status("Running"), serving("http://127.0.0.1:8080"), ports)).toEqual({
       kind: "port-taken",
       port: 443,
@@ -47,6 +48,51 @@ describe("where a phone's way in over Tailscale stands", () => {
       ),
     ).toEqual({ kind: "port-taken", port: 443 });
     expect(stepOf(status("Running"), "{}", ports)).toEqual({ kind: "not-serving" });
+  });
+
+  it("moves another server off the port to a free one, path by path", () => {
+    // As another project's dev server left it: the root and a path, beside other ports in use.
+    const held = JSON.stringify({
+      TCP: { 443: { HTTPS: true }, 8443: { HTTPS: true }, 8444: { HTTPS: true } },
+      Web: {
+        "mac.example.ts.net:443": {
+          Handlers: {
+            "/": { Proxy: "http://127.0.0.1:3010" },
+            "/docs": { Proxy: "http://127.0.0.1:3012" },
+          },
+        },
+        "mac.example.ts.net:8443": { Handlers: { "/": { Proxy: "http://127.0.0.1:3220" } } },
+        "mac.example.ts.net:8444": { Handlers: { "/": { Proxy: "http://127.0.0.1:4173" } } },
+      },
+    });
+    expect(moveOf(status("Running"), held, ports)).toEqual({
+      to: 8445,
+      routes: [
+        { path: "/", proxy: "http://127.0.0.1:3010" },
+        { path: "/docs", proxy: "http://127.0.0.1:3012" },
+      ],
+    });
+  });
+
+  it("sends a server that came back to the port where it went before", () => {
+    const again = JSON.stringify({
+      TCP: { 443: { HTTPS: true }, 8444: { HTTPS: true } },
+      Web: {
+        "mac.example.ts.net:443": { Handlers: { "/": { Proxy: "http://127.0.0.1:3010" } } },
+        "mac.example.ts.net:8444": { Handlers: { "/": { Proxy: "http://127.0.0.1:3010" } } },
+      },
+    });
+    expect(moveOf(status("Running"), again, ports)).toEqual({ to: 8444, routes: [] });
+  });
+
+  it("leaves what it can't move as it is: a TCP forward, or files served from a path", () => {
+    const forward = JSON.stringify({ TCP: { 443: { TCPForward: "127.0.0.1:22" } } });
+    expect(moveOf(status("Running"), forward, ports)).toBeNull();
+    const files = JSON.stringify({
+      TCP: { 443: { HTTPS: true } },
+      Web: { "mac.example.ts.net:443": { Handlers: { "/": { Path: "/srv/site" } } } },
+    });
+    expect(moveOf(status("Running"), files, ports)).toBeNull();
   });
 
   it("asks for the tailnet's HTTPS while the tailnet lacks it", () => {

@@ -14,6 +14,7 @@ import * as UpstreamTailscale from "../upstream/tailscale.ts";
 import {
   authUrlOf,
   backendStateOf,
+  moveOf,
   openMacApp,
   phonesOf,
   runCli,
@@ -25,10 +26,10 @@ import {
   type TailscaleStep,
 } from "./cli.ts";
 
-// A phone's way to this Mac over Tailscale (stemcells/tasks/devices.md): the server stays on
-// loopback and Tailscale Serve answers for it on the tailnet with HTTPS. Once on, Serve is put
-// back after a restart or whenever Tailscale returns, and taken down when the server stops,
-// so the tailnet name never answers for a port nobody holds.
+// A phone's way to this Mac over Tailscale (stemcells/tasks/devices.md): Serve answers on the
+// tailnet for this loopback server. Once on, it's put back after a restart, when Tailscale
+// returns, or after another server takes the port (moved to a free one), and taken down when
+// the server stops, so the tailnet name never answers for a port nobody holds.
 
 export interface TailscaleLook {
   readonly step: TailscaleStep;
@@ -63,6 +64,7 @@ const DOWNLOAD_URL = "https://tailscale.com/download";
 const KEEP_EVERY = Duration.minutes(1);
 /** `tailscale serve` either serves or names its page well within this. */
 const SERVE_TIMEOUT = Duration.seconds(15);
+const SERVE_TIMEOUT_MS = Duration.toMillis(SERVE_TIMEOUT);
 /** A started Tailscale gets `START_TRIES` looks, `START_POLL` apart, to answer. */
 const START_TRIES = 12;
 const START_POLL = Duration.millis(500);
@@ -121,6 +123,28 @@ const make = Effect.gen(function* () {
     return outcome;
   });
 
+  /** What holds this server's port answers on a free one, and Serve comes back here. */
+  const takeBack = Effect.fn("StemcellsTailscale.takeBack")(function* () {
+    if (ports === null) return false;
+    const status = yield* cli(["status", "--json"]);
+    const held = yield* cli(["serve", "status", "--json"]);
+    // Unmovable stays port-taken, which the Add a phone dialog says.
+    const move = status.ok && held.ok ? moveOf(status.stdout, held.stdout, ports) : null;
+    if (move === null) return false;
+    for (const route of move.routes) {
+      const args = ["serve", "--bg", `--https=${move.to}`, `--set-path=${route.path}`];
+      if (!(yield* cli([...args, route.proxy], SERVE_TIMEOUT_MS)).ok) return false;
+    }
+    yield* cli(["serve", `--https=${ports.servePort}`, "off"]);
+    const outcome = yield* serve();
+    yield* Effect.logWarning("Tailscale: took this server's port back from another server", {
+      port: ports.servePort,
+      movedTo: move.to,
+      outcome: outcome.kind,
+    });
+    return outcome.kind === "served";
+  });
+
   const look = Effect.fn("StemcellsTailscale.look")(function* () {
     const { step, status } = yield* readStatus();
     return { step, on: yield* isOn, ...phonesOf(status) };
@@ -138,7 +162,9 @@ const make = Effect.gen(function* () {
       case "missing":
         return yield* done(DOWNLOAD_URL);
       case "starting":
+        return yield* done();
       case "port-taken":
+        if (yield* takeBack()) yield* setOn(true);
         return yield* done();
       case "signed-out": {
         // The sign-in Tailscale already started, straight to the browser; else its app.
@@ -196,6 +222,7 @@ const make = Effect.gen(function* () {
     if (!(yield* isOn)) return;
     const step = yield* read();
     if (step.kind === "not-serving") yield* serve();
+    if (step.kind === "port-taken") yield* takeBack();
   }).pipe(lock.withPermits(1), Effect.repeat(Schedule.spaced(KEEP_EVERY)), Effect.forkScoped);
 
   return StemcellsTailscale.of({
