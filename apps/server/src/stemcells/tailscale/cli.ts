@@ -2,10 +2,10 @@
 import * as NodeChildProcess from "node:child_process";
 
 /**
- * Where a phone's way to this Mac over Tailscale stands, read from the CLI. Each kind but
- * `ready` names the next step, which `StemcellsTailscale.advance` takes where it can.
- * `signed-out` includes a tailnet that hasn't approved this computer; only the tailnet's admin
- * can fix `https-off` (`consentUrlOf`); a `port-taken` port is never taken over.
+ * Where a phone's way to this Mac over Tailscale stands, read from the CLI; each kind but `ready`
+ * names a step `StemcellsTailscale.advance` takes where it can. `signed-out` includes an unapproved
+ * computer; only the tailnet's admin can fix `https-off` (`consentUrlOf`); `moveOf` moves a
+ * `port-taken` port's server aside when it can.
  */
 export type TailscaleStep =
   | { readonly kind: "missing" }
@@ -169,6 +169,58 @@ export function stepOf(
   return capMap === undefined || Object.hasOwn(record(capMap), "https")
     ? { kind: "not-serving" }
     : { kind: "https-off" };
+}
+
+/** Where another server on this server's tailnet port goes, so the port comes back here. */
+export interface ServeMove {
+  /** The tailnet port it answers on from now. */
+  readonly to: number;
+  /** Each path's proxy, to serve on `to`; none when `to` serves them already. */
+  readonly routes: ReadonlyArray<{ readonly path: string; readonly proxy: string }>;
+}
+
+/** The first port a moved server is offered: 8443 is the other one people pick. */
+const MOVED_FROM = 8444;
+
+/**
+ * How what holds this server's tailnet port moves to a free one, from `tailscale status
+ * --json` and `serve status --json`. Null when it can't move as it is: a raw TCP forward,
+ * or a path that serves files or text rather than a proxy.
+ */
+export function moveOf(statusJson: string, serveJson: string, ports: ServePorts): ServeMove | null {
+  const self = record(parse(statusJson)?.Self);
+  const dnsName = typeof self.DNSName === "string" ? self.DNSName.trim().replace(/\.$/, "") : "";
+  if (dnsName === "") return null;
+  const serve = parse(serveJson);
+  const tcp = record(serve?.TCP);
+  const web = record(serve?.Web);
+  const handlersOn = (port: number) => record(record(web[`${dnsName}:${port}`]).Handlers);
+  if (record(tcp[String(ports.servePort)]).HTTPS !== true) return null;
+  const routes = Object.entries(handlersOn(ports.servePort)).map(([path, handler]) => ({
+    path,
+    proxy: record(handler).Proxy,
+  }));
+  if (routes.length === 0) return null;
+  const proxies: Array<{ readonly path: string; readonly proxy: string }> = [];
+  for (const route of routes) {
+    if (typeof route.proxy !== "string") return null;
+    proxies.push({ path: route.path, proxy: route.proxy });
+  }
+  // Moved before and put back on the port since: it answers where it went.
+  for (const key of Object.keys(tcp)) {
+    const port = Number(key);
+    const there = handlersOn(port);
+    if (
+      port !== ports.servePort &&
+      Object.keys(there).length === proxies.length &&
+      proxies.every((route) => record(there[route.path]).Proxy === route.proxy)
+    ) {
+      return { to: port, routes: [] };
+    }
+  }
+  let to = MOVED_FROM;
+  while (Object.hasOwn(tcp, String(to))) to++;
+  return { to, routes: proxies };
 }
 
 /**

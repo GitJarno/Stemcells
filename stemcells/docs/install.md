@@ -36,6 +36,10 @@ finds with your own accounts.
    (`stemcells/scripts/build-scroll-phases`). It stops if the built app
    lacks the addon. The build carries its release's version at a release
    tag, and a nightly one (`0.1.1-nightly.20261023.7266`) anywhere else.
+   With an Apple Development certificate on the Mac (Xcode › Settings ›
+   Accounts makes one), every build is signed with it, so macOS remembers
+   the folders you let Stemcells open across updates. Without one, each
+   update asks again.
 5. Waits for a `check-local` run in progress, since quitting would end it,
    and holds off the next one. Then it copies the new app into
    `/Applications` (or the folder given with `--to`) beside the old one,
@@ -122,6 +126,11 @@ Stemcells.
    the computer you want to reach, then **Add › Computer** on the one
    you're at, and paste it. Its **Cells** switch lets the two computers'
    Cells see each other.
+
+If another app on this computer takes the Tailscale address your phone
+uses, Stemcells moves that app to a free port within a minute, and your
+phone keeps reaching Stemcells. `tailscale serve status` shows where it
+went.
 
 **Remove** takes a device's access away, or forgets a computer on this
 device; **Turn off** beside **Over Tailscale** stops phones reaching the

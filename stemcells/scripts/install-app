@@ -275,6 +275,19 @@ node stemcells/scripts/asar-has.mjs "$stage/Stemcells.app/Contents/Resources/app
 # stemcells/brand/nameTransform.ts keeps T3's name.
 node stemcells/scripts/check-app-name.ts "$stage/Stemcells.app/Contents/Resources/app.asar" ||
   fail "the built app says T3 Code where it should say Stemcells." "see stemcells/docs/fork.md, The name transform"
+# macOS keeps a permission (Documents, Desktop, …) for the signature it was given to. The
+# build's own is ad hoc, new with each build, so each update asked for every one again; one
+# certificate signing every build keeps them.
+identity=$(security find-identity -v -p codesigning 2>/dev/null | awk '/"Apple Development: / {print $2; exit}')
+if [ -n "$identity" ]; then
+  step "Signing with this Mac's Apple Development certificate"
+  signed=$(codesign --force --deep --sign "$identity" "$stage/Stemcells.app" 2>&1) ||
+    fail "couldn't sign the app: $signed"
+  codesign --verify --deep --strict "$stage/Stemcells.app" || fail "the signed app didn't verify."
+else
+  echo "install-app: no Apple Development certificate here, so macOS asks again for the folders it" >&2
+  echo "  let Stemcells open after each update. Xcode › Settings › Accounts makes one." >&2
+fi
 
 rm -rf release
 if [ -n "$stage_to" ]; then
