@@ -53,8 +53,9 @@ The canon has no spawn animation; it has only the `spawn.cue` wire schema.
 - [x] Proof in the dev app, driven through `spawn.ts`: `aski-spawn.png`;
       the bits at 1x: `aski-moment-bits-1x.png`.
 - [x] The prompting work calls it from the composer (`words/spawn/play.ts`).
-- [ ] Aski's chat throws to the Awake list's rows (`aski-orchestrator.md`,
-      decision 12).
+- [x] Aski's chat throws to the Awake list's rows (`aski-orchestrator.md`,
+      decision 12): `throwTo` (`aski/throw.ts`), to its tab's chip while
+      Awake is out of sight.
 
 ## Review
 

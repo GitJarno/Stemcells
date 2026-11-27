@@ -31,8 +31,8 @@ Aski and its copies (`aski/`), and the Cell forming (`cell/`).
 - **A copy into a chip** shrinks away there: the Cell stands in its pane
   when the person goes to it.
 - **From Aski's room**, each Cell Aski launches gets a copy from Aski to
-  its tab's chip as it lands (`aski/copies.ts`). Aski's tab holds Aski
-  alone, so the chip is where the person sees it went.
+  its row at the top of Awake (The planned rows, below), or to its tab's
+  chip while Awake is out of sight (`aski/copies.ts`).
 - **On the phone**, a Cell forming in its card on the home gets a copy
   that buds off Aski's button (`home/copies.ts`). Where Aski's
   chat stands beside the home (an unfolded iPhone Duo, an iPad), the copy
@@ -87,6 +87,37 @@ when they act (`stemcells/tasks/awake-asleep.md`).
   on the move's curve (`rail/Hops.tsx`, the phone's `home/hops.ts`).
 - **Reduce Motion**: no band, nothing glides or flies; rows stand in place
   and an entering row's light still blooms.
+
+## The planned rows
+
+A Cell Aski's plan starts comes to life as a row at the top of Awake, under
+the pins on the Mac and over T3's list on the phone
+(`stemcells/tasks/aski-orchestrator.md`, decision 12). The plan sets its rows
+(`stemcells/aski/planned.ts`); one director, shared by the Mac and the phone,
+says when each lands (`stemcells/aski/arrivals.ts`).
+
+| Beat   | What moves                                                                                          | Timing                                                                     |
+| ------ | --------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Throw  | Aski pulses and a copy flies to the top slot, the same place for every row                          | `travel`; rows 150 ms apart, four forming at most, later ones wait         |
+| Land   | The row stands where the copy landed; the rows under it glide down                                  | the lists' move, from wherever a glide under way has them                  |
+| Form   | The Cell condenses in its box: glyphs, blocks, hop                                                  | one a `form-step`, as the spawn's                                          |
+| Settle | The line steps out of the same glyphs, left to right: project, name, model and effort, title        | two beats after landing, five steps, one a `form-step`                     |
+| Stand  | Its name and model stay a while, then fade; the title glides into their place and its time comes in | 10 s from landing, 3 s at least once its Cell is listed; `leave`, the move |
+
+- **A text step** swaps what is drawn over the words, which keep their room
+  from the first frame: nothing is laid out again, and a settled letter never
+  moves (`decodeAt`).
+- **A Cell that waits for the person's check** is an outline: a dashed row,
+  dim, its Cell's first blocks held, a `?` at the field Aski is unsure of,
+  no light. A tap on it leads to Aski's chat. Confirmed, it fills in and
+  forms on; dropped, it leaves as any row does.
+- **The machine's own row** takes a planned row over in place: on the Mac
+  the same row goes on with its light; on the phone the born row keeps its
+  place until Awake is out of sight, and T3's row stands there after.
+- **The narrowest column** keeps the title: the effort goes first, then the
+  name, then the model.
+- **Reduce Motion**: rows fade in where they stand; nothing flies or settles.
+- Nothing runs once the rows stand.
 
 ## The work log
 
