@@ -2,12 +2,10 @@ import * as Clock from "effect/Clock";
 import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
 import * as Option from "effect/Option";
-import * as Path from "effect/Path";
 import * as Schema from "effect/Schema";
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/http";
 
 import { CEILING, DEFAULT_CAP } from "../../../../../stemcells/orchestrator/plan.ts";
-import * as ServerConfig from "../../config.ts";
 import { boundedText } from "../http/body.ts";
 import { appendPlan } from "../planner/history.ts";
 import * as UpstreamDisk from "../upstream/disk.ts";
@@ -94,13 +92,6 @@ const idOfBody = (text: string): string => /"id"\s*:\s*"([^"]{1,64})"/.exec(text
 const json = (body: unknown, status = 200) =>
   HttpServerResponse.jsonUnsafe(body, { status, headers: NO_STORE });
 
-/** Where Aski keeps what it learned: in the app's own data folder, on this machine. */
-const askiFolder = Effect.gen(function* () {
-  const config = yield* ServerConfig.ServerConfig;
-  const path = yield* Path.Path;
-  return path.join(config.stateDir, "stemcells", "aski");
-});
-
 const compileRoute = Effect.fn("AskiHttp.compile")(function* (times: {
   readonly first: Duration.Duration;
   readonly second: Duration.Duration;
@@ -119,7 +110,7 @@ const compileRoute = Effect.fn("AskiHttp.compile")(function* (times: {
     unexpectPlan(asked.id);
     return json({ error: "The message is too long." }, 413);
   }
-  const learned = yield* readLearned(yield* askiFolder);
+  const learned = yield* readLearned(yield* Upstream.askiFolder);
   const context = withNames(
     {
       places: asked.context.places,
@@ -181,7 +172,7 @@ const outcomeRoute = Effect.gen(function* () {
   const { id, acts, learned } = body.value;
   if (!settlePlan(id, acts)) return json({ error: "No such plan." }, 404);
   if (learned !== undefined && learned.places.length + learned.models.length > 0)
-    yield* learn(yield* askiFolder, learned).pipe(Effect.ignore);
+    yield* learn(yield* Upstream.askiFolder, learned).pipe(Effect.ignore);
   const now = yield* Clock.currentTimeMillis;
   yield* appendPlan(yield* Upstream.historyFolder, { kind: "outcome", id, acts }, now).pipe(
     Effect.ignore,
@@ -190,11 +181,11 @@ const outcomeRoute = Effect.gen(function* () {
 });
 
 const learnedRoute = Effect.gen(function* () {
-  return json(yield* readLearned(yield* askiFolder));
+  return json(yield* readLearned(yield* Upstream.askiFolder));
 });
 
 const forgetRoute = Effect.gen(function* () {
-  yield* forget(yield* askiFolder).pipe(Effect.ignore);
+  yield* forget(yield* Upstream.askiFolder).pipe(Effect.ignore);
   return json({ ok: true });
 });
 
