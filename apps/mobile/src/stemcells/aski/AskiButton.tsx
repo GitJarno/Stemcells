@@ -300,11 +300,12 @@ function Button(props: { readonly here: Where; readonly aski: EnvironmentThreadS
           >
             <Animated.View style={{ transform: [{ scale: pop }] }}>
               <GlassSurface
-                ref={inAski ? undefined : askiStandsIn}
                 className="items-center justify-center rounded-full"
                 style={{ width: SIZE, height: SIZE }}
               >
+                {/* Copies measure this View: on iOS's glass, GlassSurface's ref is Expo's view, which can't measure. */}
                 <View
+                  ref={inAski ? undefined : askiStandsIn}
                   className="items-center justify-center overflow-hidden rounded-full"
                   style={{ width: SIZE, height: SIZE }}
                 >
