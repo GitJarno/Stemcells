@@ -1,9 +1,10 @@
 # Interaction
 
 How things move when the person moves them, or when work arrives: one
-vocabulary of motion across the app. Durations and springs are the motion
-tokens in `apps/web/src/stemcells/tokens/stemcells.css`; nothing names a
-time of its own.
+vocabulary of motion across the app. Each motion is a primitive of the
+motion system (`motion.md`), on its token in
+`apps/web/src/stemcells/tokens/stemcells.css`; nothing names a time of its
+own.
 
 ## The spawn
 

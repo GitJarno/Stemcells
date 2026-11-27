@@ -87,6 +87,8 @@ const PACKAGES = {
   "expo-observe": "expo-observe.ts",
   // A reply's `chart` fence draws as its chart, where the package draws a code block.
   "react-native-enriched-markdown": "react-native-enriched-markdown.tsx",
+  // A chat starts at its top, and follows its end once it fills the screen.
+  "@legendapp/list/keyboard": "legendapp-list-keyboard.tsx",
 };
 
 const repoRoot = path.resolve(__dirname, "../../../../../..");
@@ -110,7 +112,8 @@ const isOurs = (file) => file.startsWith(ourRoot + path.sep);
 const testOf = (file) => /^(.*)\.test\.[^./]+$/.exec(file)?.[1];
 
 /**
- * The substitute for package `name` imported from `file`, when `file` is upstream's.
+ * The substitute for package `name` imported from `file`, when `file` is upstream's. Metro caches
+ * a package's resolution per importing folder, so this must answer alike for a folder's files.
  * @param {string} name
  * @param {string} file
  */

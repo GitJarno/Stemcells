@@ -1,4 +1,4 @@
-// The lists' one motion (move, enter, leave) as Reanimated runs it, on the Mac's own numbers
+// The motion system's move, enter and leave as Reanimated runs them, on the Mac's own numbers
 // (`apps/web/src/stemcells/motion/listMotion.ts`).
 import { Easing } from "react-native-reanimated";
 
@@ -15,4 +15,8 @@ export const MOVE = {
 export const ENTER = {
   duration: LIST_MOTION.enter.duration,
   easing: easingOf(LIST_MOTION.enter.easing),
+};
+export const LEAVE = {
+  duration: LIST_MOTION.leave.duration,
+  easing: easingOf(LIST_MOTION.leave.easing),
 };
