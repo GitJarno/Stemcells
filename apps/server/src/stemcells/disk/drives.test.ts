@@ -47,7 +47,8 @@ describe("what diskutil prints", () => {
 <key>FilesystemType</key><string>hfs</string>
 <key>Internal</key><false/>
 <key>VolumeName</key><string>Bits &amp; Bobs</string>
-<key>VolumeUUID</key><string>00000000-0000-4000-8000-00000000000b</string>`),
+<key>VolumeUUID</key><string>00000000-0000-4000-8000-00000000000b</string>
+<key>GlobalPermissionsEnabled</key><false/>`),
     );
     expect(info).toEqual({
       name: "Bits & Bobs",
@@ -56,6 +57,7 @@ describe("what diskutil prints", () => {
       internal: false,
       solidState: null,
       filesystem: "hfs",
+      owners: false,
     });
     expect(driveDetail(info)).toBe("USB · Mac OS Extended");
   });

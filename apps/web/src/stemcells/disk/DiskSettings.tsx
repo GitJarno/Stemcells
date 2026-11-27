@@ -35,6 +35,8 @@ import { openCleanupCell } from "./cleanupCell";
 import { chooseOnMachine, setLookInside, useDriveReading, useDrives } from "./diskReading";
 import { DriveHero, useFieldTheme } from "./DriveHero";
 import { DriveShelf } from "./DriveShelf";
+import { MoveControl, MovesSection } from "./DiskMoves";
+import { useMoves } from "./movesReading";
 import { fieldBands, fieldLayout, roundUnit, type FieldFinding, type FieldLayout } from "./field";
 import { bandColor, rgbCss, type FieldColors } from "./fieldColors";
 import type { FieldFocus } from "./fieldMotion";
@@ -324,6 +326,7 @@ export function DiskSettingsPanel() {
   const snapshot = useMachineDisk(known.status === "known" ? null : environmentId);
   const openCell = useOpenDiskCell(environmentId);
   const nowMs = useNowMinuteMs();
+  const moves = useMoves(environmentId);
   const { colors } = useFieldTheme();
 
   const volume =
@@ -557,7 +560,20 @@ export function DiskSettingsPanel() {
                   ) : null}
                 </>
               }
-              control={<Size bytes={finding.bytes} />}
+              control={
+                <span className="flex items-center gap-2">
+                  {environmentId === null ? null : (
+                    <MoveControl
+                      environmentId={environmentId}
+                      kind={finding.kind}
+                      bytes={finding.bytes}
+                      drives={known.drives}
+                      moves={moves}
+                    />
+                  )}
+                  <Size bytes={finding.bytes} />
+                </span>
+              }
             />
           ))}
           <SettingsRow
@@ -567,6 +583,10 @@ export function DiskSettingsPanel() {
             }
           />
         </SettingsSection>
+      ) : null}
+
+      {environmentId !== null && !external ? (
+        <MovesSection environmentId={environmentId} moves={moves} nowMs={nowMs} />
       ) : null}
 
       {environmentId !== null ? (

@@ -101,6 +101,10 @@ export class StemcellsDrives extends Context.Service<
       readonly id: string;
       readonly on: boolean;
     }) => Effect.Effect<Drive | null, DriveChoiceError>;
+    /** Where a drive besides the startup one is mounted and what it's formatted as, or null. */
+    readonly place: (id: string) => Effect.Effect<DrivePlace | null>;
+    /** The startup volume's UUID, which names this Mac's own folder on a shared drive. */
+    readonly machine: () => Effect.Effect<string | null>;
   }
 >()("t3/stemcells/disk/StemcellsDrives") {}
 
@@ -115,6 +119,13 @@ const WALK_LIMIT = "20 minutes";
 const Opened = Schema.fromJsonString(Schema.Struct({ lookInside: Schema.Array(Schema.String) }));
 const decodeOpened = Schema.decodeUnknownEffect(Opened);
 const encodeOpened = Schema.encodeEffect(Opened);
+
+export interface DrivePlace {
+  readonly drive: Drive;
+  readonly mount: string;
+  readonly filesystem: string | null;
+  readonly owners: boolean | null;
+}
 
 export const drivesFile = (stateDir: string) => `${stateDir}/stemcells/disk-drives.json`;
 
@@ -156,6 +167,8 @@ export const makeDrives = Effect.fn("StemcellsDrives.make")(function* (
     ),
   );
   const mounts = new Map<string, string>();
+  const filesystems = new Map<string, string | null>();
+  let startupUuid: string | null = null;
   // A mount's make-up doesn't change while it stays mounted: one `diskutil` per mounting.
   const infos = new Map<string, ReturnType<typeof parseDiskInfo>>();
 
@@ -171,6 +184,7 @@ export const makeDrives = Effect.fn("StemcellsDrives.make")(function* (
   const readDrives = Effect.gen(function* () {
     const startup = yield* tools.startup.pipe(Effect.orElseSucceed(() => null));
     const startupInfo = yield* infoOf(STARTUP_DRIVE, "/").pipe(Effect.orElseSucceed(() => null));
+    startupUuid = startupInfo?.uuid ?? startupUuid;
     const mounted = yield* tools.df.pipe(
       Effect.map(parseDf),
       Effect.orElseSucceed((): ReturnType<typeof parseDf> => []),
@@ -189,6 +203,7 @@ export const makeDrives = Effect.fn("StemcellsDrives.make")(function* (
     }
     const seen = new Set([`${STARTUP_DRIVE}\u0000/`]);
     mounts.clear();
+    filesystems.clear();
     for (const volume of mounted) {
       if (!isVolumesMount(volume.mount)) continue;
       // A drive that doesn't answer stays off the list until it does.
@@ -201,6 +216,7 @@ export const makeDrives = Effect.fn("StemcellsDrives.make")(function* (
       // A clone mounted beside its original has the same UUID, and one choice can't name both.
       if (mounts.has(id)) continue;
       mounts.set(id, volume.mount);
+      filesystems.set(id, info.filesystem);
       drives.push({
         id,
         name: info.name ?? volume.mount.slice("/Volumes/".length),
@@ -334,8 +350,27 @@ export const makeDrives = Effect.fn("StemcellsDrives.make")(function* (
     return { ...drive, lookInside: input.on };
   });
 
+  const place = Effect.fn("StemcellsDrives.place")(function* (id: string) {
+    const drive = (yield* list()).find((each) => each.id === id && each.role !== "startup");
+    const mount = mounts.get(id);
+    if (drive === undefined || mount === undefined) return null;
+    // Read afresh: the person may have just changed how the drive treats ownership.
+    const info = yield* tools.diskInfo(mount).pipe(
+      Effect.map(parseDiskInfo),
+      Effect.orElseSucceed(() => null),
+    );
+    return {
+      drive,
+      mount,
+      filesystem: info?.filesystem ?? filesystems.get(id) ?? null,
+      owners: info?.owners ?? null,
+    } satisfies DrivePlace;
+  });
+
+  const machine = () => Effect.map(list(), () => startupUuid);
+
   return {
-    service: StemcellsDrives.of({ list, look, setLookInside }),
+    service: StemcellsDrives.of({ list, look, setLookInside, place, machine }),
     /** Every walk under way has ended. */
     walksEnded: FiberMap.awaitEmpty(walks),
   };

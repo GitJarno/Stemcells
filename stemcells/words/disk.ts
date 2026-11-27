@@ -101,3 +101,34 @@ export const DISK_FULL = {
   freedTitle: "The disk was full",
   freedNote: "There's room again. Send again to carry on.",
 } as const;
+
+/** A folder the Mac rebuilds, kept on another drive (`apps/server/src/stemcells/disk/StemcellsMoves.ts`). */
+export const DISK_MOVE = {
+  section: "On other drives",
+  moveTo: (drive: string) => `Move to ${drive}`,
+  moveToMenu: "Move to…",
+  moveNote:
+    "Moves it whole and leaves a link here, so Xcode and every Cell find it where they always did. New ones are made there too.",
+  on: (drive: string) => `On ${drive}`,
+  onNote: "Xcode and every Cell find it through a link here.",
+  away: (drive: string) =>
+    `${drive} isn't connected. Plug it in to use what's there, or start fresh here.`,
+  back: "Move back",
+  fresh: "Start fresh here",
+  freshConfirm: (title: string, drive: string) =>
+    `${title} on ${drive} stay there. This Mac starts again with an empty folder, which Xcode fills as needed.`,
+  moving: (title: string, drive: string) => `Moving ${title} to ${drive}`,
+  movingBack: (title: string, drive: string) => `Moving ${title} back from ${drive}`,
+  copied: (done: string, total: string) => `${done} of ${total} copied`,
+  measuring: "Measuring it",
+  checking: "Checking the copy",
+  switching: "Switching over",
+  permission:
+    "Waiting for macOS: if it asks whether the simulator may use the drive, allow it on the Mac's screen.",
+  finishing: "Clearing the old copy",
+  moved: (title: string, drive: string) => `${title} moved to ${drive}`,
+  movedBack: (title: string) => `${title}: back on this Mac`,
+  failed: (title: string) => `${title} didn't move`,
+  unreachable: "Couldn't reach the machine",
+  couldNot: "Couldn't move it",
+} as const;

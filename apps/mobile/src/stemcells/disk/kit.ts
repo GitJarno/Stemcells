@@ -42,3 +42,12 @@ export {
   type DriveReading,
   type MachineDrives,
 } from "../../../../web/src/stemcells/disk/wire.ts";
+export {
+  moveEnded,
+  moveOffer,
+  moveRows,
+  MOVES_EVERY_MS,
+  MOVES_PATH,
+  type MoveRow,
+  type MovesAnswer,
+} from "../../../../web/src/stemcells/disk/moves.ts";

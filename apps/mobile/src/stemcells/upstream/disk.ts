@@ -35,6 +35,7 @@ export { Button } from "../../components/ui/Button";
 export { Menu } from "../../components/ui/Menu";
 export * as Dialog from "../../components/ui/Dialog";
 export { RowPressable } from "../../components/ui/RowPressable";
+export { useNowMinuteMs } from "../../lib/clock";
 export { ScreenScrollView } from "../../components/ui/ScreenScrollView";
 export { SettingsRow } from "../../features/settings/components/SettingsRow";
 export { SettingsScreen } from "../../features/settings/components/SettingsScreen";
