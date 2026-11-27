@@ -233,6 +233,12 @@ export function ladderProgress(ladder: Ladder): string {
   return ladder.rungs.length === 1 ? COLLECTION.earnedAlone : `${said(ladder.have)} · Topped`;
 }
 
+/** A rung's mark under a ladder's track, short: "10", "1k", "50k", "30 min", "2 h". */
+export function rungMark(ladder: Ladder, of: number): string {
+  if (TIMED.has(ladder.measure)) return spanWords(of);
+  return of >= 1000 && of % 1000 === 0 ? `${of / 1000}k` : countWords(of);
+}
+
 /** The ranks, the first at no feats (`RANKS` in `stemcells/ledger/ladders.ts`). */
 export const RANK_NAMES: ReadonlyArray<string> = [
   "Ground crew",

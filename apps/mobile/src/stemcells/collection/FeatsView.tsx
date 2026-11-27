@@ -49,7 +49,7 @@ import { markSeen } from "./read";
 const percent = (part: number) => `${Math.round(Math.min(1, Math.max(0, part)) * 100)}%` as const;
 
 /** What a feat unlocks on a Cell held still: in colour once earned, its shape alone until then. */
-function RewardCell(props: {
+export function RewardCell(props: {
   readonly feat: Feat;
   readonly earned: boolean;
   readonly points: number;
@@ -66,16 +66,16 @@ function RewardCell(props: {
   );
 }
 
-export function FeatsView(props: {
+/**
+ * What is new while the screen is open stays marked, a read that lands after it opened too, and
+ * is noted seen on the machine as it closes.
+ */
+export function useFreshFeats(props: {
   readonly environmentId: string;
   readonly connection: MachineConnection | null;
   readonly collection: Collection;
-}) {
+}): ReadonlySet<string> {
   const { environmentId, connection, collection } = props;
-  const ladders = laddersOf(collection.feats);
-  const secrets = secretsOf(collection.feats);
-  // What is new while the screen is open stays marked, a read that lands after it opened too,
-  // and is noted seen as it closes.
   const [fresh, setFresh] = useState<ReadonlySet<string>>(new Set());
   const unseen = collection.feats
     .filter(
@@ -89,6 +89,18 @@ export function FeatsView(props: {
   });
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Note the feats shown here as seen on the machine when the screen closes.
   useEffect(() => () => leave(), []);
+  return fresh;
+}
+
+export function FeatsView(props: {
+  readonly environmentId: string;
+  readonly connection: MachineConnection | null;
+  readonly collection: Collection;
+}) {
+  const { environmentId, collection } = props;
+  const ladders = laddersOf(collection.feats);
+  const secrets = secretsOf(collection.feats);
+  const fresh = useFreshFeats(props);
   const near = nextUp(ladders);
   return (
     <>
@@ -197,7 +209,7 @@ function Ring(props: { readonly part: number; readonly n: number; readonly of: n
 }
 
 /** The whole collection in one look: feats earned, the rank they make, each segment, and today. */
-function Summary(props: {
+export function Summary(props: {
   readonly environmentId: string;
   readonly tally: Tally;
   readonly today: Today;
@@ -277,7 +289,7 @@ function Summary(props: {
 }
 
 /** A bar filled as far as a ladder is to its next rung. */
-function Bar(props: { readonly ladder: Ladder }) {
+export function Bar(props: { readonly ladder: Ladder }) {
   return (
     <View className={`h-[3px] overflow-hidden rounded-full ${BAR.track}`}>
       <View className={`h-full ${BAR.fill}`} style={{ width: percent(reachOf(props.ladder)) }} />
@@ -286,7 +298,7 @@ function Bar(props: { readonly ladder: Ladder }) {
 }
 
 /** A rung nearly earned: what it is, how near, and what it unlocks. */
-function NextCard(props: { readonly ladder: Ladder }) {
+export function NextCard(props: { readonly ladder: Ladder; readonly fill?: boolean }) {
   const { ladder } = props;
   const next = ladder.next;
   if (next === null) return null;
@@ -294,7 +306,7 @@ function NextCard(props: { readonly ladder: Ladder }) {
     <View
       accessible
       accessibilityLabel={`${featName(next.feat)}. ${ladderProgress(ladder)}. ${rewardLine(next.feat)}`}
-      className="w-64 flex-row items-center gap-3 rounded-2xl bg-grouped-card p-3"
+      className={`${props.fill === true ? "w-full" : "w-64"} flex-row items-center gap-3 rounded-2xl bg-grouped-card p-3`}
     >
       <RewardCell feat={next.feat} earned={false} points={3} />
       <View className="min-w-0 flex-1 gap-1">
@@ -314,7 +326,7 @@ function NextCard(props: { readonly ladder: Ladder }) {
 }
 
 /** A ladder's rungs as dots: each earned one filled in its rarity's hue. */
-function Pips(props: { readonly ladder: Ladder }) {
+export function Pips(props: { readonly ladder: Ladder }) {
   return (
     <View className="flex-row items-center gap-1">
       {props.ladder.rungs.map(({ feat, state }) => (
@@ -391,7 +403,7 @@ function LadderRow(props: {
 }
 
 /** One rung: what it unlocks, what it takes, and when and who, or what it will give. */
-function Rung(props: { readonly standing: Standing; readonly fresh: boolean }) {
+export function Rung(props: { readonly standing: Standing; readonly fresh: boolean }) {
   const { feat, state } = props.standing;
   const earned = state.earned;
   const when =
@@ -438,7 +450,7 @@ function Rung(props: { readonly standing: Standing; readonly fresh: boolean }) {
 }
 
 /** A secret: nothing but a question mark until it is found. */
-function SecretTile(props: { readonly standing: Standing; readonly fresh: boolean }) {
+export function SecretTile(props: { readonly standing: Standing; readonly fresh: boolean }) {
   const { feat, state } = props.standing;
   const earned = state.earned;
   const name = earned === null ? SECRET.name : featName(feat);

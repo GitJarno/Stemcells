@@ -1,7 +1,16 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import { FEATS, type FeatState } from "./feats.ts";
-import { laddersOf, nextUp, rankOf, RANKS, reachOf, secretsOf, tallyOf } from "./ladders.ts";
+import {
+  laddersOf,
+  nextUp,
+  rankOf,
+  RANKS,
+  reachOf,
+  secretsOf,
+  tallyOf,
+  trackOf,
+} from "./ladders.ts";
 
 /** Every feat as it stands when each measure has come as far as `have` says (0 for one not named). */
 const standing = (have: Readonly<Record<string, number>>): FeatState[] =>
@@ -41,6 +50,20 @@ describe("the feats as ladders", () => {
     const [topped] = laddersOf(standing({ landings: 60_000 }));
     expect(topped).toMatchObject({ earned: 6, next: null, have: 60_000 });
     expect(reachOf(topped!)).toBe(1);
+  });
+
+  it("draw a ladder as a track: rungs evenly apart, each stretch read by tens", () => {
+    const landings = (have: number) =>
+      trackOf(laddersOf(standing({ landings: have })).find((l) => l.measure === "landings")!);
+    // Six rungs: 1, 10, 100, 1,000, 10,000, 50,000.
+    expect(landings(0)).toBe(0);
+    expect(landings(1)).toBeCloseTo(1 / 6);
+    expect(landings(100)).toBeCloseTo(3 / 6);
+    // Halfway from 100 to 1,000 by tens is about 316, not 550.
+    expect(landings(316)).toBeCloseTo(3.5 / 6, 2);
+    expect(landings(60_000)).toBe(1);
+    const alone = laddersOf(standing({ straight: 0 })).find((l) => l.measure === "straight")!;
+    expect(trackOf(alone)).toBe(0);
   });
 
   it("put the nearest rungs next up: none not started, none topped, none time climbs alone", () => {

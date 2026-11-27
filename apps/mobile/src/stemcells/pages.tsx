@@ -1,11 +1,13 @@
 import { useNavigation } from "@react-navigation/native";
 import { createNativeStackScreen } from "@react-navigation/native-stack";
 import type { ComponentProps } from "react";
-import { Platform } from "react-native";
 
 import { COLLECTION } from "../../../../stemcells/words/feats.ts";
 import { AskiButton } from "./aski/AskiButton";
+import { railFocusFrom } from "./aski/rail";
+import { useScreenFocused } from "./aski/railFocus";
 import { CollectionScreen } from "./collection/CollectionScreen";
+import { COLLECTION_ICON, RailTrophy } from "./collection/trophy";
 import { DiskScreen } from "./disk/DiskScreen";
 import { QuietWorkOnce } from "./work/QuietWork";
 import { allowPushes, usePushState } from "./push/PushCoordinator";
@@ -31,6 +33,8 @@ export const stemcellsSettingsScreens = <Options extends object>(
   }),
 });
 
+railFocusFrom(useScreenFocused);
+
 type Row = ComponentProps<typeof SettingsRow> & { readonly id: string };
 
 export function useStemcellsServerRows(): Row[] {
@@ -38,8 +42,7 @@ export function useStemcellsServerRows(): Row[] {
   const push = usePushRow();
   const collection: Row = {
     id: "SettingsCollection",
-    // Upstream's Android icons have no trophy: a star there.
-    icon: Platform.OS === "ios" ? { ios: "trophy", android: "public" } : "star",
+    icon: COLLECTION_ICON,
     label: COLLECTION.title,
     onPress: () => openSettings(navigation, "SettingsCollection"),
   };
@@ -78,13 +81,14 @@ function usePushRow(): Row | null {
 }
 
 /**
- * What stands over the workspace beside its pages, mounted once (`Stack.tsx`): Aski's button, and
- * the chat's quieter work log set once.
+ * What stands over the workspace beside its pages, mounted once (`Stack.tsx`): Aski's button, the
+ * trophy in the Duo's rail on Usage, and the chat's quieter work log set once.
  */
 export function OverWorkspace(props: ComponentProps<typeof AskiButton>) {
   return (
     <>
       <AskiButton {...props} />
+      <RailTrophy />
       <QuietWorkOnce />
     </>
   );
