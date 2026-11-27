@@ -21,6 +21,7 @@ import {
 import { T3Wordmark } from "../upstream/substitutes/T3Wordmark";
 import { Button, Tooltip, TooltipPopup, TooltipTrigger } from "../upstream/ui";
 import { CellDoor } from "./CellDoor";
+import { CellToken } from "./CellToken";
 import { useMachineLabel } from "../upstream/machines";
 import { bodyOf, type Kind, type Sender } from "./exchange";
 import { cellNameOf } from "../cell/name";
@@ -71,36 +72,29 @@ export function PeerCard(props: { readonly row: MessageRow; readonly sender: Sen
       </span>
       <header className="sc-peer-head text-xs">
         <span className="flex-none">{mail}</span>
-        {aski ? null : <SubcellMark name={sender.cell} points={1} />}
-        {sender.machine === null ? (
+        {sender.machine !== null ? (
+          <span className="sc-peer-from">
+            <SubcellMark name={sender.cell} points={1} />
+            <span className="sc-peer-name">{name}</span> on {machine}
+          </span>
+        ) : aski ? (
           <CellDoor
             name={name}
             title={shell?.title}
-            className="sc-peer-door"
             onOpen={() => ctx.onOpenThread(threadIdOf(sender.cell))}
           />
         ) : (
-          <span className="sc-peer-from">
-            <span className="sc-peer-name">{name}</span> on {machine}
-          </span>
+          <CellToken
+            environmentId={ctx.activeThreadEnvironmentId}
+            threadId={sender.cell}
+            label={name}
+          />
         )}
-        {note.kind === "ask" ? (
-          <span className="flex-none">
-            <span aria-hidden>· </span>asks you
-          </span>
-        ) : null}
-        {note.kind === "ask" && note.answered ? (
-          <span className="sc-peer-answered">
-            <span aria-hidden>· </span>answered
-          </span>
-        ) : null}
-        {note.kind === "reply" ? (
-          <span className="flex-none">
-            <span aria-hidden>· </span>replied to
-          </span>
-        ) : null}
+        {note.kind === "ask" ? <span className="flex-none">asks you</span> : null}
+        {note.kind === "reply" ? <span className="flex-none">replied to</span> : null}
         {note.answers === null ? null : <span className="sc-peer-re">“{note.answers}”</span>}
-        <PeerMeta row={row} />
+        <span className="sc-peer-colon">:</span>
+        <PeerMeta row={row} answered={note.kind === "ask" && note.answered} />
       </header>
       <div
         ref={revealRef}
@@ -137,8 +131,8 @@ export function PeerCard(props: { readonly row: MessageRow; readonly sender: Sen
   );
 }
 
-/** When, going back to it, copy: at the end of the name's line, shown on hover and to touch. */
-function PeerMeta({ row }: { readonly row: MessageRow }) {
+/** Answered, when, going back to it, copy: at the end of the name's line; the last three shown on hover and to touch. */
+function PeerMeta({ row, answered }: { readonly row: MessageRow; readonly answered: boolean }) {
   const ctx = use(TimelineRowCtx);
   const activity = use(TimelineRowActivityCtx);
   const { message } = row;
@@ -150,6 +144,7 @@ function PeerMeta({ row }: { readonly row: MessageRow }) {
     message.inputIntent === "steer" || message.inputIntent === "promoted_queued_to_steer";
   return (
     <span className="sc-peer-meta">
+      {answered ? <span className="sc-peer-answered">answered</span> : null}
       {failed ? <span className="sc-peer-status">{status}</span> : null}
       <span className="sc-peer-hover">
         {steered ? <span>mid-turn ·</span> : null}
