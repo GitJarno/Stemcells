@@ -71,16 +71,19 @@ function BrowserUnavailableScreen({ onClose }: { readonly onClose: () => void })
   );
 }
 
-function BrowserPreviewScreen({
+/** A thread's server browser tabs, full screen or, with `onMaximize`, in the inspector pane. */
+export function BrowserPreviewScreen({
   environmentId,
   threadId,
   initialTabId,
   onClose,
+  onMaximize,
 }: {
   readonly environmentId: EnvironmentId;
   readonly threadId: ThreadId;
   readonly initialTabId: string | null;
   readonly onClose: () => void;
+  readonly onMaximize?: (tabId: string | null) => void;
 }) {
   const gt = useGT();
   const resolveMessage = useMessages();
@@ -126,19 +129,21 @@ function BrowserPreviewScreen({
     (pictureInPicture.active || pdfUri === null);
 
   return (
-    // The route spans the Duo's rail, so the screen insets its own sides.
+    // Full screen spans the Duo's rail, so it insets its own sides; the pane is inset already.
     <SafeAreaView
-      edges={["left", "right"]}
+      edges={onMaximize ? [] : ["left", "right"]}
       style={{ flex: 1, backgroundColor: themeVariables["--color-sheet-solid"] }}
     >
       <BrowserChrome
         key={tab ? `address:${tab.tabId}` : "address"}
         scrollsUnderBar={false}
+        inPane={onMaximize !== undefined}
         bar={{
           url: tab ? browserTabUrl(tab) : "",
           editable: ready,
           canGoBack: ready && (tab?.canGoBack ?? false),
           onClose,
+          onMaximize: onMaximize ? () => onMaximize(tabId) : undefined,
           onBack: () => command({ type: "history", delta: -1 }),
           onReload: () => command({ type: "reload" }),
           onSubmit: (value) => {

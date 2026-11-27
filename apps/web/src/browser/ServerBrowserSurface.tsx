@@ -69,6 +69,8 @@ const CUT = { key: "x", code: "KeyX", keyCode: 88 } as const;
 const CTRL = 2;
 const MAX_UNAUTHORIZED_REFUSALS = 3;
 const TAP_SLOP_PX = 8;
+// How long a moving finger waits for the probe to say whether it drags the point or pans the page.
+const DRAG_DECIDE_MS = 250;
 const MULTI_CLICK_MS = 500;
 const MULTI_CLICK_SLOP_PX = 4;
 const WHEEL_LINE_PX = 16;
@@ -91,12 +93,18 @@ interface TouchGesture {
   lastX: number;
   lastY: number;
   panning: boolean;
+  /** Past the tap slop: a mouse drag on what takes one, else page scrolling; "waiting" on the probe. */
+  gesture: "waiting" | "pan" | "drag" | null;
+  latestX: number;
+  latestY: number;
+  decideTimer: ReturnType<typeof setTimeout> | null;
 }
 
 interface TouchProbe {
   readonly x: number;
   readonly y: number;
   editable: boolean | null;
+  drags: boolean | null;
   answered: boolean;
   tapped: boolean;
 }
@@ -225,7 +233,13 @@ export function ServerBrowserSurface(props: {
   } | null>(null);
   const touchRef = useRef<TouchGesture | null>(null);
   const probeRef = useRef<TouchProbe | null>(null);
-  const lastProbeRef = useRef<{ x: number; y: number; editable: boolean; at: number } | null>(null);
+  const lastProbeRef = useRef<{
+    x: number;
+    y: number;
+    editable: boolean;
+    drags: boolean;
+    at: number;
+  } | null>(null);
   const firstFrame = useEffectEvent(() => onFirstFrame?.());
   const noFrames = useEffectEvent(() => onNoFrames?.());
   const [framesStalled, setFramesStalled] = useState(false);
@@ -248,6 +262,7 @@ export function ServerBrowserSurface(props: {
     mouseButtonsRef.current = 0;
     mouseClicksRef.current = { left: 1, middle: 1, right: 1, none: 1 };
     lastClickRef.current = null;
+    if (touchRef.current?.decideTimer) clearTimeout(touchRef.current.decideTimer);
     touchRef.current = probeRef.current = lastProbeRef.current = null;
     keySentRef.current = false;
     if (inputRef.current) inputRef.current.value = INPUT_SENTINEL;
@@ -379,6 +394,75 @@ export function ServerBrowserSurface(props: {
     };
   }, [followSize]);
 
+  const touchMouse = (
+    action: "move" | "down" | "up",
+    clientX: number,
+    clientY: number,
+    buttons: number,
+    clickCount: number,
+  ) => {
+    const point = pagePoint(clientX, clientY, true);
+    if (!point) return;
+    const input = {
+      type: "mouse",
+      action,
+      x: point.x,
+      y: point.y,
+      button: action === "move" && buttons === 0 ? "none" : "left",
+      buttons,
+      clickCount,
+      modifiers: 0,
+    } as const;
+    if (action === "move" && buttons !== 0) {
+      pendingMoveRef.current = input;
+      scheduleFlush();
+      return;
+    }
+    flushInput();
+    send(input);
+  };
+
+  /** Follows the finger as a mouse drag or page scrolling, from where input last went. */
+  const moveTouch = () => {
+    const touch = touchRef.current;
+    if (!touch || touch.gesture === "waiting" || touch.gesture === null) return;
+    if (touch.gesture === "drag") touchMouse("move", touch.latestX, touch.latestY, 1, 0);
+    else {
+      const point = pagePoint(touch.latestX, touch.latestY, true);
+      if (point)
+        queueWheel(
+          point,
+          (touch.lastX - touch.latestX) * point.scale,
+          (touch.lastY - touch.latestY) * point.scale,
+          0,
+        );
+    }
+    touch.lastX = touch.latestX;
+    touch.lastY = touch.latestY;
+  };
+
+  const endTouchDrag = (clientX: number, clientY: number) => {
+    const touch = touchRef.current;
+    if (!touch) return;
+    if (touch.decideTimer !== null) clearTimeout(touch.decideTimer);
+    if (touch.gesture === "drag") touchMouse("up", clientX, clientY, 0, 1);
+  };
+
+  const decideGesture = (drags: boolean) => {
+    const touch = touchRef.current;
+    if (!touch || touch.gesture !== "waiting") return;
+    if (touch.decideTimer !== null) clearTimeout(touch.decideTimer);
+    touch.decideTimer = null;
+    touch.gesture = drags ? "drag" : "pan";
+    if (drags) {
+      touchMouse("move", touch.startX, touch.startY, 0, 0);
+      touchMouse("down", touch.startX, touch.startY, 1, 1);
+    }
+    moveTouch();
+  };
+  // The probe's answer arrives through the stream client the effect below opens.
+  const decideTouch = useEffectEvent((drags: boolean) => decideGesture(drags));
+
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- opens the preview stream client and paints its frames onto the canvas while visible
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -409,7 +493,9 @@ export function ServerBrowserSurface(props: {
           const probe = probeRef.current;
           if (!probe || probe.x !== result.x || probe.y !== result.y) return;
           probe.editable = result.editable;
+          probe.drags = result.drags;
           probe.answered = true;
+          if (touchRef.current?.gesture === "waiting") decideTouch(result.drags);
           if (!probe.tapped) return;
           probeRef.current = null;
           if (result.editable) inputRef.current?.focus({ preventScroll: true });
@@ -539,6 +625,7 @@ export function ServerBrowserSurface(props: {
     const cancelled = type === "pointercancel";
     const touch = touchRef.current;
     if (cancelled && touch?.pointerId === pointerId) {
+      endTouchDrag(clientX, clientY);
       touchRef.current = probeRef.current = null;
       return;
     }
@@ -553,6 +640,10 @@ export function ServerBrowserSurface(props: {
           lastX: clientX,
           lastY: clientY,
           panning: false,
+          gesture: null,
+          latestX: clientX,
+          latestY: clientY,
+          decideTimer: null,
         };
         const last = lastProbeRef.current;
         const reusable =
@@ -565,6 +656,7 @@ export function ServerBrowserSurface(props: {
               x: point.x,
               y: point.y,
               editable: reusable ? last.editable : null,
+              drags: reusable ? last.drags : null,
               answered: false,
               tapped: false,
             }
@@ -580,17 +672,20 @@ export function ServerBrowserSurface(props: {
         )
           return;
         touch.panning = true;
-        if (point)
-          queueWheel(
-            point,
-            (touch.lastX - clientX) * point.scale,
-            (touch.lastY - clientY) * point.scale,
-            0,
-          );
-        touch.lastX = clientX;
-        touch.lastY = clientY;
+        touch.latestX = clientX;
+        touch.latestY = clientY;
+        if (touch.gesture === null) {
+          touch.gesture = "waiting";
+          // Outside the page there is nothing to drag.
+          const drags = probeRef.current ? probeRef.current.drags : false;
+          if (drags !== null) decideGesture(drags);
+          else touch.decideTimer = setTimeout(() => decideGesture(false), DRAG_DECIDE_MS);
+          return;
+        }
+        moveTouch();
         return;
       }
+      endTouchDrag(clientX, clientY);
       touchRef.current = null;
       const probe = probeRef.current;
       if (touch.panning) {

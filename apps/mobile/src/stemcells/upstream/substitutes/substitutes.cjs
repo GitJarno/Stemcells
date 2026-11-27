@@ -25,6 +25,9 @@ const SUBSTITUTES = {
   "packages/client-runtime/src/state/threads.ts": "threads.ts",
   "packages/client-runtime/src/state/subagentRuntime.ts": "subagentRuntime.ts",
   "packages/client-runtime/src/state/threadSubagents.ts": "threadSubagents.ts",
+  // A chat's browser tabs open in the column beside it, as its Device panel does.
+  "apps/mobile/src/features/browser/browser-preview-button.tsx": "browser-preview-button.tsx",
+  "apps/mobile/src/features/browser/ThreadBrowserFloat.tsx": "ThreadBrowserFloat.tsx",
   // A Cell's name heads its chat, and the feed fades under the composer.
   "apps/mobile/src/features/threads/ThreadComposer.tsx": "ThreadComposer.tsx",
   // The feed keeps its end as the ask a Cell's chat ends on comes into its footer.
