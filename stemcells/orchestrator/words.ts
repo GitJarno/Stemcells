@@ -52,10 +52,13 @@ export function wordsFor(
   let from: Piece | null = null;
   let last: Piece | null = null;
   const close = () => {
-    // A comma or a joining word left hanging where the next item was cut off says nothing.
+    // A comma left hanging where the next item was cut off, with its "and", says nothing.
     if (from && last)
       runs.push(
-        withoutLead(text.slice(from.start, last.end), heard).replace(/[\s,]+(?:and|then)?[\s,]*$/iu, ""),
+        withoutLead(text.slice(from.start, last.end), heard).replace(
+          /\s*,(?:\s*(?:and|then))?\s*$/iu,
+          "",
+        ),
       );
   };
   for (const piece of own) {
