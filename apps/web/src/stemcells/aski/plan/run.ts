@@ -25,6 +25,7 @@ import {
   settled,
   started,
   type Tray,
+  unsureField,
 } from "../../../../../../stemcells/orchestrator/tray.ts";
 import { placeLabel } from "../../../../../../stemcells/words/plans.ts";
 import { changePlan, closePlan, type LivePlan, planOf, readPlans } from "./store";
@@ -73,7 +74,7 @@ export interface RunnerHands {
 }
 
 /** How long a plan whose Cells all started stands before it leaves: its call-back time and a breath. */
-export const LINGER_MS = CALL_BACK_MS + 1_500;
+const LINGER_MS = CALL_BACK_MS + 1_500;
 /** How long a plan's rows stay planned in Awake: the list's own rows have taken over long before. */
 const ROWS_KEPT_MS = 90_000;
 
@@ -119,7 +120,6 @@ export function createRunner(hands: () => RunnerHands | null) {
       if (act.kind !== "start") return [];
       if (status !== "starting" && status !== "started" && status !== "waiting") return [];
       const facts = use.factsOf(act);
-      const why = act.why;
       const key = startedIn.get(`${live.id}/${act.i}`);
       const projectId = facts.projectId || (key?.slice(key.indexOf(":") + 1) ?? "");
       // A Cell with no project yet has no place in a list of projects' Cells: it waits in the plan.
@@ -133,14 +133,7 @@ export function createRunner(hands: () => RunnerHands | null) {
           modelName: facts.modelName,
           effort: facts.effort,
           tier: status === "waiting" ? "check" : "start",
-          unsure:
-            status !== "waiting"
-              ? undefined
-              : why.some((one) => one.startsWith("place-") || one === "new-project")
-                ? "place"
-                : act.model?.how === "near"
-                  ? "model"
-                  : "words",
+          unsure: status === "waiting" ? unsureField(act) : undefined,
           born: live.at,
           driver: facts.driver,
         },

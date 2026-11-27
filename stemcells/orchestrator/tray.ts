@@ -196,8 +196,19 @@ export const outcomeOf = (tray: Tray) =>
 export const settled = (tray: Tray): boolean =>
   tray.acts.every((one) => one.status !== "starting" && one.status !== "waiting");
 
-/** How many Cells fly, and how many acts wait. */
-export const counts = (tray: Tray) => ({
-  flying: tray.acts.filter((one) => one.status === "starting" || one.status === "started").length,
-  waiting: tray.acts.filter((one) => one.status === "waiting").length,
-});
+/** How many Cells fly, and how many wait. A deletion waits on its own card, uncounted. */
+export const counts = (tray: Tray) => {
+  const cells = tray.acts.filter((one) => one.act.kind === "start");
+  return {
+    flying: cells.filter((one) => one.status === "starting" || one.status === "started").length,
+    waiting: cells.filter((one) => one.status === "waiting").length,
+  };
+};
+
+/** The field of a waiting Cell its row in Awake marks as unsure. */
+export const unsureField = (act: StartAct): "place" | "model" | "words" =>
+  act.why.some((one) => one.startsWith("place-") || one === "new-project")
+    ? "place"
+    : act.model?.how === "near"
+      ? "model"
+      : "words";

@@ -27,9 +27,9 @@ export interface BookEntry {
 }
 
 /** How long a plan stays readable. */
-export const KEPT_MS = 2 * 60 * 60_000;
+const KEPT_MS = 2 * 60 * 60_000;
 /** How long after a plan a message with its words still counts as that plan's message. */
-export const NOTE_MS = 2 * 60_000;
+const NOTE_MS = 2 * 60_000;
 const MOST = 200;
 
 const entries = new Map<string, BookEntry>();
@@ -39,7 +39,7 @@ const expected = new Map<
   { readonly threadId: string; readonly text: string; readonly at: number; readonly made: Array<() => void> }
 >();
 /** How long a plan may be on its way before a message stops waiting for it. */
-export const MAKING_MS = 40_000;
+const MAKING_MS = 40_000;
 const waiting = new Map<string, Array<(outcome: ReadonlyArray<ActOutcome>) => void>>();
 
 function prune(now: number) {

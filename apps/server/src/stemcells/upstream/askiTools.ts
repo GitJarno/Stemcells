@@ -119,22 +119,26 @@ const unreadable = () =>
  * that does. A helper started with `delegate_task` runs on another instance and still acts on
  * what Aski read.
  */
-const callerOf = Effect.fnUntraced(function* (thread: McpInvocationContext.McpThreadCaller) {
-  const threads = filed;
-  if (threads === null)
-    return { askis: thread.providerInstanceId === ASKI_INSTANCE_ID, projectId: null };
-  let shell = yield* threads.getThreadShell(thread.threadId).pipe(Effect.mapError(unreadable));
-  const projectId: string | null = shell?.projectId ?? null;
-  if (thread.providerInstanceId === ASKI_INSTANCE_ID) return { askis: true, projectId };
-  for (let hop = 0; shell !== null; hop++) {
-    if (shell.providerInstanceId === ASKI_INSTANCE_ID || hop === MOST_HOPS)
-      return { askis: true, projectId };
-    const parent = shell.lineage.parentThreadId;
-    if (parent === null) break;
-    shell = yield* threads.getThreadShell(parent).pipe(Effect.mapError(unreadable));
-  }
-  return { askis: false, projectId };
-});
+const callerOf = Effect.fnUntraced(
+  function* (thread: McpInvocationContext.McpThreadCaller) {
+    const threads = filed;
+    if (threads === null)
+      return { askis: thread.providerInstanceId === ASKI_INSTANCE_ID, projectId: null };
+    let shell = yield* threads.getThreadShell(thread.threadId);
+    const projectId: string | null = shell?.projectId ?? null;
+    if (thread.providerInstanceId === ASKI_INSTANCE_ID) return { askis: true, projectId };
+    for (let hop = 0; shell !== null; hop++) {
+      if (shell.providerInstanceId === ASKI_INSTANCE_ID || hop === MOST_HOPS)
+        return { askis: true, projectId };
+      const parent = shell.lineage.parentThreadId;
+      if (parent === null) break;
+      shell = yield* threads.getThreadShell(parent);
+    }
+    return { askis: false, projectId };
+  },
+  // Who calls can't be read: nothing guarded runs.
+  Effect.mapError(unreadable),
+);
 
 /** `handlers` with the refusals in front; a call from no agent's chat passes as it is. */
 export function guardAskisTools<Handlers extends Record<string, unknown>>(handlers: Handlers): Handlers {

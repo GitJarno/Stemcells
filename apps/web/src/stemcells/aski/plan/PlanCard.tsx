@@ -30,15 +30,17 @@ import {
   FLOOR_LINE,
   headline,
   HOLD_HEARD,
+  HOLD_MS,
   HOLD_PRESS,
   HOLD_UNKNOWN,
   holdLine,
   holdStays,
   LEFT_OVER,
+  PLAN_STATUS_WORDS,
   placeLabel,
   START,
   START_ALL,
-  whyLine,
+  whyLines,
 } from "../../../../../../stemcells/words/plans.ts";
 import { useOpenFromNeeds } from "../../upstream/needs";
 import { Button } from "../../upstream/ui";
@@ -49,16 +51,6 @@ import { PlanRoom } from "./room";
 import { changePlan, closePlan, type LivePlan } from "./store";
 
 import "./plan.css";
-
-/** How long a hand stays down to confirm a deletion, in ms. */
-export const HOLD_MS = 1200;
-
-const STATUS_WORDS: Partial<Record<TrayAct["status"], string>> = {
-  starting: "Starting",
-  started: "Flying",
-  dropped: "Dropped",
-  "called-back": "Called back",
-};
 
 export function PlanCard(props: { live: LivePlan }) {
   const { live } = props;
@@ -71,7 +63,9 @@ export function PlanCard(props: { live: LivePlan }) {
     );
   const { plan } = tray;
   const { flying, waiting } = counts(tray);
-  const cells = tray.acts.filter((one) => one.act.kind === "start").length;
+  const cells = tray.acts.filter(
+    (one) => one.act.kind === "start" && one.status !== "dropped" && one.status !== "called-back",
+  ).length;
   const holding = held(tray);
   const startable = tray.acts.filter(
     (one) => one.status === "waiting" && one.act.kind === "start" && canStart(one.act),
@@ -157,10 +151,10 @@ function CellRow(props: {
   const open = useOpenFromNeeds();
   const waiting = one.status === "waiting";
   const [whole, setWhole] = useState(false);
-  const why = act.why.flatMap((each) => whyLine(act, each) ?? []);
+  const why = whyLines(act, props.holding);
   const model = act.model;
   const effort = model?.effort?.level ?? act.effort;
-  const status = STATUS_WORDS[one.status];
+  const status = one.status === "waiting" ? undefined : PLAN_STATUS_WORDS[one.status];
   return (
     <li
       data-plan-row=""

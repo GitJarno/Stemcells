@@ -3,6 +3,19 @@
 
 import type { Act, DestroyAct, StartAct, Why } from "../orchestrator/plan.ts";
 
+/** How long a hand stays down on a deletion before it runs, in ms. */
+export const HOLD_MS = 1200;
+
+/** An act's standing once it no longer waits, as its row says it. */
+export const PLAN_STATUS_WORDS = {
+  starting: "Starting",
+  started: "Flying",
+  dropped: "Dropped",
+  failed: "Didn’t start",
+  "called-back": "Called back",
+  done: "Done",
+} as const;
+
 /** Why a Cell waits, as its row says it; null when the reason needs no words. */
 export function whyLine(act: StartAct, why: Why): string | null {
   const place = act.place;
@@ -58,6 +71,8 @@ export const HOLD_UNKNOWN = "Aski couldn’t tell which. Nothing is deleted.";
 /** The plan's headline: "4 Cells · 3 flying · 1 waiting on you". */
 export function headline(cells: number, flying: number, waiting: number, reading: boolean): string {
   if (reading) return "Aski is reading…";
+  // A message that only deletes: its card says the rest.
+  if (cells === 0) return "Deletion";
   const parts = [`${cells} ${cells === 1 ? "Cell" : "Cells"}`];
   if (flying > 0 && waiting > 0) parts.push(`${flying} flying`);
   if (waiting > 0) parts.push(`${waiting} waiting on you`);
@@ -76,3 +91,16 @@ export const DICTATED = "Dictated";
 /** A row's place, as it reads. */
 export const placeLabel = (act: Act): string =>
   act.place === null ? "No project" : act.place.name;
+
+/**
+ * Why a Cell waits, a line each. `held` says a deletion still waits: once it is done or
+ * dropped, nothing is "after" it.
+ */
+export function whyLines(act: StartAct, held: boolean): string[] {
+  const lines = act.why.flatMap((why) => {
+    const line = why === "after-hold" && !held ? null : whyLine(act, why);
+    return line === null ? [] : [line];
+  });
+  if (act.model?.how === "near") lines.push(`Heard “${act.model.heard}”. ${act.model.name}?`);
+  return [...new Set(lines)];
+}

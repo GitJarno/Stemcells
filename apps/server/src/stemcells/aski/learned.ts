@@ -17,9 +17,9 @@ export const Learned = Schema.Struct({
 });
 export type Learned = typeof Learned.Type;
 
-export const NOTHING: Learned = { places: [], models: [] };
+const NOTHING: Learned = { places: [], models: [] };
 /** The most names kept of each kind; the oldest goes first. */
-export const LEARNED_MOST = 300;
+const LEARNED_MOST = 300;
 /** The longest word kept as a name: a name is a word or three. */
 const HEARD_MOST = 60;
 
@@ -42,7 +42,7 @@ export const readLearned = Effect.fn("AskiLearned.read")(function* (folder: stri
 });
 
 /** `known` with `more`: a word heard again takes its newest name, and the oldest go past the most. */
-export function withLearned(
+function withLearned(
   known: ReadonlyArray<{ readonly heard: string; readonly name: string }>,
   more: ReadonlyArray<{ readonly heard: string; readonly name: string }>,
 ): Array<{ heard: string; name: string }> {

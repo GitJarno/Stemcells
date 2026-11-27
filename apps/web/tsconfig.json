@@ -75,6 +75,7 @@
     "../../stemcells/orchestrator/tray.ts",
     "../../stemcells/orchestrator/wire.ts",
     "../../stemcells/risk/floor.ts",
+    "../../stemcells/recall/byEar.ts",
     "../../stemcells/recall/card.ts",
     "../../stemcells/recall/question.ts",
     "../../stemcells/recall/when.ts",

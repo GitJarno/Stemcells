@@ -13,7 +13,8 @@ import {
   thinkWith,
 } from "../../../../../../stemcells/orchestrator/wire.ts";
 import { cellNameOf } from "../../../../../../stemcells/words/cellNames.ts";
-import { feedPlannedRows, plannedRowsOf } from "../../home/plannedRows";
+import { throwTo } from "../../home/plannedArrivals";
+import { plannedRowsFeed } from "../../home/planFeed";
 import { isAway } from "../../home/tabs";
 import { cellSelection } from "../../upstream/cellInstance";
 import { askMachine } from "../../upstream/machines";
@@ -156,7 +157,26 @@ const hands: Hands = {
   tell: async (environmentId, outcome) => {
     await post(environmentId, OUTCOME_PATH, outcome);
   },
-  rows: (entries) => feedPlannedRows(plannedRowsOf(entries)),
+  rows: plannedRowsFeed({
+    factsOf: (environmentId, act, projectId) => {
+      const world = machineWorld(environmentId);
+      const chosen = act.selection ?? act.model ?? newCellDefaults(environmentId, projectId).model;
+      const slug = chosen === null ? undefined : "model" in chosen ? chosen.model : chosen.id;
+      const entry = world.models.find(
+        (model) => model.instanceId === chosen?.instanceId && model.id === slug,
+      );
+      return {
+        modelName: entry?.name ?? slug ?? "",
+        effort: act.model?.effort?.level ?? act.effort ?? undefined,
+        driver: readMachine(environmentId).config?.providers.find(
+          (provider) => provider.instanceId === chosen?.instanceId,
+        )?.driver,
+      };
+    },
+    throwTo,
+    now: () => Date.now(),
+    later: (ms, run) => setTimeout(run, ms),
+  }),
   now: () => Date.now(),
   later: (ms, run) => {
     const timer = setTimeout(run, ms);

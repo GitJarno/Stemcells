@@ -15,21 +15,14 @@ import {
   type Status,
   type Tray,
 } from "../../../../../../stemcells/orchestrator/tray.ts";
-import { DEFAULT_MODEL, headline, whyLine } from "../../../../../../stemcells/words/plans.ts";
+import { DEFAULT_MODEL, headline } from "../../../../../../stemcells/words/plans.ts";
 import { conciseModelName } from "../../../../../../stemcells/models/names.ts";
 
-/** How long a hand stays on a deletion before it runs. */
-export const HOLD_MS = 1_200;
-
-/** A Cell's standing once it no longer waits, as its row says it. */
-export const STATUS_WORDS: Readonly<Record<Exclude<Status, "waiting">, string>> = {
-  starting: "Starting",
-  started: "Flying",
-  dropped: "Dropped",
-  failed: "Didn’t start",
-  "called-back": "Called back",
-  done: "Done",
-};
+export {
+  HOLD_MS,
+  PLAN_STATUS_WORDS as STATUS_WORDS,
+  whyLines,
+} from "../../../../../../stemcells/words/plans.ts";
 
 export const PLAN_GONE = "This plan is no longer here.";
 export const PLAN_UNREACHABLE = "The plan can’t be read from here.";
@@ -79,19 +72,6 @@ export function unsureOf(act: StartAct): { readonly place: boolean; readonly mod
   };
 }
 
-/**
- * Why a Cell waits, a line each, in the plan's own words. `held` says a deletion still waits:
- * once it is done or dropped, nothing is "after" it.
- */
-export function whyLines(act: StartAct, held: boolean): string[] {
-  const lines = act.why.flatMap((why) => {
-    const line = why === "after-hold" && !held ? null : whyLine(act, why);
-    return line === null ? [] : [line];
-  });
-  if (act.model?.how === "near") lines.push(`Heard “${act.model.heard}”. ${act.model.name}?`);
-  return [...new Set(lines)];
-}
-
 export interface MessageSpan {
   readonly text: string;
   readonly risky: boolean;
@@ -130,7 +110,7 @@ export function headOf(tray: Tray): {
   const cells = starts.filter(
     (one) => one.status !== "dropped" && one.status !== "called-back",
   ).length;
-  const { flying, waiting } = counts({ ...tray, acts: starts });
+  const { flying, waiting } = counts(tray);
   const startable = starts.filter(
     (one) => one.act.kind === "start" && one.status === "waiting" && canStart(one.act),
   ).length;
