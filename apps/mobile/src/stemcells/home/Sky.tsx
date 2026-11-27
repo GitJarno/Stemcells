@@ -2,7 +2,7 @@
 // Awake, night over Asleep, and the sun rising or setting between. Drawn once, in layers whose opacity and place alone follow
 // the one progress (`useSky.ts`), on the UI thread; while it stands, nothing moves or redraws.
 
-import { memo, type ReactNode, use, useState } from "react";
+import { memo, type ReactNode, useState } from "react";
 import {
   type StyleProp,
   StyleSheet,
@@ -35,11 +35,7 @@ import {
   starGroups,
   warmth,
 } from "../line/kit";
-import {
-  NativePrimaryColumnContext,
-  useAppearancePreferences,
-  useContentTopInset,
-} from "../upstream/home";
+import { useAppearancePreferences, useContentTopInset, useHomeSidebar } from "../upstream/home";
 import { STAGE_ROOM, useMoonPhase } from "./state";
 import { fallen } from "./useSky";
 
@@ -57,13 +53,13 @@ const { r: R, sinks: SINKS, rises: RISES, halo: HALO } = SKY_SHAPE.body;
  */
 export function Sky() {
   const top = useContentTopInset();
-  const primaryColumn = use(NativePrimaryColumnContext);
+  const sidebar = useHomeSidebar();
   const window = useWindowDimensions();
   const [measured, setMeasured] = useState<number | null>(null);
   const { themeAppearance } = useAppearancePreferences();
   if (top === 0) return null;
   // The sidebar's width is its own: it draws once measured.
-  const width = measured ?? (primaryColumn ? null : window.width);
+  const width = measured ?? (sidebar ? null : window.width);
   const height = top + STAGE_ROOM + SKY_SHAPE.tail;
   return (
     <View
