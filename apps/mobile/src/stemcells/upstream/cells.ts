@@ -10,6 +10,7 @@ import { useAppearancePreferences } from "../../features/settings/appearance/App
 import { useProject } from "../../state/entities";
 import { threadListEnvironmentsAtom } from "../../state/presentation";
 import { environmentThreadShells } from "../../state/threads";
+import { quietShellsOf } from "./quietShells";
 import type { EnvironmentThreadShell } from "./threads";
 
 export * from "./threads";
@@ -33,11 +34,17 @@ export function useProjectAt(place: {
   });
 }
 
-/** What `select` reads from every chat the phone knows; the caller draws again only when that changes. */
+const quietShellsAtom = quietShellsOf(environmentThreadShells);
+
+/**
+ * What `select` reads from every chat the phone knows; the caller draws again only when that
+ * changes. A streaming chat's shell is as of its last change that isn't a streamed item: its
+ * `updatedAt`, item counts and latest message wait for the next one (`quietShells.ts`).
+ */
 export function useThreadShellsSelected<A>(
   select: (threads: ReadonlyArray<EnvironmentThreadShell>) => A,
 ): A {
-  return useAtomValue(environmentThreadShells.threadShellsAtom, select);
+  return useAtomValue(quietShellsAtom, select);
 }
 
 /** Each environment's providers, by environment: a Cell's driver is its provider's. */

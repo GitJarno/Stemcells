@@ -12,6 +12,7 @@ import * as Upstream from "../../../native/NativeScrollViewMarker";
 import { useDeviceType } from "../../../native/native-layout-metrics";
 import { FeedFade } from "../../aski/FeedFade";
 import { useChatInView } from "../../chat/inView";
+import { useKeepsPlace } from "../../chat/keepsPlace";
 import { headerEdges } from "../../edge/headerEdge";
 import { ScreenVeils } from "../../edge/ScreenVeils";
 import { useStageScrollView } from "../../home/stageScroll";
@@ -71,9 +72,11 @@ export function NativeScrollViewMarker(
         })
       : props.children;
   const chat = useChatInView();
+  const place = useKeepsPlace(child?.props.ref, child?.props.onScroll ?? undefined);
+  const kept = chat !== null && child !== null && !noBand ? cloneElement(child, place) : children;
   const scroll = (
     <Upstream.NativeScrollViewMarker {...props} scrollEdgeEffects={effects}>
-      {children}
+      {kept}
     </Upstream.NativeScrollViewMarker>
   );
   // Around the marker, never inside it: the native marker takes its one child for the scroll view.
