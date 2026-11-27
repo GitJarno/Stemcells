@@ -285,6 +285,8 @@ export const COLLECTION = {
   newBody: "The new body",
   newBodyWhat:
     "A preview. The Cell over a chat's composer is drawn from its model: it pulls a laptop out to work, and grows with the strength it earns. It wears nothing yet, and shows on this device only.",
+  newBodyWhatPhone:
+    "A preview. The Cell at the top of a chat is drawn from its model: it pulls a laptop out to work. It wears nothing and does not grow yet, and shows on this phone only.",
   earnedAlone: "Earned",
   acts: (n: number) => `Acts · ${n} it can do`,
   feats: (earned: number, all: number) => `Feats · ${earned} of ${all}`,

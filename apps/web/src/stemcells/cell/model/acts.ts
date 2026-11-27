@@ -7,6 +7,17 @@ import type { Vec3 } from "./shapes.ts";
 
 export type Act = "rest" | "thinking" | "writing" | "watching" | "asking" | "landed" | "asleep";
 
+/** Where each act stands still under Reduce Motion: ms into it, at its telling pose. */
+export const STILL: Readonly<Record<Act, number>> = {
+  rest: 0,
+  thinking: 3000,
+  writing: 2500,
+  watching: 2500,
+  asking: 300,
+  landed: 2700,
+  asleep: 1000,
+};
+
 const AT_WORK: ReadonlySet<Act> = new Set(["thinking", "writing", "watching"]);
 
 interface Spring {

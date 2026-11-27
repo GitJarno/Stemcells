@@ -133,6 +133,7 @@ function Title(props: {
             thread={thread}
             points={POINTS}
             plays
+            stage
             formingFrom={formingFrom(thread.id, thread.createdAt)}
           />
         </Pressable>

@@ -4,7 +4,6 @@
 // keeps its picks, and when a row starts to leave. Where its foot stands: `overSearch.ts`.
 
 import { useAtomValue } from "@effect/atom-react";
-import { Directory, File, Paths } from "expo-file-system";
 import { use } from "react";
 import { Keyboard, useWindowDimensions } from "react-native";
 
@@ -13,7 +12,6 @@ import { useBarInset } from "../../components/ui/useBarInset";
 import { useAdaptiveWorkspaceLayout } from "../../features/layout/adaptive-workspace-context";
 import { useWorkspaceTabs } from "../../features/layout/workspace/WorkspaceTabsContext";
 import { useSelectWorkspaceDetail } from "../../features/layout/workspace/useSelectWorkspaceDetail";
-import { writeFileAtomically } from "../../lib/atomic-file";
 import { isDuoDevice } from "../../lib/device-type";
 import { useDeviceType } from "../../native/native-layout-metrics";
 import { NativePrimaryColumnContext } from "../../native/v5-workspace-context";
@@ -92,19 +90,4 @@ export function useShowHome() {
   };
 }
 
-const keptFile = (name: string) => new File(new Directory(Paths.document, "stemcells"), name);
-
-/** A small file of ours on the phone, read whole; null when there's none yet. */
-export function readKept(name: string): string | null {
-  try {
-    const file = keptFile(name);
-    return file.exists ? file.textSync() : null;
-  } catch {
-    return null;
-  }
-}
-
-/** Writes a small file of ours whole, so a crash mid-write leaves the last one. */
-export function writeKept(name: string, text: string): Promise<void> {
-  return writeFileAtomically(keptFile(name), text).catch(() => undefined);
-}
+export { readKept, writeKept } from "./kept";
