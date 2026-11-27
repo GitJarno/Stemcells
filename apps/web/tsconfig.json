@@ -67,6 +67,13 @@
     "../../stemcells/ledger/feats.ts",
     "../../stemcells/ledger/ladders.ts",
     "../../stemcells/ledger/marks.ts",
+    "../../stemcells/orchestrator/gate.ts",
+    "../../stemcells/orchestrator/names.ts",
+    "../../stemcells/orchestrator/pieces.ts",
+    "../../stemcells/orchestrator/plan.ts",
+    "../../stemcells/orchestrator/tray.ts",
+    "../../stemcells/orchestrator/wire.ts",
+    "../../stemcells/risk/floor.ts",
     "../../stemcells/settings/controls.ts",
     "../../stemcells/settings/fence.ts",
     "../../stemcells/settings/places.ts",
@@ -85,6 +92,7 @@
     "../../stemcells/words/inbox.ts",
     "../../stemcells/words/marks.ts",
     "../../stemcells/words/planned.ts",
+    "../../stemcells/words/plans.ts",
     "../../stemcells/words/prose.ts",
     "../../stemcells/words/subcells.ts"
   ]

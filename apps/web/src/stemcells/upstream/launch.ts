@@ -92,6 +92,12 @@ export interface CellStart {
     readonly effort: { readonly option: string; readonly level: string } | null;
   } | null;
   readonly text: string;
+  /** A model as a launch takes it, whole (a plan Aski's chat proposed names one so). */
+  readonly selection?: ModelSelection;
+  /** The thread the Cell will be, when its plan minted one (`aski/plan`); else a new one. */
+  readonly threadId?: string;
+  /** Its title, when its plan wrote one; else the first words of its message. */
+  readonly title?: string;
 }
 
 export type CellStarted =
@@ -115,15 +121,17 @@ export function useStartCells(): (
         const { environmentId, projectId } = projectRef;
         const project = readProject(projectRef);
         if (!project) return { ok: false, error: "That project isn't here any more." };
-        const selection = cell.model
-          ? createModelSelection(
-              cell.model.instanceId as ProviderInstanceId,
-              cell.model.model,
-              cell.model.effort
-                ? [{ id: cell.model.effort.option, value: cell.model.effort.level }]
-                : [],
-            )
-          : (setup.pick ?? startingModel(projectRef) ?? setup.current);
+        const selection = cell.selection
+          ? cell.selection
+          : cell.model
+            ? createModelSelection(
+                cell.model.instanceId as ProviderInstanceId,
+                cell.model.model,
+                cell.model.effort
+                  ? [{ id: cell.model.effort.option, value: cell.model.effort.level }]
+                  : [],
+              )
+            : (setup.pick ?? startingModel(projectRef) ?? setup.current);
         if (!selection)
           return { ok: false, error: `No model to start a Cell in ${project.title} on.` };
         const provider = appAtomRegistry
@@ -151,11 +159,13 @@ export function useStartCells(): (
         const own = environmentId === setup.environmentId && projectId === setup.projectId;
         const branch = own ? setup.branch : null;
         const worktree = own && setup.worktree && branch !== null;
-        const title = deriveThreadTitleSeed({
-          text: cell.text,
-          attachments: carry?.attachments ?? [],
-        });
-        const threadId = newThreadId();
+        const title =
+          cell.title ??
+          deriveThreadTitleSeed({
+            text: cell.text,
+            attachments: carry?.attachments ?? [],
+          });
+        const threadId = cell.threadId === undefined ? newThreadId() : (cell.threadId as ThreadId);
         const createdAt = new Date().toISOString();
         const result = await startTurn({
           environmentId,

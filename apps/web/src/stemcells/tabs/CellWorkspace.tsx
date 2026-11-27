@@ -18,6 +18,7 @@ import { CollectionWatch } from "../collection/CollectionWatch";
 import { EnvSlotHost, LineSlotHost } from "../composer/LineSlotHost";
 import { ComposerStashSlot } from "../composer/slot";
 import { AskiSpawn } from "../aski/AskiSpawn";
+import { PlanRunner } from "../aski/plan/PlanRunner";
 import { showAskiStays } from "../aski/stays";
 import { useAskiTabOn } from "../aski/tabSwitch";
 import { showMarksWhileScrolling } from "../scrollIndicator/scrollIndicator";
@@ -569,6 +570,7 @@ export function CellWorkspace(props: {
       <AskiMomentWatch aski={askiOn && askiChat.status === "ready" ? askiChat.cell : null} />
       <CollectionWatch />
       <AskiSpawn />
+      <PlanRunner aski={askiOn && askiChat.status === "ready" ? askiChat.cell : null} />
       <WindowsKeeper onMoved={routeToFocused} onFocusPane={focusPaneAndRoute} />
       <SettledComeBack rowWidth={gridWidth} />
     </>

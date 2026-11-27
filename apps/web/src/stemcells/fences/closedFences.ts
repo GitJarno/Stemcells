@@ -1,12 +1,13 @@
-// Which of our fences a reply has closed (stemcells/tasks/chart-fence.md, settings-in-chat.md).
+// Which of our fences a reply has closed (stemcells/tasks/chart-fence.md, settings-in-chat.md,
+// aski-orchestrator.md).
 // Upstream draws every fence through `MarkdownCodeBlock`, whose substitute draws ours only for a
 // fence named here: one still streaming, or never closed, stays the code block it is.
 import { createContext } from "react";
 
 /** Our fences' languages. */
-const OUR_FENCES: ReadonlyArray<string> = ["chart", "setting"];
+const OUR_FENCES: ReadonlyArray<string> = ["chart", "setting", "plan"];
 
-const MAY_HOLD = /(?:`{3,}|~{3,})[ \t]*(?:chart|setting)\b/;
+const MAY_HOLD = /(?:`{3,}|~{3,})[ \t]*(?:chart|setting|plan)\b/;
 
 export interface FencesInView {
   /** Each closed fence of ours, by `fenceKey`. */

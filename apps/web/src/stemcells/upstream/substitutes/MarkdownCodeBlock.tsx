@@ -1,13 +1,16 @@
 /**
  * Replaces `components/chat/MarkdownCodeBlock.tsx` (`plugin.ts`): in a reply, a closed `chart`
- * fence that reads draws as a chart, and a `setting` fence as its card (`fences/closedFences.ts`).
+ * fence that reads draws as a chart, a `setting` fence as its card, and a `plan` fence as the
+ * plan Aski proposed (`fences/closedFences.ts`).
  * Every other block, and a fence still streaming, is upstream's.
  */
 import { type ComponentProps, use } from "react";
 
 import { parseChart } from "../../../../../../stemcells/chart/parse.ts";
+import { PLAN_FENCE, planIdOfFence } from "../../../../../../stemcells/orchestrator/wire.ts";
 import { readSettingFence } from "../../../../../../stemcells/settings/fence.ts";
 import { MarkdownCodeBlock as UpstreamMarkdownCodeBlock } from "../../../components/chat/MarkdownCodeBlock";
+import { PlanFence } from "../../aski/plan/PlanFence";
 import { ChartFence } from "../../chart/ChartFence";
 import { fenceKey, FencesInView } from "../../fences/closedFences";
 import { SettingCard } from "../../settings/SettingCard";
@@ -23,6 +26,8 @@ export function MarkdownCodeBlock(props: ComponentProps<typeof UpstreamMarkdownC
       return <ChartFence source={source} />;
     if (props.language === "setting" && readSettingFence(source) !== null)
       return <SettingCard source={source} environmentId={fences.environmentId} />;
+    const planId = props.language === PLAN_FENCE ? planIdOfFence(source) : null;
+    if (planId !== null) return <PlanFence id={planId} />;
   }
   return <UpstreamMarkdownCodeBlock {...props} />;
 }
