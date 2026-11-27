@@ -381,12 +381,17 @@ describe("the Cells' column", () => {
       const plate = awake
         .element()
         .querySelector<HTMLElement>(`[data-cells-thread="${id}"] [data-cells-open]`)!;
-      return [plate.dataset.light, plate.style.getPropertyValue("--cells-row-tone")];
+      return [
+        plate.dataset.light,
+        plate.style.getPropertyValue("--cells-row-tone"),
+        plate.querySelector("[data-cells-row-status]")?.getAttribute("aria-label") ?? null,
+      ];
     };
-    expect(light("thread-w")).toEqual(["flying", "var(--sc-provider-claude)"]);
-    expect(light("thread-a")).toEqual(["needs", "var(--sc-needs-you)"]);
-    expect(light("thread-l2")).toEqual(["news", "var(--sc-provider-claude)"]);
-    expect(light("thread-l1")).toEqual(["seen", "var(--sc-provider-claude)"]);
+    // The light stays the provider's; the icon says what the Cell does or needs.
+    expect(light("thread-w")).toEqual(["flying", "var(--sc-provider-claude)", "Flying"]);
+    expect(light("thread-a")).toEqual(["needs", "var(--sc-provider-claude)", "Input"]);
+    expect(light("thread-l2")).toEqual(["news", "var(--sc-provider-claude)", "Landed"]);
+    expect(light("thread-l1")).toEqual(["seen", "var(--sc-provider-claude)", null]);
     // Only a flying Cell's band crosses.
     await vi.waitFor(() =>
       expect(

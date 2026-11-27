@@ -268,10 +268,34 @@
   opacity: 0;
 }
 
+/* An awake row's status: T3's icon in a place of its own, kept when empty,
+   and the time right-aligned in three even-width characters, so icons stand
+   in one column and times end together, whether "2m", "12m" or "23h". */
+[data-light] [data-cells-row-age] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+}
+[data-cells-row-status] {
+  display: inline-grid;
+  place-items: center;
+  width: 0.75rem;
+  height: 0.75rem;
+}
+[data-cells-row-status] svg {
+  width: 100%;
+  height: 100%;
+}
+[data-light] [data-cells-row-time] {
+  min-width: 3ch;
+  font-family: var(--sc-font-mono);
+  text-align: end;
+}
+
 /* An awake row's light (stemcells/tasks/awake-asleep.md, decision 3): the
-   composer's wash (`glow/light.ts`, WASH: its alphas and lifts) from the
-   Cell outward, in the provider's tone or Input's amber, painted once.
-   Seen, it is faint. The tone is typed, so a recolour fades. */
+   row's pill tinted evenly in its provider's tone, the band crossing it while
+   the Cell flies; its icon says what it does or needs. Seen, it is faint. The
+   tone is typed, so a recolour fades. */
 @property --cells-row-tone {
   syntax: "<color>";
   inherits: true;
@@ -287,18 +311,12 @@
 /* The light clips its band, never the Cell, which may hop out of its box. */
 [data-cells-light] {
   position: absolute;
-  inset: 0;
+  /* Dark between two lit rows. */
+  inset: 1px 0;
   z-index: -1;
   overflow: clip;
   border-radius: inherit;
-  /* A glow from the Cell, gone before the row's middle and its edges: the
-     Cell is the light, so the rows read as a list, not as tinted cards. */
-  background: radial-gradient(
-    ellipse 7.5rem 42% at var(--cells-row-cell-x) 50%,
-    color-mix(in srgb, color-mix(in srgb, var(--cells-row-tone), white 12%) 30%, transparent),
-    color-mix(in srgb, var(--cells-row-tone) 9%, transparent) 55%,
-    transparent
-  );
+  background: color-mix(in srgb, var(--cells-row-tone) 13%, transparent);
   pointer-events: none;
   transition: opacity var(--sc-motion-fade-duration) var(--sc-motion-fade-easing);
 }
@@ -324,8 +342,8 @@
   transform: translateX(-100vw);
 }
 /* A row entering its stage blooms once (`rowMotion.ts` animates
-   `--cells-bloom`): its light at full over the row's own, then gone. Asleep's
-   rows wear no light of their own, so theirs is the accent's. */
+   `--cells-bloom`): a light over the row's own, then gone. Asleep's rows wear
+   no light of their own, so theirs is the accent's. */
 @property --cells-bloom {
   syntax: "<number>";
   inherits: true;
@@ -338,15 +356,11 @@
 [data-cells-open]::before {
   content: "";
   position: absolute;
-  inset: 0;
+  inset: 1px 0;
   z-index: -1;
   border-radius: inherit;
-  background: radial-gradient(
-    ellipse 7.5rem 42% at var(--cells-row-cell-x, calc(var(--sc-space-md) + 0.6rem)) 50%,
-    color-mix(in srgb, color-mix(in srgb, var(--cells-bloom-tone), white 12%) 30%, transparent),
-    color-mix(in srgb, var(--cells-bloom-tone) 9%, transparent) 55%,
-    transparent
-  );
+  /* The row's own light, a little stronger: it settles to the light's level. */
+  background: color-mix(in srgb, var(--cells-bloom-tone) 20%, transparent);
   opacity: var(--cells-bloom);
   pointer-events: none;
   --cells-bloom-tone: var(--cells-row-tone);

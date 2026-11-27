@@ -37,8 +37,10 @@ export {
   byRecent,
   ROW_LIGHT,
   rowStateOf,
+  rowStatusOf,
   type Launchable,
   type RowLight,
+  type RowStatus,
 } from "../../../../web/src/stemcells/rail/awake.ts";
 export {
   type Bezier,
@@ -49,5 +51,6 @@ export {
   EMPTY_WORDS,
   sleptWords,
   STAGE_WORDS,
+  STATUS_WORDS,
   wakesWords,
 } from "../../../../../stemcells/words/awake.ts";

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { byRecent, launchedAt, rowStateOf, type Launchable } from "./awake";
+import { byRecent, launchedAt, rowStateOf, rowStatusOf, type Launchable } from "./awake";
 
 const at = (minute: number) => new Date(Date.UTC(2026, 10, 26, 12, minute)).toISOString();
 
@@ -82,5 +82,17 @@ describe("rowStateOf", () => {
     [undefined, false, "seen"],
   ] as const)("%s, unseen %s, is %s", (stage, unseen, expected) => {
     expect(rowStateOf(stage, unseen)).toBe(expected);
+  });
+});
+
+describe("rowStatusOf", () => {
+  it.each([
+    ["flying", false, "working"],
+    ["needs", false, "input"],
+    ["needs", true, "approval"],
+    ["news", false, "done"],
+    ["seen", false, null],
+  ] as const)("%s, approval %s, shows %s", (state, approval, expected) => {
+    expect(rowStatusOf(state, approval)).toBe(expected);
   });
 });

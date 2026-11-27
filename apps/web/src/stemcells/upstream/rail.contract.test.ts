@@ -40,8 +40,14 @@ describe("upstream's sidebar, as rail.css reads it", () => {
     expect(sidebar).toContain('data-slot="sidebar-rail"');
   });
 
-  it("says on its wrapper whether it shows, and where the titlebar's content starts", () => {
+  it("says on its wrapper whether it shows, where a drag would leave it, and where the titlebar's content starts", () => {
     expect(sidebar).toContain("data-sidebar-state={state}");
+    expect(sidebar).toContain(
+      'wrapper.dataset.sidebarDragState = collapsePending ? "collapsed" : "expanded";',
+    );
+    expect(sidebar).toContain(
+      'wrapper.dataset.sidebarDragState = restorePending ? "expanded" : "collapsed";',
+    );
     expect(sidebar).toContain('"--workspace-titlebar-content-left":');
   });
 

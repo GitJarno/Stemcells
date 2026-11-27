@@ -3,11 +3,15 @@ import {
   ChartNoAxesColumnIcon,
   ChevronDownIcon,
   ChevronsLeftIcon,
+  CircleCheckIcon,
+  CircleDashedIcon,
   FolderPlusIcon,
   ListIcon,
+  MessageCircleQuestionIcon,
   MoonIcon,
   SearchIcon,
   SettingsIcon,
+  ShieldQuestionIcon,
   SquarePenIcon,
   SunIcon,
 } from "lucide-react";
@@ -74,10 +78,19 @@ import {
   EMPTY_WORDS,
   SLEEP,
   STAGE_WORDS,
+  STATUS_WORDS,
   WAKE,
   wakesWords,
 } from "../../../../../stemcells/words/awake.ts";
-import { byRecent, type Launchable, ROW_LIGHT, rowStateOf, type RowState } from "./awake";
+import {
+  byRecent,
+  type Launchable,
+  ROW_LIGHT,
+  rowStateOf,
+  type RowState,
+  type RowStatus,
+  rowStatusOf,
+} from "./awake";
 import { useColumnStore, type ColumnStage } from "./column";
 import { shows } from "./filter";
 import { Hops } from "./Hops";
@@ -478,15 +491,15 @@ function Asleep(props: {
 
 /**
  * An awake Cell on one line: the Cell, its project's mark and its title, and how long it has
- * been like this. Behind it the composer's light from the Cell outward, in its provider's tone
- * or Input's amber (stemcells/tasks/awake-asleep.md, decision 3); Sleep takes the time's place.
+ * been like this beside T3's icon for what it does or needs. Behind the Cell a lamp in its
+ * provider's tone (stemcells/tasks/awake-asleep.md, decision 3); Sleep takes the time's place.
  */
 function AwakeCell(props: { row: AwakeRow; now: number; onSleep: () => void }) {
   const { row } = props;
   const ref = { ...row.cell, draftId: null };
   const { driver, unseen } = useCellLightFacts(ref);
   const state = rowStateOf(row.holds === null ? row.stage : undefined, unseen);
-  const tone = ROW_LIGHT[state].tone === "input" ? "--sc-needs-you" : toneTokenOf(driver);
+  const tone = toneTokenOf(driver);
   return (
     <CellLine
       cell={row.cell}
@@ -551,6 +564,8 @@ function CellLine(props: {
   const shell = useCellShell(ref);
   const onOpen = () => open(props.cell);
   const { light } = props;
+  const status =
+    light === null ? null : rowStatusOf(light.state, shell?.hasPendingApprovals === true);
   return (
     <li
       data-cells-row=""
@@ -592,9 +607,15 @@ function CellLine(props: {
           {shell === null ? null : <CellProjectMark shell={shell} />}
           <span data-cells-row-title="">{props.title}</span>
           <span data-cells-row-end="">
-            <span data-cells-row-age="">
-              {props.when ??
-                (shell === null ? null : <CellAge shell={shell} settled={light === null} />)}
+            <span
+              data-cells-row-age=""
+              className={status === null ? undefined : STATUS_ICON[status].className}
+            >
+              {light === null ? null : <RowStatusIcon status={status} />}
+              <span data-cells-row-time="">
+                {props.when ??
+                  (shell === null ? null : <CellAge shell={shell} settled={light === null} />)}
+              </span>
             </span>
             <button
               type="button"
@@ -612,6 +633,27 @@ function CellLine(props: {
         </CellCard>
       </div>
     </li>
+  );
+}
+
+/** T3's sidebar status icons and their colours (`components/sidebar/SidebarThreadRow.tsx`). */
+const STATUS_ICON: Readonly<
+  Record<RowStatus, { readonly Icon: typeof CircleDashedIcon; readonly className: string }>
+> = {
+  working: { Icon: CircleDashedIcon, className: "text-info-foreground" },
+  input: { Icon: MessageCircleQuestionIcon, className: "text-indigo-600 dark:text-indigo-300" },
+  approval: { Icon: ShieldQuestionIcon, className: "text-warning-foreground" },
+  done: { Icon: CircleCheckIcon, className: "text-success-foreground" },
+};
+
+/** The icon's place before the time, kept when there is none, so every row's time lines up. */
+function RowStatusIcon(props: { status: RowStatus | null }) {
+  if (props.status === null) return <span data-cells-row-status="" aria-hidden />;
+  const { Icon } = STATUS_ICON[props.status];
+  return (
+    <span data-cells-row-status="" role="img" aria-label={STATUS_WORDS[props.status]}>
+      <Icon aria-hidden />
+    </span>
   );
 }
 
