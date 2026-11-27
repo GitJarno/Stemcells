@@ -75,6 +75,7 @@ export function CellMark(props: { cell: CellRef | null; points?: number; stage?:
           mood={mood === "awake" && deep ? "meditating" : mood}
           activity={activity}
           provider={provider}
+          look={look}
           points={props.points ?? POINTS}
           strength={strength}
         />
