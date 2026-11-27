@@ -135,6 +135,11 @@ scan.
 On an iPhone, the home stands your Cells on the same line as the column on
 your computer:
 
+- **Input**: the Cells waiting on you, the longest waiting first. Tap the
+  top one, answer, and the next opens in its place; Back returns to the
+  list. On an iPad or an unfolded Duo, and on your computer, turning to
+  Input opens the top one beside the list. Once the last is answered, it
+  says what you got going again.
 - **Awake**: every Cell in play, the one you last sent off on top. A row
   never moves on its own; its icon says whether the Cell is flying, has
   landed, or asks you something (Input). **Sleep** the ones you're done

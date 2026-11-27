@@ -41,13 +41,28 @@ Asleep. Going through it is a loop: read the ask, answer, next.
 
 ## Plan
 
-- [ ] `no-undo.md`: answers, Sleep, Sleep until… and Wake act at once, with
+- [x] `no-undo.md`: answers, Sleep, Sleep until… and Wake act at once, with
       no undo line; deleting keeps its undo
-- [ ] Input back as a stage on the phone and the Mac, longest waiting first
-- [ ] Entering Input opens the top chat where a chat stands beside the list
-- [ ] The loop: answered, the row leaves toward Awake, the next opens
-- [ ] Progress in the count and the dawn; the all-clear moment and its facts
-- [ ] Words, docs, tests; Aski's `stemcells_show` takes Input again
+- [x] Input back as a stage on the phone and the Mac, longest waiting first
+- [x] Entering Input opens the top chat where a chat stands beside the list
+- [x] The loop: answered, the row leaves Input, the next opens
+- [x] Progress in the count; the all-clear moment and its facts. The dawn
+      and sunrise wait for `day-night.md`, which reads `inbox/sky.ts`
+- [x] Words, docs, tests; Aski's `stemcells_show` takes Input again
 - [ ] Gates, pull request, merge, seen on the Duo, an iPhone and the Mac
 
 ## Review
+
+- One loop for both clients (`apps/web/src/stemcells/inbox/loop.ts`): a Cell
+  is answered when its ask leaves Input, however it was answered (a card's
+  button, words, another device), so nothing advances twice. The loop opens
+  the next only while the person stays on the chat it opened; another chat
+  stops it. The Mac opens in the focused pane (a draft or Aski's tab keeps
+  theirs, so the chat opens as any does); the phone replaces the chat.
+- Refined: an answered row leaves Input with the lists' plain leave, with no
+  flight to Awake: it never left Awake, and the column stays calm.
+- "N Cells flying again" counts the Cells the clearing went through that
+  are awake now; those put off or slept aren't flying.
+- The sky (`day-night.md`) reads `useInboxSky()`: `progress` for the dawn's
+  steps, `clears` growing for the sunrise. `allClear()` in `inbox/sky.ts` is
+  where its `riseSky()` call goes.
