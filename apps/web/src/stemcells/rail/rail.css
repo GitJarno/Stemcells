@@ -32,18 +32,25 @@
 /* Upstream's sidebar takes the rail's width. It reads `--sidebar-width` on
    its gap and its container, both inside this element, so setting it here
    overrides the width its provider sets above. No resize handle on the
-   rail: it has one width. */
+   rail: it has one width. Nor the edge that drags a hidden sidebar back:
+   it would draw the rail at the drag's width and keep that width for the
+   Cells' column. The sidebar button and its shortcut show the rail. */
 :root[data-stemcells-column="rail"] [data-slot="sidebar"]:has(> [data-app-sidebar]) {
   --sidebar-width: var(--stemcells-rail-width);
 }
-:root[data-stemcells-column="rail"] [data-app-sidebar] [data-slot="sidebar-rail"] {
+:root[data-stemcells-column="rail"] [data-app-sidebar] [data-slot="sidebar-rail"],
+:root[data-stemcells-column="rail"] [data-slot="sidebar-restore-edge"] {
   display: none;
 }
 
 /* The tab strip starts after upstream's sidebar button and the window's
    controls: past them on the frame while the column is hidden, as
-   upstream's own headers do, and past what of them overhangs the rail. */
-[data-sidebar-state="collapsed"] [data-stemcells-tab-strip] {
+   upstream's own headers do, and past what of them overhangs the rail.
+   Mid-drag it already stands where letting go leaves the column, as
+   upstream's headers do (`workspaceTitlebar.ts`). */
+[data-sidebar-state="collapsed"]:not([data-sidebar-drag-state="expanded"])
+  [data-stemcells-tab-strip],
+[data-sidebar-drag-state="collapsed"] [data-stemcells-tab-strip] {
   padding-inline-start: var(--workspace-titlebar-content-left);
 }
 :root[data-stemcells-column="rail"] [data-sidebar-state="expanded"] [data-stemcells-tab-strip] {
