@@ -92,7 +92,9 @@ The chat is where these meet, on both surfaces.
     a substitute turns that off for every chat
     (`upstream/substitutes/legendapp-list-keyboard.tsx`).
   - The Mac: the timeline has always laid out from its top.
-- The sent message enters, and so does each reply as it arrives.
+- The sent message enters, and so does each reply as it arrives: the feed
+  hands its entrances to `Stemcells.entering` (`upstream/seams/ThreadFeed.ts`),
+  which returns the enter.
 - Rows that stream in under the message add below it; nothing above them
   should move.
 - An ask at the chat's end enters and leaves on the same primitives
@@ -102,17 +104,13 @@ The chat is where these meet, on both surfaces.
 
 Phone:
 
-- The feed's rows enter on upstream's own fade: a sent message rises 25 px
-  over 220 ms (`FadeInDown`), a reply fades over 220 ms, both on Reanimated's
-  default ease-in-out: `features/threads/ThreadFeed.tsx:2400`, `:2688`. That
-  hot file is at its budget, and a package substitute can't reach one file
-  alone (Metro caches a package's resolution per importing folder), so this
-  waits for an extension point or a raised budget.
-- A short chat still jumps briefly: at a send and as a turn ends, its
-  content snaps up some 20 to 60 pt and eases back over about 300 ms. It
-  did so before the chat read from its top, bottom-aligned; the cause is
-  not proven (likely the end follow scrolling to an end measured with a
-  new row's estimated size, 180 pt, `ThreadFeed.tsx:4383`).
+- A chat that follows its end jumps as a turn ends. A row above the reply
+  goes as the turn settles, so the reply moves up an index; the list
+  measures the two rows that change in separate frames, its height swings
+  by up to a row (+72, -73, +45, -42 pt over about 400 ms, measured), and
+  the end follow tracks each swing. Content placed at the top doesn't move.
+  The feed's rows are upstream's (`ThreadFeed.tsx`) and the measuring is
+  LegendList's, so a fix lands there or waits for an extension point.
 - A send in a long chat scrolls to the end on UIKit's own animated scroll,
   not on `move`: `features/threads/ThreadDetailScreen.tsx:1389`, `:1466`
   (upstream's).

@@ -1,6 +1,6 @@
 // The motion system's move, enter and leave as Reanimated runs them, on the Mac's own numbers
 // (`apps/web/src/stemcells/motion/listMotion.ts`).
-import { Easing } from "react-native-reanimated";
+import { Easing, FadeIn, FadeOut } from "react-native-reanimated";
 
 import { type Bezier, LIST_MOTION } from "../line/kit";
 
@@ -20,3 +20,8 @@ export const LEAVE = {
   duration: LIST_MOTION.leave.duration,
   easing: easingOf(LIST_MOTION.leave.easing),
 };
+
+/** Something new fading in where it lands, as a Reanimated entrance. */
+export const entering = () => FadeIn.duration(ENTER.duration).easing(ENTER.easing);
+/** Something fading out where it stood, as a Reanimated exit. */
+export const exiting = () => FadeOut.duration(LEAVE.duration).easing(LEAVE.easing);

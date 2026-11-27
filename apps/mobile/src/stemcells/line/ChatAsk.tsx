@@ -5,9 +5,9 @@
 
 import { createContext, type ReactElement, type ReactNode, use, useSyncExternalStore } from "react";
 import { View } from "react-native";
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 
-import { ENTER, LEAVE } from "../home/listMotion";
+import { entering, exiting } from "../home/listMotion";
 import { useMinute } from "../home/state";
 import { AppText, useProjectAt } from "../upstream/cells";
 import { jumpToMessage, relativeTime, useChatMessages } from "../upstream/needs";
@@ -80,8 +80,8 @@ function ChatAsk(props: AskChat & { readonly ask: Ask | null }) {
     <Animated.View
       key={props.ask?.key ?? "failure"}
       className="mb-3"
-      entering={FadeIn.duration(ENTER.duration).easing(ENTER.easing)}
-      exiting={FadeOut.duration(LEAVE.duration).easing(LEAVE.easing)}
+      entering={entering()}
+      exiting={exiting()}
     >
       {props.ask === null ? (
         <View className={`${CARD} py-2.5`}>
