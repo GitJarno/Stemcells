@@ -32,9 +32,19 @@ const POINTS = 1;
  * too, so centring the box centres the Cell; `points` is a sprite pixel. Given a `stage`, its
  * Subcells at work stand at its right as buds, and a Cell starting there forms in its box.
  */
-export function CellMark(props: { cell: CellRef | null; points?: number; stage?: boolean }) {
+export function CellMark(props: {
+  cell: CellRef | null;
+  points?: number;
+  stage?: boolean;
+  /** A row's Cell that forms where it stands (`rail/Planned.tsx`), as a stage's does. */
+  forms?: boolean;
+  /** Not started yet: it stands as its outline (`CellFigure`). */
+  outline?: boolean;
+  /** Its provider's driver while its chat isn't known here yet. */
+  driver?: string | null | undefined;
+}) {
   const status = useCellStatus(props.cell);
-  const provider = useCellDriver(props.cell);
+  const provider = useCellDriver(props.cell) ?? props.driver ?? null;
   const ground = useCellGround();
   const working = status === "Working";
   const calls = useCellCalls(props.cell, working);
@@ -48,7 +58,7 @@ export function CellMark(props: { cell: CellRef | null; points?: number; stage?:
   const wakesAt = useCellWakesAt(props.cell);
   const { strength, flexes, diff } = useCellLanding(props.cell);
   const look = useRosterLook(props.cell?.threadId);
-  const forming = useForming(props.stage ? props.cell?.threadId : undefined);
+  const forming = useForming(props.stage || props.forms ? props.cell?.threadId : undefined);
   const modelled = useCellModelOn() && props.stage === true;
   const [now, setNow] = useState(Date.now);
   const turnsAt = moodTurnsAt(status, landedAt, now, wakesAt);
@@ -92,6 +102,7 @@ export function CellMark(props: { cell: CellRef | null; points?: number; stage?:
           diff={diff}
           landedAt={landedAt}
           forming={forming}
+          outline={props.outline}
           watches={props.stage}
         />
       )}

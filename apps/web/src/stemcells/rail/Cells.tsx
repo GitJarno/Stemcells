@@ -12,6 +12,7 @@ import {
   SunIcon,
 } from "lucide-react";
 import {
+  useEffect,
   useLayoutEffect,
   useRef,
   useState,
@@ -34,13 +35,16 @@ import { resweep, rowCrossing, sweep } from "../motion/beat";
 import { drawnMoonPhase } from "../motion/moon";
 import { type Sight, watchSight } from "../motion/sight";
 import { ProjectMark } from "../project/ProjectMark";
+import { askiCellOf } from "../tabs/askiTab";
 import { CellMark } from "../tabs/CellMark";
 import { openNewCellPane } from "../tabs/commands";
+import { readWorkspace } from "../tabs/store";
 import { reducedMotion } from "../tokens/motion";
 import {
   CellAge,
   CellCard,
   CellProjectMark,
+  CellProjectMarkOf,
   compactAge,
   useCellLightFacts,
   useCellShell,
@@ -83,6 +87,9 @@ import {
   wakesWords,
 } from "../../../../../stemcells/words/awake.ts";
 import { clearedWords, STEM_CELL_FACTS } from "../../../../../stemcells/words/inbox.ts";
+import { CHECK_ROW_WORDS } from "../../../../../stemcells/words/planned.ts";
+import { awakeWithPlanned, openPlannedRow } from "../../../../../stemcells/aski/planned.ts";
+import { type Arrival, cellsListed, useArrivals, useArrivalsComing } from "./arrivals";
 import {
   byRecent,
   type Launchable,
@@ -97,7 +104,9 @@ import { STATUS_ICON } from "./StatusIcon";
 import { Hops } from "./Hops";
 import { standingsOf, type Standings } from "./moves";
 import { DiskPlate } from "./DiskPlate";
+import { useLaunchesArrive } from "./launched";
 import { litFor } from "./lit";
+import { BirthWords, Unsure, useArrivalPlays, useTitleGlide } from "./Planned";
 import { PlanRing } from "./PlanRing";
 import { RailButton } from "./RailParts";
 import { ProxyTrack } from "../tabs/ProxyTrack";
@@ -171,12 +180,48 @@ export function Cells() {
   const asked = waitingSince(
     onList.map(({ need }) => ({ cell: need.parentThreadId ?? need.threadId, since: need.since })),
   );
+  const ordered = awakeOrder((cells ?? []).filter(here), shelves.pinned, shelves.launches, asked);
   const awake =
     environmentId === null
       ? []
-      : awakeOrder((cells ?? []).filter(here), shelves.pinned, shelves.launches, asked).map(
-          (cell) => awakeRowOf(cell, environmentId, sleeping.has(cell.threadId), asked),
+      : ordered.cells.map((cell) =>
+          awakeRowOf(cell, environmentId, sleeping.has(cell.threadId), asked),
         );
+  // Aski's planned rows (`arrivals.ts`) stand at Awake's top, under the pins, until the machine
+  // lists their Cells; then its row takes over where the planned one stands.
+  const arrivals = useArrivals();
+  // A Cell on its way from Aski shows as its row lands, not before.
+  const coming = useArrivalsComing();
+  const landed = awake.filter((row) => !coming.has(row.cell.threadId));
+  const pins = ordered.cells.slice(0, ordered.pins).filter((cell) => !coming.has(cell.threadId));
+  useLaunchesArrive(environmentId);
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Load the dev build's hands on the planned rows once the column shows.
+  useEffect(() => {
+    if (import.meta.env.DEV) void import("./planLab");
+  }, []);
+  const awakeIds = awake.map((row) => row.cell.threadId).join(" ");
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Tell the arrivals' timers which planned Cells the machine lists now.
+  useEffect(() => {
+    if (arrivals.length > 0 && awakeIds !== "") cellsListed(awakeIds.split(" "));
+  }, [awakeIds, arrivals]);
+  const awakeShown =
+    environmentId === null
+      ? []
+      : awakeWithPlanned(
+          landed,
+          (row) => row.cell.threadId,
+          pins.length,
+          arrivals.filter((arrival) => here(arrival.row)).map((arrival) => arrival.row),
+        ).map(({ row, birth }, index): AwakeRow => {
+          const arrival = birth && arrivals.find((each) => each.row === birth);
+          const shown = row ?? plannedRowOf(birth!, environmentId);
+          return {
+            ...shown,
+            birth: arrival ?? null,
+            pinned: index < pins.length,
+            leaving: shown.leaving || (row === null && arrival?.state === "gone"),
+          };
+        });
   const staying = awake.filter((row) => !row.leaving);
   // Input (inbox.md, decisions 1 and 2): the same rows, those with an ask open, the longest
   // waiting first. One just answered here has left the asks already (`needs/live.ts`).
@@ -265,7 +310,7 @@ export function Cells() {
                 ))}
                 <AwakeRows
                   stage="awake"
-                  rows={awake}
+                  rows={awakeShown}
                   now={now}
                   view={rowsView}
                   shown={stage === "awake"}
@@ -349,7 +394,7 @@ function awakeOrder(
   pinned: ReadonlyArray<ShelvedCell>,
   launches: ReadonlyMap<string, Launchable>,
   asked: ReadonlyMap<string, string>,
-): CellStanding[] {
+): { readonly cells: CellStanding[]; readonly pins: number } {
   const pins = new Map(pinned.map((cell, index) => [cell.threadId, index]));
   const first = cells
     .filter((cell) => pins.has(cell.threadId))
@@ -364,21 +409,40 @@ function awakeOrder(
       })),
     ({ cell }) => sinceOf(cell, asked),
   );
-  return [...first, ...rest.map((each) => each.cell)];
+  return { cells: [...first, ...rest.map((each) => each.cell)], pins: first.length };
 }
 
 interface AwakeRow {
   readonly cell: Ref;
   readonly title: string;
   readonly line: string | null;
-  readonly stage: CellStanding["stage"];
+  /** Null for a planned row the machine doesn't list yet. */
+  readonly stage: CellStanding["stage"] | null;
   /** The shared stop that holds it: neither flying nor asking. */
   readonly holds: string | null;
   /** Since when it has been like this: flying, landed, waiting or held. */
   readonly since: string | null;
   /** Going to sleep: it folds away while upstream's settle runs. */
   readonly leaving: boolean;
+  /** Its arrival from Aski's plan, while its line says its birth (`arrivals.ts`). */
+  readonly birth?: Arrival | null;
+  /** One of the person's pins, which stay above what arrives. */
+  readonly pinned?: boolean;
 }
+
+/** A planned row the machine doesn't list yet, as a row of Awake. */
+const plannedRowOf = (
+  birth: { readonly threadId: string; readonly title: string },
+  environmentId: string,
+): AwakeRow => ({
+  cell: { environmentId, threadId: birth.threadId },
+  title: birth.title,
+  line: null,
+  stage: null,
+  holds: null,
+  since: null,
+  leaving: false,
+});
 
 const awakeRowOf = (
   cell: CellStanding,
@@ -507,10 +571,19 @@ function AwakeRows(props: {
     props.rows.map((row) => row.cell.threadId),
     props.view,
     props.shown,
+    // A planned row's arrival is its entrance: it forms, or under Reduce Motion fades in.
+    new Set(props.rows.flatMap((row) => (row.birth ? [row.cell.threadId] : []))),
   );
-  if (props.rows.length === 0) return props.empty;
+  // Where a planned row lands (`arrivals.ts`), whether the list is empty or not.
+  const arrive = props.stage === "awake" ? "awake" : undefined;
+  if (props.rows.length === 0) return <div data-cells-arrive={arrive}>{props.empty}</div>;
   return (
-    <ol ref={list} data-cells-rows="" aria-label={STAGE_WORDS[props.stage]}>
+    <ol
+      ref={list}
+      data-cells-rows=""
+      data-cells-arrive={arrive}
+      aria-label={STAGE_WORDS[props.stage]}
+    >
       {props.rows.map((row) => (
         <AwakeCell
           key={row.cell.threadId}
@@ -578,7 +651,7 @@ function AwakeCell(props: {
   const { row } = props;
   const ref = { ...row.cell, draftId: null };
   const { driver, unseen } = useCellLightFacts(ref);
-  const state = rowStateOf(row.holds === null ? row.stage : undefined, unseen);
+  const state = rowStateOf(row.holds === null ? (row.stage ?? undefined) : undefined, unseen);
   const tone = toneTokenOf(driver);
   return (
     <CellLine
@@ -588,8 +661,14 @@ function AwakeCell(props: {
       leaving={row.leaving}
       light={{ state, tone }}
       when={row.since === null ? null : compactAge(row.since, props.now)}
-      act={{ label: SLEEP, icon: <MoonIcon aria-hidden />, run: props.onSleep }}
+      act={
+        row.stage === null
+          ? null
+          : { label: SLEEP, icon: <MoonIcon aria-hidden />, run: props.onSleep }
+      }
       onOpened={props.onOpened}
+      birth={row.birth ?? null}
+      pinned={row.pinned === true}
     />
   );
 }
@@ -638,13 +717,37 @@ function CellLine(props: {
   light: { readonly state: RowState; readonly tone: string } | null;
   /** How long it has been like this; upstream's age while the stream doesn't say. */
   when: string | null;
-  act: { readonly label: string; readonly icon: ReactNode; readonly run: () => void };
+  /** None for a planned row whose Cell hasn't started. */
+  act: { readonly label: string; readonly icon: ReactNode; readonly run: () => void } | null;
   onOpened?: ((threadId: string) => void) | undefined;
+  /** Its arrival from Aski's plan, while its line says its birth (`Planned.tsx`). */
+  birth?: Arrival | null;
+  pinned?: boolean;
 }) {
   const open = useOpenCell();
   const ref = { ...props.cell, draftId: null };
   const shell = useCellShell(ref);
+  const birth = props.birth ?? null;
+  const born = birth?.row ?? null;
+  // A check row waits for the person's tap in Aski's chat: it is an outline until then.
+  const outline = born?.tier === "check";
+  // Once its birth words have gone, its time comes in after the title has taken their place (cells.css).
+  const [wasBorn, setWasBorn] = useState(born !== null);
+  if (born !== null && !wasBorn) setWasBorn(true);
+  const row = useRef<HTMLLIElement>(null);
+  const titled = useRef<HTMLSpanElement>(null);
+  useArrivalPlays(row, birth);
+  useTitleGlide(titled, born !== null);
   const onOpen = () => {
+    if (born !== null && outline) {
+      // Whoever holds the plan shows it; Aski's chat, where it stands, comes forward.
+      openPlannedRow(born);
+      const aski = askiCellOf(readWorkspace());
+      if (aski) open(aski);
+      return;
+    }
+    // A planned Cell opens once its chat is known here.
+    if (shell === null && born !== null) return;
     open(props.cell);
     props.onOpened?.(props.cell.threadId);
   };
@@ -653,15 +756,21 @@ function CellLine(props: {
     light === null ? null : rowStatusOf(light.state, shell?.hasPendingApprovals === true);
   return (
     <li
+      ref={row}
       data-cells-row=""
       data-cells-thread={props.cell.threadId}
       data-leaving={props.leaving ? "" : undefined}
+      data-pinned={props.pinned ? "" : undefined}
+      data-born={born === null ? undefined : ""}
+      data-was-born={wasBorn && born === null ? "" : undefined}
+      data-outline={outline ? "" : undefined}
       inert={props.leaving}
     >
       <div data-cells-row-fold="">
         <CellCard
           shell={shell}
           line={props.line}
+          note={outline ? CHECK_ROW_WORDS : null}
           trigger={
             <div
               role="button"
@@ -688,9 +797,24 @@ function CellLine(props: {
               <RowBand on={light.state === "flying"} />
             </span>
           )}
-          <CellMark cell={ref} />
-          {shell === null ? null : <CellProjectMark shell={shell} />}
-          <span data-cells-row-title="">{props.title}</span>
+          <span data-cells-row-cell="">
+            <CellMark cell={ref} forms={born !== null} outline={outline} driver={born?.driver} />
+          </span>
+          {shell !== null ? (
+            <CellProjectMark shell={shell} settles={born !== null} />
+          ) : born !== null ? (
+            <CellProjectMarkOf
+              environmentId={props.cell.environmentId}
+              projectId={born.projectId}
+              settles
+            />
+          ) : null}
+          {born === null ? null : <Unsure row={born} field="place" />}
+          {birth === null ? null : <BirthWords arrival={birth} />}
+          <span ref={titled} data-cells-row-title="" data-settle={born === null ? undefined : ""}>
+            {props.title}
+          </span>
+          {born === null ? null : <Unsure row={born} field="words" />}
           <span data-cells-row-end="">
             <span
               data-cells-row-age=""
@@ -702,18 +826,20 @@ function CellLine(props: {
                   (shell === null ? null : <CellAge shell={shell} settled={light === null} />)}
               </span>
             </span>
-            <button
-              type="button"
-              aria-label={props.act.label}
-              data-cells-act=""
-              onPointerDown={(event) => event.stopPropagation()}
-              onClick={(event) => {
-                event.stopPropagation();
-                props.act.run();
-              }}
-            >
-              {props.act.icon}
-            </button>
+            {props.act === null ? null : (
+              <button
+                type="button"
+                aria-label={props.act.label}
+                data-cells-act=""
+                onPointerDown={(event) => event.stopPropagation()}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  props.act?.run();
+                }}
+              >
+                {props.act.icon}
+              </button>
+            )}
           </span>
         </CellCard>
       </div>
