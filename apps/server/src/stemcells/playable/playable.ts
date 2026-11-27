@@ -27,6 +27,8 @@ interface Served {
 const KEEP_RATIO = 0.75;
 /** The most the copies take on disk; the least recently played go first. */
 const CAP_BYTES = 1024 ** 3;
+/** Part of every copy's name: bumped when `encodeForPhones` changes, so each video is tried again. */
+const RECIPE = 2;
 /** How many signed URLs keep their decision. */
 const PIN_LIMIT = 1000;
 
@@ -120,12 +122,12 @@ function isPlayableVideo(asset: Served): boolean {
   return type?.trim().toLowerCase().startsWith("video/") ?? false;
 }
 
-/** A copy's name: the source's absolute path, size and modification time, so an edit makes a new one. */
+/** A copy's name: the source's absolute path, size and modification time, so an edit makes a new one, and the recipe. */
 async function nameOf(source: string): Promise<string | null> {
   const info = await NodeFSP.stat(source).catch(() => null);
   if (!info?.isFile()) return null;
   return NodeCrypto.createHash("sha256")
-    .update(JSON.stringify([NodePath.resolve(source), info.size, info.mtimeMs]))
+    .update(JSON.stringify([NodePath.resolve(source), info.size, info.mtimeMs, RECIPE]))
     .digest("hex");
 }
 
