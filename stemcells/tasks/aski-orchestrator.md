@@ -228,6 +228,9 @@ can't be switched off.
   `t3_project_clone`, `t3_project_delete` and an archive
   (`upstream/askiTools.ts`). Reading a hostile page or a Cell's reply can
   no longer make Aski do more than propose.
+- **No agent deletes a project.** `t3_project_delete` is refused to every
+  Cell too, so Aski can't have a Cell do what it can't, and a Cell told to
+  delete one in misheard words says the person does that by hand.
 - **A Hold is confirmed by hand on the thing itself.** The card names
   what was resolved, as the app writes it, quotes the person's words and
   says what stays on disk. The person presses and holds its button.

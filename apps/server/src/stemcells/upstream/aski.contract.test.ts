@@ -18,7 +18,9 @@ import { ProjectToolkit } from "../../mcp/toolkits/project/tools.ts";
 import { ThreadToolkit } from "../../mcp/toolkits/thread/tools.ts";
 import * as ClaudeAdapterV2 from "../../orchestration-v2/Adapters/ClaudeAdapterV2.ts";
 import { codexAppServerArgs } from "../../provider/codexLaunchArgs.ts";
+import { REFUSED_TO_ASKI } from "./askiTools.ts";
 import { ArcsToolkit } from "./arcsTool.ts";
+import { PlanToolkit } from "./planTool.ts";
 import { SettingsToolkit } from "./settingsTool.ts";
 import { ShowToolkit } from "./showTool.ts";
 import { RecallToolkit } from "./recallTool.ts";
@@ -42,6 +44,7 @@ const offered: Record<string, Tool.Any> = {
   ...ArcsToolkit.tools,
   ...SettingsToolkit.tools,
   ...ShowToolkit.tools,
+  ...PlanToolkit.tools,
 };
 
 type JsonSchema = {
@@ -133,8 +136,14 @@ describe("the tools Aski's persona names", () => {
       "target.providerInstanceId",
       "target.model",
     ]);
-    const launches = namedCalls(persona).filter((call) => call.tool === "t3_thread_launch");
-    expect(launches.flatMap((call) => call.args)).toContain("modelSelection");
+  });
+
+  it("propose Cells and call no tool the server refuses Aski", () => {
+    const calls = namedCalls(persona);
+    expect(calls.filter((call) => call.tool in REFUSED_TO_ASKI)).toEqual([]);
+    expect(persona).not.toMatch(/\bt3_thread_launch\b|\bcreate_threads\b|\bt3_project_delete\b/);
+    const proposals = calls.filter((call) => call.tool === "stemcells_propose");
+    expect(proposals.flatMap((call) => call.args)).toContain("cells");
   });
 
   it("find Cells project by project, as a thread list reads one project at a time", () => {

@@ -24,6 +24,7 @@ import { McpInvocationContext as InvocationContext } from "../../mcp/McpInvocati
 import * as McpToolAccess from "../../mcp/McpToolAccess.ts";
 import { clearBook, planOfId, settlePlan } from "../aski/book.ts";
 import { projectsOf } from "./planner.fixture.ts";
+import { agentsDeleteNothing } from "./askiTools.ts";
 import { registerPlanTools } from "./planTool.ts";
 
 const environmentId = EnvironmentId.make("environment:aski-plans");
@@ -131,6 +132,20 @@ it.layer(layerTest)("Aski's chat and plans", (it) => {
       );
       expect(yield* call(from(askis), "t3_thread_list")).toEqual({ ok: { ran: true } });
     }),
+  );
+
+  it.effect("lets no agent delete a project while Stemcells' server stands", () =>
+    Effect.scoped(
+      Effect.gen(function* () {
+        yield* agentsDeleteNothing;
+        expect(yield* call(from(codex), "t3_project_delete")).toMatchObject({
+          refused: expect.stringContaining("No Cell deletes a project"),
+        });
+        // A Cell still starts Cells and reads: only the deletion is the person's.
+        expect(yield* call(from(codex), "t3_thread_launch")).toEqual({ ok: { ran: true } });
+        expect(yield* call(from(codex), "t3_thread_list")).toEqual({ ok: { ran: true } });
+      }),
+    ),
   );
 
   it.effect("makes a proposed plan in which every Cell waits for the person", () =>

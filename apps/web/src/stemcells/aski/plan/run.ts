@@ -216,7 +216,8 @@ export function createRunner(hands: () => RunnerHands | null) {
       const one = planOf(planId)?.tray?.acts.find((each) => each.act.i === i);
       if (use === null || one === undefined || one.act.kind !== "start") return;
       const cell = use.cellOf(one.act.threadId);
-      if (cell === null) return;
+      if (cell === null)
+        return use.report("The Cell wasn't called back", "It isn't listed here yet. Try again.");
       const result = await use.archive([cell]);
       if (!result.ok) return use.report("The Cell wasn't called back", result.error);
       changePlan(planId, (tray) => calledBack(tray, i));
