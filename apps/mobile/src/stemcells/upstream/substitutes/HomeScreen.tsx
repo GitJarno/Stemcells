@@ -93,6 +93,7 @@ export function HomeScreen(props: Props) {
         connecting={!ready}
         now={now}
         inView={scope.inView}
+        picks={scope.picks}
         environmentId={scope.machine}
         pending={props.pendingTasks.length}
         olderSettled={olderSettled}
@@ -166,6 +167,7 @@ function scopeOf(picks: Picks, props: Props) {
     machines: pickedMachines.length > 0 ? pickedMachines : allMachines,
     /** The one machine picked, whose Aski the header opens. */
     machine: pickedMachines.length === 1 ? (pickedMachines[0] ?? null) : null,
+    picks: `${pickedMachines.join(" ")}|${[...projectKeys].sort().join(" ")}`,
     inView: (place: Place) =>
       (pickedMachines.length === 0 || pickedMachines.includes(String(place.environmentId))) &&
       (projectKeys.size === 0 || projectKeys.has(`${place.environmentId}:${place.projectId}`)),

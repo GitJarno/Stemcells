@@ -78,9 +78,14 @@ when they act (`stemcells/tasks/awake-asleep.md`).
   its row on the composer's beat (`glow-pass`, `glow-rest`), stepped beside
   another app and held off screen. A landing lets the pass under way finish,
   and the glow stays.
-- **Sleep and Wake** fold the row away on `leave` as its light fades, and the
-  Cell hops into the other stage's count on `travel` (`rail/Hops.tsx`).
-- **Reduce Motion**: no band, and the row fades without folding.
+- **Moving** is one system on the Mac and the phone
+  (`motion/listMotion.ts`, `stemcells/tasks/sleep-motion.md`): a row moves
+  to its new slot, enters where it lands (fading in, its light blooming once
+  the first time its stage is seen) or leaves by folding while the rest move
+  up. Sleep and Wake are a leave whose Cell hops into the other stage's count
+  on the move's curve (`rail/Hops.tsx`, the phone's `home/hops.ts`).
+- **Reduce Motion**: no band, nothing glides or flies; rows stand in place
+  and an entering row's light still blooms.
 
 ## The work log
 
