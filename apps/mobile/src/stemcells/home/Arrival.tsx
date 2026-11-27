@@ -18,7 +18,7 @@ import { useResolveClassNames } from "uniwind";
 
 import { RowLight } from "../glow/RowLight";
 import { cellKey } from "../line/line";
-import { NativePrimaryColumnContext } from "../upstream/home";
+import { useHomeSidebar } from "../upstream/home";
 import type { EnvironmentThreadShell } from "../upstream/cells";
 import { arrivalDone, useArrives } from "./hops";
 import { ENTER, LIST_MOTION } from "./listMotion";
@@ -60,7 +60,8 @@ function Entering(props: {
   const { rowKey } = props;
   const reduced = useReducedMotion();
   // The sidebar's rows stand on T3's ground, not the card's: they only bloom.
-  const fades = !reduced && !use(NativePrimaryColumnContext);
+  const sidebar = useHomeSidebar();
+  const fades = !reduced && !sidebar;
   const card = useResolveClassNames("bg-grouped-card").backgroundColor;
   const veil = useSharedValue(fades ? 1 : 0);
   const light = useSharedValue(0);

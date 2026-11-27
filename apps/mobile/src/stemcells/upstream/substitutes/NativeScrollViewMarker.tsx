@@ -13,7 +13,7 @@ import { useDeviceType } from "../../../native/native-layout-metrics";
 import { headerEdges } from "../../edge/headerEdge";
 import { ScreenVeils } from "../../edge/ScreenVeils";
 import { NoHeaderBand, PILL_ROOM, StagePageContext, useFootRoom } from "../../home/state";
-import { NativePrimaryColumnContext } from "../home";
+import { useHomeSidebar } from "../home";
 
 export * from "../../../native/NativeScrollViewMarker";
 
@@ -23,7 +23,7 @@ export function NativeScrollViewMarker(
   const noBand = use(NoHeaderBand);
   const fromScreen = use(Upstream.NativeScrollEdgeEffectsContext);
   const page = use(StagePageContext);
-  const primaryColumn = use(NativePrimaryColumnContext);
+  const sidebar = useHomeSidebar();
   // A page in the Duo's columns, not a sheet or the inspector over them.
   const duoPage = isDuoDevice(useDeviceType()) && use(PaneContext) === "content";
   const barBottom = useBarInset();
@@ -66,7 +66,7 @@ export function NativeScrollViewMarker(
     </Upstream.NativeScrollViewMarker>
   );
   // By value: a screen's options reach here cloned. Upstream never hides the top edge; we do.
-  if (page !== null || effects?.top !== "hidden" || primaryColumn) return marker;
+  if (page !== null || effects?.top !== "hidden" || sidebar) return marker;
   return (
     <>
       {marker}
