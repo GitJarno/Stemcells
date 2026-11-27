@@ -49,7 +49,13 @@ const tallyOf = (dir: string) => {
 
 /** A home with two simulators, a stand-in drive, and tools that act on real folders. */
 const setup = (
-  more: { booted?: string[]; answers?: boolean; connected?: boolean; owners?: boolean } = {},
+  more: {
+    booted?: string[];
+    answers?: boolean;
+    connected?: boolean;
+    owners?: boolean;
+    restartFails?: boolean;
+  } = {},
 ) => {
   const home = fresh();
   const mount = fresh();
@@ -70,8 +76,11 @@ const setup = (
       Effect.sync(() =>
         state.answers || state.restarts === 0 ? NodeFS.readdirSync(devices).sort() : null,
       ),
-    restartSimulators: Effect.sync(() => {
+    restartSimulators: Effect.gen(function* () {
       state.restarts += 1;
+      if (more.restartFails && state.restarts === 1) {
+        return yield* new MoveError({ reason: "Couldn't restart the simulator service." });
+      }
     }),
     xcodeRunning: Effect.succeed(false),
   };
@@ -181,6 +190,25 @@ it.layer(NodeServices.layer)("moving a folder to another drive", (it) => {
       expect(status.last).toMatchObject({ ok: false, direction: "away" });
       expect(status.last?.reason).toContain("stay on this Mac");
     }),
+  );
+
+  it.effect(
+    "undoes the switch when the simulator service won't restart, instead of stopping halfway",
+    () =>
+      Effect.gen(function* () {
+        const lab = setup({ restartFails: true });
+        const status = yield* Effect.gen(function* () {
+          const { service, settled } = yield* lab.make;
+          yield* service.moveAway({ kind: "simulators", driveId: drive.id });
+          yield* settled;
+          return yield* service.status();
+        });
+        expect(NodeFS.lstatSync(lab.devices).isDirectory()).toBe(true);
+        expect(NodeFS.readdirSync(lab.devices).sort()).toEqual(["AAA", "BBB"]);
+        expect(NodeFS.existsSync(`${lab.devices}.stemcells-old`)).toBe(false);
+        expect(NodeFS.existsSync(lab.onDrive)).toBe(false);
+        expect(status.last).toMatchObject({ ok: false, direction: "away" });
+      }),
   );
 
   it.effect("moves back: the folder is here again, the drive's copy and the record are gone", () =>
