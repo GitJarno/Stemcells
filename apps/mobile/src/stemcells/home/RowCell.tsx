@@ -233,7 +233,7 @@ const TIME_SLOT = Math.ceil(14 * 0.61 * 3);
  * How long it's been like this, after T3's icon for what it does or needs. The icon keeps its
  * place when there's none and the time ends at the same edge, so every row's icon and time line up.
  */
-function Since(props: { readonly since: string; readonly status: RowStatus | null }) {
+export function Since(props: { readonly since: string; readonly status: RowStatus | null }) {
   const now = useMinute();
   const look = props.status === null ? null : STATUS_SYMBOL[props.status];
   return (

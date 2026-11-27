@@ -10,7 +10,7 @@ import { takeAskedStage, useAskedStage } from "../aski/turn";
 import { DiskFoot } from "../disk/DiskPlate";
 import { useAppBadge } from "../push/badge";
 import { EmptyTab } from "../home/EmptyTab";
-import { useArrivals, useHeldThreads } from "../home/plannedArrivals";
+import { useArrivals, useHeldThreads, useKept } from "../home/plannedArrivals";
 import { StagePages, useStagePages } from "../home/StagePages";
 import { CellStates, HomeTabsContext, tabChoice } from "../home/state";
 import { type AllClear, useInbox } from "../inbox/useInbox";
@@ -101,7 +101,7 @@ export function LineHome(props: {
   );
   // A Cell whose planned row stands at Awake's top (`home/PlannedRows.tsx`) waits there: T3's row for it comes after.
   const held = useHeldThreads();
-  const planned = useArrivals().length;
+  const planned = useArrivals().length + useKept().length;
   const tab = segments.useTab("awake");
   const stages = useStagePages(STAGES, tab);
   // A pick, or a machine read or dropped, is another view: its asks were never answered here.

@@ -29,26 +29,45 @@ import { useAskiChat } from "../aski/useAskiChat";
 import { CellFigure } from "../cell/CellFigure";
 import { formingFrom } from "../cell/forming";
 import { cellNameOf, clockSeconds } from "../cell/kit";
-import { ThreadCell } from "../cell/ThreadCell";
+import { type Face, faceOf } from "../cell/mood";
+import { useCellLook } from "../cell/roster";
+import { instanceOf } from "../cell/ThreadCell";
 import { RowLight } from "../glow/RowLight";
-import { rowStateOf } from "../line/kit";
+import { rowStateOf, rowStatusOf } from "../line/kit";
 import { cellKey } from "../line/line";
 import { ProjectMark } from "../project/ProjectMark";
 import { titleMarkLayout } from "../project/titleMark";
 import { CODE_FONT } from "../tokens";
-import { AppText, type EnvironmentThreadShell, threadHasUnseenCompletion } from "../upstream/cells";
+import {
+  AppText,
+  type EnvironmentThreadShell,
+  resolveThreadListV2Status,
+  threadHasUnseenCompletion,
+  useEnvironmentProviders,
+  useThemeAppearance,
+} from "../upstream/cells";
 import { useHomeSidebar, useProjects } from "../upstream/home";
+import { THREAD_LIST_V2_ROW_CONTENT_CLASS_NAME } from "../upstream/substitutes/thread-list-v2-row-appearance";
 import { glideBy } from "./awakeGlide";
 import { arrivalDone } from "./hops";
-import { ENTER, LEAVE, MOVE } from "./listMotion";
+import { ENTER, entering, LEAVE, MOVE } from "./listMotion";
 import { openOnPressIn } from "./opening";
-import { type Arrival, cellsListed, slotStandsIn, useArrivals } from "./plannedArrivals";
+import {
+  type Arrival,
+  cellsListed,
+  releaseKept,
+  slotStandsIn,
+  useArrivals,
+  useKept,
+} from "./plannedArrivals";
+import { Since } from "./RowCell";
 import {
   CellStates,
   HomeCellsHeld,
   HomeInFront,
   HomeStageContext,
   StagePageContext,
+  useMinute,
 } from "./state";
 
 // A dev build's hands on the planned rows (`planLab.ts`).
@@ -62,18 +81,36 @@ export const PlannedHome = createContext<{
 
 /** A row as T3's card is on the phone (`upstream/substitutes/thread-list-v2-row-appearance.ts`), and as its row is in a sidebar. */
 const SHAPE = {
-  card: { marginHorizontal: 12, marginBottom: 8, borderRadius: 20, padding: [12, 16, 12, 12] },
-  sidebar: { marginHorizontal: 0, marginBottom: 0, borderRadius: 12, padding: [8, 12, 8, 12] },
+  card: { marginHorizontal: 12, marginBottom: 8, borderRadius: 20 },
+  sidebar: { marginHorizontal: 0, marginBottom: 0, borderRadius: 12 },
 } as const;
+const SIDEBAR_PAD = { top: 10, right: 12, bottom: 10, left: 12, gap: 8 };
+type Pad = typeof SIDEBAR_PAD;
+
+const points = (value: unknown, otherwise: number) =>
+  typeof value === "number" ? value : otherwise;
+
+/** A row's padding and the gap after its Cell, as T3's card has them at the app's text size. */
+function usePad(sidebar: boolean): Pad {
+  const card = useResolveClassNames(`${THREAD_LIST_V2_ROW_CONTENT_CLASS_NAME} gap-2`);
+  if (sidebar) return SIDEBAR_PAD;
+  const upright = points(card.paddingVertical, 12);
+  return {
+    top: points(card.paddingTop, upright),
+    right: points(card.paddingRight, 16),
+    bottom: points(card.paddingBottom, upright),
+    left: points(card.paddingLeft, 12),
+    gap: points(card.gap, 8),
+  };
+}
 /** A Cell's box at two points a cell (`cell/look.ts`, `BOX`). */
 const CELL = { width: 26, height: 28 };
-const GAP = 8;
 /** The narrowest line, points, that still says the Cell's name, and its effort: the title keeps the rest. */
 const FITS = { name: 300, effort: 400, chip: 220 };
 const CHIP_SIZE = 11;
 
 /** How tall a row stands with its gap, by shape, as last laid out: what the list glides by as one lands. */
-const stood = { card: 60, sidebar: 44 };
+const stood = { card: 57, sidebar: 48 };
 
 /** The planned rows of the stage this list shows: Awake's, latest on top. */
 export function PlannedRows(props: { readonly gutter?: number }) {
@@ -83,6 +120,8 @@ export function PlannedRows(props: { readonly gutter?: number }) {
 
 function Rows(props: { readonly gutter: number }) {
   const arrivals = useArrivals();
+  const kept = useKept();
+  const awake = use(CellStates);
   const home = use(PlannedHome);
   const sidebar = useHomeSidebar();
   const shape = sidebar ? "sidebar" : "card";
@@ -100,12 +139,29 @@ function Rows(props: { readonly gutter: number }) {
   useEffect(() => {
     if (listed !== "") cellsListed(listed.split(" "));
   }, [listed]);
+  // A born row keeps its place only while it is watched, and its Cell is awake: T3's own row stands in then.
+  const left = kept
+    .map((row) => row.threadId)
+    .filter((threadId) => {
+      const thread = home?.threads.get(threadId);
+      return !seen || thread === undefined || !awake.has(cellKey(thread));
+    })
+    .join(" ");
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Hand the rows nobody is watching to T3's list, where its late insert is not seen.
+  useEffect(() => {
+    if (left !== "") releaseKept(left.split(" "));
+  }, [left]);
   const { width } = useWindowDimensions();
   const [laid, setLaid] = useState(0);
-  const [top, right, , left] = SHAPE[shape].padding;
+  const pad = usePad(sidebar);
   const outer = laid > 0 ? laid : width;
   const line =
-    outer - 2 * (SHAPE[shape].marginHorizontal + props.gutter) - left - right - CELL.width - GAP;
+    outer -
+    2 * (SHAPE[shape].marginHorizontal + props.gutter) -
+    pad.left -
+    pad.right -
+    CELL.width -
+    pad.gap;
   return (
     <View onLayout={(event) => setLaid(event.nativeEvent.layout.width)}>
       <View
@@ -113,18 +169,23 @@ function Rows(props: { readonly gutter: number }) {
         pointerEvents="none"
         style={{
           position: "absolute",
-          top,
-          left: SHAPE[shape].marginHorizontal + props.gutter + left,
+          top: pad.top,
+          left: SHAPE[shape].marginHorizontal + props.gutter + pad.left,
           ...CELL,
         }}
       />
-      {[...arrivals].reverse().map((arrival) => (
+      {[
+        ...[...arrivals].reverse().map((arrival) => ({ row: arrival.row, arrival })),
+        ...[...kept].reverse().map((row) => ({ row, arrival: null })),
+      ].map(({ row, arrival }) => (
         <PlannedRow
-          key={arrival.row.threadId}
+          key={row.threadId}
+          row={row}
           arrival={arrival}
-          thread={home?.threads.get(arrival.row.threadId) ?? null}
+          thread={home?.threads.get(row.threadId) ?? null}
           shape={shape}
           gutter={props.gutter}
+          pad={pad}
           line={line}
           seen={seen}
         />
@@ -164,12 +225,13 @@ function Words(props: {
   readonly now: DecodedPart | undefined;
   readonly className: string;
   readonly code?: boolean;
-  readonly grows?: boolean;
+  /** It gives way when the line is short: the title. */
+  readonly shrinks?: boolean;
 }) {
   const settling = props.now !== undefined && props.now.settled < props.words.length;
   const font = props.code ? { fontFamily: CODE_FONT, fontSize: CHIP_SIZE } : null;
   return (
-    <View style={props.grows ? { flexShrink: 1, flexGrow: 1, minWidth: 0 } : { flexShrink: 0 }}>
+    <View style={props.shrinks ? { flexShrink: 1, minWidth: 0 } : { flexShrink: 0 }}>
       <AppText
         className={props.className}
         numberOfLines={1}
@@ -206,16 +268,18 @@ function Unsure(props: { readonly row: Planned; readonly field: NonNullable<Plan
 }
 
 function PlannedRow(props: {
-  readonly arrival: Arrival;
+  readonly row: Planned;
+  /** Its arrival; null once its birth is over and it only keeps its place (`plannedArrivals.ts`, kept). */
+  readonly arrival: Arrival | null;
   readonly thread: EnvironmentThreadShell | null;
   readonly shape: keyof typeof SHAPE;
   readonly gutter: number;
+  readonly pad: Pad;
   /** The room its line has, points: what of its birth words fits. */
   readonly line: number;
   readonly seen: boolean;
 }) {
-  const { arrival, thread, shape } = props;
-  const { row } = arrival;
+  const { row, arrival, thread, shape } = props;
   const home = use(PlannedHome);
   const held = use(HomeCellsHeld);
   const aski = useAskiChat(null);
@@ -223,16 +287,39 @@ function PlannedRow(props: {
   const project = projects.find((each) => String(each.id) === row.projectId) ?? null;
   const reduced = useReducedMotion();
   const outline = row.tier === "check";
+  const look = useCellLook(row.threadId);
+  const ground = useThemeAppearance() === "light" ? "light" : "black";
+  const providers = useEnvironmentProviders();
+  const driver =
+    (thread === null
+      ? undefined
+      : providers
+          .get(thread.environmentId)
+          ?.find((provider) => provider.instanceId === instanceOf(thread))?.driver) ??
+    row.driver ??
+    null;
   // It plays only as it lands in sight: seen later, or again in another list, it stands.
   const [plays] = useState(
-    () => arrival.forms && props.seen && clockSeconds() * 1000 - arrival.at < 3 * ARRIVAL_BEAT_MS,
+    () =>
+      arrival !== null &&
+      arrival.forms &&
+      props.seen &&
+      clockSeconds() * 1000 - arrival.at < 3 * ARRIVAL_BEAT_MS,
   );
-  const [fades] = useState(() => !arrival.forms && clockSeconds() * 1000 - arrival.at < 250);
+  const [fades] = useState(
+    () => arrival !== null && !arrival.forms && clockSeconds() * 1000 - arrival.at < 250,
+  );
   const own = useSharedValue(plays ? stood[shape] : 0);
   const state = use(CellStates).get(thread === null ? "" : cellKey(thread));
-  const flying =
-    thread !== null && rowStateOf(state?.stage, threadHasUnseenCompletion(thread)) === "flying";
-  const leaving = arrival.state === "gone";
+  const rowState =
+    thread === null ? null : rowStateOf(state?.stage, threadHasUnseenCompletion(thread));
+  const flying = rowState === "flying";
+  const minute = useMinute();
+  const face: Face =
+    thread === null
+      ? { mood: "awake" }
+      : faceOf(thread, resolveThreadListV2Status(thread), { now: Date.parse(minute), driver });
+  const leaving = arrival?.state === "gone";
   const dims = useSharedValue(1);
   const went = useRef(false);
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Glide the list under the row as it lands, once on the UI thread, and close over it when it leaves unlisted.
@@ -253,8 +340,10 @@ function PlannedRow(props: {
   }, [leaving, dims]);
 
   // Its birth words go once its Cell is listed and their time is up; the title takes their place.
-  const fading = arrival.state === "fading";
-  const [bare, setBare] = useState(false);
+  const fading = arrival?.state === "fading";
+  const [bare, setBare] = useState(arrival === null);
+  // Its time comes in once the title has taken the birth words' place.
+  const [timed, setTimed] = useState(arrival === null);
   const words = useSharedValue(1);
   const titleShift = useSharedValue(0);
   const birthWidth = useRef(0);
@@ -269,10 +358,15 @@ function PlannedRow(props: {
   }, [fading, key, words]);
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Glide the title from where the birth words held it, before paint.
   useLayoutEffect(() => {
-    if (!bare || reduced || birthWidth.current === 0) return;
-    titleShift.set(birthWidth.current);
-    titleShift.set(withTiming(0, MOVE));
-  }, [bare, reduced, titleShift]);
+    if (!bare || timed) return;
+    const glides = !reduced && birthWidth.current > 0;
+    if (glides) {
+      titleShift.set(birthWidth.current);
+      titleShift.set(withTiming(0, MOVE));
+    }
+    const timer = setTimeout(() => setTimed(true), glides ? MOVE.duration : 0);
+    return () => clearTimeout(timer);
+  }, [bare, timed, reduced, titleShift]);
 
   const fits = {
     name: props.line >= FITS.name,
@@ -285,7 +379,7 @@ function PlannedRow(props: {
   const parts = ["#", fits.name ? name : "", fits.chip ? model : "", effort, row.title];
   const settling = useSettling(
     parts,
-    plays ? arrival.at + ARRIVALS.settles * ARRIVAL_BEAT_MS : undefined,
+    plays && arrival !== null ? arrival.at + ARRIVALS.settles * ARRIVAL_BEAT_MS : undefined,
   );
   const [marked, named, modelled, efforted, titled] = settling ?? [];
 
@@ -293,7 +387,9 @@ function PlannedRow(props: {
   const base = useResolveClassNames("text-base").fontSize;
   const family = useResolveClassNames("font-sans").fontFamily;
   const mark = titleMarkLayout((typeof base === "number" ? base : 16) * fontScale, family);
-  const [top, right, bottom, left] = SHAPE[shape].padding;
+  const { pad } = props;
+  // An outline's hairline takes its room from the padding, so the row stands as tall filled in.
+  const edge = outline ? 1 : 0;
   const moved = useAnimatedStyle(() => ({
     opacity: dims.get(),
     transform: [{ translateY: own.get() }],
@@ -341,31 +437,32 @@ function PlannedRow(props: {
         onPressIn={thread === null || outline ? undefined : () => openOnPressIn(thread)}
         onPress={onPress}
         style={({ pressed }) => ({
-          paddingTop: top - (outline ? 1 : 0),
-          paddingRight: right - (outline ? 1 : 0),
-          paddingBottom: bottom - (outline ? 1 : 0),
-          paddingLeft: left - (outline ? 1 : 0),
+          paddingTop: pad.top - edge,
+          paddingRight: pad.right - edge,
+          paddingBottom: pad.bottom - edge,
+          paddingLeft: pad.left - edge,
           opacity: pressed ? 0.7 : 1,
         })}
       >
         <View
           className="flex-row items-center"
-          style={{ gap: GAP, minHeight: CELL.height, opacity: outline ? 0.55 : 1 }}
+          style={{ gap: pad.gap, minHeight: CELL.height, opacity: outline ? 0.55 : 1 }}
         >
-          {flying ? <RowLight thread={thread} band fill={FILL} /> : null}
-          {thread === null || outline ? (
-            <CellFigure
-              name={row.threadId}
-              mood="awake"
-              provider={row.driver}
-              points={2}
-              formingFrom={outline ? undefined : forms}
-              outline={outline}
-              held={held}
-            />
-          ) : (
-            <ThreadCell thread={thread} points={2} plays formingFrom={forms} held={held} />
-          )}
+          {flying && thread !== null ? <RowLight thread={thread} band fill={FILL} /> : null}
+          {/* One figure from its outline to its first work: T3's row draws it from there. */}
+          <CellFigure
+            name={row.threadId}
+            mood={face.mood}
+            activity={face.activity}
+            provider={driver}
+            look={look}
+            points={2}
+            plays={face.activity !== undefined || face.mood === "pleased"}
+            ground={ground}
+            formingFrom={outline ? undefined : forms}
+            outline={outline}
+            held={held}
+          />
           <View className="min-w-0 flex-1 flex-row items-center">
             {project === null ? null : (
               <View
@@ -387,11 +484,7 @@ function PlannedRow(props: {
                 }}
               >
                 {fits.name ? (
-                  <Words
-                    words={name}
-                    now={named}
-                    className="text-base font-medium text-foreground"
-                  />
+                  <Words words={name} now={named} className="text-base text-foreground-muted" />
                 ) : null}
                 {fits.chip ? (
                   <View
@@ -414,11 +507,25 @@ function PlannedRow(props: {
             )}
             <Animated.View style={[{ flexShrink: 1, flexGrow: 1, minWidth: 0 }, titleStyle]}>
               <View className="flex-row items-center" style={{ gap: 4 }}>
-                <Words words={row.title} now={titled} className="text-base text-foreground" grows />
+                <Words
+                  words={row.title}
+                  now={titled}
+                  className={`text-base font-t3-medium ${shape === "sidebar" ? "text-drawer-foreground" : "text-foreground"}`}
+                  shrinks
+                />
                 {settling === null ? <Unsure row={row} field="words" /> : null}
               </View>
             </Animated.View>
           </View>
+          {/* Its birth over, it says how long it has been like this, as every Awake row does. */}
+          {timed && thread !== null && rowState !== null && state?.since ? (
+            <Animated.View entering={arrival === null ? undefined : entering()}>
+              <Since
+                since={state.since}
+                status={rowStatusOf(rowState, thread.hasPendingApprovals)}
+              />
+            </Animated.View>
+          ) : null}
         </View>
       </Pressable>
     </Animated.View>

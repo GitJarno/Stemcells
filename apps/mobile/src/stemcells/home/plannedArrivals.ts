@@ -4,10 +4,14 @@
 // Under Reduce Motion it only fades in.
 
 import { useSyncExternalStore } from "react";
-import { AccessibilityInfo, type ViewInstance } from "react-native";
+import { AccessibilityInfo, AppState, type ViewInstance } from "react-native";
 
 import { type Arrival, ARRIVALS, createArrivals } from "../../../../../stemcells/aski/arrivals.ts";
-import { plannedRows, subscribePlannedRows } from "../../../../../stemcells/aski/planned.ts";
+import {
+  type Planned,
+  plannedRows,
+  subscribePlannedRows,
+} from "../../../../../stemcells/aski/planned.ts";
 import { formAt, LEAD } from "../cell/forming";
 import { BEAT, clockSeconds, GLYPHS } from "../cell/kit";
 import { askiInSight, sendCopy } from "./copies";
@@ -66,31 +70,81 @@ const arrivals = createArrivals<true, ViewInstance>(plannedRows, {
   forms: (threadId, at) => formAt(threadId, at / 1000),
   // From its outline's blocks on: the glyphs are behind it.
   fills: (threadId, at) => formAt(threadId, at / 1000 - GLYPHS.length / BEAT),
-  // Its words go, then its title takes their place, before T3's own row stands in for it.
+  // Its words go, then its title takes their place, before its birth is over.
   fade: ARRIVALS.fade + ARRIVALS.fold,
 });
 subscribePlannedRows(arrivals.sync);
 
+/**
+ * Rows whose birth is over, in the order it ended. T3's list puts a new row in a few frames after
+ * it is handed one, so a row that left here in sight would blink; it keeps its place until Awake
+ * is out of sight (`releaseKept`), and T3's own row stands in for it from then.
+ */
+const kept = new Map<string, Planned>();
+let keptShown: readonly Planned[] = [];
+let before: readonly Arrival[] = [];
+const listeners = new Set<() => void>();
+const tell = () => {
+  for (const listener of listeners) listener();
+};
+arrivals.subscribe(() => {
+  const now = arrivals.read();
+  const standing = new Set(now.map((arrival) => arrival.row.threadId));
+  for (const arrival of before) {
+    const { threadId } = arrival.row;
+    if (arrival.state !== "fading" || standing.has(threadId)) continue;
+    kept.set(threadId, arrival.row);
+    keptShown = [...kept.values()];
+  }
+  before = now;
+  tell();
+});
+const subscribe = (listener: () => void) => {
+  listeners.add(listener);
+  return () => void listeners.delete(listener);
+};
+
+/** Awake is out of sight, or these Cells left it: T3's own rows stand in for the kept ones (all of them, unnamed). */
+export function releaseKept(threadIds?: ReadonlyArray<string>): void {
+  if (kept.size === 0) return;
+  for (const threadId of threadIds ?? [...kept.keys()]) kept.delete(threadId);
+  if (kept.size === keptShown.length) return;
+  keptShown = [...kept.values()];
+  tell();
+}
+AppState.addEventListener("change", (state) => {
+  if (state !== "active") releaseKept();
+});
+
 /** The planned rows standing in Awake, in the order they landed. */
 export function useArrivals(): readonly Arrival[] {
-  return useSyncExternalStore(arrivals.subscribe, arrivals.read, arrivals.read);
+  return useSyncExternalStore(subscribe, arrivals.read, arrivals.read);
+}
+
+/** The rows whose birth is over, standing until Awake is out of sight. */
+export function useKept(): readonly Planned[] {
+  return useSyncExternalStore(
+    subscribe,
+    () => keptShown,
+    () => keptShown,
+  );
 }
 
 let held: ReadonlySet<string> = new Set();
-let heldFrom: readonly [unknown, unknown] = [null, null];
+let heldFrom: readonly [unknown, unknown, unknown] = [null, null, null];
 function heldNow(): ReadonlySet<string> {
   const standing = arrivals.read();
   const coming = arrivals.coming();
-  if (heldFrom[0] !== standing || heldFrom[1] !== coming) {
-    heldFrom = [standing, coming];
-    held = new Set([...coming, ...standing.map((arrival) => arrival.row.threadId)]);
+  if (heldFrom[0] !== standing || heldFrom[1] !== coming || heldFrom[2] !== keptShown) {
+    heldFrom = [standing, coming, keptShown];
+    held = new Set([...coming, ...standing.map((arrival) => arrival.row.threadId), ...kept.keys()]);
   }
   return held;
 }
 
-/** The threads whose planned rows stand, or are on their way: T3's own row for one waits until its birth is over. */
+/** The threads whose planned rows stand, or are on their way: T3's own row for one waits until it is handed over. */
 export function useHeldThreads(): ReadonlySet<string> {
-  return useSyncExternalStore(arrivals.subscribe, heldNow, heldNow);
+  return useSyncExternalStore(subscribe, heldNow, heldNow);
 }
 
 /** The machine lists these Cells now (`createArrivals`, `listed`). */
