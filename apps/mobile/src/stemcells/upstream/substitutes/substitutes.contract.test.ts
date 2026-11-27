@@ -549,6 +549,20 @@ const CASES: Readonly<Record<string, Case>> = {
       ],
     },
   },
+  "apps/mobile/src/lib/attachmentDownload.ts": {
+    exports: view("apps/mobile/src/lib/attachmentDownload.ts", "attachmentDownload.ts"),
+    importers: {
+      // The long-press menu's Share, on a chat's video, picture or file and in the file viewer.
+      "apps/mobile/src/state/mediaActions.ts": [
+        "../lib/attachmentDownload",
+        ["downloadAndShareAttachment"],
+      ],
+      "apps/mobile/src/components/ui/FilePreviewSession.tsx": [
+        "../../lib/attachmentDownload",
+        ["downloadAndShareAttachment"],
+      ],
+    },
+  },
   "packages/client-runtime/src/state/subagentDisplay.ts": {
     exports: [
       Object.keys(UpstreamSubagentDisplay),
@@ -860,6 +874,9 @@ describe("the phone's substitutes for upstream modules", () => {
     >();
     expectTypeOf<typeof import("./FilePreviewGallery")>().toEqualTypeOf<
       typeof import("../../../components/ui/FilePreviewGallery")
+    >();
+    expectTypeOf<typeof import("./attachmentDownload")>().toEqualTypeOf<
+      typeof import("../../../lib/attachmentDownload")
     >();
     expectTypeOf<typeof import("./expo-image-picker")>().toEqualTypeOf<
       typeof import("expo-image-picker")
