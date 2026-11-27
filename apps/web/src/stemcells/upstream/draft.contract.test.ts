@@ -12,14 +12,12 @@ import draftHeroProjectHeading from "../../components/chat/DraftHeroProjectHeadi
 import threadRouteView from "../../components/ThreadRouteView.tsx?raw";
 
 describe("a draft's contracts with upstream", () => {
-  it("a draft's composer overlay fills the chat and centres its lane with flex", () => {
-    // The pane's `align-items: flex-end` moves the lane to the foot. A sent
-    // chat's overlay is no flex box, so the same rule leaves it alone.
+  it("a draft's composer overlay fills the chat and stands its lane in a flex column", () => {
+    // The pane's `justify-content: flex-end` packs the lane at the foot, under
+    // the spacer upstream stands over it. A sent chat's overlay is no flex
+    // box, so the same rule leaves it alone.
     expect(chatView).toContain('data-chat-composer-overlay="true"');
-    // A short window already sets it at the foot.
-    expect(chatView).toContain(
-      '"pointer-events-none absolute inset-0 z-20 flex items-center [@media(max-height:34rem)]:items-end"',
-    );
+    expect(chatView).toContain('"pointer-events-none absolute inset-0 z-20 flex flex-col ');
     expect(chatView).toContain(
       '"pointer-events-none absolute inset-x-0 bottom-0 z-20 pt-1.5 sm:pt-2"',
     );

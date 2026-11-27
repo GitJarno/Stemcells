@@ -6,8 +6,13 @@ export type { ChatAttachment, EnvironmentId } from "@t3tools/contracts";
 export type { DraftComposerAttachment } from "../../lib/composerImages";
 export { composerImageGallery } from "../../lib/composerImageGallery";
 export { assetImageSource } from "../../lib/assetImageSource";
+export { filePreviewSourceIdentifier } from "../../lib/filePreviewGallery";
 export { useAssetUrl, useRefreshAssetUrl } from "../../state/assets";
-export { useFilePreviewGallery } from "../../components/ui/FilePreviewGallery";
-export type { FilePreviewItem, FilePreviewSource } from "../../components/ui/FilePreviewModal.types";
+// Our modules get upstream's originals, so the chat-wide gallery comes from its substitute.
+export { useFilePreviewGallery } from "./substitutes/FilePreviewGallery";
+export type {
+  FilePreviewItem,
+  FilePreviewSource,
+} from "../../components/ui/FilePreviewModal.types";
 export { PresentationSource } from "../../components/ui/NativePresentation";
 export { AppActivityIndicator } from "../../components/ui/AppActivityIndicator";

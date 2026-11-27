@@ -17,6 +17,7 @@ import {
   type EnvironmentId,
   type FilePreviewItem,
   type FilePreviewSource,
+  filePreviewSourceIdentifier,
   PresentationSource,
   useAssetUrl,
   useFilePreviewGallery,
@@ -68,7 +69,7 @@ function SentImageTile(props: {
 }) {
   const { environmentId, image } = props;
   const withGallery = useFilePreviewGallery();
-  const sourceIdentifier = useId();
+  const tileIdentifier = useId();
   const resource =
     image.attachmentId === null
       ? null
@@ -102,6 +103,8 @@ function SentImageTile(props: {
           name: image.name,
           actionsSource: { name: image.name, mimeType: image.mimeType, environmentId, resource },
         };
+  // Named as the viewer names its pages, so a picture paged to from another closes into this tile.
+  const sourceIdentifier = viewed ? filePreviewSourceIdentifier(viewed) : tileIdentifier;
 
   return (
     <PresentationSource identifier={sourceIdentifier}>

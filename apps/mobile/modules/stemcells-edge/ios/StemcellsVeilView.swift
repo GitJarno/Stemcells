@@ -20,12 +20,22 @@ final class StemcellsVeilView: ExpoView {
     didSet {
       guard edge != oldValue else { return }
       filter = Self.filter(edge)
+      place()
       apply()
+    }
+  }
+
+  /// A top veil under a native bar rises and returns with it (`BarFollow`).
+  var followsBar = false {
+    didSet {
+      guard followsBar != oldValue else { return }
+      place()
     }
   }
 
   private let effectView = UIVisualEffectView(effect: UIBlurEffect(style: .regular))
   private var filter: NSObject?
+  private var follow = BarFollow()
 
   required init(appContext: AppContext? = nil) {
     super.init(appContext: appContext)
@@ -50,13 +60,35 @@ final class StemcellsVeilView: ExpoView {
 
   override func layoutSubviews() {
     super.layoutSubviews()
-    effectView.frame = bounds
+    place()
     apply()
   }
 
   override func didMoveToWindow() {
     super.didMoveToWindow()
+    place()
     apply()
+  }
+
+  override func safeAreaInsetsDidChange() {
+    super.safeAreaInsetsDidChange()
+    place()
+  }
+
+  /// UIKit shrinks the safe area inside its own animation of the bar, so a lift set here rides it:
+  /// bar and veil move as one. With Reduce Motion the veil takes its place without the slide.
+  private func place() {
+    var frame = bounds
+    if followsBar && edge == .top {
+      frame.origin.y = -follow.lift(
+        top: safeAreaInsets.top, height: bounds.height, window: window?.bounds.size ?? .zero)
+    }
+    guard effectView.frame != frame else { return }
+    if UIAccessibility.isReduceMotionEnabled {
+      UIView.performWithoutAnimation { effectView.frame = frame }
+    } else {
+      effectView.frame = frame
+    }
   }
 
   private func apply() {

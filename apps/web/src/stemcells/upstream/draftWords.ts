@@ -21,6 +21,8 @@ import {
   type ComposerThreadDraftState,
   type DraftId,
 } from "../../composerDraftStore";
+import { trackPendingWorkspaceDefault } from "../../lib/draftWorkspaceDefaults";
+import { retargetDraftWorkspace } from "../../lib/retargetDraftWorkspace";
 import { seedDraftModelSelection } from "../../lib/seedDraftModelSelection";
 import { appAtomRegistry } from "../../rpc/atomRegistry";
 import { readProject } from "../../state/entities";
@@ -178,23 +180,34 @@ export function projectRefOf(memberKeys: ReadonlyArray<string>, environmentId: s
 }
 
 /**
- * Points the draft at another project (`environmentId:projectId`), as the
- * hero's picker does for a draft with writing in it: the draft keeps its
- * pane, its branch and worktree reset, and unless a model was chosen, it
- * takes the model a new chat there would start with (upstream's own seeding).
+ * Points the draft at another project (`environmentId:projectId`) as upstream's
+ * `moveDraftToProject` does: it keeps its pane, and unless chosen, takes the workspace and
+ * model a new chat there would start with. Not that function itself: it leaves a draft with
+ * no writing in place, and the words move a draft back when its word goes, writing or not.
  */
 export function moveDraft(draftId: string, projectKey: string): void {
   const projectRef = projectRefOfKey(projectKey);
+  const id = draftId as DraftId;
   const store = useComposerDraftStore.getState();
-  const session = store.getDraftSession(draftId as DraftId);
+  const session = store.getDraftSession(id);
   if (!session) return;
   if (
     session.environmentId === projectRef.environmentId &&
     session.projectId === projectRef.projectId
   )
     return;
-  store.setLogicalProjectDraftThreadId(session.logicalProjectKey, projectRef, draftId as DraftId);
-  seedDraftModelSelection(draftId as DraftId, projectRef);
+  store.setLogicalProjectDraftThreadId(session.logicalProjectKey, projectRef, id);
+  const current = { envMode: session.envMode, startFromOrigin: session.startFromOrigin };
+  trackPendingWorkspaceDefault(
+    id,
+    projectRef,
+    current,
+    retargetDraftWorkspace(session, projectRef, AbortSignal.timeout(5_000)).then((workspace) => ({
+      ...current,
+      ...workspace,
+    })),
+  );
+  seedDraftModelSelection(id, projectRef);
 }
 
 /** Whether the draft has gone: sent (promoted to a thread) or dropped. */

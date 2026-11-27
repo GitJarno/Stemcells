@@ -6,6 +6,7 @@
 import { effectiveSnoozed, type EnvironmentThreadShell } from "../upstream/threads";
 import {
   type CellStanding,
+  chatAskOf,
   type Elsewhere,
   type FilterProject,
   type LineStage,
@@ -77,7 +78,7 @@ export function lineOf<S extends Shell>(
     if (list === null) continue;
     staged.set(environmentId, new Map((list.cells ?? []).map((cell) => [cell.threadId, cell])));
     for (const need of list.needs) {
-      const key = `${environmentId}:${need.key}`;
+      const key = askKeyOf(environmentId, need);
       if (!answered.has(key)) asks.push({ key, environmentId, need });
       const cell = `${environmentId}:${need.parentThreadId ?? need.threadId}`;
       const before = askedSince.get(cell);
@@ -109,6 +110,24 @@ export function lineOf<S extends Shell>(
     if (stage === "needs-you" && stages === undefined) line.unread.push(cell);
   }
   return { ...line, states };
+}
+
+const askKeyOf = (environmentId: string, need: Need) => `${environmentId}:${need.key}`;
+
+/** The ask a Cell's chat docks (`ChatAsk.tsx`): what `chatAskOf` picks, less those just answered. */
+export function chatAskIn(
+  reading: Reading | undefined,
+  environmentId: string,
+  threadId: string,
+  answered: ReadonlySet<string>,
+): Ask | null {
+  const list = reading === undefined || reading.state === "none" ? null : reading.list;
+  const open = list && {
+    ...list,
+    needs: list.needs.filter((need) => !answered.has(askKeyOf(environmentId, need))),
+  };
+  const need = chatAskOf(open, threadId);
+  return need === null ? null : { key: askKeyOf(environmentId, need), environmentId, need };
 }
 
 /** How many each segment holds in view: Input counts every ask, wherever it is, read or not. */

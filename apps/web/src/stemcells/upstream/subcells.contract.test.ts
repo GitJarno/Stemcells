@@ -109,9 +109,7 @@ describe("Subcells in upstream's views", () => {
       ': gt("Open parent Cell on {label}", { label: environment.label })',
     ])
       expect(controls).toContain(words);
-    expect(controls).toMatch(
-      /<TooltipPopup side="left">\s*<T>Stop Subcell<\/T>\s*<\/TooltipPopup>/,
-    );
+    expect(controls).toMatch(/label=\{\s*<>\s*<T>Stop Subcell<\/T>\s*<\/>\s*\}\s*side="left"/);
     const workflow = built("ThreadLineageWorkflowRow", lineageWorkflow);
     expect(workflow).toMatch(/>\s*<T>No Subcells yet<\/T>\s*<\/li>/);
     expect(workflow).toContain(

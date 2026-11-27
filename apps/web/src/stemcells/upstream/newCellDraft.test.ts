@@ -4,10 +4,10 @@ import type { AnyRouter } from "@tanstack/react-router";
 import { describe, expect, it, vi } from "vite-plus/test";
 
 import { DraftId, useComposerDraftStore } from "~/composerDraftStore";
+import { readPendingWorkspaceDefault } from "~/lib/draftWorkspaceDefaults";
 
 import { readNewCellDraft } from "./newCell";
 import { makeNewCellDraft } from "./newCellDraft";
-import { readPendingWorkspaceDefault } from "./substitutes/useHandleNewThread";
 
 // The new Cell's draft opens before its project's t3.json is read, as upstream's new thread does:
 // a cold read takes seconds on a loaded host. The file's default lands afterwards, a send waits
@@ -39,7 +39,6 @@ vi.mock("../../lib/t3ProjectFileDefaults", () => ({
 }));
 vi.mock("../../hooks/useHandleNewThread", () => ({
   useHandleNewThread: vi.fn(),
-  readPendingWorkspaceDefault: () => null,
 }));
 vi.mock("../../state/entities", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../../state/entities")>()),

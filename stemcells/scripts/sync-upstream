@@ -126,11 +126,14 @@ gate_upstream_packages() {
     # So do ssh's two missing-gzip cases and its concurrent-launch case, and
     # (checked at df09ced76, 2026-11-20) its two archive-launch cases, whose
     # fake t3 execs a node the bare system PATH of a Mac doesn't have.
+    # shared's wildcard-port cases (#43478): a Mac lets 0.0.0.0 bind beside
+    # a LAN address's listener, which Linux refuses (0ac7c99ef, 2026-11-27).
     skip=$(skip_pattern "captures values when the profile replaces PATH and a DEBUG trap echoes commands" \
       "names missing gzip after verifying with" \
       "concurrent launches on one remote home record the server that owns it" \
       "a reconnect from an older client keeps a newer managed server running" \
-      "a newer client still replaces an older managed server") || return 1
+      "a newer client still replaces an older managed server" \
+      "findAvailablePort skips a port a LAN listener holds for wildcard host") || return 1
     upstream_env pnpm exec vp run --parallel --concurrency-limit 4 --filter '!t3' \
       --filter '!@t3tools/monorepo' --filter '!@t3tools/web' --filter '!@t3tools/desktop' \
       test -t "$skip" &&
@@ -178,11 +181,11 @@ gate_upstream_server() {
     # background-lane case counts spawns one TestClock step after starting
     # them, while each resolves git on PATH through real I/O; here one of
     # four is still resolving (7103527dc, 2026-11-23; src/vcs and
-    # shared/shell are upstream's own). Three linked-directory watch cases
-    # (#41325) wait on a Mac's own file events in real time and miss the
-    # order or the edit they expect, alone or under load (84e4264bb,
-    # 2026-11-24; the watcher, its tests and the theme reader are upstream's
-    # own, unchanged).
+    # shared/shell are upstream's own). Five directory watch cases (#41325)
+    # wait on a Mac's own file events in real time and miss the order or the
+    # edit they expect, alone or under load (84e4264bb, 2026-11-24; the
+    # plain twin and the vanishing tree at 0ac7c99ef, 2026-11-27; the
+    # watcher, its tests and the theme reader are upstream's own, unchanged).
     skip=$(skip_pattern "accepts the agy CLI without a harness sibling" \
       "explains that the linux-arm64 runtime needs 4 KiB pages when it aborts on a 16 KiB kernel" \
       "gives a synced namespace to an installed plugin, then the first synced row" \
@@ -193,7 +196,8 @@ gate_upstream_server() {
       "checkpoint publication falls back to rename where hardlinks are unavailable" \
       "a page's title change without navigation reaches its session" \
       "runs background Git in its own lane so user commands never queue behind it" \
-      "backs off stopped watches for an unchanged linked directory" \
+      "backs off stopped watches for an unchanged" \
+      "publishes themes when a linked theme tree vanishes after listing and returns between probes" \
       "publishes themes when a linked theme directory's original grandparent is restored between probes" \
       "publishes later edits after a linked theme directory's grandparent is restored") || return 1
     upstream_env pnpm --filter t3 exec vp test run -t "$skip"

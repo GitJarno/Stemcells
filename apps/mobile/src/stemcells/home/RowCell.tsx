@@ -97,15 +97,20 @@ export function useSaysNothing(_status: string): boolean {
   return use(HomeStageContext) === "awake";
 }
 
-/** A card row's content with its Cell beside it, and its machine and pull request in its bottom right. */
+/**
+ * A card row's content with its Cell beside it, and its machine and pull request in its bottom
+ * right. In the iPad's and the unfolded Duo's sidebar, T3's row stays, but on Awake it is ours.
+ */
 export function CellBesideRow(props: {
   readonly thread: EnvironmentThreadShell;
   readonly marks: CardMarks;
+  readonly sidebar?: boolean;
   readonly children: ReactNode;
 }) {
   const aski = useIsAskiChat(props.thread.id);
   const awake = use(HomeStageContext) === "awake";
   if (awake) return <AwakeRow thread={props.thread}>{props.children}</AwakeRow>;
+  if (props.sidebar) return props.children;
   const { machine, pr } = props.marks;
   return (
     <View className="flex-row items-stretch gap-3">
@@ -268,8 +273,9 @@ const HIDDEN: ViewStyle = { display: "none" };
  * runs beneath them. A failed chat's error takes the second line, and the title one. On Awake,
  * one line: the faint mark and the title, as Asleep's rows are.
  */
-export function useCardLines(beside: boolean, error: boolean, marks: CardMarks) {
+export function useCardLines(card: boolean, sidebar: boolean, error: boolean, marks: CardMarks) {
   const awake = use(HomeStageContext) === "awake";
+  const beside = card && (!sidebar || awake);
   if (!beside) return { beside, titleLines: 2, trailing: NOTHING, meta: NOTHING, lead: null };
   if (awake) {
     const lead = marks.project ? <TitleMark project={marks.project} faint /> : null;
@@ -288,7 +294,7 @@ export function useCardLines(beside: boolean, error: boolean, marks: CardMarks) 
   };
 }
 
-/** A slim row's Cell, standing as tall as an awake row on the home's tabs; none in the iPad's sidebar, whose rows stay T3's. */
+/** A slim row's Cell, standing as tall as an awake row on the home's tabs; none in the iPad's and the Duo's sidebar, whose slim rows stay T3's. */
 export function SlimRowCell(props: {
   readonly thread: EnvironmentThreadShell;
   readonly sidebar: boolean;

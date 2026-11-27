@@ -91,9 +91,10 @@ describe("the composer controls the ladder steps down", () => {
     expect(providerModelPicker).toContain('"data-chat-provider-model-picker-label": "true",');
     expect(providerModelPicker).toContain("<span {...triggerTextProps}>{triggerText}</span>");
     expect(chatComposer).toContain('data-chat-composer-footer="true"');
-    // The attach button is the one whose child is the paperclip, a lucide icon (`.lucide-paperclip`).
+    // The attach button is the one whose child is the paperclip, a lucide icon (`.lucide-paperclip`):
+    // `SharedTooltipTrigger` hands its children to the button it renders.
     expect(attachmentStrip).toMatch(
-      /aria-label=\{gt\("Attach files"\)\}\s*\/>\s*\}\s*>(?:\s*\{\/\*[^]*?\*\/\})?\s*<PaperclipIcon /,
+      /aria-label=\{gt\("Attach files"\)\}\s*\/>\s*\}\s*label=\{[^}]*\}\s*>(?:\s*\{\/\*[^]*?\*\/\})?\s*<PaperclipIcon /,
     );
     // The picker keeps a minimum width the narrowest rung lets go.
     expect(composerControlsBar).toContain(

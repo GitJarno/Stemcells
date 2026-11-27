@@ -25,7 +25,8 @@ const SUBSTITUTES = {
   "packages/client-runtime/src/state/threads.ts": "threads.ts",
   "packages/client-runtime/src/state/subagentRuntime.ts": "subagentRuntime.ts",
   "packages/client-runtime/src/state/threadSubagents.ts": "threadSubagents.ts",
-  // A Cell's name heads its chat; the feed fades under the composer.
+  // A Cell's name heads its chat; the feed fades under the composer, and
+  // the Cell's ask docks over it.
   "apps/mobile/src/features/threads/ThreadComposer.tsx": "ThreadComposer.tsx",
   "apps/mobile/src/features/threads/ThreadHeader.tsx": "ThreadHeader.tsx",
   // iOS's bar: in a chat, the Cell beside its name, one Code menu, no band behind it.
@@ -70,6 +71,8 @@ const SUBSTITUTES = {
   // Claude for it.
   "apps/mobile/src/lib/modelOptions.ts": "modelOptions.ts",
   "apps/mobile/src/components/ui/Dialog.tsx": "Dialog.tsx",
+  // A picture tapped in a chat pages through every picture in the chat, not its message's alone.
+  "apps/mobile/src/components/ui/FilePreviewGallery.tsx": "FilePreviewGallery.tsx",
 };
 
 /** Package upstream's code imports, by name, to its substitute in this folder. */

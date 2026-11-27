@@ -100,3 +100,7 @@ export const repositoryUrlOf = (
 /** "Quit and reopen the app": a step, which a Cell writes after its owner word, as a line of its own. */
 export const sentenceCase = (text: string): string =>
   /^[a-z]/.test(text) ? text[0]!.toUpperCase() + text.slice(1) : text;
+
+/** An ask's words without their markup: a folded ask's one line, and the words a chat draws. */
+export const plainOf = (text: string): string =>
+  text.replace(/\[([^\]\n]+)\]\([^)\s]+\)/g, "$1").replace(/[`*]/g, "");

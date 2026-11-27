@@ -86,6 +86,7 @@ describe("your own act never waits", () => {
     expect(held.read().line).toEqual({
       kind: "said",
       words: "Harbor already had an answer. Yours wasn't sent.",
+      about: act("Harbor", yes),
     });
   });
 
@@ -103,6 +104,7 @@ describe("your own act never waits", () => {
     expect(refused.held.read().line).toEqual({
       kind: "said",
       words: "Couldn't send to Harbor: refused",
+      about: act("Harbor", yes),
     });
   });
 
@@ -113,7 +115,7 @@ describe("your own act never waits", () => {
     held.back("a", "Couldn't stop it to settle it.");
     expect(held.read()).toEqual({
       answered: new Set(),
-      line: { kind: "said", words: "Couldn't stop it to settle it." },
+      line: { kind: "said", words: "Couldn't stop it to settle it.", about: null },
     });
   });
 

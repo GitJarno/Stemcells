@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import { elsewhereWords, type CellStanding, type Need } from "./kit";
-import { countsOf, elsewhereOf, lineOf, opensOn, readsNextPage } from "./line";
+import { chatAskIn, countsOf, elsewhereOf, lineOf, opensOn, readsNextPage } from "./line";
 import type { Reading } from "./read";
 
 const NOW = "2026-10-27T12:00:00.000Z";
@@ -127,6 +127,15 @@ describe("the phone's home on the Cells' line", () => {
     ]);
     const line = lineOf([], readings, NOW, new Set(["mini:c:ask"]), byRecord);
     expect(line.asks.map((ask) => ask.key)).toEqual(["mini:b:ask", "mac:a:ask", "away:d:ask"]);
+  });
+
+  it("docks a chat's oldest ask but the one just answered, keyed as the line keys it", () => {
+    const plan = { ...need("a", NOW), key: "a:plan", number: 1, kind: "plan" } as Need;
+    const failed = { ...need("a", NOW), key: "a:failed", number: 2, kind: "failed" } as Need;
+    const reading = read([failed, plan], []);
+    expect(chatAskIn(reading, "mac", "a", new Set())?.key).toBe("mac:a:plan");
+    expect(chatAskIn(reading, "mac", "a", new Set(["mac:a:plan"]))?.key).toBe("mac:a:failed");
+    expect(chatAskIn({ state: "none" }, "mac", "a", new Set())).toBeNull();
   });
 
   it("counts every ask whatever the pickers show, and the rest only in view", () => {

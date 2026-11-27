@@ -10,7 +10,6 @@ import composerSend from "../../components/chat/useComposerSend.ts?raw";
 import composerDraftStore from "../../composerDraftStore.ts?raw";
 import newThread from "../../hooks/useHandleNewThread.ts?raw";
 import ours from "./newCellDraft.ts?raw";
-import ourWorkspaceDefault from "./workspaceDefault.ts?raw";
 
 /** `source` from `from` through `to`, its whitespace collapsed. */
 function span(source: string, from: string, to: string): string {
@@ -46,6 +45,8 @@ describe("the new Cell's draft, made as upstream makes a fresh one", () => {
       "worktreePath",
       "envMode",
       "startFromOrigin",
+      // `workspaceExplicit` when the caller names a workspace; the new Cell never does.
+      "options",
       "runtimeMode",
       "carryInteractionMode",
     ]);
@@ -112,21 +113,12 @@ describe("the new Cell's draft, made as upstream makes a fresh one", () => {
     expect(newThread).toMatch(
       /const projectFileRead = readT3ProjectFile\(project\.environmentId, project\.workspaceRoot\);\s*const cachedProjectFile = peekT3ProjectFile\(project\.environmentId, project\.workspaceRoot\);\s*if \(cachedProjectFile !== undefined\) \{\s*return \{ envMode: envModeFor\(cachedProjectFile\), applyProjectFile: \(\) => \{\} \};\s*\}\s*const envMode = envModeFor\(null\);/,
     );
-    // When the default lands, how, and what a send waits for: upstream's steps, word for word.
-    for (const [from, to] of [
-      ["function keepsProvisionalWorkspace(", "\n}"],
-      ["const provisional: ProvisionalWorkspace = {", "};"],
-      [
-        "if (fileEnvMode === envMode",
-        "pendingWorkspaceDefaults.set(draftId, { ...provisional, settled });",
-      ],
-      ["const pending = pendingWorkspaceDefaults.get(draftId);", ": null;"],
-    ] as const) {
-      expect(span(ourWorkspaceDefault, from, to)).toBe(span(newThread, from, to));
-    }
+    // The default lands through upstream's own tracker, handed the same workspace, word for word.
+    const landing = ["trackPendingWorkspaceDefault(", "startFromOriginFor(envMode) };"] as const;
+    expect(span(ours, ...landing)).toBe(span(newThread, ...landing));
     // A send from a draft whose default is still to land waits for it.
     expect(composerSend).toMatch(
-      /readPendingWorkspaceDefault\(draftId\) : null;\s*if \(workspaceDefault === null\) return sendWithEnvironmentRefresh\(\.\.\.args\);[\s\S]{0,80}await workspaceDefault/,
+      /readPendingWorkspaceDefault\(draftId\) : null;\s*if \(workspaceDefault === null\) return sendWithEnvironmentRefresh\(\.\.\.args\);[\s\S]{0,80}await waitBeforeSend\(workspaceDefault\)/,
     );
   });
 

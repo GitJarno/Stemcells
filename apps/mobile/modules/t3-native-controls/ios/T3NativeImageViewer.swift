@@ -53,7 +53,7 @@ final class T3NativeImageViewer: NSObject {
       if let placeholder { viewer.setImage(placeholder, at: index, full: false) }
     }
     presenter.present(T3ImageViewerNavigation(viewer: viewer), animated: false) { viewer.animateIn() }
-    for index in urls.indices { load(index, retry: false) }
+    for index in urls.indices where isNearCurrent(index) { load(index, retry: false) }
   }
 
   /// Delivers a URL that was still resolving when the gallery opened, or nil when it never will.
@@ -64,7 +64,7 @@ final class T3NativeImageViewer: NSObject {
       return
     }
     urls[index] = url
-    load(index, retry: false)
+    if isNearCurrent(index) { load(index, retry: false) }
   }
 
   func dismiss() {
@@ -109,10 +109,11 @@ final class T3NativeImageViewer: NSObject {
     }
   }
 
-  /// Every original downloads up front, but a decoded one costs far more memory than its file,
+  /// Originals download only as their page comes near, and a decoded one costs far more memory than its file,
   /// so only pages next to the current one decode, and pages further away fall back to their thumbnail.
   private func show(page index: Int) {
     currentIndex = index
+    for near in urls.indices where isNearCurrent(near) && files[near] == nil { load(near, retry: false) }
     for other in decoded where !isNearCurrent(other) {
       decoded.remove(other)
       controller?.release(at: other, placeholder: placeholders[other])
@@ -281,6 +282,7 @@ private final class T3ImageViewerPage: UIView, UIScrollViewDelegate {
   private var laidOutSize = CGSize.zero
   private(set) var isFull = false
   var onRetry: (() -> Void)?
+  var onZoom: (() -> Void)?
 
   override init(frame: CGRect) {
     super.init(frame: frame)
@@ -418,7 +420,7 @@ private final class T3ImageViewerPage: UIView, UIScrollViewDelegate {
 
   func viewForZooming(in scrollView: UIScrollView) -> UIView? { imageView }
 
-  func scrollViewDidZoom(_ scrollView: UIScrollView) { centerImage() }
+  func scrollViewDidZoom(_ scrollView: UIScrollView) { centerImage(); onZoom?() }
 
   private func centerImage() {
     let content = scroll.contentSize
@@ -535,6 +537,7 @@ final class T3ImageViewerController: UIViewController, UIScrollViewDelegate, UIG
       let page = T3ImageViewerPage()
       page.imageView.accessibilityLabel = titles[index]
       page.onRetry = { [weak self] in self?.onRetry(index) }
+      page.onZoom = { [weak self] in self?.updatePaging() }
       page.scroll.panGestureRecognizer.require(toFail: dismissPan)
       page.setLoading()
       pages.append(page)
@@ -631,6 +634,9 @@ final class T3ImageViewerController: UIViewController, UIScrollViewDelegate, UIG
     pages[safe: index]?.setFailed(retryable: retryable)
     updateActions()
   }
+
+  /// A zoomed picture pans to its edges and never turns the page; only a fitted one swipes.
+  private func updatePaging() { pager.isScrollEnabled = pages[safe: currentIndex]?.isZoomed != true }
 
   /// Save and Share act on the original, so they wait until the current page shows it.
   private func updateActions() {
