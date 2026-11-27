@@ -61,6 +61,17 @@
 [data-cells-sky-body] {
   position: absolute;
 }
+/* A visitor (Sky.tsx, `Visits`) rests unseen at the corner; its animation places and shows it. */
+[data-cells-sky-visitor] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+}
+[data-cells-sky-bird] {
+  position: absolute;
+  transform-origin: 50% 85%;
+}
 
 [data-cells-top] {
   display: flex;
@@ -157,6 +168,48 @@
   overflow-y: auto;
   /* Up and down only: sideways, the swipe is the column's. */
   overscroll-behavior-y: contain;
+  /* Rows fade out at the list's edges rather than meeting a cut: the top's fade grows as the
+     list leaves its top, the foot's as it nears its end, both read from the scroll itself. */
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    #000 var(--cells-page-top),
+    #000 calc(100% - var(--cells-page-foot)),
+    transparent
+  );
+  animation:
+    cells-page-top linear both,
+    cells-page-foot linear both;
+  animation-timeline: scroll(self block), scroll(self block);
+  animation-range:
+    0 var(--cells-page-fade),
+    calc(100% - var(--cells-page-fade)) 100%;
+}
+@property --cells-page-top {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+@property --cells-page-foot {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+:root {
+  --cells-page-fade: 1.75rem;
+}
+@keyframes cells-page-top {
+  to {
+    --cells-page-top: var(--cells-page-fade);
+  }
+}
+@keyframes cells-page-foot {
+  from {
+    --cells-page-foot: var(--cells-page-fade);
+  }
+  to {
+    --cells-page-foot: 0px;
+  }
 }
 [data-cells-page][inert] {
   pointer-events: none;

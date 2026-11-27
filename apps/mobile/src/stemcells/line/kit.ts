@@ -51,19 +51,30 @@ export {
 } from "../../../../web/src/stemcells/motion/listMotion.ts";
 export { drawnMoonPhase, litPath } from "../../../../web/src/stemcells/motion/moon.ts";
 export {
+  BIRD_PATH,
+  BIRDS,
+  birdsAt,
   CLOUDS,
+  nextVisit,
+  type Pose as SkyPose,
+  SEED,
+  seedAt,
+  shootingStarAt,
   shown,
   SKY,
   SKY_AT,
   SKY_SHAPE,
   SKY_SPANS,
   SKY_TURN,
+  SKY_VISITS,
+  skyAtStage,
   skyStops,
   skyTurn,
   type SkyPalette,
+  type SkyVisit,
   type Span as SkySpan,
   starGroups,
-  warmth,
+  wingAt,
 } from "../../../../web/src/stemcells/motion/sky.ts";
 export {
   EMPTY_WORDS,
@@ -84,10 +95,4 @@ export {
   unfollowed,
   waitingSince,
 } from "../../../../web/src/stemcells/inbox/loop.ts";
-export {
-  publishInbox,
-  readInboxSky,
-  skyOver,
-  useInboxSky,
-} from "../../../../web/src/stemcells/inbox/sky.ts";
 export { clearedWords, factAfter, STEM_CELL_FACTS } from "../../../../../stemcells/words/inbox.ts";

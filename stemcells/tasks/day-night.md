@@ -1,19 +1,23 @@
-# Dawn, day and night
+# Day and night
 
-Input is dawn, Awake is day, Asleep is night. The sky stands behind the
-home's header on the phone and behind the column's head on the Mac, and
-turns as the stage turns. It replaces Asleep's night band (`nightfall.md`),
-which sat in Asleep's list 80 pt below Awake's top, with a black band above
-its moon and a bar of sky under the title.
+Input and Awake are day, Asleep is night. The sky stands behind the home's
+header on the phone and behind the column's head on the Mac, and turns as the
+stage turns. It replaces Asleep's night band (`nightfall.md`), which sat in
+Asleep's list 80 pt below Awake's top, with a black band above its moon and a
+bar of sky under the title.
 
 The person's brief (2026-11-27): both lists start at the same height; the sky
 moves up behind the title, battery and folder, from the screen's top edge,
-and blends into the first row; Awake is daylight and Asleep night; the turn
-between them is a real sunrise or sunset that stays smooth however fast the
-stages are toggled; and it stays clean, because this is where people work.
-Later that day: Input comes back as a third stage, an inbox of the Cells
-waiting on the person, and its sky is first light: the day hasn't started
-until they're unblocked.
+and blends into the first row; Awake is daylight and Asleep night; it stays
+smooth however fast the stages are toggled; and it stays clean, because this
+is where people work.
+
+Revised the same night: the sunset through a warm dawn read as a dance on
+every switch, and the turn lagged the switch. So there are two skies and
+nothing between: Input lost its dawn, the turn is a quick crossfade that
+answers in the switch's own frame, and the day is a clear sky, not a dusk. In
+the same pass the sky got its visitors back (shooting stars, gone with the
+night band) and the day got its own.
 
 ## Decisions
 
@@ -36,17 +40,15 @@ until they're unblocked.
    is the stage itself, said without a word. It stays restrained: no gradient
    anywhere else, no glow but the sun's and moon's own soft halo, nothing that
    moves while it stands.
-4. **Day is a late dusk, quiet at the edge of the eye.** It stands beside
-   the list all day, so it keeps near the ground (2026-11-27: a blue noon
-   drew the eye from every chat). In the dark appearance, a deep slate
-   (`#131A2A`) warming toward a dusky plum at the horizon. A soft apricot
-   sun with a faint halo, where the moon stands at night, and two faint
-   wisps of cloud. In the light appearance, a pale periwinkle warming to
-   peach, fading into the white screen.
-5. **Dawn is the sun at the horizon:** low and faint, the horizon at its
-   warmest, the brightest stars the last ones out, the sky between night and
-   day. It is the same moment a sunset passes through, so dawn is a point on
-   the one axis, not a third sky.
+4. **Day is a clear sky, quiet at the edge of the eye.** It stands beside
+   the list all day, so it keeps near the ground (a blue noon drew the eye
+   from every chat), but it reads as day, never evening: no plum, no coral.
+   In the dark appearance a deep, quiet blue, paler toward the horizon; a
+   warm-white sun in a wide, faint haze, where the moon stands at night; two
+   soft clouds of a few lobes. In the light appearance a pale morning blue
+   fading into the white screen.
+5. **No dawn and no dusk.** A warm moment between day and night made every
+   switch a little show. The two skies cross and nothing passes between them.
 6. **Night is the night it was:** near-black indigo, stars in three groups by
    brightness, and the moon at tonight's real phase (`motion/moon.ts`). In the
    light appearance, night is a lavender dusk light enough that the dark title
@@ -60,43 +62,16 @@ until they're unblocked.
 
 One progress, 0 day to 1 night, drives every layer: each reads its own span
 of it (`SKY_SPANS`, `apps/web/src/stemcells/motion/sky.ts`), eased in and
-out. Each stage holds the sky at a point on it (`SKY_AT`, `skyAtStage`):
-Awake 0, Input 0.4, Asleep 1. So Awake to Asleep is a sunset through dawn's
-warm moment; Input to Awake is the sun rising; Input to Asleep, the sun
-dipping and the night coming. The pill's order (Input, Awake, Asleep) is the
-person's; the sky's is the sun's, and a path that went through full day
-between dawn and night would read wrong.
+out. Each stage holds the sky at an end of it (`skyAtStage`): Asleep 1, the
+rest 0.
 
-| Span of the progress | Layer                                                      |
-| -------------------- | ---------------------------------------------------------- |
-| 0 – 0.50             | The sun sinks 14 pt toward the horizon, going from 0.2     |
-| 0 – 0.30             | Its light warms, white to coral                            |
-| 0.05 – 0.75          | The horizon's warmth: rises and goes, at its height at 0.4 |
-| 0.10 – 0.70          | The night's sky deepens in                                 |
-| 0.15 – 0.60          | The clouds go; they catch the horizon's warmth as they go  |
-| 0.25 – 0.90          | The day's sky lifts, once the night is mostly in           |
-| 0.25 – 0.60          | The brightest stars                                        |
-| 0.50 – 1             | The other stars, two groups                                |
-| 0.55 – 0.90          | The moon rises 12 pt into place, there from 0.55 to 0.75   |
-
-- **Timing** (`SKY_TURN`): the whole way takes 1100 ms toward night and 800 ms
-  toward day; a turn takes its share (dawn to day 320 ms, dawn to night
-  660 ms), on one ease in and out. The sun is gone before the moon comes: one
-  body at a time.
-- **The rise.** Each answer lifts Input's dawn a step, half of its way to
-  day across the clearing; when the person answers the last ask, the rest
-  rises into day at its own slower pace (`SKY_TURN.rise`). Input with
-  nothing waiting stands by day. Where it stands is `skyOver` in
-  `inbox/sky.ts`; the rise is `riseSky(reduced)` on the phone
-  (`home/StagePages.tsx`) and `ColumnSky`'s `rises` on the Mac. A later
-  stage change to Awake finds the sky there already and does nothing.
-- **The warmth is a bump, not a colour mix.** The day and night skies cross
-  by opacity, never by interpolated colour per frame; the warm band's opacity
-  is `sin(π t)` over its span, at its height at dawn and gone by day and
-  night. It is coral and rose, never Input's amber, even though dawn is
-  Input's sky.
-- **The day lifts later than the night deepens**, so the two never stand
-  half-faded together and the ground doesn't show through mid-turn.
+- **The night comes in before the day lifts**, so the two never stand
+  half-faded together and the ground doesn't show through mid-turn. The sun
+  is gone before the moon comes: one body at a time, each moving a few
+  points as it goes or comes.
+- **Timing** (`SKY_TURN`): the whole way takes 520 ms toward night and
+  420 ms toward day, a partial turn its share, on one decelerating curve, so
+  the change shows in the switch's first frame and then settles.
 
 ## Interruptions
 
@@ -111,15 +86,30 @@ between dawn and night would read wrong.
 - The tap's own frame starts the turn, with the list's switch, before React
   renders the stage.
 
+## Visitors
+
+Now and then something crosses the sky (`SKY_VISITS`): by night a shooting
+star, by day a dandelion seed drifting on the air or three birds far off,
+beating and gliding. The day's are the night's shooting star in daylight's
+terms: seldom (night every 14–34 s, day every 30–75 s, the first sooner after
+a turn), small, soft at both ends, slow enough that they reward a glance
+without drawing one. A seed is the name said without a word.
+
+- Each fades with its own sky, so a turn takes it away mid-crossing.
+- They never meet the head's controls or the moon: a shooting star crosses a
+  share of the sky's width and falls a share of the stars' reach.
+- Only while the sky is on screen: the window visible on the Mac; the home in
+  front and the app active on the phone. Never under Reduce Motion.
+
 ## Still and cheap
 
-- Idle is static: no shooting star, no twinkle, nothing on a timer. Every
-  layer is drawn once and only its opacity and position change, on the UI
-  thread (Reanimated) or as one CSS transition (the Mac). No React render per
-  frame, and none at all during a turn.
-- Reduce Motion: every turn is one 200 ms linear crossfade, and nothing moves:
-  the sun and moon fade where they stand. Each stage still shows its own sky,
-  dawn's warmth included.
+- Between visits nothing moves: no twinkle, nothing on a timer but the next
+  visit's. Every layer is drawn once and only its opacity and position
+  change, on the UI thread (Reanimated) or as one CSS transition (the Mac). A
+  visitor is one compositor animation (the Mac) or one shared value (the
+  phone). No React render per frame, and none at all during a turn.
+- Reduce Motion: every turn is one 160 ms linear crossfade, and nothing
+  moves: the sun and moon fade where they stand.
 
 ## Sizes
 
@@ -155,7 +145,7 @@ window's controls.
 - [x] The shared module: palette, axis, spans, timings, stops, stars, with
       tests
 - [x] Phone: one sky behind the header, every list at 8 pt, the turn from the
-      tap's frame, no shooting star, Reduce Motion, `riseSky`
+      tap's frame, Reduce Motion
 - [x] Mac: the column's sky on the same module, its layers held to the
       progress in a browser test
 - [x] A mock of the frames, drawn from the module

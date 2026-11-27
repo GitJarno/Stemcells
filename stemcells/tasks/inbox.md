@@ -27,12 +27,11 @@ Asleep. Going through it is a loop: read the ask, answer, next.
    place of the answered one, the composer focused on the Mac, so the next
    answer can start without a click. On the folded Duo and an iPhone the next
    chat replaces the answered one; Back returns to Input.
-6. **Progress without words.** The Input count ticks down. The sky's dawn
-   (`day-night.md`) brightens a step with each answer.
-7. **All clear.** When the last ask is answered, the sun rises into day.
-   Input's empty page says so in one line with what it did ("4 Cells flying
-   again, in 6 minutes"), and one short fact about stem cells, a different
-   one each time. Quiet, once, never in the way.
+6. **Progress without words.** The Input count ticks down.
+7. **All clear.** When the last ask is answered, Input's empty page says so
+   in one line with what it did ("4 Cells flying again, in 6 minutes"), and
+   one short fact about stem cells, a different one each time. Quiet, once,
+   never in the way.
 8. **Not now** puts an ask off as Later does: it leaves Input until its time.
 9. **Between stages, only the list changes.** Turning between Input and
    Awake keeps the open chat (except decision 3). Rows in both stages move;
@@ -46,8 +45,7 @@ Asleep. Going through it is a loop: read the ask, answer, next.
 - [x] Input back as a stage on the phone and the Mac, longest waiting first
 - [x] Entering Input opens the top chat where a chat stands beside the list
 - [x] The loop: answered, the row leaves Input, the next opens
-- [x] Progress in the count and the dawn; the all-clear moment, its
-      sunrise and its facts
+- [x] Progress in the count; the all-clear moment and its facts
 - [x] Words, docs, tests; Aski's `stemcells_show` takes Input again
 - [ ] Gates, pull request, merge, seen on the Duo, an iPhone and the Mac
 
@@ -70,7 +68,3 @@ Asleep. Going through it is a loop: read the ask, answer, next.
   machines read) is part of each reading: another starts the loop afresh,
   so a switch or a machine dropping off never reads as answers. A clearing
   that ends away from Input ends quietly.
-- The sky (`day-night.md`) stands where `skyOver` says (`inbox/sky.ts`):
-  dawn over Input, lifting half its way to day across a clearing, day once
-  nothing waits. The loop's step and its all-clear reach the sky in one
-  change, so the last answer is always the slow sunrise.
