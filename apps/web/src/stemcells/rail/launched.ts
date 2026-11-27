@@ -9,6 +9,10 @@ import { useEffect } from "react";
 import { clearPlannedRows, setPlannedRows } from "../../../../../stemcells/aski/planned.ts";
 import { launchFactsOf, subscribeLaunches } from "../upstream/landing";
 
+// A dev build's hands on the planned rows (`planLab.ts`), loaded with the column. Here, not in a
+// component: React Compiler leaves a function with an `import()` unoptimized.
+if (import.meta.env.DEV && typeof window !== "undefined") void import("./planLab");
+
 /** The plan a launched Cell's row belongs to. */
 const launchPlanOf = (threadId: string) => `launch:${threadId}`;
 /** A launch's plan is over once its row has said its birth and gone (`ARRIVALS.linger`), with room to spare, ms. */

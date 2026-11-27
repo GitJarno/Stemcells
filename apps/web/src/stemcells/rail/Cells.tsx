@@ -195,10 +195,6 @@ export function Cells() {
   const landed = awake.filter((row) => !coming.has(row.cell.threadId));
   const pins = ordered.cells.slice(0, ordered.pins).filter((cell) => !coming.has(cell.threadId));
   useLaunchesArrive(environmentId);
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Load the dev build's hands on the planned rows once the column shows.
-  useEffect(() => {
-    if (import.meta.env.DEV) void import("./planLab");
-  }, []);
   const awakeIds = awake.map((row) => row.cell.threadId).join(" ");
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Tell the arrivals' timers which planned Cells the machine lists now.
   useEffect(() => {
