@@ -85,7 +85,7 @@ export function LineHome(props: {
     props.picks,
   );
   const tab = segments.useTab("awake");
-  const stages = useStagePages(STAGES, tab);
+  const stages = useStagePages(STAGES, tab, "asleep");
   // Only once every machine has answered: a cold start would clear the icon a closed app was given.
   useAppBadge(props.known ? askCount(line) : null);
 
@@ -123,7 +123,6 @@ export function LineHome(props: {
   const home = {
     tab,
     options: SEGMENTS.map((segment) => ({ ...segment, count: counts[segment.id] })),
-    night: tab === "asleep",
     choose: (id: string) => {
       stages.show(id as LineStage);
       segments.choose(id as LineStage);
@@ -140,7 +139,7 @@ export function LineHome(props: {
   return (
     <HomeTabsContext value={home}>
       <View style={{ flex: 1 }}>
-        <StagePages home={stages} tab={tab} night={home.night} render={page} />
+        <StagePages home={stages} tab={tab} render={page} />
         <DiskFoot />
         <UndoLine held={held} />
       </View>

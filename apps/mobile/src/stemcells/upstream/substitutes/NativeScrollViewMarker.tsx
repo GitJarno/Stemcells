@@ -70,7 +70,7 @@ export function NativeScrollViewMarker(
   return (
     <>
       {marker}
-      <ScreenVeils night={null} bottom={noBand} barBottom={barBottom} />
+      <ScreenVeils bottom={noBand} barBottom={barBottom} />
     </>
   );
 }

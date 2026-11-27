@@ -1,7 +1,7 @@
 // The stages at the home's foot, just over its search, where a thumb reaches them and they never
 // scroll away, as the Mac's column keeps its stages at its foot (stemcells/tasks/awake-asleep.md).
-// Each list's top is its own: Asleep's is the night sky, which scrolls away with it. A slept or
-// woken Cell flies to its new stage's segment (`hops.ts`), and the count takes it with a bump.
+// Both lists start at the same height, under the header's sky (`Sky.tsx`). A slept or woken Cell
+// flies to its new stage's segment (`hops.ts`), and the count takes it with a bump.
 
 import { use, useEffect, useRef, useState } from "react";
 import { View, type ViewInstance } from "react-native";
@@ -12,22 +12,20 @@ import Animated, {
   withSequence,
   withTiming,
 } from "react-native-reanimated";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useResolveClassNames } from "uniwind";
 
-import { NativePrimaryColumnContext, SegmentedControl } from "../upstream/home";
+import { SegmentedControl } from "../upstream/home";
 import { bumpNow, pillStandsIn, useBump } from "./hops";
 import { LIST_MOTION } from "./listMotion";
-import { Night } from "./Night";
 import { useOverKeyboard } from "./overKeyboard";
-import { HomeInFront, HomeStageContext, HomeTabsContext, liftNotices, PILL_ROOM } from "./state";
+import {
+  HomeInFront,
+  HomeStageContext,
+  HomeTabsContext,
+  liftNotices,
+  PILL_ROOM,
+  STAGE_ROOM,
+} from "./state";
 
-/** Asleep's sky over its list, room for the moon and the stars. */
-const SKY = 88;
-/** Room over Awake's first row. */
-const ROOM = 8;
-/** How far the night reaches over the sky: the header and the status bar, and a pull past the top. */
-const NIGHT_ABOVE = 600;
 /** How much the pill grows round the segment a Cell lands in, at the bump's height. */
 const BUMP = 0.04;
 const BUMP_UP = { duration: LIST_MOTION.tick.duration * 0.35, easing: Easing.out(Easing.cubic) };
@@ -96,21 +94,9 @@ export function StagePill() {
   );
 }
 
-/** A stage's list's top: Asleep's night sky, a little room over Awake's first row. */
+/** A stage's list's top: the same room over every stage's first row. */
 export function StageTop() {
   const stage = use(HomeStageContext);
   if (stage === null) return null;
-  return stage === "asleep" ? <Sky /> : <View style={{ height: ROOM }} />;
-}
-
-function Sky() {
-  const primaryColumn = use(NativePrimaryColumnContext);
-  const inFront = use(HomeInFront);
-  const insets = useSafeAreaInsets();
-  const screen = useResolveClassNames(primaryColumn ? "bg-drawer" : "bg-screen").backgroundColor;
-  return (
-    <View pointerEvents="none" style={{ height: SKY }}>
-      <Night above={NIGHT_ABOVE + insets.top} screen={screen} height={SKY} shooting={inFront} />
-    </View>
-  );
+  return <View style={{ height: STAGE_ROOM }} />;
 }
