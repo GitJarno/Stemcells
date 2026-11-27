@@ -34,6 +34,8 @@ export function plannedRowsOf(entry: PlanEntry, born: number, factsOf: FactsOf):
     if (act.kind !== "start" || act.place === null) return [];
     const fresh = status === "started" && one.startedAt !== undefined;
     if (status !== "starting" && status !== "waiting" && !fresh) return [];
+    // What Aski proposed waits in its reply, on its card: Awake holds no outline for it.
+    if (status === "waiting" && entry.door === "fence") return [];
     const { place } = act;
     const projectId =
       place.projectId ?? (place.id === null ? undefined : placeOfKey(place.id)?.projectId);

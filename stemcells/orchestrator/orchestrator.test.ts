@@ -348,6 +348,32 @@ describe("the tier of a Cell", () => {
     expect(starts(p)[0]!.words).toBe("fix the header");
   });
 
+  it("reads a short model's name misheard before \"agent\"", () => {
+    const p = made(
+      plan("one soul agent for the ad copy in Atlas", (n) => ({
+        acts: [
+          { kind: "start", pieces: [n("ad copy")], place: "Atlas", placeHeard: "Atlas", model: "Sol 6.1", modelHeard: "soul" },
+        ],
+        setup: [],
+        talk: [],
+      })),
+    );
+    expect(starts(p)[0]!.model).toMatchObject({ name: "Sol 6.1", how: "near" });
+  });
+
+  it("drops a model heard in a word that only sounds like it, where no model stands", () => {
+    const p = made(
+      plan("Harbor: fix the users table", (n) => ({
+        acts: [
+          { kind: "start", pieces: [n("users")], place: "Harbor", placeHeard: "Harbor", model: "Fable 5.1", modelHeard: "table" },
+        ],
+        setup: [],
+        talk: [],
+      })),
+    );
+    expect(starts(p)[0]!.model).toBeNull();
+  });
+
   it("drops a model read from a word that doesn't sound like it", () => {
     const p = made(
       plan("Harbor: fix the header", (n) => ({

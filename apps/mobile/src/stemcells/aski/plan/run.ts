@@ -64,6 +64,15 @@ export function machineWorld(environmentId: string): World {
   });
 }
 
+/** A machine's world, built once for the rows fed in one turn of the event loop. */
+const worlds = new Map<string, World>();
+function worldNow(environmentId: string): World {
+  if (worlds.size === 0) queueMicrotask(() => worlds.clear());
+  const world = worlds.get(environmentId) ?? machineWorld(environmentId);
+  worlds.set(environmentId, world);
+  return world;
+}
+
 const JSON_BODY = { "content-type": "application/json" };
 
 const post = (environmentId: string, path: string, body: unknown, signal?: AbortSignal) =>
@@ -159,7 +168,7 @@ const hands: Hands = {
   },
   rows: plannedRowsFeed({
     factsOf: (environmentId, act, projectId) => {
-      const world = machineWorld(environmentId);
+      const world = worldNow(environmentId);
       const chosen = act.selection ?? act.model ?? newCellDefaults(environmentId, projectId).model;
       const slug = chosen === null ? undefined : "model" in chosen ? chosen.model : chosen.id;
       const entry = world.models.find(

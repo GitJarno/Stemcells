@@ -3,9 +3,9 @@
 // person's own projects and models before it becomes a plan, and each act's tier is set by
 // what a mistake would cost, never by how sure the model sounds.
 
-import { HEARD, nearness } from "../recall/byEar.ts";
+import { nearness } from "../recall/byEar.ts";
 import { riskFindings } from "../risk/floor.ts";
-import { clampEffort, findQuote, nameWords, said, saysExactly } from "./names.ts";
+import { clampEffort, findQuote, flat, nameWords, said, saysExactly } from "./names.ts";
 import type { Piece } from "./pieces.ts";
 import {
   CEILING,
@@ -50,6 +50,10 @@ export interface Answer {
 const TITLE_MOST = 60;
 /** How many words a title made from the Cell's own words takes. */
 const TITLE_WORDS = 6;
+/** The most words a model is read from: "the Fable 5 model", not a sentence that holds its name. */
+const MODEL_WORDS = 4;
+/** How near a word before "agent" must be to a model's name: "soul agent" is Sol, "table agent" Fable. */
+const MODEL_NEAR = 0.6;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
@@ -224,6 +228,17 @@ export function planOf(input: PlanInput): PlanResult {
     return { field, why: mineToo || only ? [] : ["place-apart"] };
   };
 
+  /** Whether `heard` stands before "agent", "model" or "Cell", or after "model", somewhere in the message. */
+  const asModel = (heard: string): boolean => {
+    const words = flat(heard)
+      .split(" ")
+      .map((word) => word.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&"))
+      .join("\\s+");
+    if (words.length === 0) return false;
+    const spot = `(?<![\\p{L}\\p{N}])${words}(?![\\p{L}\\p{N}])`;
+    return new RegExp(`${spot}\\s+(?:agents?|models?|cells?)\\b|\\bmodel\\s+${spot}`, "iu").test(text);
+  };
+
   const modelFor = (act: AnswerAct): ModelField | null => {
     // A model is the person's to name: one the compiler chose by itself is dropped.
     if (act.model === undefined || act.modelHeard === undefined) return null;
@@ -244,12 +259,12 @@ export function planOf(input: PlanInput): PlanResult {
       saysExactly(act.modelHeard, entry.name, [...names(entry), entry.provider]) ||
       // "Fable 5" for Fable 5.1, "the fable model": the family is said.
       nameWords(act.modelHeard).includes(nameWords(entry.name)[0] ?? "");
-    // A misheard model ("table" for Fable) has to sound like it: any other word of the message
-    // names no model, and the Cell runs on its project's default.
-    const heardNear = [entry.name, ...names(entry)].some(
-      (name) => nearness(act.modelHeard!, name) >= HEARD,
-    );
-    if (!exact && !heardNear) return null;
+    // A misheard model ("one table agent" for Fable) has to sound like it and stand where a
+    // model does. "The users table" names none, and the Cell runs on its project's default.
+    const heardNear =
+      [entry.name, ...names(entry)].some((name) => nearness(act.modelHeard!, name) >= MODEL_NEAR) &&
+      asModel(act.modelHeard);
+    if (nameWords(act.modelHeard).length > MODEL_WORDS || (!exact && !heardNear)) return null;
     const level =
       act.effort !== undefined && effortSaid(act.effort) ? clampEffort(act.effort, entry.efforts) : null;
     return {

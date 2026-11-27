@@ -119,6 +119,8 @@ export function createRunner(hands: () => RunnerHands | null) {
       const { act, status } = one;
       if (act.kind !== "start") return [];
       if (status !== "starting" && status !== "started" && status !== "waiting") return [];
+      // What Aski proposed waits in its reply, on its card: Awake holds no outline for it.
+      if (status === "waiting" && live.source === "proposed") return [];
       const facts = use.factsOf(act);
       const key = startedIn.get(`${live.id}/${act.i}`);
       const projectId = facts.projectId || (key?.slice(key.indexOf(":") + 1) ?? "");
@@ -232,7 +234,7 @@ export function createRunner(hands: () => RunnerHands | null) {
       destroying.add(key);
       const { act } = one;
       const placeId = act.place?.id ?? null;
-      const result =
+      const carried = async () =>
         act.target === "project"
           ? placeId === null
             ? { ok: false as const, error: "Aski couldn't tell which project." }
@@ -244,7 +246,10 @@ export function createRunner(hands: () => RunnerHands | null) {
                   ? []
                   : use.cellsIn(placeId),
             );
-      destroying.delete(key);
+      // The hold is free again however the deletion ended.
+      const result = await carried()
+        .catch(() => ({ ok: false as const, error: "It couldn't be carried out." }))
+        .finally(() => destroying.delete(key));
       if (!result.ok) return use.report("Nothing was deleted", result.error);
       changePlan(planId, (tray) => done(tray, i));
     },

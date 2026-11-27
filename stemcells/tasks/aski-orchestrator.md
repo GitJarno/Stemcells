@@ -163,8 +163,9 @@ Code checks the answer (`orchestrator/check.ts`):
 - Every piece belongs to an act, or is setup or talk. A piece left over
   makes every Cell wait.
 - Every heard word is in the message, word for word. A model that was
-  never said is dropped, and so is one read from a word that doesn't
-  sound like it ("table" is Fable; "header" names no model).
+  never said is dropped. A misheard one counts only where a model
+  stands and sounds like it: "one table agent" is Fable, "soul agent"
+  Sol; "the users table" and "header" name no model.
 - A name is real: in the person's projects, the catalog or the model's
   own ladder.
 - No more Cells than the cap (decision 5).
@@ -225,17 +226,25 @@ can't be switched off.
 
 ### 7. Safety
 
-- **Aski can't start or destroy.** The server refuses, from Aski's
-  instance and whatever its mode, here or bound for a linked machine:
-  `t3_thread_launch`, `create_threads`, `t3_project_create`,
-  `t3_project_clone`, `t3_project_delete`, an archive, running or
-  deleting a schedule, and a workflow call that isn't a read
-  (`upstream/askiTools.ts`). Reading a hostile page or a Cell's reply can
-  no longer make Aski do more than propose.
+- **Aski's chat calls only what is listed.** The server lets Aski's
+  instance, whatever its mode, here or bound for a linked machine, call
+  the tools that read, show, wait and propose, and refuses every other:
+  starting a Cell, making, changing or deleting a project, an archive,
+  a fork, a chat's model or mode (its own too: off Aski's instance it
+  would be free), a Cell's question, a pull request, a workflow run
+  (`upstream/askiTools.ts`). A tool a sync adds is refused until someone
+  lists it. Reading a hostile page or a Cell's reply can no longer make
+  Aski do more than propose.
 - **A helper is Aski's hand.** A task Aski hands off with
   `delegate_task` runs on another instance and acts on what Aski read,
-  so a chat that descends from one on Aski's instance is refused the
-  same tools, however far down.
+  so a chat that descends from one on Aski's instance is held to the
+  same list, however far down, and runs on this machine only.
+- **Aski passes on only the person's words.** What Aski's chat sends a
+  Cell is held against what the person wrote in that chat, their last
+  five messages: at most three runs of their words, in order, none
+  beginning just after a "not" it left out (`aski/ownWords.ts`). A
+  sentence nobody said can't reach a Cell through Aski, and one project's
+  text can't reach another's Cell that way. Helpers send a Cell nothing.
 - **A schedule is a Cell on a timer.** Aski may make one kind: a new
   reminder that comes back to its own chat, where the refusals meet it
   again. Another project's, one that makes its own chat, or a change to
@@ -378,7 +387,8 @@ is Fable), Aski keeps it as an alias, on this machine. Next time it is
 exact, and the Cell starts with no tap. An alias for a model counts only
 where a model is named, so "table" stays a table elsewhere. Only a
 mishearing of the name itself is kept, by the client and again by the
-server: a word that merely stood in the message ("fix") would send every
+server: five letters or more, and as near as recall's own ear asks. A
+word that merely stood in the message ("fix", "app") would send every
 later message to that project. A nickname is asked each time. Settings
 lists them and removes them.
 
@@ -480,10 +490,15 @@ and 8 stand alone.
   attached (read only); `allProjects` is its repository; Aski's chat and a
   client outside the app reach every chat. `stemcells_standing` answers
   the same way.
-- An independent review of the branch's safety found three ways round
-  the rules, all closed with a test each: a helper Aski started could
-  call what Aski can't; Enter on an empty composer started a plan Aski
-  proposed; and any word of the message could name a model. It couldn't
+- Two independent reviews of the branch's safety found ways round the
+  rules, all closed with a test each. The first: a helper Aski started
+  could call what Aski can't; Enter on an empty composer started a plan
+  Aski proposed; any word of the message could name a model. The second,
+  of those fixes: a list of refused tools left the unlisted ones open
+  (Aski could move its own chat off its instance, send a Cell words of
+  its own, fork one, or re-point a project), so the list became the
+  allowed ones; short common words could be learned as names; and a
+  word that sounds like a model could choose it anywhere. Neither could
   break the hold, the wait behind a deletion, or the words a Cell is told.
 - The phone carries the same plans (`apps/mobile/src/stemcells/aski/plan`):
   tray, hold, fence, pickers for project and model, and its Awake list
@@ -512,13 +527,16 @@ and 8 stand alone.
   starts, and the person says it again.
 - Aski's own shell and file tools are still its provider's; the persona
   forbids them, and the server refuses only what starts or destroys.
-- A task Aski hands to a linked machine is a client there, with no
-  lineage to read: that machine's guard can't tell it is Aski's.
+- Aski may pass on the person's words with a part left out: a run can't
+  begin after a dropped "not", but other omissions change a sentence too.
+- A message's attachments can't be passed on by Aski, nor a Cell's
+  question answered from its chat: both are the Cell's own chat's.
 - The plan is made from the composer's words as the send begins; another
   hook that rewrites the message after would leave the two apart (the
   server then finds no plan for the message, and Aski answers alone).
 - A Cell in a project its plan just made shows on the phone when the
   machine lists it, not before.
-- Aski's own text as a Check (slice 8).
+- Aski's own text as a Check (slice 8): until then Aski's chat sends a
+  Cell none of its own words at all.
 - A private corpus of real messages, and a harvest of corrected plans.
 - The cap of twelve is a guess until someone hits it.

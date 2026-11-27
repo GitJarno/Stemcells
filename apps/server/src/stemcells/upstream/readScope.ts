@@ -115,7 +115,7 @@ const callingCell = Effect.fnUntraced(function* () {
 });
 
 /** A message the person wrote themselves: not another Cell's, a schedule's, a link's or a guest's. */
-const isThePersons = (message: OrchestrationV2ConversationMessage) =>
+export const isThePersons = (message: OrchestrationV2ConversationMessage) =>
   message.role === "user" &&
   message.createdBy === "user" &&
   message.senderThreadId === undefined &&
