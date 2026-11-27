@@ -4,7 +4,7 @@
  * in this adapter or in Look's stylesheet, not in the tabs.
  */
 import type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/shell";
-import { EnvironmentId, ThreadId } from "@t3tools/contracts";
+import { EnvironmentId, ThreadId, type PreviewSessionSnapshot } from "@t3tools/contracts";
 import { beforeEach, describe, expect, expectTypeOf, it } from "vite-plus/test";
 
 import chatView from "../../components/ChatView.tsx?raw";
@@ -31,6 +31,7 @@ import {
   selectThreadPreviewMiniPlayer,
   usePreviewMiniPlayerStore,
 } from "../../previewMiniPlayerStore";
+import { resetPreviewStateForTests, updatePreviewServerSnapshot } from "../../previewStateStore";
 import {
   selectActiveRightPanelSurface,
   selectSelectedRightPanelSurface,
@@ -45,6 +46,7 @@ const thread: CellRef = { environmentId: "env-look", threadId: "thread-look", dr
 const asDraft: CellRef = { ...thread, draftId: "draft-look" };
 
 beforeEach(() => {
+  resetPreviewStateForTests();
   usePreviewMiniPlayerStore.setState({ byThreadKey: {} });
   useRightPanelStore.setState({
     byThreadKey: {},
@@ -82,17 +84,34 @@ describe("Look's contracts with upstream's right panel", () => {
   it("closing floats a browser or device as upstream's own close does, and nothing else", () => {
     // Every close upstream's chat makes floats what the panel showed.
     expect(rightPanelActions).toMatch(
-      /const closePreviewPanel = \(\) => \{[\s\S]*?browserMiniPlayerSource\(activeRightPanelSurface\.resourceId\)[\s\S]*?\{ kind: "device", \.\.\.activeRightPanelSurface\.target \}[\s\S]*?setMaximized\(activeThreadRef, false\)/,
+      /const closePreviewPanel = \(\) => \{[\s\S]*?floatBrowserSurface\(\s*activeThreadRef,\s*activeRightPanelSurface\.resourceId,\s*activePreviewState,\s*\)[\s\S]*?\{ kind: "device", \.\.\.activeRightPanelSurface\.target \}[\s\S]*?setMaximized\(activeThreadRef, false\)/,
     );
     const ref = threadRefOf(thread);
     const floating = () =>
       selectThreadPreviewMiniPlayer(usePreviewMiniPlayerStore.getState().byThreadKey, ref);
+    const browse = (navStatus: PreviewSessionSnapshot["navStatus"]) =>
+      updatePreviewServerSnapshot(ref, {
+        threadId: thread.threadId,
+        tabId: "tab-garden",
+        navStatus,
+        canGoBack: false,
+        canGoForward: false,
+        updatedAt: new Date(0).toISOString(),
+      });
 
     useRightPanelStore.getState().open(ref, "diff");
     closeCellPanel(thread);
     expect(floating()).toBeNull();
 
+    // A browser that never left its empty page floats nothing.
     useRightPanelStore.getState().openBrowser(ref, "tab-garden");
+    browse({ _tag: "Idle" });
+    closeCellPanel(thread);
+    expect(panel(thread).isOpen).toBe(false);
+    expect(floating()).toBeNull();
+
+    useRightPanelStore.getState().openBrowser(ref, "tab-garden");
+    browse({ _tag: "Loading", url: "http://localhost:5173/", title: "" });
     closeCellPanel(thread);
     expect(panel(thread).isOpen).toBe(false);
     expect(floating()?.source).toEqual(browserMiniPlayerSource("tab-garden"));

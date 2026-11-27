@@ -15,6 +15,7 @@ import providerModelPicker from "../../components/chat/ProviderModelPicker.tsx?r
 import controlsMeasurement from "../../components/chat/restingComposerControlsMeasurement.ts?raw";
 import composerSend from "../../components/chat/useComposerSend.ts?raw";
 import composerDraftStore from "../../composerDraftStore.ts?raw";
+import moveDraftToProject from "../../lib/moveDraftToProject.ts?raw";
 
 /** The source of the function or const named `name`. */
 function body(source: string, name: string): string {
@@ -28,13 +29,22 @@ function body(source: string, name: string): string {
 
 describe("the words' contracts with upstream's drafts", () => {
   it("the hero moves a draft with writing as moveDraft does", () => {
-    const select = body(draftHeroHeadline, "selectProject");
-    expect(select).toContain("if (!composerDraftHasUserContent(getComposerDraft(draftId)))");
-    expect(select).toContain(
-      "setLogicalProjectDraftThreadId(logicalProjectKey, projectRef, draftId);",
+    expect(body(draftHeroHeadline, "selectProject")).toContain(
+      "if (!moveDraftToProject(draftId, project)) {",
     );
-    // The model a moved draft takes is upstream's own function, which moveDraft calls too.
-    expect(select).toContain("seedDraftModelSelection(draftId, projectRef);");
+    const move = body(moveDraftToProject, "moveDraftToProject");
+    expect(move).toContain("!composerDraftHasUserContent(store.getComposerDraft(draftId))");
+    expect(move).toMatch(
+      /store\.setLogicalProjectDraftThreadId\([\s\S]*?projectRef,\s*draftId,\s*\);/,
+    );
+    // The workspace and model a moved draft takes are upstream's own, which moveDraft takes too.
+    expect(move).toContain(
+      "const current = { envMode: session.envMode, startFromOrigin: session.startFromOrigin };",
+    );
+    expect(move).toMatch(
+      /trackPendingWorkspaceDefault\(\s*draftId,\s*projectRef,\s*current,\s*retargetDraftWorkspace\(session, projectRef, AbortSignal\.timeout\(5_000\)\)/,
+    );
+    expect(move).toContain("seedDraftModelSelection(draftId, projectRef);");
   });
 
   it("the store keeps a draft's model in the fields the words put back", () => {

@@ -126,11 +126,14 @@ gate_upstream_packages() {
     # So do ssh's two missing-gzip cases and its concurrent-launch case, and
     # (checked at df09ced76, 2026-11-20) its two archive-launch cases, whose
     # fake t3 execs a node the bare system PATH of a Mac doesn't have.
+    # shared's wildcard-port cases (#43478): a Mac lets 0.0.0.0 bind beside
+    # a LAN address's listener, which Linux refuses (0ac7c99ef, 2026-11-27).
     skip=$(skip_pattern "captures values when the profile replaces PATH and a DEBUG trap echoes commands" \
       "names missing gzip after verifying with" \
       "concurrent launches on one remote home record the server that owns it" \
       "a reconnect from an older client keeps a newer managed server running" \
-      "a newer client still replaces an older managed server") || return 1
+      "a newer client still replaces an older managed server" \
+      "findAvailablePort skips a port a LAN listener holds for wildcard host") || return 1
     upstream_env pnpm exec vp run --parallel --concurrency-limit 4 --filter '!t3' \
       --filter '!@t3tools/monorepo' --filter '!@t3tools/web' --filter '!@t3tools/desktop' \
       test -t "$skip" &&

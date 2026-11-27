@@ -337,12 +337,12 @@
   border-block-start-width: 0;
 }
 /* A draft waits at the foot like every chat, so a tab's composers line up
-   along the bottom. Upstream centres a draft's composer: the overlay fills
-   the chat and centres its lane. In a pane the lane sits at the overlay's
-   foot, where a sent chat's composer sits (upstream/draft.contract.test.ts
-   pins the hooks below). */
+   along the bottom. Upstream stands a draft's composer near the middle: the
+   overlay fills the chat, a flex column with a spacer over the lane. In a
+   pane the lane packs at the overlay's foot, where a sent chat's composer
+   sits (upstream/draft.contract.test.ts pins the hooks below). */
 [data-stemcells-pane] [data-chat-composer-overlay="true"] {
-  align-items: flex-end;
+  justify-content: flex-end;
 }
 /* Its headline, upstream's "What should we build in …?", becomes a quiet
    line over the composer, at the size the chat reads in. The project in it

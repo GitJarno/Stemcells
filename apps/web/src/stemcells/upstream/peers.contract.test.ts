@@ -22,9 +22,7 @@ describe("a Cell's note folds as upstream folds the person's message", () => {
       /const \{ ref: contentRef, tallEnough: canCollapse \} = useTallEnoughToFold\(/,
     );
     expect(userMessageRow).toMatch(/<div ref=\{contentRef\}>\s*<UserMessageBody/);
-    expect(tallEnoughToFold).toContain(
-      "setTallEnough(content.offsetHeight >= FOLDED_HEIGHT_REM * 2 * remPx);",
-    );
+    expect(tallEnoughToFold).toMatch(/setTallEnough\(\w+ >= FOLDED_HEIGHT_REM \* 2 \* remPx\);/);
     // The hook measures against the height our note's fold clips to.
     const folded = tallEnoughToFold.match(/const FOLDED_HEIGHT_REM = (\d+);/)?.[1];
     expect(folded).toBeDefined();

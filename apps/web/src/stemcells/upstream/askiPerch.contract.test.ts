@@ -25,7 +25,7 @@ describe("Aski's place in its chat, against upstream", () => {
   });
 
   it("the transcript's minimap lies at 40, which the needs sheet lies over", () => {
-    expect(minimap).toContain('"group/minimap pointer-events-none absolute inset-y-0 left-0 z-40 ');
+    expect(minimap).toMatch(/"group\/minimap pointer-events-none absolute [^"]*\bz-40\b/);
   });
 
   it("a chat never sent anything has no latest run", () => {

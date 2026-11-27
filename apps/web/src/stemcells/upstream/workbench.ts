@@ -8,6 +8,7 @@ import type { PreviewNavStatus } from "@t3tools/contracts";
 import { getTerminalLabel } from "@t3tools/shared/terminalLabels";
 
 import { isCommandPaletteOpen } from "../../commandPaletteBus";
+import { floatBrowserSurface } from "../../components/preview/agentOpenedPreviews";
 import { isContextMenuOpen } from "../../contextMenuFallback";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { isTerminalFocused } from "../../lib/terminalFocus";
@@ -19,7 +20,7 @@ import {
   usePreviewMiniPlayerStore,
   type PreviewMiniPlayerSource,
 } from "../../previewMiniPlayerStore";
-import { useThreadPreviewState } from "../../previewStateStore";
+import { readThreadPreviewState, useThreadPreviewState } from "../../previewStateStore";
 import { RIGHT_PANEL_INLINE_LAYOUT_MEDIA_QUERY } from "../../rightPanelLayout";
 import {
   selectActiveRightPanelSurface,
@@ -71,15 +72,21 @@ export function useCellPanelOnBrowser(cell: CellRef | null): boolean {
 
 /**
  * Closes the Cell's right panel as upstream's close does (`useRightPanelActions`,
- * `closePreviewPanel`): a browser or device it showed floats on over the chat, tucked where
- * there's no room, and the panel leaves maximized. Its surfaces stay, so reopening shows the same.
+ * `closePreviewPanel`): a browser that went somewhere, or a device, floats on over the chat,
+ * tucked where there's no room, and the panel leaves maximized. Its surfaces stay, so reopening
+ * shows the same.
  */
 export function closeCellPanel(cell: CellRef): void {
   const ref = threadRefOf(cell);
   const store = useRightPanelStore.getState();
   if (!selectThreadRightPanelState(store.byThreadKey, ref).isOpen) return;
-  const floater = floaterOf(selectActiveRightPanelSurface(store.byThreadKey, ref));
-  if (floater !== null) usePreviewMiniPlayerStore.getState().open(ref, floater);
+  const surface = selectActiveRightPanelSurface(store.byThreadKey, ref);
+  if (surface?.kind === "preview" && surface.resourceId) {
+    floatBrowserSurface(ref, surface.resourceId, readThreadPreviewState(ref));
+  } else {
+    const floater = floaterOf(surface);
+    if (floater !== null) usePreviewMiniPlayerStore.getState().open(ref, floater);
+  }
   store.setMaximized(ref, false);
   store.close(ref);
 }

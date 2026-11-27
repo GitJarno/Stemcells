@@ -30,8 +30,10 @@
 /* They stand at the chat's right edge: upstream's left, mirrored, at
    upstream's own distances, so the dashes hang from the right and the
    preview opens leftward. The preview (the jump button's one span that
-   isn't a dash) turns back to read. */
+   isn't a dash) turns back to read. Upstream reaches them up under its
+   chat header; a pane's chat has no header, so they start at its top. */
 [data-stemcells-pane] [data-testid="timeline-minimap"] {
+  top: 0;
   left: auto;
   right: 0;
   scale: -1 1;
