@@ -8,6 +8,7 @@ import type { ServerProvider } from "@t3tools/contracts";
 import { describe, expect, it } from "vite-plus/test";
 
 import { chatWorkOf, limitAccountsOf, type LimitPresentations } from "./limits";
+import { statusOfShell } from "./status";
 
 import usagePage from "../../components/usage/UsagePage.tsx?raw";
 
@@ -118,11 +119,14 @@ describe("what the chats do", () => {
     }) as unknown as EnvironmentThreadShell;
 
   it("counts the working chats by the instance they run on, and knows the one written last", () => {
-    const work = chatWorkOf([
-      shell("1", "work", true, "2026-10-24T10:00:00.000Z"),
-      shell("2", "work", true, null),
-      shell("3", "claudeAgent", false, "2026-10-24T11:00:00.000Z"),
-    ]);
+    const work = chatWorkOf(
+      [
+        shell("1", "work", true, "2026-10-24T10:00:00.000Z"),
+        shell("2", "work", true, null),
+        shell("3", "claudeAgent", false, "2026-10-24T11:00:00.000Z"),
+      ],
+      (each) => statusOfShell(each, undefined) === "Working",
+    );
     expect(work.working).toEqual(new Map([["e1:work", 2]]));
     expect(work.lastWritten).toBe("e1:claudeAgent");
   });

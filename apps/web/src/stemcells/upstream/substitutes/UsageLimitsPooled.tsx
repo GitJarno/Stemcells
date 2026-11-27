@@ -23,7 +23,7 @@ export * from "../../../components/usage/UsageLimitsPooled";
 
 export function UsageLimitsPooled(props: ComponentProps<typeof Upstream.UsageLimitsPooled>) {
   const { presentations, now } = props;
-  const { plans, planOf } = usePlans(presentations, now);
+  const { plans, ring, planOf } = usePlans(presentations, now);
   const clock = useClockFormat(now);
   const notices = collectLimitNotices(presentations);
   const externalLinks = collectExternalUsageLinks(presentations);
@@ -37,6 +37,7 @@ export function UsageLimitsPooled(props: ComponentProps<typeof Upstream.UsageLim
       {plans.length > 0 ? (
         <PlanBoard
           plans={plans}
+          ring={ring}
           clocks={{ now, clock, duration: formatDuration }}
           size="page"
           renderUnder={(plan) => {

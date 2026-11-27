@@ -4,7 +4,7 @@
  * one (7d, else a month), each read for what is left, when it resets and whether the pace so far
  * runs it out first.
  */
-import type { ChatWork, InstanceKey, LimitAccount, LimitWindow } from "../upstream/limits";
+import type { ChatWork, InstanceKey, LimitAccount, LimitWindow } from "../upstream/limitAccounts";
 
 const MINUTE = 60_000;
 
@@ -29,6 +29,13 @@ export interface WindowReading {
   readonly scoped: boolean;
 }
 
+/** One line of a plan's card: the plan's own session and week, then each model's own window. */
+export interface PlanRow {
+  /** "Session", "Week", "Month", or a model's window by its scope: "Fable", "Go · Week". */
+  readonly label: string;
+  readonly reading: WindowReading;
+}
+
 export interface PlanReading {
   readonly account: LimitAccount;
   /** The person's name for the plan, else its masked email, else its tier. */
@@ -40,6 +47,8 @@ export interface PlanReading {
   readonly session: WindowReading | null;
   readonly long: WindowReading | null;
   readonly tone: PlanTone;
+  /** What the card lists, in order. */
+  readonly rows: ReadonlyArray<PlanRow>;
 }
 
 /** "someone@example.com" → "so…@example.com": enough to tell plans apart, not to read it out. */
@@ -112,8 +121,11 @@ export function readWindow(
       if (at < resetsAt) runsOutAt = Math.max(at, now);
     }
   }
-  const tone: PlanTone = left <= 0 ? "out" : runsOutAt !== null || left <= 10 ? "short" : "fine";
-  return { left, resetsAt, runsOutAt, evenLeft, tone, note, scoped };
+  return { left, resetsAt, runsOutAt, evenLeft, tone: toneOf(left, runsOutAt), note, scoped };
+}
+
+function toneOf(left: number, runsOutAt: number | null): PlanTone {
+  return left <= 0 ? "out" : runsOutAt !== null || left <= 10 ? "short" : "fine";
 }
 
 /** The worst off, then the least left. */
@@ -178,12 +190,16 @@ export function readPlan(
   const weekly = ofKind("weekly");
   const monthly = ofKind("monthly");
   // A plan with a week has the month as a spending cap beside it, not its limit.
-  const long =
+  const longKind =
     weekly.length > 0
-      ? windowOfKind(weekly, read, now)
+      ? { windows: weekly, label: "Week" }
       : monthly.length > 0
-        ? withNote(windowOfKind(monthly, read, now), "month")
-        : windowOfKind(ofKind("other"), read, now);
+        ? { windows: monthly, label: "Month" }
+        : { windows: ofKind("other"), label: "Limit" };
+  const long =
+    longKind.label === "Month"
+      ? withNote(windowOfKind(monthly, read, now), "month")
+      : windowOfKind(longKind.windows, read, now);
   let session = windowOfKind(ofKind("session"), read, now);
   // A spent week blocks the session too, whatever it has left, until the week resets.
   if (session !== null && long !== null && long.tone === "out" && !long.scoped) {
@@ -206,7 +222,130 @@ export function readPlan(
     session,
     long,
     tone: worse(session?.tone ?? "fine", long?.tone ?? "fine"),
+    rows: rowsOf(
+      [{ windows: ofKind("session"), label: "Session" }, longKind],
+      [session, long],
+      read,
+      now,
+    ),
   };
+}
+
+const KIND_LABEL: Readonly<Record<LimitWindow["kind"], string>> = {
+  session: "Session",
+  weekly: "Week",
+  monthly: "Month",
+  other: "Limit",
+};
+
+/** The windows a plan's own reading of one kind is made of: the unscoped ones, or the only one. */
+function ownWindowsOf(windows: ReadonlyArray<LimitWindow>): ReadonlyArray<LimitWindow> {
+  return windows.length === 1
+    ? windows
+    : windows.filter((window) => scopeOf(window.label) === null);
+}
+
+/**
+ * The card's rows: the plan's own session and long window, then every model's window of those
+ * kinds by its scope, with its length once a scope has more than one ("Go · Week").
+ */
+function rowsOf(
+  kinds: ReadonlyArray<{ readonly windows: ReadonlyArray<LimitWindow>; readonly label: string }>,
+  own: ReadonlyArray<WindowReading | null>,
+  checkedAt: number,
+  now: number,
+): ReadonlyArray<PlanRow> {
+  const rows: PlanRow[] = [];
+  const scoped: Array<{ window: LimitWindow; scope: string }> = [];
+  kinds.forEach((kind, index) => {
+    const reading = own[index] ?? null;
+    const ownWindows = ownWindowsOf(kind.windows);
+    if (reading !== null && !reading.scoped && ownWindows.length > 0) {
+      // A model running short has its own row, so the plan's row reads only its own window.
+      rows.push({
+        label: kind.label,
+        reading: { ...reading, tone: toneOf(reading.left, reading.runsOutAt), note: null },
+      });
+    }
+    for (const window of kind.windows) {
+      const scope = scopeOf(window.label);
+      if (scope !== null && !ownWindows.includes(window)) scoped.push({ window, scope });
+    }
+  });
+  const lengths = new Map<string, Set<string>>();
+  for (const { window, scope } of scoped) {
+    lengths.set(scope, (lengths.get(scope) ?? new Set()).add(window.kind));
+  }
+  // A scope's windows together, in the order the scopes first come.
+  const order = [...lengths.keys()];
+  scoped.sort((left, right) => order.indexOf(left.scope) - order.indexOf(right.scope));
+  for (const { window, scope } of scoped) {
+    rows.push({
+      label: (lengths.get(scope)?.size ?? 0) > 1 ? `${scope} · ${KIND_LABEL[window.kind]}` : scope,
+      reading: readWindow(window, checkedAt, now, scope),
+    });
+  }
+  return rows;
+}
+
+/** The window the ring shows: of the plan's session and long window, the one that stops it first. */
+export function bindingOf(plan: PlanReading): WindowReading | null {
+  return tightest([plan.session, plan.long].filter((window) => window !== null));
+}
+
+/**
+ * The ring's figure: the percent of its binding window used, or once the plan is out, how long
+ * until it frees ("45m", "3h", "2d").
+ */
+export function ringFigure(plan: PlanReading, now: number): string | null {
+  const binding = bindingOf(plan);
+  if (binding === null) return null;
+  if (plan.tone === "out") {
+    const until = freedAt(plan);
+    if (until !== null) return shortWait(until - now);
+  }
+  return String(100 - binding.left);
+}
+
+/** When an out plan frees: the later reset of the windows that hold it. */
+function freedAt(plan: PlanReading): number | null {
+  const until = Math.max(
+    ...[plan.session, plan.long].flatMap((window) =>
+      window !== null && !window.scoped && window.tone === "out" && window.resetsAt !== null
+        ? [window.resetsAt]
+        : [],
+    ),
+  );
+  return Number.isFinite(until) ? until : null;
+}
+
+/** A wait in its largest unit, rounded up: "45m", "3h", "2d". */
+export function shortWait(ms: number): string {
+  const minutes = Math.max(1, Math.ceil(ms / MINUTE));
+  if (minutes < 60) return `${minutes}m`;
+  const hours = Math.ceil(minutes / 60);
+  if (hours < 24) return `${hours}h`;
+  return `${Math.ceil(hours / 24)}d`;
+}
+
+/**
+ * The card's order: the ring's plan first, then where there is the most room, so the next plan
+ * to hop to sits under the one you're on. Out plans go last.
+ */
+export function boardOrder(
+  plans: ReadonlyArray<PlanReading>,
+  ring: PlanReading | null,
+): ReadonlyArray<PlanReading> {
+  const room = (plan: PlanReading) => bindingOf(plan)?.left ?? -1;
+  const rest = plans
+    .filter((plan) => plan !== ring)
+    .sort(
+      (left, right) =>
+        SEVERITY[left.tone] - SEVERITY[right.tone] ||
+        room(right) - room(left) ||
+        left.name.localeCompare(right.name),
+    );
+  return ring === null ? rest : [ring, ...rest];
 }
 
 function withNote(reading: WindowReading | null, note: string): WindowReading | null {
@@ -269,12 +408,8 @@ export function headlineOf(
     window === null || window.scoped ? [] : [window],
   );
   // Out of both, the later reset is the one that frees it.
-  const until = Math.max(
-    ...windows.flatMap((window) =>
-      window.tone === "out" && window.resetsAt !== null ? [window.resetsAt] : [],
-    ),
-  );
-  if (Number.isFinite(until)) return `Limited until ${clock(until)}, in ${duration(until - now)}`;
+  const until = freedAt(plan);
+  if (until !== null) return `Limited until ${clock(until)}, in ${duration(until - now)}`;
   const next = windows
     .flatMap((window) =>
       window.runsOutAt !== null && window.resetsAt !== null
