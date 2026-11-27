@@ -6,7 +6,15 @@ import { useEffect, useState } from "react";
 
 import { COLLECTION } from "../../../../../stemcells/words/feats.ts";
 import { useCellGround } from "../upstream/appearance";
-import { SettingsPageContainer, Toggle, ToggleGroup } from "../upstream/settings";
+import { setCellModelOn, useCellModelOn } from "../cell/modelPreview";
+import {
+  SettingsPageContainer,
+  SettingsRow,
+  SettingsSection,
+  Switch,
+  Toggle,
+  ToggleGroup,
+} from "../upstream/settings";
 import { FeatsView } from "./FeatsView";
 import { readCollection, useCollection } from "./read";
 import { Wardrobe } from "./Wardrobe";
@@ -22,6 +30,7 @@ export function CollectionSettingsPanel() {
   const collection = useCollection();
   const ground = useCellGround();
   const [view, setView] = useState<View>("feats");
+  const modelled = useCellModelOn();
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Read the machine's collection as the page opens.
   useEffect(() => {
     void readCollection();
@@ -52,7 +61,23 @@ export function CollectionSettingsPanel() {
       {view === "feats" ? (
         <FeatsView collection={collection} ground={ground} />
       ) : (
-        <Wardrobe collection={collection} ground={ground} />
+        <>
+          <Wardrobe collection={collection} ground={ground} />
+          <SettingsSection id="cell-model" title={COLLECTION.preview}>
+            <SettingsRow
+              id="cell-model-on"
+              title={COLLECTION.newBody}
+              description={COLLECTION.newBodyWhat}
+              control={
+                <Switch
+                  checked={modelled}
+                  aria-label={COLLECTION.newBody}
+                  onCheckedChange={(checked) => setCellModelOn(checked)}
+                />
+              }
+            />
+          </SettingsSection>
+        </>
       )}
     </SettingsPageContainer>
   );

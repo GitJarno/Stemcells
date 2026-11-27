@@ -18,8 +18,9 @@ import {
 } from "./tones.ts";
 
 export interface View {
-  /** The sprite's height in pixels; it is a quarter wider than tall. */
+  /** The sprite's height and width in pixels. */
   readonly rows: number;
+  readonly columns: number;
   /** The side it is seen from, 0 the front, and from how far above. */
   readonly yaw: number;
   readonly pitch: number;
@@ -38,8 +39,14 @@ export interface Sprite {
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
 /** The whole Cell with room to hop and cheer. */
-export const wholeView = (grown: number, rows: number, yaw = 0.45): View => ({
+export const wholeView = (
+  grown: number,
+  rows: number,
+  yaw = 0.45,
+  columns = Math.round(rows * 1.25),
+): View => ({
   rows,
+  columns,
   yaw,
   pitch: 0.24,
   span: lerp(2.5, 3, grown),
@@ -49,6 +56,7 @@ export const wholeView = (grown: number, rows: number, yaw = 0.45): View => ({
 /** The face and what is in front of it, for the small places. */
 export const faceView = (grown: number, lift: number, rows: number): View => ({
   rows,
+  columns: Math.round(rows * 1.25),
   yaw: 0.45,
   pitch: 0.24,
   span: lerp(1.8, 1.7, grown),
@@ -337,7 +345,7 @@ function eyes(
 /** `figure` as a sprite `view.rows` tall, its body in `hue`. */
 export function drawSprite(figure: Figure, view: View, hue: Rgb): Sprite {
   const height = view.rows;
-  const width = Math.round(height * 1.25);
+  const width = view.columns;
   const canvas: Canvas = {
     width,
     height,

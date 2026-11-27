@@ -41,11 +41,16 @@ pictures a second.
 1. **The model** (this change). `cell/model/`: shapes and their distance
    field, the body from a pose, the sprite, the acts. `cells model` draws
    its sheet and a whole turn. No surface changes.
-2. **A place to see it.** Behind a switch in Settings, off by default: the
-   Cell over the composer on the Mac and the Cell heading a chat on the
-   phone are drawn from the model, fed by the same mood and activity as
-   today. Measure the phone first: Hermes has no JIT, so a row there may
-   need pictures kept per act as the kit keeps frames.
+2. **A place to see it.** Behind a switch, off by default (Settings ›
+   Collection › Cells): the Cell over the composer is drawn from the model,
+   fed by the same mood, activity and strength as today.
+   - **On the Mac** (done). An edit is written, other work is watched,
+     thought is hands off; strength grows the body. A picture is taken only
+     when the pose moved half a pixel.
+   - **On the phone** (next). It has no store of its own for a switch, no
+     painter for a picture in full colour, and its engine has no JIT, so
+     its speed has to be measured on a device first; a row there may need
+     pictures kept per act, as the kit keeps frames.
 3. **The wardrobe.** Today's pieces as model pieces, pack by pack; first
    try lifting the drawn ones (most headwear is a shape turned round its
    axis). The dressing room on a turning stage.
@@ -62,6 +67,15 @@ pictures a second.
       cut off, each act's shape
 - [x] Checks, pull request, merge
 
+## Steps (slice 2, the Mac)
+
+- [x] Acts for watched work and sleep; a picture only when the pose moved
+- [x] `model/stance.ts`: mood, activity, strength and provider as act,
+      growth and colour
+- [x] `CellModelFigure`, the switch, its row in Settings
+- [x] Seen in the built app on a lab home, a Replay chat through a turn
+- [x] Checks, pull request, merge
+
 ## Review
 
 Slice 1 landed as planned, with no surface changed. The tests earned their
@@ -69,3 +83,11 @@ keep at once: they caught a cheering Cell's hands cut off at the top of the
 picture, which the prototype had too. Measured in node on the Mac, a picture
 takes 4.9 ms at 64 rows, 1.1 ms at 32 and 0.3 ms at 16 (a grown Cell with
 headphones and a backpack). The phone is unmeasured; slice 2 starts there.
+
+Slice 2 on the Mac: in the built app the Cell stood on the composer's roof in
+its old box (a 68 × 64 picture in 34 × 32 points), pulled its laptop out as
+the turn began, shut it and cheered at the landing, and the switch brought
+the old figure back at once. Over a 45-second turn it took 102 pictures
+where the clock beat 540 times. Not yet measured: its cost on the main
+thread with several chats streaming, which decides whether drawing moves to
+a worker before the switch defaults to on.

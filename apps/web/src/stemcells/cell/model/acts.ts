@@ -5,9 +5,9 @@
 import { crownOf, type Eyes, keysOf, type Pose } from "./body.ts";
 import type { Vec3 } from "./shapes.ts";
 
-export type Act = "rest" | "thinking" | "writing" | "asking" | "landed";
+export type Act = "rest" | "thinking" | "writing" | "watching" | "asking" | "landed" | "asleep";
 
-const AT_WORK: ReadonlySet<Act> = new Set(["thinking", "writing"]);
+const AT_WORK: ReadonlySet<Act> = new Set(["thinking", "writing", "watching"]);
 
 interface Spring {
   at: number;
@@ -60,7 +60,7 @@ export function performerOf(grown: number, seed = 0) {
   let act: Act = "rest";
   let since = 0;
   let entered = -1e9;
-  let blinkAt = 1500 + seed * 3000;
+  let blinkAt: number | undefined;
   let blinks = 0;
   let scroll = 0;
   const done = new Set<string>();
@@ -113,6 +113,10 @@ export function performerOf(grown: number, seed = 0) {
           arms = [hanging, 1];
           right = [lerp(0.6, 0.5, grown) + Math.sin(s * 20) * 0.05, crown - 0.08, 0.25];
         }
+      } else if (act === "watching") {
+        glow = 0.75 + 0.25 * Math.sin(s * 31) * Math.sin(s * 13);
+        squash = 0.99 + breath * 0.01;
+        gaze = [Math.sin(s * 1.3) * 0.5, -0.7];
       } else {
         const tap = Math.max(0, Math.sin(s * 24));
         const other = Math.max(0, Math.sin(s * 24 + Math.PI));
@@ -184,10 +188,15 @@ export function performerOf(grown: number, seed = 0) {
         if (first > 0.41 && once("first")) parts.squash.speed -= 2.4;
         if (second > 0.26 && once("second")) parts.squash.speed -= 1.4;
       }
+    } else if (act === "asleep") {
+      squash = 0.9 + Math.sin(s * 0.95 + seed * 6.283) * 0.02;
+      eyes = "shut";
+      gaze = [0, -0.3];
     } else if (s % 7 < 1.3) {
       gaze = [0.6, 0.15];
     }
 
+    blinkAt ??= now + 1500 + seed * 3000;
     if (eyes === "open" && now > blinkAt) {
       eyes = "shut";
       if (now > blinkAt + 150) {
@@ -248,6 +257,25 @@ export function performerOf(grown: number, seed = 0) {
   };
 
   return { play, step };
+}
+
+/** Whether a picture of `to` would differ from one of `from`, where a pixel shows `pixel` of the world. */
+export function moved(from: Pose, to: Pose, pixel: number): boolean {
+  const far = (a: number, b: number, weight = 1) => Math.abs(a - b) * weight > pixel / 2;
+  return (
+    from.eyes !== to.eyes ||
+    Math.floor(from.scroll) !== Math.floor(to.scroll) ||
+    far(from.squash, to.squash, 1.25) ||
+    far(from.lift, to.lift) ||
+    far(from.laptop, to.laptop) ||
+    far(from.lid, to.lid, 0.5) ||
+    far(from.glow, to.glow, 0.2) ||
+    far(from.sway, to.sway) ||
+    far(from.gaze[0], to.gaze[0], 0.08) ||
+    far(from.gaze[1], to.gaze[1], 0.04) ||
+    from.arms.some((arm, side) => far(arm, to.arms[side]!, 0.5)) ||
+    from.hands.some((hand, side) => hand.some((at, axis) => far(at, to.hands[side]![axis]!)))
+  );
 }
 
 /** The pose `ms` into `act`, played from rest (or from `from`, held four seconds first). */
