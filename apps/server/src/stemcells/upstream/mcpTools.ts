@@ -11,6 +11,7 @@ import { registerArcsTool } from "./arcsTool.ts";
 import { registerMoveTools } from "./diskMoveTool.ts";
 import { registerDiskTool } from "./diskTool.ts";
 import { registerPeerTool } from "./peerTool.ts";
+import { registerPlanTools } from "./planTool.ts";
 import { registerRecallTool } from "./recallTool.ts";
 import { registerSettingsTool } from "./settingsTool.ts";
 import { registerShowTool } from "./showTool.ts";
@@ -26,4 +27,5 @@ export const registerStemcellsTools = (register: typeof toolkitRegistration) =>
     registerArcsTool(register),
     registerSettingsTool(register),
     registerShowTool(register),
+    registerPlanTools(register),
   );

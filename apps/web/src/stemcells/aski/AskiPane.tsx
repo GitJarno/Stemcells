@@ -18,6 +18,8 @@ import { awakeInSight } from "../rail/arrivals";
 import { throwTo } from "./throw";
 import { AskiPerch } from "./AskiPerch";
 import { AskiMoments } from "./moments/AskiMoments";
+import { PlanTray } from "./plan/PlanTray";
+import { PlanRoom } from "./plan/room";
 
 import "./room.css";
 
@@ -93,8 +95,19 @@ export function AskiPane(props: {
       <NeedsFrame aski={aski}>
         <div className="relative flex min-h-0 min-w-0 flex-1 flex-col [&>main]:h-full!">
           {props.target ? (
-            <ComposerRoofSlot value={aski ? <AskiPerch aski={aski} /> : null}>
-              {/* Words in its composer answer the cards beside it. */}
+            <ComposerRoofSlot
+              value={
+                aski ? (
+                  <>
+                    <AskiPerch aski={aski} />
+                    {/* The plans its messages became stand on the composer, under Aski. */}
+                    <PlanTray aski={aski} />
+                  </>
+                ) : null
+              }
+            >
+              {/* Words in its composer answer the cards beside it, and start Cells as a plan. */}
+              <PlanRoom value={aski}>
               <AnswersProvider>
                 {/* A question about the past shows the Cells it found under it. */}
                 <RecallScope value>
@@ -107,6 +120,7 @@ export function AskiPane(props: {
                   />
                 </RecallScope>
               </AnswersProvider>
+              </PlanRoom>
             </ComposerRoofSlot>
           ) : (
             <Empty>

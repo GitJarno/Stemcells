@@ -7,6 +7,7 @@
 import { assert, it } from "@effect/vitest";
 import { CommandId, MessageId, ProjectId, ThreadId } from "@t3tools/contracts";
 import { checkpointWorkspace } from "@t3tools/provider-testing/replayWorkspace";
+import * as Clock from "effect/Clock";
 import * as Effect from "effect/Effect";
 import * as Fiber from "effect/Fiber";
 import * as Layer from "effect/Layer";
@@ -20,6 +21,9 @@ import * as Orchestrator from "../../orchestration-v2/Orchestrator.ts";
 import * as ProviderAdapterRegistry from "../../orchestration-v2/ProviderAdapterRegistry.ts";
 import * as ProviderReplayHarness from "../../orchestration-v2/testkit/ProviderReplayHarness.ts";
 import { mailId } from "../peers/link.ts";
+import { clearBook, putPlan } from "../aski/book.ts";
+import { planNote } from "../aski/note.ts";
+import { proposedPlan } from "../../../../../stemcells/orchestrator/check.ts";
 import * as OnTheWire from "../peers/onTheWire.ts";
 import { instanceId, KEEP_WORKING, type Read, readingAdapter } from "./readingProvider.testkit.ts";
 
@@ -133,6 +137,57 @@ it.live(
         const message = stored.find((candidate) => candidate.id === "message:otter-asks");
         assert.equal(message?.text, "Can I take migration 0043?");
         assert.equal(message?.senderThreadId, otter);
+      }),
+    ),
+);
+
+it.live(
+  "a message a plan was made from reaches the provider with the plan's note beside it, once",
+  () =>
+    Effect.scoped(
+      Effect.gen(function* () {
+        const cwd = yield* checkpointWorkspace("stemcells-peers-plan");
+        const reads = yield* Ref.make<ReadonlyArray<Read>>([]);
+        const words = "In Harbor  fix the header";
+        yield* Effect.gen(function* () {
+          const orchestrator = yield* Orchestrator.OrchestratorV2;
+          const worker = yield* EffectWorker.OrchestrationEffectWorkerV2;
+          yield* create(badger, "Schema", cwd);
+          clearBook();
+          const plan = proposedPlan({
+            id: "plan-note",
+            cells: [{ projectId: "harbor", projectName: "Harbor", title: "Header", words }],
+            mint: () => "thread:planned",
+          });
+          // As the client asked for it: in this chat, from these words, whitespace aside.
+          putPlan({
+            plan,
+            text: "In Harbor fix the header",
+            threadId: badger,
+            at: yield* Clock.currentTimeMillis,
+          });
+          const done = yield* next(badger, "completed");
+          yield* orchestrator.dispatch({
+            type: "message.dispatch",
+            commandId: CommandId.make("send:person-plan"),
+            threadId: badger,
+            messageId: MessageId.make("message:person-plan"),
+            text: words,
+            attachments: [],
+            dispatchMode: { type: "start_immediately" },
+            createdBy: "user",
+            creationSource: "web",
+          });
+          yield* Fiber.join(done);
+          yield* worker.drain();
+        }).pipe(Effect.provide(harness(reads)));
+
+        assert.deepEqual(yield* Ref.get(reads), [
+          {
+            via: "start",
+            text: `${badgerRoster([])}\n${planNote({ id: "plan-note" } as never)}\n\nUser message:\n${words}`,
+          },
+        ]);
       }),
     ),
 );

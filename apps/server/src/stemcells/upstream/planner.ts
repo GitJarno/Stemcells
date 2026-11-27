@@ -36,6 +36,13 @@ export const projectRoots = Effect.fn("Planner.projectRoots")(
   }),
 );
 
+/** Where Aski keeps what it learned: in the app's own data folder, on this machine. */
+export const askiFolder = Effect.gen(function* () {
+  const config = yield* ServerConfig.ServerConfig;
+  const path = yield* Path.Path;
+  return path.join(config.stateDir, "stemcells", "aski");
+});
+
 /** Where the plan history lives: in the app's own data folder, on this machine. */
 export const historyFolder = Effect.gen(function* () {
   const config = yield* ServerConfig.ServerConfig;

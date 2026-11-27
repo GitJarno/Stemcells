@@ -1,6 +1,7 @@
 import * as Layer from "effect/Layer";
 
 import * as ArcsHttp from "./arcs/http.ts";
+import * as AskiCompileHttp from "./aski/compileHttp.ts";
 import * as AskiHttp from "./aski/http.ts";
 import * as AsksHttp from "./asks/http.ts";
 import * as AttachmentsHttp from "./attachments/http.ts";
@@ -17,6 +18,7 @@ import * as PlannerHttp from "./planner/http.ts";
 import * as PresenceHttp from "./presence/http.ts";
 import * as PushHttp from "./push/http.ts";
 import * as RecallHttp from "./recall/http.ts";
+import * as AskiTools from "./upstream/askiTools.ts";
 import * as ReadScope from "./upstream/readScope.ts";
 import * as Privacy from "./privacy/telemetry.ts";
 import * as Defaults from "./defaults/defaults.ts";
@@ -31,6 +33,7 @@ import * as Triage from "./upstream/triage.ts";
 
 export const layer = Layer.mergeAll(
   ArcsHttp.layer,
+  AskiCompileHttp.layer,
   AskiHttp.layer,
   AsksHttp.layer,
   AttachmentsHttp.layer,
@@ -47,6 +50,7 @@ export const layer = Layer.mergeAll(
   PeersHttp.layer,
   OnTheWire.layer,
   ReadScope.layer,
+  AskiTools.layer,
   SpendHttp.layer,
   TailscaleHttp.layer,
   Look.layer,
