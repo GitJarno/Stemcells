@@ -93,8 +93,10 @@ The fork exists to keep taking upstream's work for free. The reasoning is in
 
 ## Words
 
-- Words a person reads in our layer say Cell and Aski. Upstream's strings
-  stay until one of our views replaces the one that shows them.
+- Words a person reads in our layer say Cell and Aski. Upstream's messages
+  say Cell for thread in every build, by rule (`stemcells/brand/cellWords.ts`);
+  its other strings stay until the word table or one of our views replaces
+  them.
 - A word upstream writes inline in a view is never edited in its file: add
   an entry to the word table (`stemcells/brand/wordTable.ts`) and the
   builds swap it (`stemcells/docs/fork.md`, The name transform).

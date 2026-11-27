@@ -69,7 +69,7 @@ function useCellRename(cell: CellRef | null) {
     }
     const resolution = resolveRenameCommit({ title, originalTitle: shell.title });
     if (resolution.action === "reject-empty") {
-      toastManager.add({ type: "warning", title: "Thread title cannot be empty" });
+      toastManager.add({ type: "warning", title: "Cell title cannot be empty" });
       return undefined;
     }
     if (resolution.action === "noop") return undefined;
@@ -81,7 +81,7 @@ function useCellRename(cell: CellRef | null) {
         const error = squashAtomCommandFailure(result);
         toastManager.add({
           type: "error",
-          title: "Failed to rename thread",
+          title: "Failed to rename Cell",
           description: error instanceof Error ? error.message : "An error occurred.",
         });
       }

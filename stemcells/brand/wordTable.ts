@@ -1,8 +1,7 @@
 /**
- * The word table: where upstream's views say thread, subagent, Working or Settle, the builds say
- * Cell, Subcell, Flying or Sleep, and upstream's files keep their text (`stemcells/docs/fork.md`,
- * "The name transform"). A build fails when a file says an entry's words fewer or more times than
- * the entry does (`nameTransform.ts`). Only builds and tests read this file, never an app.
+ * The word table: upstream's words a build swaps for ours (Subcell, Flying, Sleep, a casual chat),
+ * each entry held to its file; a thread only where ours differs or the words aren't a message, as
+ * every message says Cell by rule (`cellWords.ts`). Only builds and tests read this file.
  */
 import { SLEEP, SLEEP_UNTIL, sleptWords, WAKE } from "../words/awake.ts";
 import { CASUAL_CHAT } from "../words/casualChat.ts";
@@ -61,39 +60,18 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
     ),
   ),
   ...inFile(
-    `${PHONE}/home/HomeScreen.tsx`,
-    within(`gt('No threads matching "{query}".'`, "threads", CELL.many),
-  ),
-  ...inFile(
     `${PHONE}/home/ThreadUndoNotice.tsx`,
     within('gt("Settled thread")', "Settled thread", ONE_ASLEEP),
     within('gt("Snoozed thread")', "Snoozed thread", ONE_ASLEEP),
     within('gt("Unpinned thread")', "thread", `1 ${CELL.one}`),
   ),
   ...inFile(
-    `${PHONE}/layout/workspace/WorkspaceToolbar.tsx`,
-    within('threads: msg("Search threads"),', "Search threads", `Search ${CELL.many}`),
-  ),
-  ...inFile(
     `${PHONE}/threads/LinkedThreadSheet.tsx`,
     within('gt("On {label} via {via} · Working"', "Working", FLYING),
-    within('gt("Thread on {label}"', "Thread", CELL.one),
-    within("<T>Nothing in this thread yet.</T>", "thread", CELL.one),
-  ),
-  ...inFile(
-    `${PHONE}/threads/NewTaskContextPickerScreens.tsx`,
-    within('? gt("Choose the repositories this thread works on.")', "thread", CELL.one),
-    within(`: gt("Each gets its own worktree on the thread's branch.")`, "thread", CELL.one),
-  ),
-  ...inFile(
-    `${PHONE}/threads/NewTaskDraftRouteScreen.tsx`,
-    within('<AppBar title={gt("New thread")}', "thread", CELL.one),
   ),
   ...inFile(
     `${PHONE}/threads/NewTaskDraftScreen.tsx`,
-    within('? gt("Starting the thread…")', "thread", CELL.one),
     whole("What should we work on?", CASUAL_CHAT.headline),
-    within('<AppBar title={gt("New thread")}', "thread", CELL.one),
   ),
   ...inFile(
     `${PHONE}/threads/NewTaskRouteScreen.tsx`,
@@ -141,19 +119,7 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
   ),
   ...inFile(
     `${PHONE}/threads/ThreadRouteScreen.tsx`,
-    within('message={gt("Opening thread…")}', "thread", CELL.one),
-    within('title={gt("Thread unavailable")}', "Thread", CELL.one),
-    within(
-      'detail={gt("This thread is not available in the current mobile snapshot.")}',
-      "thread",
-      CELL.one,
-    ),
     within('gt("Subagent of {title}"', "Subagent", SUBCELL.one),
-  ),
-  ...inFile(
-    `${PHONE}/threads/thread-inspector-header.tsx`,
-    within('gt("Maximize thread")', "thread", CELL.one),
-    within('gt("Close thread")', "thread", CELL.one),
   ),
   ...inFile(
     `${PHONE}/threads/ThreadWorkflowGroup.tsx`,
@@ -173,7 +139,6 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
   ),
   ...inFile(
     `${PHONE}/threads/thread-list-v2-items.tsx`,
-    within('title: msg("Wake thread")', "thread", CELL.one),
     // The card's menu and swipe: Settle sleeps a Cell, Un-settle wakes it, Snooze is a timed sleep.
     within('title: msg("Settle", { $context: "verb, thread action" })', "Settle", SLEEP),
     within('title: msg("Un-settle", { $context: "verb, thread action" })', "Un-settle", WAKE),
@@ -184,10 +149,8 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
     within('label: gt("Snooze", { $context: "verb, thread action" })', "Snooze", SLEEP_UNTIL),
     within('title: gt("Snooze", { $context: "verb, thread action" })', "Snooze", SLEEP_UNTIL),
     within('title: gt("Snooze until")', "Snooze until", "Sleep until"),
-    within('title: gt("Arrange threads…")', "threads", CELL.many),
     within('title: gt("Copy thread"),', "Copy thread", COPY_CELL.action),
     within('title: gt("Copy thread ID")', "thread ID", COPY_CELL.menuId),
-    within('? gt("Opens the thread")', "thread", CELL.one),
   ),
   ...inFile(
     `${PHONE}/threads/thread-subagent-group.tsx`,
@@ -246,17 +209,6 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
     "apps/web/src/hooks/showThreadUndoNotice.ts",
     // What a screen reader hears once Cells sleep: "Asleep: 2 Cells".
     within('msg("Settled {count', "Settled", "Asleep:"),
-    within('msg("Settled {count, plural, one {{count} thread}', "thread", CELL.one),
-    within(
-      'msg("Settled {count, plural, one {{count} thread} other {{count} threads}}")',
-      "threads",
-      CELL.many,
-    ),
-  ),
-  ...inFile(
-    "apps/web/src/components/WorktreeRepositoriesControl.tsx",
-    within('? gt("Choose the repositories this thread works on")', "thread", CELL.one),
-    within(`: gt("Each gets its own worktree on the thread's branch")`, "thread", CELL.one),
   ),
   ...inFile(
     `${CHAT}/BackgroundWorkDetails.tsx`,
@@ -267,12 +219,6 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
     `${CHAT}/DraftHeroHeadline.tsx`,
     whole("or start without a project", CASUAL_CHAT.offer),
     whole("What should we work on?", CASUAL_CHAT.headline),
-  ),
-  ...inFile(
-    "apps/web/src/components/RightPanelTabs.tsx",
-    // A Subcell's, a side chat's or a linked machine's Cell's panel tab, until its title loads.
-    within('resolve(msg("Thread"))', "Thread", CELL.one),
-    within('msg("Thread on {label}"', "Thread", CELL.one),
   ),
   ...inFile(
     "apps/web/src/components/settings/SettingsPanels.tsx",
@@ -292,30 +238,14 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
     within('msg("Open subagents and side chats in")', "subagents", SUBCELL.many),
   ),
   ...inFile(
-    "apps/web/src/components/sidebar/SidebarFolderDrop.tsx",
-    within('description: gt("Drop files on a thread to attach them.")', "thread", CELL.one),
-  ),
-  ...inFile(
     `${CHAT}/LinkedThreadPane.tsx`,
     within('gt("On {label} via {via} · Working"', "Working", FLYING),
-    within('gt("Open this thread on {label} to see', "thread", CELL.one),
-    within('gt("Thread on {label}"', "Thread", CELL.one),
-  ),
-  ...inFile(
-    `${CHAT}/MarkdownThreadLink.tsx`,
-    within('gt("Thread on {label}"', "Thread", CELL.one),
-    within('gt("Read the thread on {label}"', "thread", CELL.one),
-    within('|| gt("Thread")', "Thread", CELL.one),
   ),
   ...inFile(
     `${CHAT}/ProviderSubagentBar.tsx`,
     within('gt("{model} subagent: {status}"', "subagent", SUBCELL.one),
   ),
-  ...inFile(
-    `${CHAT}/SideThreadPane.tsx`,
-    within(': gt("Subagent")', "Subagent", SUBCELL.one),
-    within("<T>This thread is no longer available.</T>", "thread", CELL.one),
-  ),
+  ...inFile(`${CHAT}/SideThreadPane.tsx`, within(': gt("Subagent")', "Subagent", SUBCELL.one)),
   ...inFile(
     `${CHAT}/ThreadLineageWorkflowRow.tsx`,
     within("one {{settled}/{count} agent}", "agent", SUBCELL.one),
@@ -328,7 +258,6 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
     within('msg("Open parent agent in this chat")', "agent", CELL.one),
     within('props.agent.title ?? gt("Subagent")', "Subagent", SUBCELL.one),
     within('gt("Open parent agent on {label}"', "agent", CELL.one),
-    within('gt("Read the thread on {label}"', "thread", CELL.one),
     within('label: gt("Previous agents")', "agents", SUBCELL.many),
     within('title: gt("Could not stop subagent")', "subagent", SUBCELL.one),
     within('aria-label={gt("Stop subagent {threadTitle}"', "subagent", SUBCELL.one),
@@ -343,15 +272,35 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
     `${CHAT}/TimelineWorkEntryRow.tsx`,
     within('aria-label={gt("Open subagent thread")}', "Open subagent thread", SUBCELL.open),
     within("<T>Open subagent</T>", "Open subagent", SUBCELL.open),
-    // A read of another Cell: "Read Cell “Title”", the title a link to it.
-    within("{Reading thread “{title}”}", "thread", CELL.one, 2),
-    within("{Read thread “{title}”}", "thread", CELL.one),
-    within("{Failed to read thread “{title}”}", "thread", CELL.one),
-    within("{Declined to read thread “{title}”}", "thread", CELL.one),
-    within("{Stopped reading thread “{title}”}", "thread", CELL.one),
+  ),
+  // Words outside a message (`cellWords.ts` renames thread in every one), still read by a person.
+  ...inFile(
+    "apps/web/src/components/CommandPaletteResults.tsx",
+    // What a Cell dragged from the palette is called, until its title loads.
+    within('? props.item.title : "Thread"),', "Thread", CELL.one),
   ),
   ...inFile(
-    `${CHAT}/useThreadLifecycle.tsx`,
-    within('msg("This thread is no longer available")', "thread", CELL.one),
+    `${CHAT}/timelineMinimapItems.ts`,
+    // A link to another Cell, in the minimap's line for its message.
+    within('? "a thread"', "thread", CELL.one),
+  ),
+  ...inFile(
+    "apps/web/src/lib/threadContextAttachment.ts",
+    // The name of a Cell's transcript in the composer when it has no title.
+    within(': 64) || "Thread";', "Thread", CELL.one),
+  ),
+  ...inFile(
+    "apps/web/src/desktopAppActivation.ts",
+    // What the app's launcher says when it couldn't open a new Cell.
+    within("could not open a new thread for the project.", "thread", CELL.one, 2),
+  ),
+  ...inFile(
+    "packages/client-runtime/src/state/archivedThreads.ts",
+    within('error = "Failed to load archived threads.";', "threads", CELL.many),
+  ),
+  ...inFile(
+    "apps/desktop/src/ipc/methods/notificationBadge.ts",
+    // The taskbar's badge, as Windows reads it out.
+    within("`${count} threads with new notifications`", "threads", CELL.many),
   ),
 ];

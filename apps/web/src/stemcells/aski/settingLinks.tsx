@@ -49,7 +49,7 @@ const SERVER_SWITCHES = {
     key: "sidebarAutoSettleOnMerge",
   },
   "keep-pull-requests": {
-    title: "Keep threads with a PR",
+    title: "Keep Cells with a PR",
     key: "sidebarAutoSettleKeepPullRequests",
   },
   "auto-resume-limited": {
