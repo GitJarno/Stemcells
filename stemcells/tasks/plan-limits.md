@@ -54,8 +54,10 @@ left, when it resets, and whether the pace so far runs out first.
       `upstream/limitAccounts.ts`, for the phone
 - [x] Mac: the ring with its figure, a click opens the card; the page in
       the same blocks
-- [ ] Phone: the ring in the chat's bar and the home's, the card in a sheet
-- [ ] Browser test and captures on both; pull request, check-local, merge
+- [x] Phone: the ring in the chat's bar (iOS; Android's bar is T3's) and the
+      home's, the card in a page sheet
+- [x] Browser test; captures on a lab phone and the Mac's card
+- [ ] Pull request, check-local, merge
 
 ## Review
 
