@@ -13,19 +13,20 @@ Two asks from the person, on the Duo (2026-11-27):
 
 ## Decisions
 
-1. **The rail's top group is read where UIKit is handed it.** Every screen's
-   header items pass through T3's `V5StackHeader`; a seam hands its trailing
-   buttons' count to a store (`aski/rail.ts`) while its screen has focus and
-   its workspace tab is the one shown (T3 keeps every tab's header
-   mounted), the newest such header winning. Ours stand a pitch after the
-   group's last button, in both postures (unfolded 156 pt then 63 apart,
-   folded 198 then 60), and glide when the group changes. Never into the
-   tabs: the last of ours stops just above them. With no Aski, the trophy
-   closes up to the group.
+1. **Ours stand over the rail's tabs.** The tab group is the one thing in
+   the rail that stays put (it starts 0.649 of the way down, open and
+   closed), so Aski stands just over it and the trophy a button's pitch
+   above Aski (`aski/railPlace.ts`). First they followed the top group: a
+   seam in T3's header counted each screen's buttons. But UIKit moves that
+   group as it likes (one to four buttons, a Live Activity pushes them all
+   down, and nothing reports where they went), so Aski landed among them or
+   a gap below, and moved from screen to screen under the thumb. The seam is
+   gone. UIKit keeps a custom header view out of the rail, in the bar over
+   the page, so Aski can't be one of the group's own.
 2. **The trophy is ours in the rail.** T3 folds a second header tool on the
    Duo's rail into one "…" menu (it cannot overflow), so a header action
-   would vanish there. On Usage the trophy stands after the group and Aski
-   after the trophy, drawn in the same layer as Aski. Off the rail it is a
+   would vanish there. On Usage the trophy stands over Aski,
+   drawn in the same layer as Aski. Off the rail it is a
    plain button in Usage's header (iPhone, Android, the Duo upright).
 3. **The trophy opens Settings › Collection** by pushing it, so back returns
    to Usage. Same read, same rules, same words as the Mac's.
@@ -41,7 +42,7 @@ Two asks from the person, on the Duo (2026-11-27):
 ## Steps
 
 - [x] Rail store, placement (pure, tested), the header seam
-- [x] Aski follows the group; glides between screens
+- [x] Aski over the tabs, the trophy over Aski (first: after the top group)
 - [x] The trophy: in the rail on Usage, a header button elsewhere
 - [x] `trackOf`, `rungMark` (shared), tests
 - [x] The board; the screen picks it by width
@@ -57,9 +58,8 @@ Two asks from the person, on the Duo (2026-11-27):
   Collection and back returns to Usage. The lab had no Aski chat, so
   Aski's own place after the trophy is covered by the placement tests only.
 
-- The rail's measures (156 pt, 63 pt a button, tabs at 0.649) are the ones
-  measured on the Duo before; the group's count is now real. A Live
-  Activity pushes UIKit's group down and ours don't follow it; nothing
-  reports that offset yet.
+- The rail's tabs start 0.649 of the way down, measured open and closed. A
+  Live Activity pushes UIKit's top group down; ours no longer stand in its
+  way (decision 1).
 - Upright, the Duo has no rail, and T3 groups Usage's filter and trophy into
   one "…" menu there.

@@ -10,6 +10,8 @@ import { useBarInset } from "../../../components/ui/useBarInset";
 import { isDuoDevice } from "../../../lib/device-type";
 import * as Upstream from "../../../native/NativeScrollViewMarker";
 import { useDeviceType } from "../../../native/native-layout-metrics";
+import { FeedFade } from "../../aski/FeedFade";
+import { useChatInView } from "../../chat/inView";
 import { headerEdges } from "../../edge/headerEdge";
 import { ScreenVeils } from "../../edge/ScreenVeils";
 import { useStageScrollView } from "../../home/stageScroll";
@@ -68,11 +70,14 @@ export function NativeScrollViewMarker(
               }),
         })
       : props.children;
-  const marker = (
+  const chat = useChatInView();
+  const scroll = (
     <Upstream.NativeScrollViewMarker {...props} scrollEdgeEffects={effects}>
       {children}
     </Upstream.NativeScrollViewMarker>
   );
+  // Around the marker, never inside it: the native marker takes its one child for the scroll view.
+  const marker = chat === null ? scroll : <FeedFade chat={chat.threadId}>{scroll}</FeedFade>;
   // By value: a screen's options reach here cloned. Upstream never hides the top edge; we do.
   if (page !== null || effects?.top !== "hidden") return marker;
   return (
