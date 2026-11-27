@@ -1,6 +1,6 @@
-// An awake Cell's row light (`Wave.tsx`, stemcells/tasks/awake-asleep.md): a glow round the row's
-// Cell in its provider's tone, or Input's amber while it asks; the band only while it flies; faint
-// once its landing has been seen.
+// An awake Cell's row light (`Wave.tsx`, stemcells/tasks/awake-asleep.md): the row tinted evenly
+// in its provider's tone, the band crossing it only while it flies; faint once its landing has
+// been seen. Its status icon says what it does or needs.
 
 import { use } from "react";
 import type { ViewStyle } from "react-native";
@@ -9,7 +9,7 @@ import { useResolveClassNames } from "uniwind";
 import { useDriverOf } from "../cell/ThreadCell";
 import { HomeInFront } from "../home/state";
 import type { RowLight as Light } from "../line/kit";
-import { NEEDS_YOU, TONES } from "../tokens";
+import { TONES } from "../tokens";
 import type { EnvironmentThreadShell } from "../upstream/cells";
 import { rgbOf } from "./colour";
 import { toneTokenOf } from "./kit";
@@ -25,7 +25,7 @@ export function RowLight(props: {
   const { light } = props;
   const inFront = use(HomeInFront);
   const provider = TONES[toneTokenOf(useDriverOf(props.thread))] ?? TONES["--sc-accent"];
-  const tone = rgbOf(light.tone === "input" ? NEEDS_YOU : provider)!;
+  const tone = rgbOf(provider)!;
   const glass = rgbOf(useResolveClassNames("bg-grouped-card").backgroundColor) ?? [0, 0, 0];
   const ink = rgbOf(useResolveClassNames("text-foreground").color) ?? [255, 255, 255];
   return (

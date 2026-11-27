@@ -14,7 +14,7 @@ import { formingFrom } from "../cell/forming";
 import { BOX, cellNameOf, clockSeconds } from "../cell/kit";
 import { ThreadCell } from "../cell/ThreadCell";
 import { RowLight } from "../glow/RowLight";
-import { ROW_LIGHT, rowStateOf } from "../line/kit";
+import { ROW_LIGHT, rowStateOf, type RowStatus, rowStatusOf, STATUS_WORDS } from "../line/kit";
 import { cellKey } from "../line/line";
 import { CODE_FONT } from "../tokens";
 import {
@@ -173,27 +173,76 @@ function AwakeRow(props: {
   const { thread } = props;
   const key = cellKey(thread);
   const state = use(CellStates).get(key);
-  const light = ROW_LIGHT[rowStateOf(state?.stage, threadHasUnseenCompletion(thread))];
+  const rowState = rowStateOf(state?.stage, threadHasUnseenCompletion(thread));
+  const status = rowStatusOf(rowState, thread.hasPendingApprovals);
   return (
     <View className="flex-row items-center gap-2" style={{ minHeight: ROW_HEIGHT - PADDED.card }}>
-      <RowLight key={key} thread={thread} light={light} fill={AWAKE_FILL} anchorX={AWAKE_ANCHOR} />
+      <RowLight
+        key={key}
+        thread={thread}
+        light={ROW_LIGHT[rowState]}
+        fill={AWAKE_FILL}
+        anchorX={AWAKE_ANCHOR}
+      />
       <Figure thread={thread} points={2} />
       <View className="min-w-0 flex-1">{props.children}</View>
-      {state?.since ? <Since since={state.since} /> : null}
+      {state?.since ? <Since since={state.since} status={status} /> : null}
     </View>
   );
 }
 
-/** How long it's been like this: flying for, landed for, waiting for. */
-function Since(props: { readonly since: string }) {
+/** T3's status symbols and colours on the phone (`features/threads/thread-list-v2-items.tsx`). */
+const STATUS_SYMBOL = {
+  working: {
+    name: "circle.dashed",
+    tint: "accent-adaptive-sky-600-400",
+    ink: "text-adaptive-sky-600-400",
+  },
+  input: {
+    name: "questionmark.bubble",
+    tint: "accent-adaptive-indigo-600-300",
+    ink: "text-adaptive-indigo-600-300",
+  },
+  approval: {
+    name: "exclamationmark.shield",
+    tint: "accent-warning-foreground",
+    ink: "text-warning-foreground",
+  },
+  done: {
+    name: "checkmark.circle",
+    tint: "accent-adaptive-emerald-700-300",
+    ink: "text-adaptive-emerald-700-300",
+  },
+} as const satisfies Record<RowStatus, unknown>;
+const STATUS_SIZE = 13;
+/** Three characters of the time's code font (an advance of about 0.6 of its 14 pt), right-aligned. */
+const TIME_SLOT = Math.ceil(14 * 0.61 * 3);
+
+/**
+ * How long it's been like this, after T3's icon for what it does or needs. The icon keeps its
+ * place when there's none and the time ends at the same edge, so every row's icon and time line up.
+ */
+function Since(props: { readonly since: string; readonly status: RowStatus | null }) {
   const now = useMinute();
+  const look = props.status === null ? null : STATUS_SYMBOL[props.status];
   return (
-    <AppText
-      className="text-sm tabular-nums text-foreground-muted"
-      style={{ fontFamily: CODE_FONT }}
-    >
-      {relativeTime(props.since, Date.parse(now))}
-    </AppText>
+    <View className="flex-row items-center gap-1.5">
+      <View
+        style={{ width: STATUS_SIZE, height: STATUS_SIZE }}
+        accessible={props.status !== null}
+        accessibilityLabel={props.status === null ? undefined : STATUS_WORDS[props.status]}
+      >
+        {look === null ? null : (
+          <SymbolView name={look.name} size={STATUS_SIZE} tintColorClassName={look.tint} />
+        )}
+      </View>
+      <AppText
+        className={`text-sm tabular-nums ${look?.ink ?? "text-foreground-muted"}`}
+        style={{ fontFamily: CODE_FONT, minWidth: TIME_SLOT, textAlign: "right" }}
+      >
+        {relativeTime(props.since, Date.parse(now))}
+      </AppText>
+    </View>
   );
 }
 
