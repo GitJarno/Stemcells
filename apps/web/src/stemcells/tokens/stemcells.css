@@ -1568,6 +1568,21 @@
   --sc-rarity-secret: rgba(166, 132, 255, 1);
 }
 
+/* Input, the same in every skin: what a Cell asks of the person, in the indigo T3's row
+   icon wears for it (Tailwind's indigo-600, -300 in the dark). The words of a reply an ask
+   was built from wear its wash: the person's at --sc-input-you, the Cell's own fainter. */
+:root {
+  --sc-input: oklch(0.511 0.262 276.966);
+  --sc-input-you: color-mix(in oklab, var(--sc-input) 16%, transparent);
+  --sc-input-next: color-mix(in oklab, var(--sc-input) 7%, transparent);
+}
+
+:root.dark {
+  --sc-input: oklch(0.785 0.115 274.713);
+  --sc-input-you: color-mix(in oklab, var(--sc-input) 30%, transparent);
+  --sc-input-next: color-mix(in oklab, var(--sc-input) 14%, transparent);
+}
+
 /* The provider's mark in a Cell's composer: the words' ink at this share
    over the composer's own glass, so it reads at a glance whatever greys the
    glass wears, and stays quieter than the placeholder (`glow/glow.css`). */

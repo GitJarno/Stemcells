@@ -86,16 +86,6 @@
 /* The reply's words the ask was built from, while it is open: the person's
    steps and the asking sentence, then the Cell's own next step, fainter.
    Painted by the highlight registry, so the reply's DOM is upstream's. */
-:root {
-  --sc-input: oklch(0.511 0.262 276.966);
-  --sc-input-you: color-mix(in oklab, var(--sc-input) 16%, transparent);
-  --sc-input-next: color-mix(in oklab, var(--sc-input) 7%, transparent);
-}
-:root.dark {
-  --sc-input: oklch(0.785 0.115 274.713);
-  --sc-input-you: color-mix(in oklab, var(--sc-input) 24%, transparent);
-  --sc-input-next: color-mix(in oklab, var(--sc-input) 10%, transparent);
-}
 ::highlight(stemcells-ask-you) {
   background-color: var(--sc-input-you);
 }
