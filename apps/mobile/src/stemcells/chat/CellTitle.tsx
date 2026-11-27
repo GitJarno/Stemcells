@@ -24,8 +24,8 @@ import { ThreadCell } from "../cell/ThreadCell";
 import { tellDeed } from "../collection/read";
 import { useColumnWidth } from "./header";
 import { askiChatStandsIn } from "../home/copies";
-import { ProjectMark } from "../project/ProjectMark";
 import { CellAskSymbol } from "../line/StatusSymbol";
+import { ProjectMark } from "../project/ProjectMark";
 import {
   AppText,
   type EnvironmentThreadShell,
