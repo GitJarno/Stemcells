@@ -26,6 +26,7 @@ export { Menu } from "../../components/ui/Menu";
 export * as Dialog from "../../components/ui/Dialog";
 export { SymbolView } from "../../components/ui/AppSymbol";
 export { useDeviceType, useNativeLayoutMetrics } from "../../native/native-layout-metrics";
+export { NativeWorkspaceTabActivityContext } from "../../native/v5-workspace-context";
 
 /**
  * Puts the chip of the Cell `from` in Aski's composer: Aski reads it as what "this" means. Only
