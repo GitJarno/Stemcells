@@ -99,8 +99,9 @@ The fork exists to keep taking upstream's work for free. The reasoning is in
   an entry to the word table (`stemcells/brand/wordTable.ts`) and the
   builds swap it (`stemcells/docs/fork.md`, The name transform).
 - A Cell is thrown at a problem and flies until it lands. The stages a
-  person reads are Input, Awake and Asleep; Flying and Landed are an awake
-  Cell's own states; never Working or Needs you. The verbs are Sleep,
+  person reads are Awake and Asleep; Flying, Landed and Input are an awake
+  Cell's own states, and an ask is answered in its chat; never Working or
+  Needs you. The verbs are Sleep,
   Sleep until… and Wake, never Settle, Snooze or "put to sleep". Code, wire
   values and text only models read keep `working`, `needs-you`, `done` and
   `settled` (`stemcells/tasks/awake-asleep.md`, `stemcells/tasks/input.md`).
