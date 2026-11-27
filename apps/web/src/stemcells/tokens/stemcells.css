@@ -351,7 +351,6 @@
   --sc-timing-glow-fade: 300ms;
   --sc-timing-glow-breath: 3200ms;
   --sc-timing-glow-drift: 9000ms;
-  --sc-timing-bob: 1300ms;
   /* The spawn (docs/interaction.md): the sent words' letters leave
      `letter-stagger` apart, all of them within `letters-span`, and go
      round Aski once an `orbit-turn`; the streams leave Aski `spawn-stagger`

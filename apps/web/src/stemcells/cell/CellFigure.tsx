@@ -1,13 +1,12 @@
 /* oxlint-disable shadcn/no-unknown-classes -- Stemcells' classes live in its own stylesheet (cell.css), outside upstream's Tailwind entry. */
 // A Cell's character: the original app's Cell, drawn from the kit frame by frame in its
-// provider's colours, wearing its deal, playing its mood and work in its own manner, with the
-// "?" while it waits on you. Its box is the miniature's (13 × 14 cells), hats and all, so
-// every Cell stands on one line; its picture reaches past the box by `MARGIN`, taking no room.
+// provider's colours, wearing its deal, playing its mood and work in its own manner. Its box is
+// the miniature's (13 × 14 cells), hats and all, so every Cell stands on one line; its picture
+// reaches past the box by `MARGIN`, taking no room.
 
 import { useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { stand } from "./acting.ts";
 import type { Activity } from "./activity.ts";
-import { AskMark } from "./AskMark.tsx";
 import { clockSeconds } from "./blink.ts";
 import { bodyOf, type Entrance, entering, frameFor, type Stance } from "./cast.ts";
 import { chosenVersion, onChosen } from "./chosen.ts";
@@ -15,7 +14,7 @@ import { onStage, personHere, watchingFrom } from "./clock.ts";
 import { BLOCKS, empty, type Forming, formingPart, HOP, inBlocks } from "./forming.ts";
 import type { Ground } from "./keyline.ts";
 import type { Strength } from "./kit.ts";
-import { asksYou, BOX, moodOf, POINTS_PER_PIXEL } from "./look.ts";
+import { BOX, moodOf, POINTS_PER_PIXEL } from "./look.ts";
 import { dayOf, lookOf } from "./looks.ts";
 import { type Diff, withMarks } from "./marks.ts";
 import { paint } from "./paint.ts";
@@ -179,7 +178,6 @@ export function CellFigure(props: {
         }}
         aria-hidden="true"
       />
-      <AskMark active={asksYou(mood)} pixel={points} />
     </span>
   );
 }

@@ -3,11 +3,11 @@
 // line; its picture reaches past the box by the margin, taking no room.
 
 import { useState, useSyncExternalStore } from "react";
-import { Text, View } from "react-native";
-import Animated, { useReducedMotion, ZoomIn, ZoomOut } from "react-native-reanimated";
+import { View } from "react-native";
+import { useReducedMotion } from "react-native-reanimated";
 import Svg, { ClipPath, Defs, G, Path, Text as SvgText } from "react-native-svg";
 
-import { CODE_FONT, NEEDS_YOU, NOTCH } from "../tokens";
+import { CODE_FONT } from "../tokens";
 import { never, now, onBeat } from "./clock";
 import { useComposed } from "./compose";
 import { drawFrame, type Drawing, drawingOf } from "./figure";
@@ -138,7 +138,6 @@ export function CellFigure(props: {
   const { name, mood, activity } = props;
   const worn = (props.look ?? []).join("+");
   const plays = props.plays ?? false;
-  const pleading = asksYou(mood);
   const reduced = useReducedMotion();
   const still = reduced || props.held === true;
   const forms = props.formingFrom !== undefined && !reduced;
@@ -228,7 +227,6 @@ export function CellFigure(props: {
           )}
         </Svg>
       )}
-      {pleading && typeof shown !== "string" ? <AskMark points={points} /> : null}
     </View>
   );
 }
@@ -282,42 +280,5 @@ function Glyphs(props: { readonly glyph: string; readonly drawing: Drawing }) {
         ))}
       </G>
     </>
-  );
-}
-
-/** The "?" over a Cell that waits on you, off its top corner, measured in its pixels. */
-function AskMark(props: { readonly points: number }) {
-  const pixel = props.points;
-  return (
-    <Animated.View
-      entering={ZoomIn.springify().damping(14)}
-      exiting={ZoomOut.duration(160)}
-      style={{
-        position: "absolute",
-        top: pixel * -3,
-        right: pixel * -2.5,
-        paddingHorizontal: pixel * 1.6,
-        paddingVertical: pixel * 0.4,
-        borderRadius: pixel * 1.8,
-        backgroundColor: NEEDS_YOU,
-        shadowColor: NEEDS_YOU,
-        shadowOpacity: 0.55,
-        shadowRadius: pixel * 2.5,
-        shadowOffset: { width: 0, height: 0 },
-      }}
-    >
-      <Text
-        allowFontScaling={false}
-        style={{
-          color: NOTCH,
-          fontFamily: CODE_FONT,
-          fontWeight: "800",
-          fontSize: pixel * 5.5,
-          lineHeight: pixel * 6.5,
-        }}
-      >
-        ?
-      </Text>
-    </Animated.View>
   );
 }

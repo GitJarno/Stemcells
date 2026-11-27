@@ -1,7 +1,7 @@
 // A chat's header on the phone (stemcells/tasks/phone-polish.md, decision 8): the Cell beside its
 // name, playing what it does, with its project's mark and what its chat is about under it, as its
-// card on the home reads (`stemcells/tasks/project-first.md`). Aski's chat has Aski. A chat sent
-// from here forms here.
+// card on the home reads (`stemcells/tasks/project-first.md`), and its row's symbol while it
+// asks. Aski's chat has Aski. A chat sent from here forms here.
 
 import { use, useRef } from "react";
 import { Pressable, useWindowDimensions, View } from "react-native";
@@ -25,6 +25,7 @@ import { tellDeed } from "../collection/read";
 import { useColumnWidth } from "./header";
 import { askiChatStandsIn } from "../home/copies";
 import { ProjectMark } from "../home/RowCell";
+import { CellAskSymbol } from "../line/StatusSymbol";
 import {
   AppText,
   type EnvironmentThreadShell,
@@ -137,13 +138,16 @@ function Title(props: {
         </Pressable>
       )}
       <View className="min-w-0 shrink">
-        <AppText
-          className="font-t3-bold text-[15px] text-foreground"
-          style={halo}
-          numberOfLines={1}
-        >
-          {name}
-        </AppText>
+        <View className="min-w-0 flex-row items-center gap-1.5">
+          <AppText
+            className="shrink font-t3-bold text-[15px] text-foreground"
+            style={halo}
+            numberOfLines={1}
+          >
+            {name}
+          </AppText>
+          {aski ? null : <CellAskSymbol thread={thread} size={13} />}
+        </View>
         {about === null ? null : (
           <View className="min-w-0 flex-row items-center gap-1.5">
             {project === null ? null : <ProjectMark project={project} size={MARK} />}
