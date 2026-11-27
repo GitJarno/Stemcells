@@ -6,7 +6,7 @@ import { useAtomValue } from "@effect/atom-react";
 import * as Haptics from "expo-haptics";
 import { useMessages } from "gt-react-native";
 import { type Context, type ReactNode, use, useState } from "react";
-import { Pressable, useWindowDimensions, View } from "react-native";
+import { Pressable, ScrollView, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import {
@@ -95,7 +95,13 @@ export function CellPick(
         paddingRight: Math.max(20, insets.right + 12),
       }}
     >
-      <View className="gap-2.5">
+      {/* An agent with a long catalog scrolls here; the sheet only fits what shows. */}
+      <ScrollView
+        style={{ maxHeight: window.height * 0.45 }}
+        contentContainerClassName="gap-2.5"
+        bounces={false}
+        showsVerticalScrollIndicator={false}
+      >
         {lines.map((line) => (
           <View key={line.group.providerKey} className="flex-row items-start gap-3">
             <View className="h-8 w-6 items-center justify-center">
@@ -119,7 +125,7 @@ export function CellPick(
             </View>
           </View>
         ))}
-      </View>
+      </ScrollView>
 
       <View className="mt-6 gap-3">
         {active && active.entry.levels.length > 0 ? (
