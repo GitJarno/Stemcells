@@ -227,6 +227,10 @@
   --sc-motion-land-damping: 1;
   --sc-motion-nudge-response: 0.16;
   --sc-motion-nudge-damping: 1;
+  /* Asleep catching a Cell that leaps to sleep (listMotion.ts, `catch`):
+     a soft spring, so the count rebounds once past its place, like a hammock. */
+  --sc-motion-catch-response: 0.36;
+  --sc-motion-catch-damping: 0.5;
   --sc-timing-beat: 120ms;
   --sc-timing-linger: 1200ms;
   /* An ask folding away once it's answered or gone; the list keeps it that long. */

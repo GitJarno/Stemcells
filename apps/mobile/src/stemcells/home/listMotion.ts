@@ -20,6 +20,18 @@ export const LEAVE = {
   duration: LIST_MOTION.leave.duration,
   easing: easingOf(LIST_MOTION.leave.easing),
 };
+/** Asleep's catch: the count gives under a leaping Cell's landing, then its spring hands it back. */
+export const CATCH_GIVE = {
+  duration: LIST_MOTION.catch.give,
+  easing: Easing.out(Easing.sin),
+};
+/** The spring at unit mass (`springAt`'s), still once its swing is a hundredth. */
+export const CATCH_RETURN = {
+  stiffness: ((2 * Math.PI) / LIST_MOTION.catch.response) ** 2,
+  damping: (2 * LIST_MOTION.catch.damping * 2 * Math.PI) / LIST_MOTION.catch.response,
+  mass: 1,
+  energyThreshold: 1e-4,
+};
 
 /** Something new fading in where it lands, as a Reanimated entrance. */
 export const entering = () => FadeIn.duration(ENTER.duration).easing(ENTER.easing);
