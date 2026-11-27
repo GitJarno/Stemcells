@@ -44,7 +44,8 @@ questions; the agent's state shows inside the row.
      waiting for, asleep for.
 4. **The verb is Sleep; its reverse is Wake.** It pairs with the stages and
    is what the Mac says of itself. Never "put to sleep": Cells are
-   creatures. Snooze becomes **Sleep until…**, a sleep with an alarm; its
+   creatures. **Snooze** stays, a sleep with an alarm (2026-11-27: "Sleep
+   until…" didn't fit a swipe and said less); its
    wake time shows on the row. Wake already undoes a snooze upstream, and
    now undoes any sleep.
 5. **Words.** Flying and Landed stay the words for an awake Cell's state
@@ -75,7 +76,7 @@ questions; the agent's state shows inside the row.
 - [x] `launchedAt` and `byLaunch`, with their table of cases
 - [ ] Words: `stemcells/words/awake.ts`; the word table's upstream verbs
 - [ ] Phone: three stages, Awake's one-line rows with the light, Sleep on a
-      swipe right, Sleep until… and Wake to the left, Asleep's night
+      swipe right, Snooze and Wake to the left, Asleep's night
 - [ ] Mac: the column's three stages, the same rows and light, Sleep in the
       composer's line and on a closed landed pane, undo notices
 - [ ] Aski: `stemcells_show` stages, the standing tool's words, the persona

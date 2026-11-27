@@ -15,9 +15,8 @@ export const STATUS_WORDS = {
   done: "Landed",
 } as const;
 
-/** Putting a Cell away, putting it away until a time, and bringing it back. */
+/** Putting a Cell away and bringing it back. Putting it away until a time is upstream's own Snooze. */
 export const SLEEP = "Sleep";
-export const SLEEP_UNTIL = "Sleep until…";
 export const WAKE = "Wake";
 
 export const EMPTY_WORDS = {
