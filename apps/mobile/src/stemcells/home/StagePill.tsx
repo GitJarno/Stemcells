@@ -8,7 +8,7 @@ import Animated from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useResolveClassNames } from "uniwind";
 
-import { NativePrimaryColumnContext, SegmentedControl } from "../upstream/home";
+import { SegmentedControl, useHomeSidebar } from "../upstream/home";
 import { Night } from "./Night";
 import { useOverKeyboard } from "./overKeyboard";
 import { HomeInFront, HomeStageContext, HomeTabsContext, liftNotices, PILL_ROOM } from "./state";
@@ -56,10 +56,10 @@ export function StageTop() {
 }
 
 function Sky() {
-  const primaryColumn = use(NativePrimaryColumnContext);
+  const sidebar = useHomeSidebar();
   const inFront = use(HomeInFront);
   const insets = useSafeAreaInsets();
-  const screen = useResolveClassNames(primaryColumn ? "bg-drawer" : "bg-screen").backgroundColor;
+  const screen = useResolveClassNames(sidebar ? "bg-drawer" : "bg-screen").backgroundColor;
   return (
     <View pointerEvents="none" style={{ height: SKY }}>
       <Night above={NIGHT_ABOVE + insets.top} screen={screen} height={SKY} shooting={inFront} />

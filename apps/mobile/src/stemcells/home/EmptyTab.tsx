@@ -1,22 +1,22 @@
 // A page of the home that isn't T3's list: a stage with no Cells in it (`line/LineHome.tsx`). Its
 // top rests where T3's list's does on iOS, under its stage's top (`StagePill.tsx`).
 
-import { use, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AppText } from "../upstream/cells";
-import { NativePrimaryColumnContext, useWorkspaceTabs } from "../upstream/home";
+import { useHomeSidebar, useWorkspaceTabs } from "../upstream/home";
 import { NativeScrollViewMarker } from "../upstream/substitutes/NativeScrollViewMarker";
 import { StageTop } from "./StagePill";
 
 function HomePage(props: { readonly children: ReactNode }) {
   const insets = useSafeAreaInsets();
   const workspace = useWorkspaceTabs();
-  const primaryColumn = use(NativePrimaryColumnContext);
+  const sidebar = useHomeSidebar();
   return (
-    <View className={primaryColumn ? "flex-1 bg-drawer" : "flex-1 bg-screen"}>
+    <View className={sidebar ? "flex-1 bg-drawer" : "flex-1 bg-screen"}>
       <NativeScrollViewMarker style={{ flex: 1 }}>
         <KeyboardAwareScrollView
           // The marker's own child, so the header finds it: the default mode puts a view between.

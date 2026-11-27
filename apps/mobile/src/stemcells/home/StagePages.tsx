@@ -15,7 +15,7 @@ import Animated, {
 import { scheduleOnUI } from "react-native-worklets";
 
 import { ScreenVeils } from "../edge/ScreenVeils";
-import { NativePrimaryColumnContext, useContentTopInset } from "../upstream/home";
+import { useContentTopInset, useDuoBarBottom, useHomeSidebar } from "../upstream/home";
 import { CopyLayer } from "./CopyLayer";
 import { enteringX, HomeCellsHeld, HomeInFront, HomeStageContext, StagePageContext } from "./state";
 import { StagePill } from "./StagePill";
@@ -92,7 +92,8 @@ export function StagePages<Stage extends string>(props: {
   readonly render: (stage: Stage) => ReactNode;
 }) {
   const { home, tab } = props;
-  const primaryColumn = use(NativePrimaryColumnContext);
+  const sidebar = useHomeSidebar();
+  const barBottom = useDuoBarBottom();
   const inFront = use(HomeInFront);
   const held = use(HomeCellsHeld);
   // Where a list rests: under the inset T3's list rests under, at the native header's foot.
@@ -112,7 +113,7 @@ export function StagePages<Stage extends string>(props: {
     return () => cancelAnimationFrame(frame);
   }, [warm]);
   return (
-    <View className={primaryColumn ? "flex-1 bg-drawer" : "flex-1 bg-screen"}>
+    <View className={sidebar ? "flex-1 bg-drawer" : "flex-1 bg-screen"}>
       {home.stages.map((stage, index) => {
         const active = stage === tab;
         return (
@@ -130,7 +131,7 @@ export function StagePages<Stage extends string>(props: {
           </Stage>
         );
       })}
-      {primaryColumn ? null : <ScreenVeils night={props.night} bottom />}
+      {sidebar ? null : <ScreenVeils night={props.night} bottom barBottom={barBottom} />}
       <StagePill />
       <CopyLayer shown={inFront} />
     </View>
