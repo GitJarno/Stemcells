@@ -89,7 +89,7 @@ import {
 import { clearedWords, STEM_CELL_FACTS } from "../../../../../stemcells/words/inbox.ts";
 import { CHECK_ROW_WORDS } from "../../../../../stemcells/words/planned.ts";
 import { awakeWithPlanned, openPlannedRow } from "../../../../../stemcells/aski/planned.ts";
-import { type Arrival, cellsListed, useArrivals } from "./arrivals";
+import { type Arrival, cellsListed, useArrivals, useArrivalsComing } from "./arrivals";
 import {
   byRecent,
   type Launchable,
@@ -190,6 +190,10 @@ export function Cells() {
   // Aski's planned rows (`arrivals.ts`) stand at Awake's top, under the pins, until the machine
   // lists their Cells; then its row takes over where the planned one stands.
   const arrivals = useArrivals();
+  // A Cell on its way from Aski shows as its row lands, not before.
+  const coming = useArrivalsComing();
+  const landed = awake.filter((row) => !coming.has(row.cell.threadId));
+  const pins = ordered.cells.slice(0, ordered.pins).filter((cell) => !coming.has(cell.threadId));
   useLaunchesArrive(environmentId);
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Load the dev build's hands on the planned rows once the column shows.
   useEffect(() => {
@@ -204,9 +208,9 @@ export function Cells() {
     environmentId === null
       ? []
       : awakeWithPlanned(
-          awake,
+          landed,
           (row) => row.cell.threadId,
-          ordered.pins,
+          pins.length,
           arrivals.filter((arrival) => here(arrival.row)).map((arrival) => arrival.row),
         ).map(({ row, birth }, index): AwakeRow => {
           const arrival = birth && arrivals.find((each) => each.row === birth);
@@ -214,7 +218,7 @@ export function Cells() {
           return {
             ...shown,
             birth: arrival ?? null,
-            pinned: index < ordered.pins,
+            pinned: index < pins.length,
             leaving: shown.leaving || (row === null && arrival?.state === "gone"),
           };
         });
@@ -727,6 +731,9 @@ function CellLine(props: {
   const born = birth?.row ?? null;
   // A check row waits for the person's tap in Aski's chat: it is an outline until then.
   const outline = born?.tier === "check";
+  // Once its birth words have gone, its time comes in after the title has taken their place (cells.css).
+  const [wasBorn, setWasBorn] = useState(born !== null);
+  if (born !== null && !wasBorn) setWasBorn(true);
   const row = useRef<HTMLLIElement>(null);
   const titled = useRef<HTMLSpanElement>(null);
   useArrivalPlays(row, birth);
@@ -755,6 +762,7 @@ function CellLine(props: {
       data-leaving={props.leaving ? "" : undefined}
       data-pinned={props.pinned ? "" : undefined}
       data-born={born === null ? undefined : ""}
+      data-was-born={wasBorn && born === null ? "" : undefined}
       data-outline={outline ? "" : undefined}
       inert={props.leaving}
     >
@@ -803,10 +811,10 @@ function CellLine(props: {
           ) : null}
           {born === null ? null : <Unsure row={born} field="place" />}
           {birth === null ? null : <BirthWords arrival={birth} />}
-          {born === null ? null : <Unsure row={born} field="words" />}
           <span ref={titled} data-cells-row-title="" data-settle={born === null ? undefined : ""}>
             {props.title}
           </span>
+          {born === null ? null : <Unsure row={born} field="words" />}
           <span data-cells-row-end="">
             <span
               data-cells-row-age=""

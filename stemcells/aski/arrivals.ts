@@ -12,8 +12,8 @@ const GLYPHS = [".", ":", "+", "#", "@"] as const;
 export const ARRIVAL_BEAT_MS = 1000 / 12;
 
 export const ARRIVALS = {
-  /** Between two Cells arriving, ms. */
-  stagger: 120,
+  /** Between two Cells arriving, ms: the row one pushes down has cleared its line by the next. */
+  stagger: 150,
   /** The most forming at once: the next waits for the oldest to stand. */
   most: 4,
   /** How long a Cell forms before it has its own pixels, in beats: its glyphs, then its blocks. */
@@ -163,9 +163,12 @@ export function createArrivals<From, Slot>(
   const landings: number[] = [];
   const listeners = new Set<() => void>();
   let shown: readonly Arrival[] = [];
+  let coming: ReadonlySet<string> = new Set();
 
   const publish = () => {
     shown = [...arrivals.values()];
+    if (coming.size !== waiting.size || [...waiting.keys()].some((id) => !coming.has(id)))
+      coming = new Set(waiting.keys());
     for (const listener of listeners) listener();
   };
   const rowOf = (threadId: string) => rows().find((row) => row.threadId === threadId);
@@ -218,7 +221,10 @@ export function createArrivals<From, Slot>(
   };
 
   const launch = (threadId: string) => {
-    if (rowOf(threadId) === undefined) return void waiting.delete(threadId);
+    if (rowOf(threadId) === undefined) {
+      waiting.delete(threadId);
+      return publish();
+    }
     if (deps.reduced()) return land(threadId, false);
     const from = deps.takeThrow(threadId);
     const thrown = from !== null && deps.slot() !== null;
@@ -248,12 +254,13 @@ export function createArrivals<From, Slot>(
     sync() {
       const planned = new Map(rows().map((row) => [row.threadId, row]));
       for (const threadId of over) if (!planned.has(threadId)) over.delete(threadId);
+      let changed = false;
       for (const [threadId, timer] of waiting) {
         if (planned.has(threadId)) continue;
         clearTimeout(timer);
         waiting.delete(threadId);
+        changed = true;
       }
-      let changed = false;
       for (const [threadId, arrival] of arrivals) {
         const row = planned.get(threadId);
         if (row === undefined) {
@@ -272,11 +279,13 @@ export function createArrivals<From, Slot>(
       for (const threadId of planned.keys()) {
         if (arrivals.has(threadId) || waiting.has(threadId) || over.has(threadId)) continue;
         if (deps.reduced()) land(threadId, false);
-        else
+        else {
           waiting.set(
             threadId,
             setTimeout(() => launch(threadId), GRACE),
           );
+          changed = true;
+        }
       }
       if (changed) publish();
     },
@@ -290,6 +299,8 @@ export function createArrivals<From, Slot>(
     },
     /** The rows standing in Awake, in the order they landed; the same array until one changes. */
     read: () => shown,
+    /** The threads whose rows are on their way: the machine's own row for one waits until it lands. */
+    coming: () => coming,
     subscribe(listener: () => void) {
       listeners.add(listener);
       return () => void listeners.delete(listener);

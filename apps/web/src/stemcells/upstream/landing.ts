@@ -99,10 +99,15 @@ export interface LaunchFacts {
   readonly born: number;
 }
 
-/** A launched chat's facts as upstream holds them now; null until its chat is known here. */
+/**
+ * A launched chat's facts as upstream's list holds them: a chat is announced (`subscribeLaunches`)
+ * from that list, a moment before it can be read on its own. Null for a chat the list lacks.
+ */
 export function launchFactsOf(cell: CellRef): LaunchFacts | null {
-  const shell = readThreadShell(threadRefOf(cell));
-  if (shell === null) return null;
+  const shell = readThreadShells().find(
+    (each) => each.id === cell.threadId && each.environmentId === cell.environmentId,
+  );
+  if (shell === undefined) return null;
   const project = readProject(scopeProjectRef(shell.environmentId, shell.projectId));
   const instanceId = resolveThreadProviderStack(shell).at(-1) ?? null;
   const provider = readEnvironmentProviders(shell.environmentId)?.find(

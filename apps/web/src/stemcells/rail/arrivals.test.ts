@@ -78,7 +78,10 @@ describe("when Cells arrive", () => {
     const arrived: number[] = [];
     for (let cell = 0; cell < 6; cell++) arrived.push(nextArrival(arrived, 0));
     const forming = ARRIVALS.forming * ARRIVAL_BEAT_MS;
-    expect(arrived).toEqual([0, 120, 240, 360, forming, forming + 120]);
+    const { stagger } = ARRIVALS;
+    expect(arrived).toEqual([0, stagger, 2 * stagger, 3 * stagger, forming, forming + stagger]);
+    expect(stagger).toBeGreaterThanOrEqual(90);
+    expect(stagger).toBeLessThanOrEqual(150);
     for (const at of arrived)
       expect(arrived.filter((other) => other <= at && at < other + forming).length).toBeLessThan(5);
     // One that comes later comes at once.
