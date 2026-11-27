@@ -1,3 +1,4 @@
+import * as Stemcells from "../stemcells/upstream/readScope.ts";
 import { guardAskisTools } from "../stemcells/upstream/askiTools.ts";
 import {
   type EnvironmentId,
@@ -452,7 +453,7 @@ const routed = Effect.fn("McpToolAccess.routed")(function* <Tools extends Record
 ) {
   // Optional so toolkits that never leave this environment build without it.
   const forwarding = yield* Effect.serviceOption(PeerForwarding.PeerForwarding);
-  const handlers: Record<string, unknown> = { ...checked };
+  const handlers: Record<string, unknown> = { ...Stemcells.scoped(toolkit, checked) };
   for (const [name, declaration] of Object.entries<Declaration<unknown>>(declarations)) {
     const tool = toolkit.tools[name];
     if (tool === undefined) continue;

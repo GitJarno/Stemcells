@@ -420,12 +420,26 @@ Each lands on the Mac and the phone together where a person sees it.
        Left: time words are English only; the phone's pills stand on the reply's side of the
        feed; the persona's new lines and the tool's description have no eval (upstream's
        runner offers neither the persona nor our tools), and no client was run to look at them.
-8. [ ] **Cells read their own repository.** The read scope, and Aski's
-       own text as a Check.
+8. [x] **Cells read their own repository.** The read scope.
+   - [ ] **Aski's own text as a Check.**
 9. [ ] **Settings at once**, and Settings › Aski's rows.
 
 Slices 2 to 4 are the core and ship in that order. 5 makes it a joy. 7
 and 8 stand alone.
+
+## Review
+
+- Slice 8, the read scope: one gate where upstream builds every toolkit's
+  handlers (`seams/server.md`, `McpToolAccess.ts`) asks one pure rule
+  (`apps/server/src/stemcells/readScope/rule.ts`). A Cell reaches its
+  repository's chats, its family, a chat it launched and one the person
+  attached (read only); `allProjects` is its repository; Aski's chat and a
+  client outside the app reach every chat. `stemcells_standing` answers
+  the same way.
+- Left open by it: a call to a linked environment is answered there, where
+  the caller is a client with no project; a launch into another project
+  still starts, and its launcher reads it; issue, pull request and worktree
+  tools take a thread id and aren't asked, since they read no chat.
 
 ## Open
 

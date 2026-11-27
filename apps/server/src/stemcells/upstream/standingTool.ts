@@ -16,7 +16,8 @@ import * as McpInvocationContext from "../../mcp/McpInvocationContext.ts";
 import * as McpToolAccess from "../../mcp/McpToolAccess.ts";
 import * as ProjectStore from "../../orchestration-v2/ProjectStore.ts";
 import * as Needs from "../needs/Needs.ts";
-import { standingOf } from "../needs/standing.ts";
+import { standingOf, standingWithin } from "../needs/standing.ts";
+import { projectsInReach } from "./readScope.ts";
 
 const StandingTool = Tool.make("stemcells_standing", {
   description:
@@ -48,7 +49,8 @@ const handlers = McpToolAccess.toLayer(
     return {
       stemcells_standing: McpToolAccess.readsAsCaller(() =>
         Effect.gen(function* () {
-          const list = yield* needs.list;
+          // A Cell hears of its own repository's Cells; Aski, of every project's.
+          const list = standingWithin(yield* needs.list, yield* projectsInReach);
           // Without the project names, the report names projects by id.
           const shells = yield* projects
             .listShells()
