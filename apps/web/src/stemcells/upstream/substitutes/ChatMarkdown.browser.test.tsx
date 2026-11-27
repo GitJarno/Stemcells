@@ -112,7 +112,7 @@ describe("a setting in a reply", () => {
       .element(screen.getByRole("link", { name: "Settings Providers Antigravity" }))
       .toHaveAttribute("href", "/settings/providers?environmentId=env&instanceId=antigravity");
     await expect
-      .element(screen.getByRole("link", { name: "Settings Threads Auto-settle merged threads" }))
+      .element(screen.getByRole("link", { name: "Settings Cells Auto-settle merged Cells" }))
       .toHaveAttribute("href", "/settings/threads#auto-settle-merged-threads");
     expect(screen.container.querySelectorAll("[data-stemcells-place]")).toHaveLength(2);
     window.getSelection()?.selectAllChildren(screen.container);
