@@ -1,0 +1,18 @@
+/* The Cells a question found, under the question in Aski's chat (recall/RecallPills.tsx;
+   stemcells/tasks/aski-orchestrator.md, decision 8): a row of Cell tokens on the person's
+   side of the transcript, under their own words. Every colour is a token. */
+.sc-recall {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.25rem 0.375rem;
+  max-width: 80%;
+  margin-inline-start: auto;
+  padding-block: 0.375rem 0.25rem;
+}
+
+.sc-recall-more {
+  color: var(--sc-meta-ink);
+  font-size: 0.75rem;
+}

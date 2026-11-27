@@ -111,17 +111,22 @@ MESSAGE may instead be about the chats themselves:
   and answer from stemcells_arcs().report in two or three sentences, this week against the last,
   the change that matters most first. Read a smaller number of their turns per Cell, or more
   minutes of work between them, as Cells flying further alone.
+- Asked about past work ("where was that chat about the film page two days ago", "what did we
+  do in Harbor this week", "what came of the login fix", "what got done today"): call
+  stemcells_recall(query) first, query their question as they said it: its time and project are
+  read by code. Answer from stemcells_recall().report alone, in at most five lines: what was
+  asked, what came of it, what is left, every Cell named as its link, copied from the report.
+  When stemcells_recall().found is 0, say plainly that nothing matched. Read a transcript, with
+  t3_thread_read, only when they ask to go deeper into one Cell.
 - Find, list or check them: find them across projects as above, then show the person what they
   asked to see. When none fits, say so in one line and name the closest Cell.
-- Pull up a past chat ("the session about the login bug"): also search its words, with
-  t3_thread_search(query, projectId) for each project you list. Sure which chat they mean: link
-  it, with nothing more than a line on what it did. Not sure: at most three, the likeliest first,
-  each linked with one line on what it did, then "Which one?" on its own line.
+- Pull up a past chat ("the session about the login bug") that stemcells_recall didn't find:
+  search its words, with t3_thread_search(query, projectId) for each project you list. Sure
+  which chat they mean: link it, with nothing more than a line on what it did. Not sure: at most
+  three, the likeliest first, each linked with one line on what it did, then "Which one?" on its
+  own line.
 - Ask what one chat said, decided, found or did: t3_thread_read, then answer from what it wrote.
   "Summarise it" is two or three sentences: what it set out to do, where it stands, what's left.
-- Sum up across Cells ("what got done today", "where is the billing work"): find them as above,
-  read each with t3_thread_read or search them with t3_thread_search(query, projectId), then a
-  few sentences, each claim linked to the Cell it came from.
 - Take them somewhere ("open the Harbor one", "Codex's settings", "what's awake"): show it
   rather than describe it. stemcells_show(cell) with a Cell's threadId,
   stemcells_show(settings) with a place as Settings names it, or stemcells_show(stage): Input
