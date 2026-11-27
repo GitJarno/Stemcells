@@ -4,7 +4,7 @@ export { ANTIGRAVITY_DEFAULT_MODEL } from "@t3tools/contracts";
 export { getProviderOptionCurrentValue } from "@t3tools/shared/model";
 export { isReasoningControl } from "@t3tools/client-runtime/model-traits";
 export { groupModelsBySubProvider } from "@t3tools/client-runtime/providerSubProviders";
-export { formatProviderUpdateRequiredNotice } from "@t3tools/client-runtime/providerUpdateRequiredModels";
+export { compareSemverVersions } from "@t3tools/shared/semver";
 // The sheet imports the pick: its types come by `import()`, which upstream's dependency graph
 // (`src/dependency-graph.test.ts`) leaves out of its cycles, as it would not a static type import.
 export type ThreadSettingsSessionProps =
@@ -18,6 +18,7 @@ export { ChatGptSharingStatus } from "../../features/threads/ChatGptSharingStatu
 export { ProviderIcon } from "../../components/ProviderIcon";
 export { AppText } from "../../components/ui/AppText";
 export { Chip } from "../../components/ui/Chip";
+export { SymbolView } from "../../components/ui/AppSymbol";
 export { SegmentedControl } from "../../components/ui/SegmentedControl";
 export * as Dialog from "../../components/ui/Dialog";
 export { environmentServerConfigsAtom } from "../../state/server";

@@ -1,9 +1,10 @@
-// The pick's lines (`stemcells/tasks/model-pick.md`): one per agent, its mark then its models by
-// family, everything on screen at once. It takes T3's model list's place and props, so the
-// trigger, popup, keyboard shortcuts and model writes stay T3's.
+// The pick's Model section (`stemcells/tasks/model-pick.md`): one line per agent, its mark in the
+// gutter and its models by family as one track, everything on screen at once; the effort column
+// and footer T3 hands the picker stack under it as the Effort and Access sections. It takes T3's
+// model list's place and props, so the trigger, popup, keyboard shortcuts and model writes stay T3's.
 import { useAtomValue } from "@effect/atom-react";
 import { useNavigate } from "@tanstack/react-router";
-import { useLocale, useMessages } from "gt-react";
+import { useMessages } from "gt-react";
 import { SearchIcon } from "lucide-react";
 import {
   type KeyboardEvent,
@@ -20,8 +21,8 @@ import {
 
 import {
   ANTIGRAVITY_DEFAULT_MODEL,
+  compareSemverVersions,
   type EnvironmentId,
-  formatProviderUpdateRequiredNotice,
   getDisplayModelName,
   getProviderStatusMessage,
   hasProviderSetup,
@@ -52,7 +53,8 @@ import {
 import { cn } from "../upstream/ui";
 import { everyVersion, lineup, type LineupEntry, selectedIn } from "./lineup";
 import { conciseModelName } from "./names";
-import { PickSlots } from "./pickSlots";
+import { PickSection } from "./PickSection";
+import { PickLevels, PickSlots } from "./pickSlots";
 
 /** T3's model list's props (`ModelPickerContent`), which the pick takes in its place. */
 export interface PickLineupProps {
@@ -94,10 +96,14 @@ interface Line {
   readonly locked: string | null;
   readonly needsSetup: boolean;
   readonly badge: boolean;
+  /** Under the agent's own track: the version its newest models need. */
+  readonly update: string | null;
 }
 
-const CHIP =
-  "relative flex h-7 min-w-0 cursor-pointer items-center gap-1.5 rounded-md px-2.5 text-sm text-muted-foreground outline-none transition-colors hover:bg-input/40 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-50 aria-pressed:bg-input/72 aria-pressed:text-foreground";
+/** A segment of an agent's track, drawn as T3's segmented toggles are, so every row reads alike. */
+const SEGMENT =
+  "relative flex h-6 min-w-0 cursor-pointer items-center justify-center gap-1.5 rounded-md px-2 text-xs text-muted-foreground outline-none transition-colors hover:bg-background/55 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-50 aria-pressed:bg-background aria-pressed:text-foreground aria-pressed:shadow-xs/10 dark:hover:bg-input/32 dark:aria-pressed:bg-input/72";
+const TRACK = "flex min-w-0 flex-1 gap-0.5 rounded-lg bg-input/40 p-0.5";
 
 const pickKey = (instanceId: ProviderInstanceId, slug: string) => `${instanceId}\u0000${slug}`;
 
@@ -107,7 +113,6 @@ const toggleValue = (level: string) => level || "default";
 export function PickLineup(props: PickLineupProps) {
   const { searchInputRef } = props;
   const messages = useMessages();
-  const locale = useLocale();
   const navigate = useNavigate();
   const slots = use(PickSlots);
   const serverKeybindings = useAtomValue(primaryServerKeybindingsAtom);
@@ -237,6 +242,8 @@ export function PickLineup(props: PickLineupProps) {
           locked,
           needsSetup: setupHere,
           badge,
+          update:
+            index === 0 && !searching ? updateNote(entry.snapshot.updateRequiredModels) : null,
         },
       ];
     });
@@ -345,17 +352,38 @@ export function PickLineup(props: PickLineupProps) {
       line.chips.some((chip) => chip.models.some((model) => model.slug === activeSlug)),
   );
   const active = activeLine ? selectedIn(activeLine.chips, activeSlug) : null;
-  const activeEntry = props.instanceEntries.find(
-    (entry) => entry.instanceId === props.activeInstanceId,
-  );
-  const notice =
-    activeEntry && !searching
-      ? formatProviderUpdateRequiredNotice(activeEntry.snapshot, query, messages, locale)
-      : null;
+  // The agent a pick runs stands out; the others' marks wait a step back.
+  const running = new Set(picks.map((pick) => pick.instanceId));
   const lit = (line: Line, chip: LineupEntry<ModelEsque>) =>
     chip.models.some((model) => picked.has(pickKey(line.entry.instanceId, model.slug)));
   const tabStop =
     lines.flatMap((line) => line.chips.filter((chip) => lit(line, chip)))[0] ?? lines[0]?.chips[0];
+
+  const levels =
+    active && active.entry.levels.length > 0 && activeLine ? (
+      <ToggleGroup
+        className="w-full"
+        aria-label="Effort"
+        value={active.level === null ? [] : [toggleValue(active.level)]}
+        onValueChange={(value) => {
+          const level = active.entry.levels.find(
+            (candidate) => toggleValue(candidate.id) === value[0],
+          );
+          if (level) pick(activeLine.entry.instanceId, level.model.slug, false);
+        }}
+      >
+        {active.entry.levels.map((level) => (
+          <Toggle
+            key={level.id}
+            value={toggleValue(level.id)}
+            className="flex-1"
+            data-effort-level={level.id === active.level ? "" : undefined}
+          >
+            {level.label}
+          </Toggle>
+        ))}
+      </ToggleGroup>
+    ) : null;
 
   return (
     <div
@@ -394,93 +422,83 @@ export function PickLineup(props: PickLineupProps) {
           }}
         />
       </div>
-      <div
-        ref={linesRef}
-        className="flex max-h-72 min-h-0 flex-col gap-1 overflow-y-auto overscroll-contain p-2"
-        onKeyDown={moveAmongChips}
-      >
-        {lines.map((line) => (
-          <PickLine
-            key={line.key}
-            line={line}
-            lit={(chip) => lit(line, chip)}
-            tabStop={tabStop}
-            disabledReason={(slug) =>
-              line.locked ?? props.getModelDisabledReason?.(line.entry.instanceId, slug) ?? null
-            }
-            onPick={(slug, event) => pick(line.entry.instanceId, slug, event.shiftKey)}
-            onSetup={() => {
-              props.onRequestClose?.();
-              props.onOpenProviderSetup?.(line.entry.instanceId);
-            }}
-            setupMessage={getProviderStatusMessage(line.entry.snapshot, messages)}
-          />
-        ))}
-        {lines.length === 0 ? (
-          <p className="px-1 py-1.5 text-muted-foreground text-sm">
-            {searching ? "No model by that name" : "No agent is ready"}
-          </p>
-        ) : null}
-      </div>
-      {/* T3's picker hands focus to the picked level here, else to the first switch. */}
-      <div data-model-picker-effort className="flex flex-col">
-        {active && active.entry.levels.length > 0 && activeLine ? (
-          <div className="border-t border-border/70 px-3 py-2">
-            <ToggleGroup
-              className="w-full"
-              aria-label="Effort"
-              value={active.level === null ? [] : [toggleValue(active.level)]}
-              onValueChange={(value) => {
-                const level = active.entry.levels.find(
-                  (candidate) => toggleValue(candidate.id) === value[0],
-                );
-                if (level) pick(activeLine.entry.instanceId, level.model.slug, false);
+      <PickSection title="Model" gutter>
+        <div
+          ref={linesRef}
+          className="flex max-h-72 min-h-0 flex-col gap-1.5 overflow-y-auto overscroll-contain"
+          onKeyDown={moveAmongChips}
+        >
+          {lines.map((line) => (
+            <PickLine
+              key={line.key}
+              line={line}
+              quiet={!running.has(line.entry.instanceId)}
+              searching={searching}
+              lit={(chip) => lit(line, chip)}
+              tabStop={tabStop}
+              disabledReason={(slug) =>
+                line.locked ?? props.getModelDisabledReason?.(line.entry.instanceId, slug) ?? null
+              }
+              onPick={(slug, event) => pick(line.entry.instanceId, slug, event.shiftKey)}
+              onSetup={() => {
+                props.onRequestClose?.();
+                props.onOpenProviderSetup?.(line.entry.instanceId);
               }}
-            >
-              {active.entry.levels.map((level) => (
-                <Toggle
-                  key={level.id}
-                  value={toggleValue(level.id)}
-                  className="flex-1"
-                  data-effort-level={level.id === active.level ? "" : undefined}
-                >
-                  {level.label}
-                </Toggle>
-              ))}
-            </ToggleGroup>
-          </div>
-        ) : null}
-        {slots?.effort}
-        {props.listFooter}
-        {notice ? (
-          <p className="border-t border-border/70 px-3 py-2 text-muted-foreground text-xs leading-snug">
-            {notice}{" "}
-            <InlineButton
-              onClick={() => {
+              onProviderSettings={() => {
                 props.onRequestClose?.();
                 void navigate({ to: "/settings/providers" });
               }}
-            >
-              Provider settings
-            </InlineButton>
-          </p>
+              setupMessage={getProviderStatusMessage(line.entry.snapshot, messages)}
+            />
+          ))}
+          {lines.length === 0 ? (
+            <p className="ps-7 py-1 text-muted-foreground text-xs">
+              {searching ? "No model by that name" : "No agent is ready"}
+            </p>
+          ) : null}
+        </div>
+      </PickSection>
+      {/* T3's picker hands focus to the picked level here, else to the first switch. */}
+      <div data-model-picker-effort className="flex flex-col pb-2.5">
+        {/* T3's composer docks the effort column (the pick's Effort section), which takes the levels. */}
+        {slots?.effort ? (
+          <PickLevels value={levels}>{slots.effort}</PickLevels>
+        ) : levels ? (
+          <PickSection title="Effort">{levels}</PickSection>
         ) : null}
+        {props.listFooter}
         {slots?.footer}
       </div>
     </div>
   );
 }
 
+/** "Update to 2.1.321 for its newest models.": under its agent's track, so it names neither. */
+function updateNote(models: ReadonlyArray<{ readonly minVersion: string }> | undefined) {
+  if (!models?.length) return null;
+  const newest = models
+    .map((model) => model.minVersion)
+    .reduce((highest, version) =>
+      compareSemverVersions(version, highest) > 0 ? version : highest,
+    );
+  return `Update to ${newest} for its newest models.`;
+}
+
+/** One agent's line: its mark in the gutter, its families as one track; notes start at the track. */
 function PickLine(props: {
   readonly line: Line;
+  readonly quiet: boolean;
+  readonly searching: boolean;
   readonly lit: (chip: LineupEntry<ModelEsque>) => boolean;
   readonly tabStop: LineupEntry<ModelEsque> | undefined;
   readonly disabledReason: (slug: string) => string | null;
   readonly onPick: (slug: string, event: MouseEvent) => void;
   readonly onSetup: () => void;
+  readonly onProviderSettings: () => void;
   readonly setupMessage: string;
 }) {
   const { line } = props;
+  const note = "ps-7 text-muted-foreground text-xs leading-snug";
   return (
     <div
       data-pick-line
@@ -488,69 +506,88 @@ function PickLine(props: {
       aria-label={
         line.backend ? `${line.entry.displayName}, ${line.backend.name}` : line.entry.displayName
       }
-      className={cn("flex items-start gap-2 ps-1.5", line.locked && "opacity-60")}
+      className={cn("flex flex-col gap-1", line.locked && "opacity-60")}
     >
-      <span className="flex h-7 shrink-0 items-center">
-        <ProviderInstanceIcon
-          driverKind={line.entry.driverKind}
-          displayName={line.entry.displayName}
-          accentColor={line.entry.accentColor}
-          acpRegistryAgentId={line.entry.acpRegistryAgentId}
-          acpRegistryIconUrl={line.entry.acpRegistryIconUrl}
-          showBadge={line.badge}
-          className="size-4"
-          iconClassName="size-4"
-          indicatorBackground="var(--popover)"
-          badgeClassName="right-[-0.125rem] bottom-[-0.125rem] h-3 min-w-3 px-0.5 text-5xs"
-        />
-      </span>
-      <div className="flex min-w-0 flex-1 flex-wrap gap-0.5">
-        {line.backend ? (
-          <span className="flex h-7 items-center pe-1 text-muted-foreground/72 text-xs">
-            {line.backend.name}
+      {line.backend ? <span className={note}>{line.backend.name}</span> : null}
+      <div className="flex items-center gap-2">
+        <span
+          className={cn(
+            "flex w-5 shrink-0 justify-center transition-opacity",
+            props.quiet && "opacity-45",
+          )}
+        >
+          <ProviderInstanceIcon
+            driverKind={line.entry.driverKind}
+            displayName={line.entry.displayName}
+            accentColor={line.entry.accentColor}
+            acpRegistryAgentId={line.entry.acpRegistryAgentId}
+            acpRegistryIconUrl={line.entry.acpRegistryIconUrl}
+            showBadge={line.badge}
+            className="size-4"
+            iconClassName="size-4"
+            indicatorBackground="var(--popover)"
+            badgeClassName="right-[-0.125rem] bottom-[-0.125rem] h-3 min-w-3 px-0.5 text-5xs"
+          />
+        </span>
+        {line.chips.length > 0 ? (
+          // A search's hits keep their own widths and wrap; a family line shares its track evenly.
+          <div className={cn(TRACK, props.searching && "flex-wrap")}>
+            {line.chips.map((chip) => {
+              const reason = props.disabledReason(chip.model.slug);
+              const unavailable = chip.model.isUnavailable === true;
+              const button = (
+                <button
+                  key={chip.key}
+                  type="button"
+                  data-pick-model
+                  aria-pressed={props.lit(chip)}
+                  aria-label={`${chip.label}, ${line.entry.displayName}${unavailable ? ", unavailable" : ""}`}
+                  tabIndex={chip === props.tabStop ? 0 : -1}
+                  disabled={reason !== null}
+                  className={cn(
+                    SEGMENT,
+                    !props.searching && "flex-1",
+                    unavailable && "line-through decoration-muted-foreground/60",
+                  )}
+                  onClick={(event) => props.onPick(chip.model.slug, event)}
+                >
+                  <span className="truncate">{chip.label}</span>
+                  {chip.model.badge === "new" ? (
+                    <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-update" />
+                  ) : null}
+                </button>
+              );
+              return reason === null ? (
+                button
+              ) : (
+                <SharedTooltipTrigger
+                  key={chip.key}
+                  render={<span className={cn("flex min-w-0", !props.searching && "flex-1")} />}
+                  label={reason}
+                >
+                  {button}
+                </SharedTooltipTrigger>
+              );
+            })}
+          </div>
+        ) : (
+          <span className="min-h-7 flex-1 content-center text-muted-foreground text-xs">
+            {line.backend?.unavailableReason ?? null}
           </span>
-        ) : null}
-        {line.chips.map((chip) => {
-          const reason = props.disabledReason(chip.model.slug);
-          const unavailable = chip.model.isUnavailable === true;
-          const button = (
-            <button
-              key={chip.key}
-              type="button"
-              data-pick-model
-              aria-pressed={props.lit(chip)}
-              aria-label={`${chip.label}, ${line.entry.displayName}${unavailable ? ", unavailable" : ""}`}
-              tabIndex={chip === props.tabStop ? 0 : -1}
-              disabled={reason !== null}
-              className={cn(CHIP, unavailable && "line-through decoration-muted-foreground/60")}
-              onClick={(event) => props.onPick(chip.model.slug, event)}
-            >
-              {chip.label}
-              {chip.model.badge === "new" ? (
-                <span aria-hidden="true" className="size-1.5 rounded-full bg-update" />
-              ) : null}
-            </button>
-          );
-          return reason === null ? (
-            button
-          ) : (
-            <SharedTooltipTrigger key={chip.key} render={<span />} label={reason}>
-              {button}
-            </SharedTooltipTrigger>
-          );
-        })}
-        {line.backend?.unavailableReason && line.chips.length === 0 ? (
-          <span className="flex min-h-7 items-center text-muted-foreground text-xs">
-            {line.backend.unavailableReason}
-          </span>
-        ) : null}
-        {line.needsSetup ? (
-          <span className="flex min-h-7 w-full items-center gap-2 text-muted-foreground text-xs">
-            <span className="line-clamp-2">{props.setupMessage}</span>
-            <InlineButton onClick={props.onSetup}>Set up</InlineButton>
-          </span>
-        ) : null}
+        )}
       </div>
+      {line.update ? (
+        <p className={note}>
+          {line.update}{" "}
+          <InlineButton onClick={props.onProviderSettings}>Provider settings</InlineButton>
+        </p>
+      ) : null}
+      {line.needsSetup ? (
+        <span className={cn(note, "flex items-center gap-2")}>
+          <span className="line-clamp-2">{props.setupMessage}</span>
+          <InlineButton onClick={props.onSetup}>Set up</InlineButton>
+        </span>
+      ) : null}
     </div>
   );
 }

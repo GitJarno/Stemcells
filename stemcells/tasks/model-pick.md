@@ -43,6 +43,15 @@ choosing what to run next.
 8. **Favourites leave the pick**: with one line per agent there is nothing to
    shortlist. They stay in Settings and keep their meaning elsewhere.
 
+9. **Three sections on one grid** (2026-11-27, the person: "messy" on the
+   Duo): Model, Effort and Access each under a quiet caption; agents' marks
+   hang in a gutter, the agent a Cell isn't running a step back, and every
+   choice is a segmented track starting at one edge, models included, so
+   no row reads differently from another. Switches sit on Effort's caption
+   line. A sheet at least 720 points wide sets Model beside the rest; the
+   open Duo's sheet (about 650) is one column, where "Supervised" and
+   "Medium" keep their whole words.
+
 Same sections, order and words on both; drawn natively on each. The rule
 that turns a catalogue into lines (`apps/web/src/stemcells/models/lineup.ts`)
 is shared: the phone imports it as the kits are.

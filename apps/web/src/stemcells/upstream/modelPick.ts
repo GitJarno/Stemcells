@@ -14,7 +14,7 @@ export {
   isReasoningControl,
   selectableProviderOptionChoices,
 } from "@t3tools/client-runtime/model-traits";
-export { formatProviderUpdateRequiredNotice } from "@t3tools/client-runtime/providerUpdateRequiredModels";
+export { compareSemverVersions } from "@t3tools/shared/semver";
 export { ProviderInstanceIcon } from "../../components/chat/ProviderInstanceIcon";
 export { FastBolt } from "../../components/chat/EffortGlyph";
 export { getDisplayModelName, type ModelEsque } from "../../components/chat/providerIconUtils";
