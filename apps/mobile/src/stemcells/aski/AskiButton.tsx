@@ -6,20 +6,8 @@
 import * as Haptics from "expo-haptics";
 import * as Linking from "expo-linking";
 import { AppState, Keyboard, Platform, Pressable, useWindowDimensions, View } from "react-native";
-import { Fragment, useEffect, useState } from "react";
-import Animated, {
-  Easing,
-  Keyframe,
-  LayoutAnimationConfig,
-  LinearTransition,
-  runOnJS,
-  useAnimatedStyle,
-  useReducedMotion,
-  useSharedValue,
-  withDelay,
-  withSequence,
-  withTiming,
-} from "react-native-reanimated";
+import { Fragment, useEffect, useLayoutEffect, useState } from "react";
+import Animated, { Easing, LinearTransition } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FullWindowOverlay } from "react-native-screens";
 import { useResolveClassNames } from "uniwind";
@@ -35,7 +23,6 @@ import { placeOf } from "../../../../../stemcells/settings/places.ts";
 import { ASKI_BUTTON } from "../../../../../stemcells/words/aski.ts";
 import { ThreadCell } from "../cell/ThreadCell";
 import { askiStandsIn } from "../home/copies";
-import { ENTER, LEAVE } from "../home/listMotion";
 import { PHONE_PAGES } from "../chat/placeLinks";
 import { askMachine } from "../upstream/machines";
 import {
@@ -64,7 +51,10 @@ import {
   whereOf,
   type Where,
 } from "./turn";
+import { keyboardShows } from "./keyboard";
+import { PIPE } from "./pipe";
 import { railStyle, useRail, useRailAski } from "./rail";
+import { arrivedAt, beginTurn, keyOf, turning, usePipeStyle, useTurn } from "./turning";
 import { useAskiChat } from "./useAskiChat";
 
 /** The button, points across. */
@@ -105,14 +95,8 @@ function Button(props: { readonly here: Where; readonly aski: EnvironmentThreadS
   const openChat = useHomeThreadSelection();
   const showHome = useShowHome();
   const startNewCell = useStartNewCell();
-  const reduced = useReducedMotion();
   const ink = useResolveClassNames("text-foreground").color;
   const ground = useResolveClassNames("bg-card").backgroundColor;
-  const screen = useResolveClassNames("bg-screen").backgroundColor;
-  const pop = useSharedValue(1);
-  const metrics = useNativeLayoutMetrics();
-  const [fade, setFade] = useState<{ readonly left: number } | null>(null);
-  const veil = useSharedValue(0);
   const shells = useThreadShellsSelected((threads) => threads);
   const shellOf = (where: Where | null) =>
     where?.kind === "cell"
@@ -142,49 +126,52 @@ function Button(props: { readonly here: Where; readonly aski: EnvironmentThreadS
     return () => sawAski(Date.now());
   }, [inAski]);
 
+  const backShell = shellOf(back);
+  // What stands in the button: Aski (null), or what a tap in Aski's chat goes back to. In a turn
+  // it goes into the pipe as what it was at the tap, and comes out as what it is by then.
+  const playing = useTurn();
+  const face = playing?.phase === "dive" ? playing.face : inAski ? (back ?? HOME) : null;
+  const faceShell = shellOf(face);
+  const onPipe = usePipeStyle(
+    playing === null ? "still" : playing.phase === "dive" ? "leaving" : "arriving",
+    PIPE.stagger,
+  );
+  const front = keyOf(here);
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- tells the turn playing that the screen it goes to is in front, which only the route says
+  useLayoutEffect(() => arrivedAt(front), [front]);
+
   const go = (where: Where) => {
     if (where.kind === "home") showHome();
     else openChat({ environmentId: where.environmentId, id: where.threadId });
   };
 
   const turn = () => {
+    if (turning()) return;
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    if (!reduced)
-      pop.set(
-        withSequence(
-          withTiming(0.88, { duration: 90, easing: Easing.out(Easing.quad) }),
-          withTiming(1, { duration: 220, easing: Easing.out(Easing.back(2)) }),
-        ),
-      );
     const next = turnFrom(here, aski, backTo());
     const from = shellOf(here);
     if (!inAski && from !== null)
       carryChip(aski, { environmentId: from.environmentId, threadId: from.id, title: from.title });
-    rememberBack(next.back);
-    if (reduced) {
+    const leave = () => {
+      rememberBack(next.back);
       go(next.go);
-      return;
-    }
-    // The pane that changes fades to its ground, the chat turns under it, and the new one fades
-    // in; the button's figures swap as it turns (`SINK`, `RISE`).
-    setFade({ left: paneLeft(metrics) });
-    veil.set(0);
-    veil.set(
-      withTiming(1, LEAVE, (done) => {
-        if (!done) return;
-        runOnJS(go)(next.go);
-        veil.set(
-          withDelay(
-            HOLD_MS,
-            withTiming(0, ENTER, (cleared) => {
-              if (cleared) runOnJS(setFade)(null);
-            }),
-          ),
-        );
-      }),
+    };
+    // Chat to chat, the screen stays: its feed fades, and the chat turns once the figures are in
+    // the pipe, so the stall of loading it falls where nothing moves. To or from the home the
+    // screens slide at the tap, and only the button's figure goes through.
+    const swap = here.kind === "cell" && next.go.kind === "cell";
+    beginTurn(
+      { from: keyOf(here), to: keyOf(next.go), swap, face },
+      {
+        dived: () => {
+          void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+          if (swap) leave();
+        },
+        out: () => void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium),
+      },
     );
+    if (!swap) leave();
   };
-  const veilStyle = useAnimatedStyle(() => ({ opacity: veil.get() }));
 
   const show = (what: AskiShow) => {
     if (what.kind === "cell") {
@@ -254,7 +241,6 @@ function Button(props: { readonly here: Where; readonly aski: EnvironmentThreadS
           },
         ]),
   ];
-  const backShell = shellOf(back);
   const label = inAski
     ? back?.kind === "cell"
       ? ASKI_BUTTON.back(backShell?.title ?? "the Cell")
@@ -263,16 +249,6 @@ function Button(props: { readonly here: Where; readonly aski: EnvironmentThreadS
 
   return (
     <>
-      {fade === null ? null : (
-        <Animated.View
-          pointerEvents="none"
-          style={[
-            { position: "absolute", top: 0, bottom: 0, left: fade.left, right: 0 },
-            { backgroundColor: screen },
-            veilStyle,
-          ]}
-        />
-      )}
       <Place>
         <Menu
           shouldOpenOnLongPress
@@ -291,7 +267,7 @@ function Button(props: { readonly here: Where; readonly aski: EnvironmentThreadS
             onPress={turn}
             hitSlop={6}
           >
-            <Animated.View style={{ transform: [{ scale: pop }] }}>
+            <View>
               <GlassSurface
                 className="items-center justify-center rounded-full"
                 style={{ width: SIZE, height: SIZE }}
@@ -299,32 +275,18 @@ function Button(props: { readonly here: Where; readonly aski: EnvironmentThreadS
                 {/* Copies measure this View: on iOS's glass, GlassSurface's ref is Expo's view, which can't measure. */}
                 <View
                   ref={inAski ? undefined : askiStandsIn}
-                  className="items-center justify-center overflow-hidden rounded-full"
+                  className="items-center justify-center rounded-full"
                   style={{ width: SIZE, height: SIZE }}
                 >
-                  {/* What first stands in the button, and the button leaving, play nothing. */}
-                  <LayoutAnimationConfig skipEntering skipExiting>
-                    <Animated.View
-                      key={inAski ? (backShell?.id ?? "home") : "aski"}
-                      entering={RISE}
-                      exiting={SINK}
-                      className="absolute items-center justify-center"
-                    >
-                      {inAski ? (
-                        backShell !== null ? (
-                          <ThreadCell thread={backShell} points={2} />
-                        ) : (
-                          <SymbolView
-                            name="house"
-                            size={20}
-                            tintColorClassName="accent-foreground"
-                          />
-                        )
-                      ) : (
-                        <AskiFigure height={30} ink={ink} ground={ground} />
-                      )}
-                    </Animated.View>
-                  </LayoutAnimationConfig>
+                  <Animated.View className="absolute items-center justify-center" style={onPipe}>
+                    {face === null ? (
+                      <AskiFigure height={30} ink={ink} ground={ground} />
+                    ) : faceShell !== null ? (
+                      <ThreadCell thread={faceShell} points={2} />
+                    ) : (
+                      <SymbolView name="house" size={20} tintColorClassName="accent-foreground" />
+                    )}
+                  </Animated.View>
                 </View>
               </GlassSurface>
               {dot ? (
@@ -333,7 +295,7 @@ function Button(props: { readonly here: Where; readonly aski: EnvironmentThreadS
                   className="absolute right-0.5 top-0.5 size-3 rounded-full border-2 border-screen bg-foreground"
                 />
               ) : null}
-            </Animated.View>
+            </View>
           </Pressable>
         </Menu>
       </Place>
@@ -341,40 +303,18 @@ function Button(props: { readonly here: Where; readonly aski: EnvironmentThreadS
   );
 }
 
-/** The pane leaves to its ground, the chat turns under it, a beat, and the new one enters. */
-const HOLD_MS = 90;
+const HOME: Where = { kind: "home" };
 
-/** Down past the rim: what stood in the button sinks out of it, and what's next comes up. */
-const SINK = new Keyframe({
-  0: { transform: [{ translateY: 0 }], opacity: 1 },
-  100: { transform: [{ translateY: SIZE * 0.7 }], opacity: 0.3, easing: Easing.in(Easing.cubic) },
-}).duration(180);
-const RISE = new Keyframe({
-  0: { transform: [{ translateY: SIZE * 0.7 }], opacity: 0.3 },
-  100: { transform: [{ translateY: 0 }], opacity: 1, easing: Easing.out(Easing.back(1.6)) },
-})
-  .duration(260)
-  .delay(60);
-
-/** Where the pane that changes begins: past the fold where the home stands beside it, else the edge. */
-function paneLeft(metrics: ReturnType<typeof useNativeLayoutMetrics>): number {
-  if (metrics === null || metrics.verticalBarEdge === "none") return 0;
-  const division = metrics.reservedRegions.find(
-    (region) => region.kind === "division" && region.height >= metrics.height / 2,
-  );
-  return division === undefined ? 0 : division.x + division.width;
-}
-
-/** Where the button stands: in the side rail after its top group (and the trophy, on Usage) where the bars run down the side, else over the composer. */
+/** Where the button stands: in the side rail over its tabs (under the trophy, on Usage) where the bars run down the side, else over the composer. */
 function Place(props: { readonly children: React.ReactNode }) {
   const metrics = useNativeLayoutMetrics();
   const insets = useSafeAreaInsets();
   const window = useWindowDimensions();
-  const { top, ours: told } = useRail();
+  const { ours: told } = useRail();
   useRailAski();
   // Aski is one of ours from its first frame, before the store has heard it.
   const ours = Math.max(told, 1);
-  const style = railStyle({ metrics, window, top, index: ours - 1, ours, size: SIZE }) ?? {
+  const style = railStyle({ metrics, window, index: ours - 1, ours, size: SIZE }) ?? {
     right: insets.right + SIDE,
     bottom: insets.bottom + OVER_COMPOSER,
   };
@@ -389,14 +329,16 @@ function Place(props: { readonly children: React.ReactNode }) {
   );
 }
 
-/** As the rail's group grows or shrinks between screens, the button glides to its new place. */
+/** Between the rail and the composer, as the Duo opens or turns, the button glides to its new place. */
 const GLIDE = LinearTransition.duration(240).easing(Easing.out(Easing.cubic));
 
 function useKeyboardUp(): boolean {
-  const [up, setUp] = useState(Keyboard.isVisible());
+  const [up, setUp] = useState(() => keyboardShows(Keyboard.metrics()));
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- follows the system keyboard, which reports only through events
   useEffect(() => {
-    const shown = Keyboard.addListener("keyboardWillShow", () => setUp(true));
+    const shown = Keyboard.addListener("keyboardWillShow", (event) =>
+      setUp(keyboardShows(event.endCoordinates)),
+    );
     const hidden = Keyboard.addListener("keyboardWillHide", () => setUp(false));
     return () => {
       shown.remove();

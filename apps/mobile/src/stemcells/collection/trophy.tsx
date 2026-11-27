@@ -1,5 +1,5 @@
 // Usage's way into the collection (`stemcells/tasks/duo-collection.md`). In the Duo's rail the
-// trophy is ours, after the top group and over Aski: T3 folds a second header tool there into
+// trophy is ours, over Aski and the tabs: T3 folds a second header tool there into
 // one "…" menu. Elsewhere it's a button in Usage's header, handed over at T3's seam
 // (`features/usage/UsageRouteScreen.tsx`).
 
@@ -33,7 +33,7 @@ export function useCollectionTrophy() {
   const window = useWindowDimensions();
   // One function for the screen's life, so the rail's store hears of it once.
   const [open] = useState(() => () => navigation.navigate("SettingsCollection"));
-  const onRail = railStyle({ metrics, window, top: null, index: 0, ours: 1, size: SIZE }) !== null;
+  const onRail = railStyle({ metrics, window, index: 0, ours: 1, size: SIZE }) !== null;
   // A tab T3 keeps mounted behind another isn't in front.
   const active = use(NativeWorkspaceTabActivityContext)?.active !== false;
   useRailTrophy(onRail && active ? open : null);
@@ -48,9 +48,8 @@ const Above = Platform.OS === "ios" ? FullWindowOverlay : Fragment;
 export function RailTrophy() {
   const metrics = useNativeLayoutMetrics();
   const window = useWindowDimensions();
-  const { top, trophy, ours } = useRail();
-  const style =
-    trophy === null ? null : railStyle({ metrics, window, top, index: 0, ours, size: SIZE });
+  const { trophy, ours } = useRail();
+  const style = trophy === null ? null : railStyle({ metrics, window, index: 0, ours, size: SIZE });
   return (
     <Above>
       {style === null || trophy === null ? null : (

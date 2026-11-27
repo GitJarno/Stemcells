@@ -11,7 +11,6 @@ import { isDuoDevice } from "../lib/device-type";
 import { useMobileNavigationTheme } from "../lib/useMobileNavigationTheme";
 import { useDeviceType, useNativeLayoutMetrics } from "./native-layout-metrics";
 import { HeaderItemsWidthContext } from "./header-items-width";
-import { railButtons, useRailGroup } from "../stemcells/aski/rail";
 import {
   SearchBar,
   Stack,
@@ -302,7 +301,6 @@ export function V5StackHeader(props: {
     return () => cancelAnimationFrame(frame);
   }, [searchOptions?.autoFocus, autofocusRef]);
   const searchButton = !bottomSearch && searchOptions?.placement === "integratedButton";
-  useRailGroup(railButtons(trailing, searchButton), options.headerShown === false);
   const itemsWidth =
     BAR_MARGINS +
     (props.canGoBack && options.headerBackVisible !== false ? BAR_BUTTON_WIDTH : 0) +

@@ -32,10 +32,17 @@ can't approve its own requests.
      iPhone): floating at the lower right, just over the composer (the
      search field on the home).
    - The Mac: the window's lower right, and a keyboard shortcut.
-3. **The turn.** Aski and the chat swap places through the button, as down
-   a pipe: the chat fades out and the other fades in, while in the button
-   what stood there sinks below its rim and what comes next rises; about a
-   third of a second. Reduce Motion: a crossfade.
+3. **The turn.** Aski and the chat swap places, as down a pipe. On the
+   phone the figure heading the chat and the one in Aski's button each stand
+   on an unseen pipe: they crouch, jump toward the person, go down, and come
+   out of the other's place a little too big, then settle (`aski/pipe.ts`,
+   `aski/turning.ts`). Only the chat's feed and its title fade; the bars,
+   the buttons and the composer stay as they are. The chat turns while the
+   figures are out of sight, so the stall of loading it falls where nothing
+   moves. Three haptics: the tap, in, and out. To or from the home the
+   screens slide, and only the button's figure goes through. Reduce Motion:
+   the figures and the feed fade where they stand. The Mac's turn is a view
+   transition (Review).
 4. **"This" carries over.** Turning to Aski from a Cell puts that Cell's chip
    (upstream's thread context) in Aski's composer; × drops it.
 5. **Long press: what's next, under one finger.** Hold, slide, let go:
