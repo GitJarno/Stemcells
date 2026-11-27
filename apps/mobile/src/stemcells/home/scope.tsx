@@ -10,11 +10,11 @@ import { chargeWords } from "../../../../../stemcells/words/battery.ts";
 import { fillColour } from "../battery/marks";
 import { useBatteries } from "../battery/useBatteries";
 import { useAppearancePreferences } from "../upstream/battery";
+import { ProjectMark } from "../project/ProjectMark";
 import { buildHomeProjectScopes } from "../upstream/cells";
 import {
   ENVIRONMENT_MACHINE_SYMBOLS,
   Menu,
-  ProjectFavicon,
   SymbolView,
   Toolbar,
   useHomeListOptions,
@@ -177,15 +177,8 @@ export function useHomeScopeItems(): ReactElement[] {
         ) : (
           <View className="flex-row items-center">
             {chosen.slice(0, 2).map((scope, index) => (
-              <View key={scope.key} style={index > 0 ? { marginLeft: -8 } : undefined}>
-                <ProjectFavicon
-                  environmentId={scope.representative.environmentId}
-                  faviconPath={scope.representative.faviconPath}
-                  projectIcon={scope.representative.projectIcon}
-                  projectTitle={scope.title}
-                  workspaceRoot={scope.representative.workspaceRoot}
-                  size={chosen.length > 1 ? 16 : 20}
-                />
+              <View key={scope.key} style={index > 0 ? { marginLeft: -6 } : undefined}>
+                <ProjectMark project={scope.representative} size={chosen.length > 1 ? 18 : 22} />
               </View>
             ))}
           </View>

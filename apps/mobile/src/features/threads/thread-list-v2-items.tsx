@@ -6,6 +6,7 @@ import {
   CellBesideRow,
   openOnPressIn,
   SlimRowCell,
+  SlimRowMark,
   SlimRowProject,
   swipeEdgeOf,
   swipeHint,
@@ -1446,6 +1447,7 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
           {card.lead}
           {thread.title}
         </Text>
+        {card.mark}
         <View
           className="flex-row items-center gap-1.5"
           style={[{ minHeight: titleLineHeight }, card.trailing]}
@@ -1777,6 +1779,7 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
               <SlimRowProject project={props.project} sidebar={sidebarPane} />
               {thread.title}
             </Text>
+            <SlimRowMark project={props.project} sidebar={sidebarPane} />
             {providerNameLabel ? (
               <Text
                 className={cn(

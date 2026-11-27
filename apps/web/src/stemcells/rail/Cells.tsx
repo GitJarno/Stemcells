@@ -33,6 +33,7 @@ import type { CellStanding, Condition } from "../needs/wire";
 import { toneTokenOf } from "../glow/light";
 import { crossing, resweep, sweep } from "../motion/beat";
 import { type Sight, watchSight } from "../motion/sight";
+import { ProjectMark } from "../project/ProjectMark";
 import { CellMark } from "../tabs/CellMark";
 import { openNewCellPane } from "../tabs/commands";
 import { reducedMotion } from "../tokens/motion";
@@ -57,7 +58,6 @@ import {
   isElectron,
   openAddProject,
   openSearch,
-  ProjectFavicon,
   SidebarUpdatePill,
   useRailProjects,
   useShortcutLabel,
@@ -378,7 +378,7 @@ function ProjectFilter(props: {
     <div data-cells-filter="">
       <Menu>
         <MenuTrigger render={<button type="button" data-cells-filter-pick="" />}>
-          {project ? <ProjectFavicon project={project.record} className="size-3.5" /> : null}
+          {project ? <ProjectMark project={project.record} size={16} /> : null}
           <span>{project?.name ?? "All projects"}</span>
           <ChevronDownIcon aria-hidden />
         </MenuTrigger>
