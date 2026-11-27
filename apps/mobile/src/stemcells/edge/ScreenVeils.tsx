@@ -3,10 +3,13 @@
 // the home over the tab bar. The home draws them once over its stages' lists
 // (`home/StagePages.tsx`), in every posture, the sidebar's too.
 
+import { useState } from "react";
+import { useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useResolveClassNames } from "uniwind";
 
 import { useHomeSidebar } from "../upstream/home";
+import { type Resting, restingBar } from "./restingBar";
 import { Veil } from "./Veil";
 
 /** Past the status bar: the header's bar, and a short reach under it. */
@@ -31,10 +34,13 @@ export function ScreenVeils(props: {
   const sidebar = useHomeSidebar();
   const insets = useSafeAreaInsets();
   const ground = useResolveClassNames(sidebar ? "bg-drawer" : "bg-screen").backgroundColor;
+  const window = useWindowDimensions();
+  // Cut to the bar at rest, so the native veil rises and returns with the bar (`restingBar.ts`).
+  const [held, setHeld] = useState<Resting | null>(null);
+  const resting = props.barBottom === undefined ? null : restingBar(held, window, props.barBottom);
+  if (resting !== null && resting !== held) setHeld(resting);
   const headerFade = Math.max(
-    props.barBottom === undefined
-      ? HEADER_FADE
-      : Math.max(0, props.barBottom + PAST_THE_BAR - insets.top),
+    resting === null ? HEADER_FADE : Math.max(0, resting.bar + PAST_THE_BAR - insets.top),
     props.chromeBottom === undefined ? 0 : props.chromeBottom + PAST_THE_BAR - insets.top,
   );
   return (
