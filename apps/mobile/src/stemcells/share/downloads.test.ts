@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("../upstream/share", () => ({ downloadAttachmentForPreview: mocks.download }));
+vi.mock("expo-sharing", () => ({ isAvailableAsync: async () => true }));
 vi.mock("expo-file-system", () => ({
   File: class {
     constructor(readonly uri: string) {}

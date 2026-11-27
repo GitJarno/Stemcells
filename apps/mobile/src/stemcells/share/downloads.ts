@@ -61,7 +61,18 @@ async function keep(key: string, file: AttachmentPreviewFile): Promise<boolean> 
   return true;
 }
 
+/** As upstream checks before it downloads: a device that can't share mustn't fetch the file first. */
+async function canShare(signal: AbortSignal): Promise<boolean> {
+  if (signal.aborted) return false;
+  const Sharing = await import("expo-sharing");
+  const available = await Sharing.isAvailableAsync();
+  if (signal.aborted) return false;
+  if (!available) throw new Error("Saving and sharing files is unavailable on this device.");
+  return true;
+}
+
 export async function downloadAndShareAttachment(input: ShareInput): Promise<void> {
+  if (!(await canShare(input.signal))) return;
   const key = contentKeyOfUrl(input.url);
   const reused = key === null ? null : await keptFile(key);
   if (reused !== null) return reused.share(input.signal, input.sourceIdentifier);
