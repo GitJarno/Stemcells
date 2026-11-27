@@ -1,7 +1,7 @@
 // Replaces `components/chat/TimelineUserMessageRow.tsx` (`plugin.ts`): mail from another Cell is a
-// card (`peers/PeerCard.tsx`) and a past collision notice a notice (`peers/CollisionRow.tsx`). All
-// else is upstream's row, as is mail the card can't draw (a workflow's opening, an automation's
-// run, one with attachments), its attachments labelled "Image 1", "Video 2" (`attachments/`).
+// card (`peers/PeerCard.tsx`), a past collision notice a notice (`peers/CollisionRow.tsx`), and a
+// question put to Aski has the Cells it found under it (`recall/RecallPills.tsx`). All else is
+// upstream's row, its attachments labelled "Image 1", "Video 2" (`attachments/`).
 import { resolveUserMessagePresentation } from "@t3tools/client-runtime/user-message";
 import { type ComponentProps, use } from "react";
 
@@ -12,6 +12,7 @@ import { CollisionRow } from "../../peers/CollisionRow";
 import { collisionOf } from "../../peers/notice";
 import { senderOf } from "../../peers/exchange";
 import { PeerCard } from "../../peers/PeerCard";
+import { RecallPills } from "../../recall/RecallPills";
 
 export * from "../../../components/chat/TimelineUserMessageRow";
 
@@ -34,5 +35,16 @@ export function UserMessageRow(props: ComponentProps<typeof UpstreamUserMessageR
   }
   const collision = message.role === "user" ? collisionOf(message.id) : null;
   if (collision !== null) return <CollisionRow message={message} collision={collision} />;
-  return upstream;
+  const presented = resolveUserMessagePresentation(message);
+  if (presented.attribution !== null) return upstream;
+  return (
+    <>
+      {upstream}
+      <RecallPills
+        messageId={message.id}
+        text={presented.text}
+        at={Date.parse(message.createdAt)}
+      />
+    </>
+  );
 }

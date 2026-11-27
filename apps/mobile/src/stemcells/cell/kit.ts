@@ -66,8 +66,12 @@ export { figureOf, type Pose } from "../../../../web/src/stemcells/cell/model/bo
 export {
   drawSprite,
   type Sprite,
+  tallerView,
+  type View as SpriteView,
   wholeView,
 } from "../../../../web/src/stemcells/cell/model/sprite.ts";
+export { roomOver, wear, wornLayers } from "../../../../web/src/stemcells/cell/model/worn.ts";
+export type { Layer } from "../../../../web/src/stemcells/cell/sprite.ts";
 export {
   actOf,
   grownOf,

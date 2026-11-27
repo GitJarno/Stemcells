@@ -85,6 +85,7 @@ export function CellMark(props: {
           mood={mood === "awake" && deep ? "meditating" : mood}
           activity={activity}
           provider={provider}
+          look={look}
           points={props.points ?? POINTS}
           strength={strength}
         />

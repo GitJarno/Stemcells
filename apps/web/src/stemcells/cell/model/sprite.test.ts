@@ -40,6 +40,27 @@ describe("the model's sprite", () => {
     expect(eyeRuns(drawn("rest", 1000, grown, rows))).toBe(2);
   });
 
+  it("draws a newborn as a mochi seen from the front: widest where it sits, its eyes either side of its middle", () => {
+    const sprite = drawn("rest", 1000, 0, 32);
+    const solid = (x: number, y: number) => alphaAt(sprite, x, y) === 255;
+    const columns = Array.from({ length: sprite.width }, (_, x) => x);
+    const rows = Array.from({ length: sprite.height }, (_, y) => y)
+      .map((y) => columns.filter((x) => solid(x, y)))
+      .filter((row) => row.length > 0);
+    const widths = rows.map((row) => row.length);
+    const widest = Math.max(...widths);
+    // An egg is widest at its middle; a mochi stays as wide down to its foot.
+    expect(widths.lastIndexOf(widest)).toBeGreaterThan(rows.length * 0.75);
+    const inked = columns.filter((x) =>
+      Array.from({ length: sprite.height }, (_, y) => isInk(sprite, y * sprite.width + x)).some(
+        Boolean,
+      ),
+    );
+    const base = rows[widths.indexOf(widest)]!;
+    const middle = (base[0]! + base.at(-1)!) / 2;
+    expect(Math.abs((inked[0]! + inked.at(-1)!) / 2 - middle)).toBeLessThanOrEqual(0.5);
+  });
+
   it("shows no eyes from behind", () => {
     expect(eyeRuns(drawn("rest", 1000, 1, 64, Math.PI))).toBe(0);
   });

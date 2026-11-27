@@ -75,6 +75,7 @@ export function ThreadCell(props: {
         mood={face.mood}
         activity={face.activity}
         provider={driver}
+        look={look}
         points={props.points}
         held={props.held}
       />

@@ -411,8 +411,15 @@ Each lands on the Mac and the phone together where a person sees it.
 5. [ ] **The spawn in the Awake list**, Mac, phone and Duo.
 6. [ ] **New projects and heard names.** `project.new`, near names as
        Checks, aliases learned from confirms.
-7. [ ] **Recall.** Cards, the search, the pills under a question,
+7. [x] **Recall.** Cards, the search, the pills under a question,
        `stemcells_recall`.
+       Built: a card per Cell in `stemcells/recall.sqlite` (FTS5), written when a run starts
+       or lands and checked against every chat at each start; `GET /api/stemcells/recall` and
+       `stemcells_recall` (a Cell reads its own repository's); the pills under a question in
+       Aski's chat on the Mac and the phone; search took 0.2 to 6 ms over 5,000 cards.
+       Left: time words are English only; the phone's pills stand on the reply's side of the
+       feed; the persona's new lines and the tool's description have no eval (upstream's
+       runner offers neither the persona nor our tools), and no client was run to look at them.
 8. [ ] **Cells read their own repository.** The read scope, and Aski's
        own text as a Check.
 9. [ ] **Settings at once**, and Settings › Aski's rows.

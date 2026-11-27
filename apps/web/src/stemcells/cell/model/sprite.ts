@@ -42,7 +42,7 @@ const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 export const wholeView = (
   grown: number,
   rows: number,
-  yaw = 0.45,
+  yaw = 0,
   columns = Math.round(rows * 1.25),
 ): View => ({
   rows,
@@ -53,11 +53,20 @@ export const wholeView = (
   aim: lerp(1.02, 1.3, grown),
 });
 
+/** `view` with `rows` more over it and the Cell where it stood: room for what it wears on its head. */
+export const tallerView = (view: View, rows: number): View => ({
+  ...view,
+  rows: view.rows + rows,
+  span: (view.span * (view.rows + rows)) / view.rows,
+  // The view looks down, so a row is a little more of the world's height.
+  aim: view.aim + ((rows / 2) * view.span) / view.rows / Math.cos(view.pitch),
+});
+
 /** The face and what is in front of it, for the small places. */
 export const faceView = (grown: number, lift: number, rows: number): View => ({
   rows,
   columns: Math.round(rows * 1.25),
-  yaw: 0.45,
+  yaw: 0,
   pitch: 0.24,
   span: lerp(1.8, 1.7, grown),
   aim: lerp(0.74, 1.2, grown) + lift * 0.7,
@@ -340,6 +349,30 @@ function eyes(
   if (first !== undefined && second !== undefined)
     for (let x = first[0] + first[2] + pad + 1; x < second[0] - pad - 1; x++)
       put(canvas, x, first[1] + (first[3] >> 1), INK);
+}
+
+/** Where the head stands in a picture of `figure`, in pixels: its top's middle, the middle of its eyes, and half its width. */
+export function standOf(
+  figure: Figure,
+  view: View,
+): {
+  readonly crown: readonly [number, number];
+  readonly eyes: readonly [number, number];
+  readonly half: number;
+} {
+  const { head, headRadii, eye } = figure;
+  const { right, up, pixel, project } = cameraOf(view, view.columns);
+  const centre = project(head[0], head[1], head[2]);
+  const reach = (axis: Vec3) =>
+    Math.hypot(headRadii[0] * axis[0], headRadii[1] * axis[1], headRadii[2] * axis[2]) / pixel;
+  const ez = Math.sqrt(Math.max(0, 1 - eye[0] * eye[0] - eye[1] * eye[1]));
+  // Between the eyes, on the face: the head's own middle line, which the view turns aside.
+  const between = project(head[0], head[1] + eye[1] * headRadii[1], head[2] + ez * headRadii[2]);
+  return {
+    crown: [centre[0], centre[1] - reach(up)],
+    eyes: [between[0], between[1]],
+    half: reach(right),
+  };
 }
 
 /** `figure` as a sprite `view.rows` tall, its body in `hue`. */
