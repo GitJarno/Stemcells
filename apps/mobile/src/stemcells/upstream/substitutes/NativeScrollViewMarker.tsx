@@ -13,7 +13,8 @@ import { useDeviceType } from "../../../native/native-layout-metrics";
 import { headerEdges } from "../../edge/headerEdge";
 import { ScreenVeils } from "../../edge/ScreenVeils";
 import { useStageScrollView } from "../../home/stageScroll";
-import { NoHeaderBand, PILL_ROOM, StagePageContext, useFootRoom } from "../../home/state";
+import { usePillFoot } from "../../home/pillPlace";
+import { NoHeaderBand, StagePageContext, useFootRoom } from "../../home/state";
 import { useHomeSidebar } from "../home";
 
 export * from "../../../native/NativeScrollViewMarker";
@@ -39,7 +40,7 @@ export function NativeScrollViewMarker(
     ? props.children
     : null;
   const ref = useStageScrollView(page, child?.props.ref);
-  const footRoom = useFootRoom() + PILL_ROOM;
+  const footRoom = useFootRoom() + usePillFoot();
   const ownPadding = StyleSheet.flatten(child?.props.contentContainerStyle)?.paddingBottom;
   // React Native stops a scroll at the view's own inset, 0 under UIKit's `automatic` one: T3's
   // list, put back to its rest, stood with Aski under the header (stemcells/tasks/phone-home-still.md).

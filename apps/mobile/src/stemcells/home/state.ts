@@ -144,8 +144,10 @@ export function useFootRoom(): number {
   );
 }
 
-/** What the stages' pill takes of the home's foot (`StagePill.tsx`): its 36 points and a gap. */
-export const PILL_ROOM = 36 + 8;
+/** The stages' pill's height (`StagePill.tsx`). */
+export const PILL_HEIGHT = 36;
+/** What the stages' pill takes of the home's foot or top: its height and a gap. */
+export const PILL_ROOM = PILL_HEIGHT + 8;
 /** Room over each stage's first row, under the header's sky (`Sky.tsx`). */
 export const STAGE_ROOM = 8;
 

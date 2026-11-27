@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import Animated from "react-native-reanimated";
 
 import { useOverKeyboard } from "../home/overKeyboard";
-import { PILL_ROOM } from "../home/state";
+import { usePillFoot } from "../home/pillPlace";
 import { dismissThreadUndoNotice, Toast, useShownThreadUndoNotice } from "../upstream/needs";
 import { letGo, undo, useTakeBack } from "./takeBack";
 
@@ -14,7 +14,7 @@ export function UndoLine() {
   const line = useTakeBack();
   const notice = useShownThreadUndoNotice();
   // Where T3's own notice stands, over the stages' pill (`home/StagePill.tsx`).
-  const { place, style } = useOverKeyboard(PILL_ROOM);
+  const { place, style } = useOverKeyboard(usePillFoot());
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Keep one undo line: T3's notice lets ours go.
   useEffect(() => {
     if (notice !== null) letGo();

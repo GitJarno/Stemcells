@@ -1,6 +1,6 @@
-// The stages at the home's foot, where a thumb reaches them and they never scroll away
-// (stemcells/tasks/awake-asleep.md). A woken Cell's count takes it with a bump (`hops.ts`); a
-// slept one's leap is caught: the pill gives under it and rebounds, like a hammock.
+// The stages, never scrolling away: under the header on an upright phone, else at the home's foot
+// (`pillPlace.ts`, stemcells/tasks/awake-asleep.md). A woken Cell's count takes it with a bump
+// (`hops.ts`); a slept one's leap is caught: the pill gives under it and rebounds, like a hammock.
 
 import { use, useEffect, useRef, useState } from "react";
 import { View, type ViewInstance } from "react-native";
@@ -17,6 +17,7 @@ import { SegmentedControl } from "../upstream/home";
 import { bumpNow, pillStandsIn, useBump } from "./hops";
 import { CATCH_GIVE, CATCH_RETURN, LIST_MOTION } from "./listMotion";
 import { useOverKeyboard } from "./overKeyboard";
+import { usePillOnTop, useStageRoom } from "./pillPlace";
 import {
   HomeInFront,
   HomeStageContext,
@@ -38,14 +39,15 @@ const GIVE = 3;
 const GIVE_WIDER = 0.02;
 const GIVE_FLATTER = 0.05;
 
-/** The stages, over the home's search. */
-export function StagePill() {
+/** The stages, under the header's bar at `top` on an upright phone, else over the home's search. */
+export function StagePill(props: { readonly top: number }) {
   const home = use(HomeTabsContext);
   const inFront = use(HomeInFront);
+  const onTop = usePillOnTop();
   const { place, style } = useOverKeyboard();
   const lift = place.pill + PILL_ROOM - place.notice;
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Tell T3's undo notice, drawn outside the home, to stand over the stages.
-  useEffect(() => (inFront ? liftNotices(lift) : undefined), [inFront, lift]);
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Tell T3's undo notice, drawn outside the home, to stand over the stages at the foot.
+  useEffect(() => (inFront && !onTop ? liftNotices(lift) : undefined), [inFront, lift, onTop]);
   const box = useRef<ViewInstance>(null);
   const stages = home?.options.map((option) => option.id).join(" ") ?? "";
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Tell the hops where the pill stands while it's in sight, so a moved Cell can fly to its segment.
@@ -94,7 +96,7 @@ export function StagePill() {
           right: place.right,
           transformOrigin: [middle, "50%", 0],
         },
-        style,
+        onTop ? { top: props.top + STAGE_ROOM } : style,
         bumping,
       ]}
     >
@@ -112,9 +114,10 @@ export function StagePill() {
   );
 }
 
-/** A stage's list's top: the same room over every stage's first row. */
+/** A stage's list's top: the same room over every stage's first row, the pill's too on top. */
 export function StageTop() {
   const stage = use(HomeStageContext);
+  const room = useStageRoom();
   if (stage === null) return null;
-  return <View style={{ height: STAGE_ROOM }} />;
+  return <View style={{ height: room }} />;
 }

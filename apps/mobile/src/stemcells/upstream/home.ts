@@ -6,7 +6,7 @@
 import { useAtomValue } from "@effect/atom-react";
 import { Directory, File, Paths } from "expo-file-system";
 import { use } from "react";
-import { Keyboard } from "react-native";
+import { Keyboard, useWindowDimensions } from "react-native";
 
 import { usePaneRole } from "../../components/ui/Pane";
 import { useBarInset } from "../../components/ui/useBarInset";
@@ -51,6 +51,14 @@ export function useMachineKinds() {
 export function useHomeSidebar() {
   const role = usePaneRole();
   return use(NativePrimaryColumnContext) !== null && role === "sidebar";
+}
+
+/** Whether the home stands upright on a phone, the folded Duo's too, as a page and not a sidebar. */
+export function useUprightPhoneHome() {
+  const sidebar = useHomeSidebar();
+  const deviceType = useDeviceType();
+  const { width, height } = useWindowDimensions();
+  return !sidebar && (deviceType === "phone" || deviceType === "duo-folded") && height > width;
 }
 
 /** Where the header's bar ends on the Duo, under the camera's band rather than a status bar. */
