@@ -6,11 +6,8 @@
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useResolveClassNames } from "uniwind";
 
-import { AtNight } from "../home/Night";
-import { skyAt } from "../home/sky";
-import { useNight } from "../home/useNight";
 import { useHomeSidebar } from "../upstream/home";
-import { blurs, Veil } from "./Veil";
+import { Veil } from "./Veil";
 
 /** Past the status bar: the header's bar, and a short reach under it. */
 const HEADER_FADE = 76;
@@ -20,8 +17,6 @@ const PAST_THE_BAR = 32;
 const TAB_BAR_FADE = 72;
 
 export function ScreenVeils(props: {
-  /** Whether night stands over the home's header; null off the home. */
-  readonly night: boolean | null;
   /** The tab bar's veil too: the home's. */
   readonly bottom: boolean;
   /**
@@ -31,7 +26,6 @@ export function ScreenVeils(props: {
    */
   readonly barBottom?: number;
 }) {
-  const dusk = useNight(props.night);
   const sidebar = useHomeSidebar();
   const insets = useSafeAreaInsets();
   const ground = useResolveClassNames(sidebar ? "bg-drawer" : "bg-screen").backgroundColor;
@@ -43,24 +37,11 @@ export function ScreenVeils(props: {
     <>
       <Veil
         edge="top"
-        color={dusk === "night" ? skyAt(0) : ground}
+        color={ground}
         solid={insets.top}
         fade={headerFade}
         followsBar={props.barBottom !== undefined}
       />
-      {dusk === "turning" && !blurs ? (
-        <AtNight
-          style={{
-            position: "absolute",
-            left: 0,
-            right: 0,
-            top: 0,
-            height: insets.top + HEADER_FADE,
-          }}
-        >
-          <Veil edge="top" color={skyAt(0)} solid={insets.top} fade={HEADER_FADE} />
-        </AtNight>
-      ) : null}
       {props.bottom ? (
         <Veil edge="bottom" color={ground} solid={insets.bottom} fade={TAB_BAR_FADE} />
       ) : null}
