@@ -2,7 +2,7 @@ import { describe, expect, it } from "vite-plus/test";
 
 import type { RailChat, RailProject } from "../upstream/rail";
 import type { CellStatus } from "../upstream/status";
-import { badgeLetters, firstChat, railTiles, standingOf, tileSummary } from "./projects";
+import { firstChat, railTiles, standingOf, tileSummary } from "./projects";
 
 const project = (key: string, ...memberKeys: string[]): RailProject => ({
   key,
@@ -14,7 +14,6 @@ const project = (key: string, ...memberKeys: string[]): RailProject => ({
     faviconPath: null,
     projectIcon: null,
   } as RailProject["record"],
-  mark: { kind: "letters", text: key.slice(0, 2), colorClass: "text-blue-600" },
   memberKeys: memberKeys.length > 0 ? memberKeys : [`env:${key}`],
   scope: { environmentId: "env" as never, id: key as never, memberProjectRefs: [] },
 });
@@ -126,11 +125,5 @@ describe("a badge's words", () => {
     );
     expect(tileSummary({ needsYou: 1, working: 0, done: 0 })).toBe("1 needs you");
     expect(tileSummary({ needsYou: 0, working: 0, done: 0 })).toBe("");
-  });
-
-  it("show at most three letters, capitalised", () => {
-    expect(badgeLetters("sr")).toBe("SR");
-    expect(badgeLetters("abcd")).toBe("ABC");
-    expect(badgeLetters("é1")).toBe("É1");
   });
 });

@@ -3,11 +3,10 @@
 // the home over the tab bar. The home draws them once over its stages' lists and Aski
 // (`home/StagePages.tsx`), so Aski scrolls under the header's veil as a list's rows do.
 
-import { use } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useResolveClassNames } from "uniwind";
 
-import { NativePrimaryColumnContext } from "../upstream/home";
+import { useHomeSidebar } from "../upstream/home";
 import { Veil } from "./Veil";
 
 /** Past the status bar: the header's bar, and a short reach under it. */
@@ -27,9 +26,9 @@ export function ScreenVeils(props: {
    */
   readonly barBottom?: number;
 }) {
-  const primaryColumn = use(NativePrimaryColumnContext);
+  const sidebar = useHomeSidebar();
   const insets = useSafeAreaInsets();
-  const ground = useResolveClassNames(primaryColumn ? "bg-drawer" : "bg-screen").backgroundColor;
+  const ground = useResolveClassNames(sidebar ? "bg-drawer" : "bg-screen").backgroundColor;
   const headerFade =
     props.barBottom === undefined
       ? HEADER_FADE

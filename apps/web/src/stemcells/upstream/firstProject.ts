@@ -8,7 +8,7 @@ import { scopeProjectRef } from "@t3tools/client-runtime/environment";
 import type { EnvironmentId, ProjectId, ScopedProjectRef } from "@t3tools/contracts";
 import { normalizeProjectPathForComparison } from "@t3tools/shared/path";
 
-import { diskProjectFolder } from "../../../../../stemcells/disk/project.ts";
+import { ownProjectOf } from "../../../../../stemcells/brand/projectMark.ts";
 
 export interface ProjectFact {
   readonly environmentId: EnvironmentId;
@@ -48,16 +48,19 @@ export function isScratchWorkspace(
   return isFolder(workspaceRoot, scratchWorkspaceRoot);
 }
 
+type FoldersConfig = { readonly scratchWorkspaceRoot?: string; readonly newProjectsRoot?: string };
+
+/** Which of Stemcells' own projects a folder is, on the machine `config` describes. */
+export function ownProjectIn(workspaceRoot: string, config: FoldersConfig | undefined) {
+  return ownProjectOf(workspaceRoot, config, isFolder);
+}
+
 /** The scratch project's folder or the Disk project's, on the machine `config` describes. */
 export function isAsideWorkspace(
   workspaceRoot: string,
-  config: { readonly scratchWorkspaceRoot?: string; readonly newProjectsRoot?: string } | undefined,
+  config: FoldersConfig | undefined,
 ): boolean {
-  const projectsRoot = config?.newProjectsRoot;
-  return (
-    isScratchWorkspace(workspaceRoot, config?.scratchWorkspaceRoot) ||
-    isFolder(workspaceRoot, projectsRoot === undefined ? null : diskProjectFolder(projectsRoot))
-  );
+  return ownProjectIn(workspaceRoot, config) !== null;
 }
 
 let knownProjects: (() => readonly ProjectFact[]) | null = null;

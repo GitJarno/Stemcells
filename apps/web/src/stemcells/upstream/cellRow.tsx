@@ -13,7 +13,6 @@ import {
 import { GitBranchIcon } from "lucide-react";
 import type { ReactElement, ReactNode } from "react";
 
-import { ProjectFavicon } from "../../components/ProjectFavicon";
 import { ThreadHoverCard, ThreadHoverCardPopup } from "../../components/ThreadHoverCard";
 import { ThreadPullRequestsMiniList } from "../../components/ThreadStatusIndicators";
 import { MiddleTruncate } from "../../components/ui/middle-truncate";
@@ -22,6 +21,7 @@ import { useNowMinute } from "../../hooks/useNowMinute";
 import { useSupportsMultiplePullRequests } from "../../hooks/useSupportsMultiplePullRequests";
 import { useProject, useQuietThreadShell } from "../../state/entities";
 import { formatRelativeTimeLabel } from "../../timestampFormat";
+import { ProjectMark } from "../project/ProjectMark";
 import type { CellRef } from "../tabs/layout";
 import { useCellDriver } from "./providers";
 import { threadRefOf } from "./routes";
@@ -73,13 +73,17 @@ function useShellProject(shell: CellShell) {
   return useProject(scopeProjectRef(shell.environmentId, shell.projectId));
 }
 
+/** A row's project mark, and the hover card's beside the project's name, in px. */
+const ROW_MARK = 18;
+const CARD_MARK = 16;
+
 /** The project's icon alone, as a one-line row marks it; none for a chat without a project. */
 export function CellProjectMark(props: { shell: CellShell }) {
   const project = useShellProject(props.shell);
   if (project === null || project.isScratch) return null;
   return (
     <span data-cells-row-project="">
-      <ProjectFavicon project={project} className="size-3.5 shrink-0" />
+      <ProjectMark project={project} size={ROW_MARK} />
     </span>
   );
 }
@@ -122,7 +126,7 @@ function CellCardPopup(props: { shell: CellShell; line: string | null }) {
         {props.line ? <div className="text-foreground/75">{props.line}</div> : null}
         {project !== null && !project.isScratch ? (
           <div className="flex min-w-0 items-center gap-2">
-            <ProjectFavicon project={project} className="size-3 shrink-0" />
+            <ProjectMark project={project} size={CARD_MARK} />
             <div className="min-w-0 truncate text-foreground/75">{project.title}</div>
           </div>
         ) : null}

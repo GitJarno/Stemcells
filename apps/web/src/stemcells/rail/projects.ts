@@ -92,12 +92,3 @@ export function tileSummary(tile: Pick<RailTile, "needsYou" | "working" | "done"
     .filter((part) => part !== null)
     .join(" · ");
 }
-
-/** The badge's letters: at most three, as typed or derived. */
-export function badgeLetters(text: string): string {
-  return Array.from(new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(text))
-    .slice(0, 3)
-    .map((part) => part.segment)
-    .join("")
-    .toLocaleUpperCase();
-}
