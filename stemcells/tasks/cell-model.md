@@ -74,7 +74,7 @@ pictures a second.
       growth and colour
 - [x] `CellModelFigure`, the switch, its row in Settings
 - [x] Seen in the built app on a lab home, a Replay chat through a turn
-- [ ] Checks, pull request, merge
+- [x] Checks, pull request, merge
 
 ## Review
 
