@@ -2,7 +2,6 @@ import "../upstream/appStyles";
 import "../tokens/stemcells.css";
 import "./rail.css";
 
-import type { ServerProvider } from "@t3tools/contracts";
 import { describe, expect, it, vi } from "vite-plus/test";
 
 import type { LimitPresentations } from "../upstream/limitAccounts";
@@ -27,17 +26,16 @@ const provider = (
   email: string,
   displayName: string | undefined,
   windows: ReadonlyArray<ReturnType<typeof window>>,
-): ServerProvider =>
-  ({
-    instanceId,
-    driver,
-    enabled: true,
-    installed: true,
-    availability: "available",
-    displayName,
-    auth: { status: "authenticated", email, label: "Max" },
-    usageLimits: { checkedAt: new Date(NOW).toISOString(), windows },
-  }) as unknown as ServerProvider;
+) => ({
+  instanceId,
+  driver,
+  enabled: true,
+  installed: true,
+  availability: "available",
+  displayName,
+  auth: { status: "authenticated", email, label: "Max" },
+  usageLimits: { checkedAt: new Date(NOW).toISOString(), windows },
+});
 
 const PRESENTATIONS = new Map([
   [
@@ -68,7 +66,7 @@ const PRESENTATIONS = new Map([
 // The adapter reads the app's atoms; the ring needs only these from it.
 vi.mock("../upstream/limits", async () => ({
   ...(await import("../upstream/limitAccounts")),
-  formatDuration: (await import("@t3tools/shared/usageLimitsCopy")).formatDuration,
+  formatDuration: (ms: number) => `${Math.round(ms / 60_000)}m`,
   showLimitsOnUsage: () => undefined,
   useLimitPresentations: () => PRESENTATIONS,
   useChatWork: () => ({ working: new Map([["e1:work", 2]]), lastWritten: "e1:work" }),
