@@ -1,20 +1,15 @@
 // The model's own sheet and a whole turn of it moving (`cells model`).
 
-import { paletteOf } from "../kit.ts";
 import { type Act, performerOf, poseAt } from "../model/acts.ts";
 import { figureOf, type Piece } from "../model/body.ts";
 import { drawSprite, faceView, type Sprite, wholeView } from "../model/sprite.ts";
+import { hueOfBody as hueOf } from "../model/stance.ts";
 import type { Rgb } from "../model/tones.ts";
 import { apng, png } from "./png.ts";
 
 const GROUND: Rgb = [12, 12, 14];
 const ROWS = 64;
 const SCALE = 3;
-
-const hueOf = (body: string): Rgb => {
-  const hex = paletteOf(body).B ?? "#FF8154";
-  return [1, 3, 5].map((at) => Number.parseInt(hex.slice(at, at + 2), 16)) as unknown as Rgb;
-};
 
 /** A sheet of the ground's colour to lay sprites on. */
 function sheet(width: number, height: number) {

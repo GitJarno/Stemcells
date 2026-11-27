@@ -275,6 +275,10 @@ export const COLLECTION = {
   nextUp: "Next up",
   nextUpNone: "Nothing in reach yet. The first landing starts every ladder.",
   secrets: "Secrets",
+  preview: "Preview",
+  newBody: "The new body",
+  newBodyWhat:
+    "A preview. The Cell over a chat's composer is drawn from its model: it pulls a laptop out to work, and grows with the strength it earns. It wears nothing yet, and shows on this device only.",
   earnedAlone: "Earned",
   acts: (n: number) => `Acts · ${n} it can do`,
   feats: (earned: number, all: number) => `Feats · ${earned} of ${all}`,

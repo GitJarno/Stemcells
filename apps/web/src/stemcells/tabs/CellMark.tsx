@@ -3,7 +3,9 @@ import { useEffect, useState } from "react";
 import { currentActivity } from "../cell/activity";
 import { CellBuds } from "../cell/CellBuds";
 import { CellFigure } from "../cell/CellFigure";
+import { CellModelFigure } from "../cell/CellModelFigure";
 import { useForming } from "../cell/forming";
+import { useCellModelOn } from "../cell/modelPreview";
 import { useShownActivity } from "../cell/useShownActivity";
 import { useCellGround } from "../upstream/appearance";
 import {
@@ -47,6 +49,7 @@ export function CellMark(props: { cell: CellRef | null; points?: number; stage?:
   const { strength, flexes, diff } = useCellLanding(props.cell);
   const look = useRosterLook(props.cell?.threadId);
   const forming = useForming(props.stage ? props.cell?.threadId : undefined);
+  const modelled = useCellModelOn() && props.stage === true;
   const [now, setNow] = useState(Date.now);
   const turnsAt = moodTurnsAt(status, landedAt, now, wakesAt);
   const mood = moodAt(status, landedAt, now, useCellLineDown(props.cell), wakesAt);
@@ -66,21 +69,32 @@ export function CellMark(props: { cell: CellRef | null; points?: number; stage?:
       {props.stage ? (
         <CellBuds subcells={buds} provider={provider} points={props.points ?? POINTS} />
       ) : null}
-      <CellFigure
-        name={props.cell?.threadId ?? ""}
-        ground={ground}
-        mood={mood === "awake" && deep ? "meditating" : mood}
-        activity={activity}
-        provider={provider}
-        look={look}
-        points={props.points ?? POINTS}
-        strength={strength}
-        flexes={flexes}
-        diff={diff}
-        landedAt={landedAt}
-        forming={forming}
-        watches={props.stage}
-      />
+      {modelled ? (
+        <CellModelFigure
+          name={props.cell?.threadId ?? ""}
+          mood={mood === "awake" && deep ? "meditating" : mood}
+          activity={activity}
+          provider={provider}
+          points={props.points ?? POINTS}
+          strength={strength}
+        />
+      ) : (
+        <CellFigure
+          name={props.cell?.threadId ?? ""}
+          ground={ground}
+          mood={mood === "awake" && deep ? "meditating" : mood}
+          activity={activity}
+          provider={provider}
+          look={look}
+          points={props.points ?? POINTS}
+          strength={strength}
+          flexes={flexes}
+          diff={diff}
+          landedAt={landedAt}
+          forming={forming}
+          watches={props.stage}
+        />
+      )}
     </span>
   );
 }

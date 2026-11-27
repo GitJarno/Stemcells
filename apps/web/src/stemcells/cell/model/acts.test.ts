@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { poseAt } from "./acts.ts";
+import { moved, performerOf, poseAt } from "./acts.ts";
 
 describe("the model's acts", () => {
   it("pulls the laptop out and lifts off to write", () => {
@@ -31,6 +31,36 @@ describe("the model's acts", () => {
     expect(after.lift).toBeLessThan(0.02);
     expect(after.arms[0]).toBeLessThan(0.05);
     expect(after.squash).toBeCloseTo(1, 1);
+  });
+
+  it("opens its eyes on its first picture, whatever the clock says", () => {
+    expect(performerOf(0).step(1_795_000_000_000, 1 / 12).eyes).toBe("open");
+  });
+
+  it("watches work that is not its own writing, hands off the keys", () => {
+    const watching = poseAt("watching", 1500, 0);
+    expect(watching.laptop).toBeGreaterThan(0.95);
+    expect(watching.arms[0]).toBeLessThan(0.05);
+    expect(poseAt("asleep", 1500, 0).eyes).toBe("shut");
+  });
+
+  it("asks for a new picture only when a pose moved half a pixel", () => {
+    const pixel = 2.5 / 64;
+    const pictures = (act: "rest" | "writing") => {
+      const performer = performerOf(0);
+      performer.play(act, 0);
+      let shown = performer.step(0, 1 / 12);
+      let taken = 0;
+      for (let beat = 1; beat <= 120; beat++) {
+        const pose = performer.step((beat * 1000) / 12, 1 / 12);
+        if (!moved(shown, pose, pixel)) continue;
+        shown = pose;
+        taken++;
+      }
+      return taken;
+    };
+    expect(pictures("rest")).toBeLessThan(20);
+    expect(pictures("writing")).toBeGreaterThan(100);
   });
 
   it("keeps a grown Cell's arms when it rests, and a newborn's away", () => {
