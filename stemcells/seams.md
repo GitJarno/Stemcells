@@ -611,12 +611,15 @@ library's dependency (above); the rest are substitutes:
   the chat doesn't hold yet (one still sending) keeps T3's list. Videos
   open alone in T3's player: the native viewer pages pictures only
   (`stemcells/tasks/media-swipe.md`).
-- **The ask in its chat.** The substitute of `ThreadComposer` docks the
-  Cell's ask over the composer, inside the slot upstream measures for the
-  feed's inset, so no line of the hot `ThreadDetailScreen.tsx` changes
-  (`line/ChatAsk.tsx`, `stemcells/tasks/the-ask.md`). Approvals and
-  questions keep upstream's panels. An answer waits on the home's undo line
-  and stands in the card's place; the chip jumps with upstream's
+- **The ask in its chat.** The feed ends on the Cell's ask, under its last
+  reply: `ThreadFeed.tsx` hands its footer to `Stemcells.withAskAtEnd`
+  (`seams/mobile.md`), which reads the chat from a context the
+  `ThreadDetailScreen` substitute sets, so no line of that hot file changes
+  (`line/ChatAsk.tsx`, `stemcells/tasks/the-ask.md`). A substitute of
+  `threadFeedEndFollow` has the list keep its end as its footer grows, as
+  it does for a new message. Approvals and questions keep upstream's
+  panels. An answer waits on the home's undo line and stands in the card's
+  place; a line of the card jumps to its reply with upstream's
   `requestThreadMessageJump`.
 - **Add to Chat.** A substitute of `ComposerAttachmentButton` has T3's
   plus button open our card (`attach/AttachCard.tsx`): the phone's newest
@@ -1594,4 +1597,4 @@ with no history, but carry their old file's churn.
 | `pnpm-lock.yaml`                                                    | 14    | 3     | `expo-media-library` for Add to Chat; a sync takes upstream's and runs `pnpm install`                                                                                                                                                                                             |
 | `vite.config.ts`                                                    | 1     | 1     | Lint config: our English-only layer is out of upstream's untranslated-copy rule (`seams/rest.md`); no substitute reaches a config                                                                                                                                                 |
 | `apps/mobile/package.json`                                          | 15    | 3     | `expo-media-library` for Add to Chat, built from source, and T3's crash reporter left out of the phone's build (gate zero); hot since October; a third hunk since upstream gave iOS its own `exclude`, which replaces the shared one, so the crash reporter's two names sit in it |
-| `apps/mobile/src/features/threads/ThreadFeed.tsx`                   | 14    | 4     | A message's pictures, one row from pending to sent (one import, the row, two filters), and Cell Mail's fold (one call site); hot since before its first seam                                                                                                                      |
+| `apps/mobile/src/features/threads/ThreadFeed.tsx`                   | 20    | 6     | A message's pictures, one row from pending to sent (one import, the row, two filters), Cell Mail's fold (one call site), and the ask a chat ends on (the footer's wrap, 6 since the-ask moved inline); hot since before its first seam                                            |

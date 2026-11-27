@@ -4411,7 +4411,7 @@ export const ThreadFeed = memo(function ThreadFeed(props: ThreadFeedProps) {
                 ) : null}
               </>
             }
-            ListFooterComponent={
+            ListFooterComponent={Stemcells.withAskAtEnd(
               props.pendingHandoff || props.statusLines?.length ? (
                 <>
                   {props.pendingHandoff ? (
@@ -4427,8 +4427,8 @@ export const ThreadFeed = memo(function ThreadFeed(props: ThreadFeedProps) {
                     <ThreadStatusLine key={line.key} line={line} iconColor={iconSubtleColor} />
                   ))}
                 </>
-              ) : null
-            }
+              ) : null,
+            )}
             contentContainerStyle={{
               ...(props.fitShortFeedToViewport ? { minHeight: "100%" } : {}),
               paddingTop: FEED_PADDING_TOP,

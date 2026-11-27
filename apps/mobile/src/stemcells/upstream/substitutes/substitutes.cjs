@@ -25,9 +25,10 @@ const SUBSTITUTES = {
   "packages/client-runtime/src/state/threads.ts": "threads.ts",
   "packages/client-runtime/src/state/subagentRuntime.ts": "subagentRuntime.ts",
   "packages/client-runtime/src/state/threadSubagents.ts": "threadSubagents.ts",
-  // A Cell's name heads its chat; the feed fades under the composer, and
-  // the Cell's ask docks over it.
+  // A Cell's name heads its chat, and the feed fades under the composer.
   "apps/mobile/src/features/threads/ThreadComposer.tsx": "ThreadComposer.tsx",
+  // The feed keeps its end as the ask a Cell's chat ends on comes into its footer.
+  "apps/mobile/src/features/threads/threadFeedEndFollow.ts": "threadFeedEndFollow.ts",
   "apps/mobile/src/features/threads/ThreadHeader.tsx": "ThreadHeader.tsx",
   // iOS's bar: in a chat, the Cell beside its name, one Code menu, no band behind it.
   "apps/mobile/src/components/ui/AppBar.tsx": "AppBar.tsx",

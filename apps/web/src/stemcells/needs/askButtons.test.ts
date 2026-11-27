@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import { cardOf } from "./card";
-import { dockedButtonsOf, dockedKeysFree } from "./docked";
+import { askButtonsOf } from "./askButtons";
 import { needFixture, NOW, proseFixture } from "./fixtures";
 
 const buttonsOf = (need: ReturnType<typeof needFixture>) => {
-  const buttons = dockedButtonsOf(cardOf(need, NOW));
+  const buttons = askButtonsOf(cardOf(need, NOW));
   return {
     primary: buttons.primary?.title ?? null,
     rest: buttons.rest.map((option) => option.title),
@@ -13,8 +13,8 @@ const buttonsOf = (need: ReturnType<typeof needFixture>) => {
   };
 };
 
-describe("the docked ask's buttons", () => {
-  it("leave words to the composer, and Return never settles the Cell", () => {
+describe("the ask's buttons", () => {
+  it("leave words to the composer, and the first never settles the Cell", () => {
     expect(
       buttonsOf(needFixture({ kind: "prose", prose: proseFixture("question", "Which one?") })),
     ).toEqual({ primary: null, rest: ["Nothing to do"], notNow: "later" });
@@ -29,15 +29,5 @@ describe("the docked ask's buttons", () => {
       rest: [],
       notNow: null,
     });
-  });
-});
-
-describe("the composer's keys", () => {
-  it("stay upstream's while its own panel asks in the same chat", () => {
-    const failed = needFixture({ key: "f", kind: "failed" });
-    const question = needFixture({ key: "q", kind: "question" });
-    expect(dockedKeysFree({ needs: [failed] }, "thread-floof")).toBe(true);
-    expect(dockedKeysFree({ needs: [failed, question] }, "thread-floof")).toBe(false);
-    expect(dockedKeysFree({ needs: [question] }, "thread-other")).toBe(true);
   });
 });
