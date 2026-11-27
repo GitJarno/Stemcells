@@ -9,7 +9,7 @@ const edgeOf = (input: Parameters<typeof resolveThreadListV2SwipeActions>[0]) =>
 
 /** The edge a row's swipe stands on goes by T3's name for its main action (`home/swipes.ts`). */
 describe("which way a Cell's row swipes", () => {
-  it("sleeps an awake Cell on a swipe right, toward Asleep, with Sleep until… on the left", () => {
+  it("sleeps an awake Cell on a swipe right, toward Asleep, with Snooze on the left", () => {
     expect(edgeOf({ ...row, variant: "card" })).toBe("leading");
     expect(resolveThreadListV2SwipeActions({ ...row, variant: "card" }).secondary).toBe("snooze");
   });
