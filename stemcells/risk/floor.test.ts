@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { type RiskKind, riskFindings } from "./floor";
+import { type RiskKind, riskFindings } from "./floor.ts";
 
 // The Swift app's fixtures, its names swapped for invented ones.
 

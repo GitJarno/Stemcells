@@ -1,5 +1,5 @@
 /**
- * The risk floor (stemcells/tasks/prompting.md, decision 17): a model-free reading of a
+ * The risk floor (stemcells/tasks/aski-orchestrator.md, decision 7): a model-free reading of a
  * message, verb × object × scope, for acts that can't be taken back or reach outside the Mac.
  * A classifier may add a doubt, never clear one. Code chores pass ("rm -rf node_modules"). A
  * finding is a question, not a refusal: the caller decides who is asked (`hold.ts`).

@@ -1,0 +1,431 @@
+import { describe, expect, it } from "vite-plus/test";
+
+import { planOf, proposedPlan, type Answer } from "./check.ts";
+import { wantsCompiler } from "./gate.ts";
+import { clampEffort, saysExactly } from "./names.ts";
+import { piecesOf } from "./pieces.ts";
+import { DICTATED_NOTE, type CompileContext, type Plan, type StartAct } from "./plan.ts";
+import { withoutLead } from "./words.ts";
+
+const context = (over: Partial<CompileContext> = {}): CompileContext => ({
+  places: [
+    { id: "p-harbor", name: "Harbor" },
+    { id: "p-atlas", name: "Atlas" },
+    { id: "p-design", name: "Harbor Design", aliases: ["the design system"] },
+  ],
+  models: [
+    {
+      instanceId: "claudeAgent",
+      id: "claude-fable-5-1",
+      name: "Fable 5.1",
+      provider: "claude",
+      efforts: ["low", "medium", "high", "xhigh"],
+      effortOption: "effort",
+    },
+    {
+      instanceId: "codex",
+      id: "gpt-6.1-sol",
+      name: "Sol 6.1",
+      provider: "codex",
+      efforts: ["low", "medium", "high", "xhigh", "max"],
+      effortOption: "reasoningEffort",
+    },
+  ],
+  cells: [
+    { threadId: "t-otter", name: "Otter" },
+    { threadId: "t-badger", name: "Badger" },
+  ],
+  cap: 6,
+  always: false,
+  dictated: false,
+  ...over,
+});
+
+/** The plan `answer` makes of `text`; the answer names pieces by a word each holds. */
+function plan(
+  text: string,
+  answer: (n: (word: string) => number) => Answer,
+  over: Partial<CompileContext> = {},
+  final = false,
+) {
+  const pieces = piecesOf(text);
+  const n = (word: string) => {
+    const piece = pieces.find((p) => p.text.includes(word));
+    if (!piece) throw new Error(`no piece holds "${word}": ${pieces.map((p) => p.text).join(" | ")}`);
+    return piece.n;
+  };
+  let minted = 0;
+  return planOf({
+    id: "plan-1",
+    text,
+    pieces,
+    answer: answer(n),
+    context: context(over),
+    mint: () => `thread-${++minted}`,
+    final,
+  });
+}
+
+const starts = (p: Plan) => p.acts.filter((act): act is StartAct => act.kind === "start");
+const made = (result: ReturnType<typeof plan>): Plan => {
+  if (!result.ok) throw new Error(result.failed.join("; "));
+  return result.plan;
+};
+
+describe("a message cut into pieces", () => {
+  it.each([
+    "Fable agent on high, one for the product detail page about the gallery the second for Harbor's film detail page about showtimes one for Atlas posting the changelog and one Sol agent for copywriting for the drop ads",
+    "Start three agents. First one fixes the header in Harbor.\n- second: the docs\n2. v2.1 of the parser; done",
+    "  \n one word \n",
+  ])("leaves no word out and none twice: %s", (text) => {
+    const pieces = piecesOf(text);
+    let at = 0;
+    for (const piece of pieces) {
+      expect(text.slice(at, piece.start).trim()).toBe("");
+      expect(text.slice(piece.start, piece.end)).toBe(piece.text);
+      at = piece.end;
+    }
+    expect(text.slice(at).trim()).toBe("");
+  });
+
+  it("cuts dictation where speech opens a new item", () => {
+    const pieces = piecesOf(
+      "Fable agent on high one for the product detail page about the gallery the second for Harbor's film detail page and one Sol agent for copywriting for the drop ads",
+    ).map((p) => p.text);
+    expect(pieces).toEqual([
+      "Fable agent on high",
+      "one for the product detail page about the gallery",
+      "the second for Harbor's film detail page",
+      "and one Sol agent for copywriting for the drop ads",
+    ]);
+  });
+
+  it("keeps a version and a list number inside their piece", () => {
+    expect(piecesOf("1. bump the parser to v2.1 today").map((p) => p.text)).toEqual([
+      "1. bump the parser to v2.1 today",
+    ]);
+  });
+});
+
+describe("which part of Aski reads a message", () => {
+  const names = new Set(["harbor", "harbor design", "fable", "sol"]);
+  it.each([
+    "start three agents, one for the header and one for the docs",
+    "Fable agent on high for the product page",
+    "one for the header in Harbor, the second for the docs in Atlas",
+    "a new project called Vacuum Cleaners about a comparison site",
+    "delete the Harbor project",
+    "archive all the cells in Atlas",
+    "Harbor fix the header",
+    "hey Harbor Design: tidy the tokens",
+    "can you spin up two agents for the migration?",
+    "spawn 3 Sol",
+  ])("the compiler: %s", (text) => expect(wantsCompiler(text, names)).toBe(true));
+
+  it.each([
+    "how many cells are flying?",
+    "what happened in Harbor yesterday",
+    "where was that chat about the film page two days ago",
+    "turn the sounds off",
+    "Otter, rebase onto main",
+    "which agent for the docs finished?",
+    "thanks, that worked",
+    "/compact",
+  ])("the chat: %s", (text) => expect(wantsCompiler(text, names)).toBe(false));
+});
+
+describe("a name said exactly", () => {
+  it("is the name, case, dashes and humps aside, or an alias", () => {
+    expect(saysExactly("harbor-design", "Harbor Design")).toBe(true);
+    expect(saysExactly("HarborDesign's", "Harbor Design")).toBe(true);
+    expect(saysExactly("the design system", "Harbor Design", ["the design system"])).toBe(true);
+    expect(saysExactly("harbour", "Harbor")).toBe(false);
+    expect(saysExactly("Harbor", "Harbor Design")).toBe(false);
+  });
+
+  it("clamps an effort to the model's own ladder, rounding up", () => {
+    expect(clampEffort("max", ["low", "medium", "high", "xhigh"])).toBe("xhigh");
+    expect(clampEffort("extra high", ["low", "high", "xhigh"])).toBe("xhigh");
+    expect(clampEffort("loud", ["low", "high"])).toBeNull();
+  });
+});
+
+describe("what a Cell is told", () => {
+  it.each([
+    ["one Sol agent for copywriting for the drop ads", ["Sol"], "copywriting for the drop ads"],
+    ["the second for Harbor's film detail page", [], "Harbor's film detail page"],
+    ["Harbor: fix the header", ["Harbor"], "fix the header"],
+    ["- another one for the docs site", [], "the docs site"],
+    // Not provably setup: the words stay.
+    ["First one fixes the header in Harbor", ["Harbor"], "First one fixes the header in Harbor"],
+    ["look for the missing index", [], "look for the missing index"],
+    ["one for all", [], "one for all"],
+  ])("%s", (text, heard, told) => expect(withoutLead(text, heard)).toBe(told));
+});
+
+describe("the tier of a Cell", () => {
+  const two = "one for the header in Harbor, another for the docs in harbour design";
+
+  it("starts at once when its project is said exactly in its own words", () => {
+    const p = made(
+      plan(two, (n) => ({
+        acts: [
+          { kind: "start", pieces: [n("header")], place: "Harbor", placeHeard: "Harbor" },
+          { kind: "start", pieces: [n("docs")], place: "Harbor Design", placeHeard: "harbour design" },
+        ],
+        setup: [],
+        talk: [],
+      })),
+    );
+    expect(starts(p).map((a) => [a.place?.name, a.place?.how, a.tier, a.why])).toEqual([
+      ["Harbor", "exact", "start", []],
+      // Heard near: it waits for the person, and nothing ran in the wrong repository.
+      ["Harbor Design", "near", "check", ["place-near"]],
+    ]);
+    expect(starts(p)[0]!.words).toBe("the header in Harbor");
+  });
+
+  it("waits when Aski chose the project, or none fits", () => {
+    const p = made(
+      plan("one for the film page showtimes, another for the gallery", (n) => ({
+        acts: [
+          { kind: "start", pieces: [n("showtimes")], place: "Harbor" },
+          { kind: "start", pieces: [n("gallery")] },
+        ],
+        setup: [],
+        talk: [],
+      })),
+    );
+    expect(starts(p).map((a) => [a.place?.how ?? null, a.why])).toEqual([
+      ["picked", ["place-picked"]],
+      [null, ["place-open"]],
+    ]);
+  });
+
+  it("carries a place forward, and never backward past another", () => {
+    const text = "In Harbor fix the header. Then update the footer. In Atlas write the docs. Also the readme";
+    const p = made(
+      plan(text, (n) => ({
+        acts: [
+          { kind: "start", pieces: [n("header")], place: "Harbor", placeHeard: "Harbor" },
+          { kind: "start", pieces: [n("footer")], place: "Harbor", placeHeard: "Harbor" },
+          { kind: "start", pieces: [n("docs")], place: "Atlas", placeHeard: "Atlas" },
+          // The model reaches back past Atlas: code reads the sentence the other way.
+          { kind: "start", pieces: [n("readme")], place: "Harbor", placeHeard: "Harbor" },
+        ],
+        setup: [],
+        talk: [],
+      })),
+    );
+    expect(starts(p).map((a) => a.tier)).toEqual(["start", "start", "start", "check"]);
+    expect(starts(p)[3]!.why).toEqual(["place-apart"]);
+  });
+
+  it("gives a message's one place to every Cell, wherever it stands", () => {
+    const p = made(
+      plan("fix the header. Then update the footer. Both in Harbor", (n) => ({
+        acts: [
+          { kind: "start", pieces: [n("header")], place: "Harbor", placeHeard: "Harbor" },
+          { kind: "start", pieces: [n("footer")], place: "Harbor", placeHeard: "Harbor" },
+        ],
+        setup: [n("Both")],
+        talk: [],
+      })),
+    );
+    expect(starts(p).map((a) => a.tier)).toEqual(["start", "start"]);
+  });
+
+  it("reads a group's model and effort onto each Cell, and never forces a check for them", () => {
+    const text =
+      "Fable agent on high, one for the gallery in Harbor, the second for the showtimes in Atlas, and one table agent for the ad copy in Harbor";
+    const p = made(
+      plan(text, (n) => ({
+        acts: [
+          { kind: "start", pieces: [n("gallery")], place: "Harbor", placeHeard: "Harbor", model: "Fable 5.1", modelHeard: "Fable", effort: "high" },
+          { kind: "start", pieces: [n("showtimes")], place: "Atlas", placeHeard: "Atlas", model: "Fable 5.1", modelHeard: "Fable", effort: "high" },
+          { kind: "start", pieces: [n("ad copy")], place: "Harbor", placeHeard: "Harbor", model: "Fable 5.1", modelHeard: "table" },
+        ],
+        setup: [n("on high")],
+        talk: [],
+      })),
+    );
+    expect(starts(p).map((a) => [a.model?.how, a.model?.effort?.level ?? null, a.tier])).toEqual([
+      ["exact", "high", "start"],
+      ["exact", "high", "start"],
+      ["near", null, "start"],
+    ]);
+    expect(starts(p)[2]!.words).toBe("the ad copy in Harbor");
+  });
+
+  it("drops a model or an effort the person never said", () => {
+    const p = made(
+      plan("Harbor: fix the header", (n) => ({
+        acts: [
+          { kind: "start", pieces: [n("header")], place: "Harbor", placeHeard: "Harbor", model: "Sol 6.1", modelHeard: "Sol", effort: "max" },
+        ],
+        setup: [],
+        talk: [],
+      })),
+    );
+    expect([starts(p)[0]!.model, starts(p)[0]!.effort]).toEqual([null, null]);
+    expect(starts(p)[0]!.words).toBe("fix the header");
+  });
+
+  it("waits on a risky sentence, and lets the other Cells start", () => {
+    const p = made(
+      plan("In Harbor fix the header. In Atlas drop the staging database", (n) => ({
+        acts: [
+          { kind: "start", pieces: [n("header")], place: "Harbor", placeHeard: "Harbor" },
+          { kind: "start", pieces: [n("staging")], place: "Atlas", placeHeard: "Atlas" },
+        ],
+        setup: [],
+        talk: [],
+      })),
+    );
+    expect(starts(p).map((a) => [a.tier, a.why])).toEqual([
+      ["start", []],
+      ["check", ["risky"]],
+    ]);
+    const risky = starts(p)[1]!;
+    expect(risky.words.slice(risky.risks[0]!.start, risky.risks[0]!.end)).toMatch(/drop/);
+  });
+
+  it("holds a deletion, and starts nothing else until it is dealt with", () => {
+    const p = made(
+      plan("delete the Harbor project. In Atlas write the docs", (n) => ({
+        acts: [
+          { kind: "destroy", target: "project", pieces: [n("delete")], place: "Harbor", placeHeard: "Harbor" },
+          { kind: "start", pieces: [n("docs")], place: "Atlas", placeHeard: "Atlas" },
+        ],
+        setup: [],
+        talk: [],
+      })),
+    );
+    expect(p.acts.map((a) => [a.kind, a.tier, a.why])).toEqual([
+      ["destroy", "hold", []],
+      ["start", "check", ["after-hold"]],
+    ]);
+  });
+
+  it("names the Cells a deletion means only from those awake", () => {
+    const p = made(
+      plan("archive Otter and Wren", (n) => ({
+        acts: [{ kind: "destroy", target: "cells", pieces: [n("archive")], cells: ["otter", "Wren"] }],
+        setup: [],
+        talk: [],
+      })),
+    );
+    expect(p.acts[0]).toMatchObject({ kind: "destroy", cells: [{ threadId: "t-otter", name: "Otter" }] });
+  });
+
+  it("makes a new project a check, named as the person said it", () => {
+    const p = made(
+      plan("a new project called vacuum cleaners about a comparison site", (n) => ({
+        acts: [{ kind: "new", pieces: [n("vacuum")], place: "vacuum cleaners", placeHeard: "vacuum cleaners" }],
+        setup: [],
+        talk: [],
+      })),
+    );
+    expect(starts(p)[0]).toMatchObject({
+      place: { id: null, name: "Vacuum Cleaners", how: "new" },
+      tier: "check",
+      why: ["new-project"],
+    });
+  });
+
+  it("checks every Cell past the cap, and makes a count of Cells", () => {
+    const p = made(
+      plan(
+        "3 agents in Harbor on the flaky test",
+        (n) => ({
+          acts: [{ kind: "start", pieces: [n("flaky")], place: "Harbor", placeHeard: "Harbor", count: 3 }],
+          setup: [],
+          talk: [],
+        }),
+        { cap: 2 },
+      ),
+    );
+    expect(starts(p).map((a) => [a.threadId, a.tier, a.why])).toEqual([
+      ["thread-1", "check", ["over-cap"]],
+      ["thread-2", "check", ["over-cap"]],
+      ["thread-3", "check", ["over-cap"]],
+    ]);
+  });
+
+  it("says a dictated message is one, and checks all when the person checks every plan", () => {
+    const p = made(
+      plan(
+        "Harbor fix the header",
+        (n) => ({ acts: [{ kind: "start", pieces: [n("header")], place: "Harbor", placeHeard: "Harbor" }], setup: [], talk: [] }),
+        { dictated: true, always: true },
+      ),
+    );
+    expect(starts(p)[0]).toMatchObject({ note: DICTATED_NOTE, tier: "check", why: ["always"] });
+  });
+});
+
+describe("an answer that fails", () => {
+  const text = "In Harbor fix the header. In Lantern write the docs";
+  const answer = (n: (word: string) => number): Answer => ({
+    acts: [
+      { kind: "start", pieces: [n("header")], place: "Harbor", placeHeard: "Harbor" },
+      { kind: "start", pieces: [n("docs")], place: "Lantern", placeHeard: "Lantern" },
+    ],
+    setup: [],
+    talk: [],
+  });
+
+  it("names a project that isn't one, for the second try", () => {
+    const result = plan(text, answer);
+    expect(result).toEqual({ ok: false, failed: [expect.stringContaining('"Lantern" is not in Projects')] });
+  });
+
+  it("leaves that project open on the last try, so nothing starts in a guess", () => {
+    const p = made(plan(text, answer, {}, true));
+    expect(starts(p).map((a) => [a.place?.name ?? null, a.tier])).toEqual([
+      ["Harbor", "start"],
+      [null, "check"],
+    ]);
+  });
+
+  it("fails on words given to no one, then makes every Cell wait", () => {
+    const some = (n: (word: string) => number): Answer => ({
+      acts: [{ kind: "start", pieces: [n("header")], place: "Harbor", placeHeard: "Harbor" }],
+      setup: [],
+      talk: [],
+    });
+    expect(plan(text, some).ok).toBe(false);
+    const p = made(plan(text, some, {}, true));
+    expect([p.leftOver.length, starts(p)[0]!.why]).toEqual([1, ["left-over"]]);
+  });
+
+  it("fails on an answer with no shape", () => {
+    expect(plan(text, () => ({ acts: "none" }) as unknown as Answer).ok).toBe(false);
+  });
+});
+
+describe("a plan Aski's chat proposes", () => {
+  it("always waits, with its words shown, and marks what is risky", () => {
+    const result = proposedPlan({
+      id: "plan-2",
+      cells: [{ place: "harbor", title: "Reset the branch", words: "Force-push the release branch." }],
+      context: context(),
+      mint: () => "thread-9",
+    });
+    expect(result.ok && result.plan.acts[0]).toMatchObject({
+      tier: "check",
+      why: ["proposed", "risky"],
+      place: { id: "p-harbor", how: "picked" },
+    });
+  });
+
+  it("names a project that isn't one", () => {
+    const result = proposedPlan({
+      id: "plan-3",
+      cells: [{ place: "Lantern", title: "Docs", words: "Write the docs." }],
+      context: context(),
+      mint: () => "thread-9",
+    });
+    expect(result).toEqual({ ok: false, failed: ['"Lantern" is no project here.'] });
+  });
+});
