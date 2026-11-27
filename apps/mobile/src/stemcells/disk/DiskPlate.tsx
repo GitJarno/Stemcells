@@ -6,7 +6,8 @@ import { useResolveClassNames } from "uniwind";
 
 import { DISK_FULL, DISK_NOTICE } from "../../../../../stemcells/words/disk.ts";
 import { useOverKeyboard } from "../home/overKeyboard";
-import { PILL_ROOM, setFootRoom } from "../home/state";
+import { usePillFoot } from "../home/pillPlace";
+import { setFootRoom } from "../home/state";
 import { did } from "../line/takeBack";
 import {
   AppText,
@@ -50,7 +51,7 @@ const useConnected = () => useMachines().filter((machine) => machine.connection 
 /** Every machine's card over the list's foot, whose height the list scrolls past. */
 export function DiskFoot() {
   // Where T3's own notice stands, over the stages' pill (`line/UndoLine.tsx`).
-  const { style } = useOverKeyboard(PILL_ROOM);
+  const { style } = useOverKeyboard(usePillFoot());
   const machines = useConnected();
   return (
     <Animated.View

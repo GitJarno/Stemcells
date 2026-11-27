@@ -38,7 +38,8 @@ import {
   warmth,
 } from "../line/kit";
 import { useAppearancePreferences, useContentTopInset, useHomeSidebar } from "../upstream/home";
-import { HomeInFront, STAGE_ROOM, useMoonPhase } from "./state";
+import { useStageRoom } from "./pillPlace";
+import { HomeInFront, useMoonPhase } from "./state";
 import { useHeadStyle } from "./head";
 import { subscribeSkyAnchor, useSkyAnchor } from "./skyAnchor";
 import { fallen } from "./useSky";
@@ -64,11 +65,12 @@ export function Sky() {
   const [measured, setMeasured] = useState<number | null>(null);
   const { themeAppearance } = useAppearancePreferences();
   const lifted = useHeadStyle();
+  const room = useStageRoom();
   const { frame, at, read } = useBehindTheFolder();
   if (top === 0) return null;
   // The sidebar's width is its own: it draws once measured.
   const width = measured ?? (sidebar ? null : window.width);
-  const height = top + STAGE_ROOM + SKY_SHAPE.tail;
+  const height = top + room + SKY_SHAPE.tail;
   return (
     <View
       ref={frame}
