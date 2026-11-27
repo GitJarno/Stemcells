@@ -67,6 +67,7 @@
     "../../stemcells/ledger/feats.ts",
     "../../stemcells/ledger/ladders.ts",
     "../../stemcells/ledger/marks.ts",
+    "../../stemcells/models/names.ts",
     "../../stemcells/orchestrator/gate.ts",
     "../../stemcells/orchestrator/names.ts",
     "../../stemcells/orchestrator/pieces.ts",
