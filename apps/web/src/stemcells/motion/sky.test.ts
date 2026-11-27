@@ -2,16 +2,20 @@ import { describe, expect, it } from "vite-plus/test";
 
 import {
   contrast,
+  birdsAt,
   mix,
+  nextVisit,
+  seedAt,
+  shootingStarAt,
   shown,
   SKY,
   SKY_AT,
   SKY_SPANS,
+  SKY_VISITS,
   skyAtStage,
   skyOver,
   skyStops,
   skyTurn,
-  warmth,
 } from "./sky";
 
 const steps = Array.from({ length: 101 }, (_, n) => n / 100);
@@ -22,27 +26,22 @@ const day = [SKY_SPANS.dayLifts, SKY_SPANS.sunGoes, SKY_SPANS.cloudsGo];
 describe("the sky's turn", () => {
   it.each([
     // Day to night and back, whole.
-    [0, 1, false, false, { to: 1, ms: 1100, eased: true }],
-    [1, 0, false, false, { to: 0, ms: 800, eased: true }],
-    [1, 1, false, false, null],
-    // Dawn to day and to night take their share; turned back partway, it sets off from there.
-    [0.4, 0, false, false, { to: 0, ms: 320, eased: true }],
-    [0.4, 1, false, false, { to: 1, ms: 660, eased: true }],
-    [0.7, 0.4, false, false, { to: 0.4, ms: 240, eased: true }],
-    // The last ask answered: dawn rises into day, slower; from partway, its share.
-    [0.4, 0, false, true, { to: 0, ms: 1400, eased: true }],
-    [0.2, 0, false, true, { to: 0, ms: 700, eased: true }],
+    [0, 1, false, { to: 1, ms: 520, eased: true }],
+    [1, 0, false, { to: 0, ms: 420, eased: true }],
+    [1, 1, false, null],
+    // Turned back partway, it sets off from there and takes its share.
+    [0.5, 0, false, { to: 0, ms: 210, eased: true }],
     // A nudge still eases; Reduce Motion crossfades from anywhere.
-    [0.02, 0, false, false, { to: 0, ms: 120, eased: true }],
-    [0.5, 1, true, false, { to: 1, ms: 200, eased: false }],
-  ])("turns from %s to %s (reduced %s, rise %s)", (at, to, reduced, rise, expected) => {
-    const turn = skyTurn(at, to, reduced, rise);
+    [0.02, 0, false, { to: 0, ms: 100, eased: true }],
+    [0.5, 1, true, { to: 1, ms: 160, eased: false }],
+  ])("turns from %s to %s (reduced %s)", (at, to, reduced, expected) => {
+    const turn = skyTurn(at, to, reduced);
     expect(turn === null ? null : { ...turn, ms: Math.round(turn.ms) }).toEqual(expected);
   });
 
-  it("holds each stage's sky: Input at dawn, Awake by day, Asleep at night", () => {
+  it("holds day over Input and Awake, night over Asleep, and nothing between", () => {
     expect(["needs", "awake", "asleep"].map(skyAtStage)).toEqual([
-      SKY_AT.dawn,
+      SKY_AT.day,
       SKY_AT.day,
       SKY_AT.night,
     ]);
@@ -50,22 +49,6 @@ describe("the sky's turn", () => {
       expect(shown(SKY_AT.day, part)).toBe(0);
       expect(shown(SKY_AT.night, part)).toBe(1);
     }
-    expect(warmth(SKY_AT.day)).toBe(0);
-    expect(warmth(SKY_AT.night)).toBeCloseTo(0, 12);
-  });
-
-  it("dawns with the sun low and faint, the horizon warm and only the brightest stars", () => {
-    const p = SKY_AT.dawn;
-    const sun = 1 - shown(p, SKY_SPANS.sunGoes);
-    expect(sun).toBeGreaterThan(0);
-    expect(sun).toBeLessThan(0.5);
-    expect(shown(p, SKY_SPANS.sunSinks)).toBeGreaterThan(0.8);
-    expect(warmth(p)).toBeGreaterThan(0.9);
-    const [brightest, ...rest] = SKY_SPANS.stars;
-    expect(shown(p, brightest)).toBeGreaterThan(0.2);
-    expect(shown(p, brightest)).toBeLessThan(0.6);
-    for (const stars of rest) expect(shown(p, stars)).toBe(0);
-    expect(shown(p, SKY_SPANS.moonComes)).toBe(0);
   });
 
   it("never lets the ground show through the two skies mid-turn", () => {
@@ -120,4 +103,33 @@ describe("the sky's look", () => {
       }
     },
   );
+});
+
+describe("the sky's visitors", () => {
+  const seeded = (seed: number) => () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
+
+  it("sends shooting stars by night and seeds or birds by day, seldom, the first sooner", () => {
+    const random = seeded(7);
+    const nights = Array.from({ length: 200 }, () => nextVisit(true, false, random));
+    expect(new Set(nights.map((visit) => visit.kind))).toEqual(new Set(["shootingStar"]));
+    const days = Array.from({ length: 200 }, () => nextVisit(false, false, random));
+    expect(new Set(days.map((visit) => visit.kind))).toEqual(new Set(["seed", "birds"]));
+    for (const visit of days) {
+      expect(visit.wait).toBeGreaterThanOrEqual(SKY_VISITS.day[0]);
+      expect(visit.wait).toBeLessThanOrEqual(SKY_VISITS.day[1]);
+    }
+    expect(nextVisit(false, true, () => 1).wait).toBe(SKY_VISITS.day[1] * SKY_VISITS.first);
+  });
+
+  it("comes and goes unseen: every visitor is invisible at both ends of its crossing", () => {
+    for (const at of [
+      (t: number) => shootingStarAt(t, 300, 100),
+      (t: number) => seedAt(t, 300),
+      (t: number) => birdsAt(t, 300),
+    ]) {
+      expect(at(0).opacity).toBe(0);
+      expect(at(1).opacity).toBeCloseTo(0, 9);
+      expect(Math.max(...steps.map((t) => at(t).opacity))).toBeCloseTo(1, 1);
+    }
+  });
 });

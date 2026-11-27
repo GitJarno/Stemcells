@@ -9,7 +9,6 @@ import {
   LOOP_AT_REST,
   type Loop,
   opened,
-  progressOf,
   read,
   waitingSince,
 } from "./loop";
@@ -105,9 +104,7 @@ describe("the loop through Input", () => {
 
   it("ends the clearing once, with every Cell it met and how long it took, until the person turns away", () => {
     let loop: Loop = entered(LOOP_AT_REST, reading(["pip", "otter"], "pip", 1_000), true).loop;
-    expect(progressOf(loop)).toEqual({ done: 0, of: 2 });
     loop = read(loop, reading(["otter"], "pip", 2_000)).loop;
-    expect(progressOf(loop)).toEqual({ done: 1, of: 2 });
     const clear = read(loop, reading([], "otter", 61_000));
     expect(clear.allClear).toBe(true);
     expect(clear.loop.cleared).toEqual({ cells: new Set(["pip", "otter"]), ms: 60_000 });
@@ -140,7 +137,7 @@ describe("the loop through Input", () => {
     const asks = read(loop, reading(["bongo"], "pip", 1_000, true, "elsewhere"));
     expect(asks.open).toBeNull();
     expect(asks.loop.following).toBeNull();
-    expect(progressOf(asks.loop)).toEqual({ done: 0, of: 1 });
+    expect(asks.loop.clearing?.met).toEqual(new Set(["bongo"]));
     // Unread, the view leaves the loop as it stands.
     expect(read(loop, reading([], "pip", 1_000, true, null)).loop).toBe(loop);
   });

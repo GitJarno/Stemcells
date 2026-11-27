@@ -1,10 +1,11 @@
-// The sky behind the home's header (stemcells/tasks/day-night.md): dawn over Input, day over
-// Awake, night over Asleep, and the sun rising or setting between. Drawn once, in layers whose opacity and place alone follow
-// the one progress (`useSky.ts`), on the UI thread; while it stands, nothing moves or redraws.
+// The sky behind the home's header (stemcells/tasks/day-night.md): day over Input and Awake,
+// night over Asleep. Drawn once, in layers whose opacity and place alone follow the one progress
+// (`useSky.ts`), on the UI thread; while it stands, nothing moves but a rare visitor (`Visits`).
 // It goes up and out with the title as the list in front scrolls (`head.ts`).
 
 import { memo, type ReactNode, use, useEffect, useRef, useState } from "react";
 import {
+  AppState,
   type StyleProp,
   StyleSheet,
   useWindowDimensions,
@@ -12,7 +13,14 @@ import {
   type ViewInstance,
   type ViewStyle,
 } from "react-native";
-import Animated, { useAnimatedStyle, useReducedMotion } from "react-native-reanimated";
+import Animated, {
+  Easing,
+  type SharedValue,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import Svg, {
   Circle,
   Defs,
@@ -25,17 +33,26 @@ import Svg, {
 } from "react-native-svg";
 
 import {
+  BIRD_PATH,
+  BIRDS,
+  birdsAt,
   CLOUDS,
   litPath,
+  nextVisit,
+  SEED,
+  seedAt,
+  shootingStarAt,
   shown,
   SKY,
   SKY_SHAPE,
   SKY_SPANS,
+  SKY_VISITS,
   type SkyPalette,
   type SkySpan,
+  type SkyVisit,
   skyStops,
   starGroups,
-  warmth,
+  wingAt,
 } from "../line/kit";
 import { useAppearancePreferences, useContentTopInset, useHomeSidebar } from "../upstream/home";
 import { useStageRoom } from "./pillPlace";
@@ -58,7 +75,7 @@ const { r: R, sinks: SINKS, rises: RISES, halo: HALO } = SKY_SHAPE.body;
  * The sky, from the screen's top to just past the first row's, where the bar's content lies over
  * the stages' lists. Android's bar stands in flow over the body, so there it draws none.
  */
-export function Sky() {
+export function Sky(props: { readonly night: boolean }) {
   const top = useContentTopInset();
   const sidebar = useHomeSidebar();
   const window = useWindowDimensions();
@@ -90,6 +107,7 @@ export function Sky() {
             height={height}
             top={top}
             body={at}
+            night={props.night}
             palette={SKY[themeAppearance === "light" ? "light" : "dark"]}
           />
         )}
@@ -144,6 +162,7 @@ const Heavens = memo(function Heavens(props: {
   readonly top: number;
   /** Where the folder button stands, its middle; the sun and the moon stand behind it. */
   readonly body: Point | null;
+  readonly night: boolean;
   readonly palette: SkyPalette;
 }) {
   const { width, height, top, palette } = props;
@@ -164,18 +183,17 @@ const Heavens = memo(function Heavens(props: {
       <Fades span={SKY_SPANS.nightDeepens} style={fill}>
         <Gradient id="night" width={width} height={height} stops={skyStops(palette.night, whole)} />
       </Fades>
-      <Warms peak={palette.warm.peak} style={fill}>
+      <Fades span={SKY_SPANS.sunGoes} out style={fill}>
         <Svg width={width} height={height}>
           <Defs>
-            <RadialGradient id="warm" cx="50%" cy="50%" r="50%">
-              <Stop offset={0} stopColor={palette.warm.inner} stopOpacity={1} />
-              <Stop offset={0.5} stopColor={palette.warm.outer} stopOpacity={0.55} />
-              <Stop offset={1} stopColor={palette.warm.outer} stopOpacity={0} />
+            <RadialGradient id="haze" cx="50%" cy="50%" r="50%">
+              <Stop offset={0} stopColor={palette.haze.colour} stopOpacity={palette.haze.alpha} />
+              <Stop offset={1} stopColor={palette.haze.colour} stopOpacity={0} />
             </RadialGradient>
           </Defs>
-          <Ellipse cx={x} cy={top - 8} rx={width * 0.85} ry={height - top + 8} fill="url(#warm)" />
+          <Ellipse cx={x} cy={y} rx={width * 0.7} ry={top * 1.2} fill="url(#haze)" />
         </Svg>
-      </Warms>
+      </Fades>
       <Fades span={SKY_SPANS.cloudsGo} out style={fill}>
         <Clouds
           id="clouds"
@@ -185,15 +203,6 @@ const Heavens = memo(function Heavens(props: {
           alpha={palette.cloud.alpha}
         />
       </Fades>
-      <Warms peak={1} style={fill}>
-        <Clouds
-          id="warm-clouds"
-          width={width}
-          reach={top}
-          colour={palette.warm.inner}
-          alpha={palette.cloud.alpha}
-        />
-      </Warms>
       {starGroups(x / width).map((stars, n) => (
         <Fades key={SKY_SPANS.stars[n]!.join()} span={SKY_SPANS.stars[n]!} style={fill}>
           <Svg width={width} height={height}>
@@ -210,6 +219,7 @@ const Heavens = memo(function Heavens(props: {
           </Svg>
         </Fades>
       ))}
+      <Visits night={props.night} width={width} reach={reach} palette={palette} />
       <Sun x={x} y={y} palette={palette} />
       <Moon x={x} y={y} palette={palette} />
     </>
@@ -241,7 +251,7 @@ function Gradient(props: {
   );
 }
 
-/** Two wisps, each a soft ellipse and a smaller lobe over it. */
+/** Two soft clouds, each a few lobes. */
 function Clouds(props: {
   readonly id: string;
   readonly width: number;
@@ -257,28 +267,18 @@ function Clouds(props: {
           <Stop offset={1} stopColor={props.colour} stopOpacity={0} />
         </RadialGradient>
       </Defs>
-      {CLOUDS.map((cloud) => {
-        const cx = cloud.x * props.width;
-        const cy = cloud.y * props.reach;
-        return [
+      {CLOUDS.flatMap((cloud) =>
+        cloud.lobes.map((lobe) => (
           <Ellipse
-            key={`${cloud.x}`}
-            cx={cx}
-            cy={cy}
-            rx={cloud.width / 2}
-            ry={cloud.height / 2}
+            key={`${cloud.x}:${lobe.dx}`}
+            cx={cloud.x * props.width + lobe.dx}
+            cy={cloud.y * props.reach + lobe.dy}
+            rx={lobe.rx}
+            ry={lobe.ry}
             fill={`url(#${props.id})`}
-          />,
-          <Ellipse
-            key={`${cloud.x}:lobe`}
-            cx={cx + cloud.width * 0.18}
-            cy={cy - cloud.height * 0.35}
-            rx={cloud.width / 4}
-            ry={cloud.height * 0.4}
-            fill={`url(#${props.id})`}
-          />,
-        ];
-      })}
+          />
+        )),
+      )}
     </Svg>
   );
 }
@@ -296,17 +296,6 @@ function Fades(props: {
     return { opacity: out ? 1 - p : p };
   });
   return <Animated.View style={[props.style, fades]}>{props.children}</Animated.View>;
-}
-
-/** A layer of the horizon's warmth, at `peak` mid-turn and gone at either end. */
-function Warms(props: {
-  readonly peak: number;
-  readonly style: StyleProp<ViewStyle>;
-  readonly children: ReactNode;
-}) {
-  const { peak } = props;
-  const warms = useAnimatedStyle(() => ({ opacity: warmth(fallen.get()) * peak }));
-  return <Animated.View style={[props.style, warms]}>{props.children}</Animated.View>;
 }
 
 /** A body's soft halo and disc, centred in a box of `2 * HALO * R`. */
@@ -335,7 +324,7 @@ const boxAt = (x: number, y: number) =>
     height: 2 * HALO * R,
   }) as const;
 
-/** The sun: it warms as it sinks toward the horizon, and goes as the moon comes. */
+/** The sun: it dips a little as it goes, before the moon comes. */
 function Sun(props: { readonly x: number; readonly y: number; readonly palette: SkyPalette }) {
   const reduced = useReducedMotion();
   const sets = useAnimatedStyle(() => {
@@ -350,9 +339,6 @@ function Sun(props: { readonly x: number; readonly y: number; readonly palette: 
   return (
     <Animated.View style={[boxAt(props.x, props.y), sets]}>
       <Disc id="sun" colour={palette.sun} halo={palette.halo} />
-      <Fades span={SKY_SPANS.sunWarms} style={StyleSheet.absoluteFill}>
-        <Disc id="setting" colour={palette.setting} halo={palette.halo} />
-      </Fades>
     </Animated.View>
   );
 }
@@ -385,6 +371,227 @@ function Moon(props: { readonly x: number; readonly y: number; readonly palette:
           d={litPath(phase, R)}
           fill={palette.moon}
           transform={`translate(${middle} ${middle})`}
+        />
+      </Svg>
+    </Animated.View>
+  );
+}
+
+/**
+ * Now and then a visitor crosses the sky (`SKY_VISITS`): a shooting star by night, a seed or
+ * birds by day, each fading with its own sky. Only while the home is in front and the app active,
+ * never under Reduce Motion; between visits nothing runs but the next one's timer.
+ */
+function Visits(props: {
+  readonly night: boolean;
+  readonly width: number;
+  readonly reach: number;
+  readonly palette: SkyPalette;
+}) {
+  const { night, width } = props;
+  const inFront = use(HomeInFront);
+  const reduced = useReducedMotion();
+  const t = useSharedValue(0);
+  const [visit, setVisit] = useState<(SkyVisit & { readonly n: number }) | null>(null);
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Schedule visitors while the home is in front and the app active, and clear the timer and AppState listener when that ends.
+  useEffect(() => {
+    if (!inFront || reduced) return;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let first = true;
+    let n = 0;
+    const arm = () => {
+      clearTimeout(timer);
+      if (AppState.currentState !== "active") return;
+      const next = nextVisit(night, first, Math.random);
+      first = false;
+      timer = setTimeout(() => {
+        n += 1;
+        setVisit({ ...next, n });
+        t.set(0);
+        t.set(withTiming(1, { duration: SKY_VISITS.ms[next.kind], easing: Easing.linear }));
+        arm();
+      }, next.wait);
+    };
+    arm();
+    const listening = AppState.addEventListener("change", arm);
+    return () => {
+      clearTimeout(timer);
+      listening.remove();
+    };
+  }, [inFront, reduced, night, t]);
+  if (visit === null) return null;
+  const fill = { position: "absolute", left: 0, top: 0, width, height: props.reach } as const;
+  const from = { x: visit.x * width, y: visit.y * props.reach };
+  return visit.kind === "shootingStar" ? (
+    <Fades span={SKY_SPANS.stars[0]} style={fill}>
+      <ShootingStar
+        key={visit.n}
+        t={t}
+        from={from}
+        width={width}
+        reach={props.reach}
+        colour={props.palette.star}
+      />
+    </Fades>
+  ) : (
+    <Fades span={SKY_SPANS.cloudsGo} out style={fill}>
+      {visit.kind === "seed" ? (
+        <Seed key={visit.n} t={t} from={from} width={width} palette={props.palette} />
+      ) : (
+        <Birds key={visit.n} t={t} from={from} width={width} palette={props.palette} />
+      )}
+    </Fades>
+  );
+}
+
+function ShootingStar(props: {
+  readonly t: SharedValue<number>;
+  readonly from: Point;
+  readonly width: number;
+  readonly reach: number;
+  readonly colour: string;
+}) {
+  const { t, from, width, reach } = props;
+  const flies = useAnimatedStyle(() => {
+    const pose = shootingStarAt(t.get(), width, reach);
+    return {
+      opacity: pose.opacity,
+      transform: [
+        { translateX: from.x + pose.x },
+        { translateY: from.y + pose.y },
+        { rotate: `${pose.rotate}deg` },
+      ],
+    };
+  });
+  return (
+    <Animated.View style={[{ position: "absolute", width: 70, height: 1.5 }, flies]}>
+      <Svg width={70} height={1.5}>
+        <Defs>
+          <LinearGradient id="tail" x1="0" y1="0" x2="1" y2="0">
+            <Stop offset={0} stopColor={props.colour} stopOpacity={0} />
+            <Stop offset={1} stopColor={props.colour} stopOpacity={0.9} />
+          </LinearGradient>
+        </Defs>
+        <Rect width={70} height={1.5} rx={0.75} fill="url(#tail)" />
+      </Svg>
+    </Animated.View>
+  );
+}
+
+function Seed(props: {
+  readonly t: SharedValue<number>;
+  readonly from: Point;
+  readonly width: number;
+  readonly palette: SkyPalette;
+}) {
+  const { t, from, width } = props;
+  const drifts = useAnimatedStyle(() => {
+    const pose = seedAt(t.get(), width);
+    return {
+      opacity: pose.opacity,
+      transform: [
+        { translateX: from.x + pose.x },
+        { translateY: from.y + pose.y },
+        { rotate: `${pose.rotate}deg` },
+      ],
+    };
+  });
+  const { colour, alpha } = props.palette.seed;
+  return (
+    <Animated.View style={[{ position: "absolute", width: 16, height: 22 }, drifts]}>
+      <Svg width={16} height={22} viewBox="0 0 16 22">
+        {SEED.filaments.map((end) => (
+          <Path
+            key={`${end.x}:${end.y}`}
+            d={`M${SEED.heart.x} ${SEED.heart.y} L${end.x} ${end.y}`}
+            stroke={colour}
+            strokeOpacity={alpha}
+            strokeWidth={0.5}
+            strokeLinecap="round"
+          />
+        ))}
+        {SEED.filaments.map((end) => (
+          <Circle
+            key={`${end.x}:${end.y}:tip`}
+            cx={end.x}
+            cy={end.y}
+            r={0.55}
+            fill={colour}
+            fillOpacity={alpha}
+          />
+        ))}
+        <Path
+          d={`M${SEED.heart.x} ${SEED.stalk.from} L${SEED.heart.x} ${SEED.stalk.to}`}
+          stroke={colour}
+          strokeOpacity={alpha}
+          strokeWidth={0.6}
+          strokeLinecap="round"
+        />
+        <Ellipse
+          cx={SEED.heart.x}
+          cy={SEED.seed.y}
+          rx={SEED.seed.rx}
+          ry={SEED.seed.ry}
+          fill={colour}
+          fillOpacity={alpha}
+        />
+      </Svg>
+    </Animated.View>
+  );
+}
+
+function Birds(props: {
+  readonly t: SharedValue<number>;
+  readonly from: Point;
+  readonly width: number;
+  readonly palette: SkyPalette;
+}) {
+  const { t, from, width } = props;
+  const glides = useAnimatedStyle(() => {
+    const pose = birdsAt(t.get(), width);
+    return {
+      opacity: pose.opacity,
+      transform: [{ translateX: from.x + pose.x }, { translateY: from.y + pose.y }],
+    };
+  });
+  return (
+    <Animated.View style={[{ position: "absolute" }, glides]}>
+      {BIRDS.map((bird, n) => (
+        <Bird key={bird.dx} t={t} n={n} bird={bird} palette={props.palette} />
+      ))}
+    </Animated.View>
+  );
+}
+
+function Bird(props: {
+  readonly t: SharedValue<number>;
+  readonly n: number;
+  readonly bird: (typeof BIRDS)[number];
+  readonly palette: SkyPalette;
+}) {
+  const { t, n, bird } = props;
+  const beats = useAnimatedStyle(() => ({
+    transform: [{ scaleY: wingAt(t.get(), n, SKY_VISITS.ms.birds) }],
+  }));
+  const { colour, alpha } = props.palette.birds;
+  const size = { width: 10 * bird.size, height: 4 * bird.size };
+  return (
+    <Animated.View
+      style={[
+        { position: "absolute", left: bird.dx, top: bird.dy, transformOrigin: "50% 85%" },
+        size,
+        beats,
+      ]}
+    >
+      <Svg {...size} viewBox="0 0 10 4">
+        <Path
+          d={BIRD_PATH}
+          fill="none"
+          stroke={colour}
+          strokeOpacity={alpha}
+          strokeWidth={1.3 / bird.size}
+          strokeLinecap="round"
+          strokeLinejoin="round"
         />
       </Svg>
     </Animated.View>

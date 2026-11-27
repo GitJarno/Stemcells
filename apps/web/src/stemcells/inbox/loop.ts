@@ -102,7 +102,7 @@ export interface Step {
   readonly loop: Loop;
   /** The Cell to open now, in place of the chat open (beside the list, or the whole screen). */
   readonly open: string | null;
-  /** The last ask of a clearing just left: the sky's sunrise. */
+  /** The last ask of a clearing just left: the all-clear's moment. */
   readonly allClear: boolean;
 }
 
@@ -238,10 +238,3 @@ const sameLoop = (a: Loop, b: Loop) =>
   a.awaiting === b.awaiting &&
   a.clearing === b.clearing &&
   a.cleared === b.cleared;
-
-/** How far through the clearing: answered of all it met, for the sky's dawn; null outside one. */
-export function progressOf(loop: Loop): { readonly done: number; readonly of: number } | null {
-  if (loop.clearing === null) return null;
-  const of = loop.clearing.met.size;
-  return { done: of - loop.queue.length, of };
-}

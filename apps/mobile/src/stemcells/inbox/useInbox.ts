@@ -13,7 +13,6 @@ import {
   LOOP_AT_REST,
   type Loop,
   opened,
-  publishInbox,
   read,
   unfollowed,
 } from "../line/kit";
@@ -54,7 +53,6 @@ function step(
   // A Cell opened from Input's list, or one the loop opened landing: the loop follows it.
   if (onInput && open !== null && loop.following === null && next.open === null)
     loop = opened(loop, open);
-  publishInbox(loop, next.allClear);
   if (next.allClear) lastFact = factAfter(lastFact, Math.random());
   if (loop.cleared !== shown?.cleared) {
     shown = loop.cleared === null ? null : { cleared: loop.cleared, fact: lastFact ?? 0 };
