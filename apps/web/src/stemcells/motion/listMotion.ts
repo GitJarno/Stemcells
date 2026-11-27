@@ -26,15 +26,22 @@ export type Bezier = readonly [number, number, number, number];
 /** A curve as CSS writes it. */
 export const cssEasing = (easing: Bezier): string => `cubic-bezier(${easing.join(", ")})`;
 
+/** A reading of a list: what it was a view of (the picks, the machines heard from), and its rows. */
+export interface ListReading {
+  readonly view: string;
+  readonly keys: ReadonlySet<string>;
+}
+
 /**
- * The rows that entered a list between two readings of its keys: none at its first reading,
- * and none when more than `mostAtOnce` came at once.
+ * The rows that entered a list since its reading `before`: none at its first reading or in
+ * another view (the list read again), and none when more than `mostAtOnce` came at once.
  */
 export function enteredRows(
-  before: ReadonlySet<string> | null,
+  before: ListReading | null,
+  view: string,
   after: ReadonlyArray<string>,
 ): string[] {
-  if (before === null) return [];
-  const entered = after.filter((key) => !before.has(key));
+  if (before === null || before.view !== view) return [];
+  const entered = after.filter((key) => !before.keys.has(key));
   return entered.length > LIST_MOTION.mostAtOnce ? [] : entered;
 }

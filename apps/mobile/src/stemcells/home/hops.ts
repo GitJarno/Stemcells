@@ -18,6 +18,8 @@ interface Measurable {
 
 /** Long enough for the row to slide away and the move to show on the line; past it, nothing moved. */
 const WAIT_MS = 1500;
+/** The pill says where it stands within a frame or two; past this, the Cell lands where it is. */
+const PILL_MS = 500;
 /** An entrance not seen in this long is forgotten. */
 const ARRIVAL_MS = 10 * 60_000;
 
@@ -126,6 +128,10 @@ export function resolveHops(
       hopLanded(key);
       continue;
     }
+    setTimeout(() => {
+      const waiting = hops.get(key);
+      if (waiting?.toStage === toStage && waiting.to === null) hopLanded(key);
+    }, PILL_MS);
     standing.view.measureInWindow((x, y, width, height) => {
       const flying = hops.get(key);
       if (flying?.toStage !== toStage) return;
@@ -194,9 +200,11 @@ export function useLifted(key: string): boolean {
   return useSyncExternalStore(subscribe, () => hops.has(key));
 }
 
-/** Whether the row for `key` in `stage` has an entrance to make. */
-export const arrivesNow = (key: string, stage: string | null): boolean =>
-  arrivals.get(key)?.stage === stage;
+/** Whether the row for `key` in `stage` has an entrance to make at `now`. */
+export function arrivesNow(key: string, stage: string | null, now = Date.now()): boolean {
+  const arrival = arrivals.get(key);
+  return arrival?.stage === stage && now - arrival.at < ARRIVAL_MS;
+}
 
 export function useArrives(key: string, stage: string | null): boolean {
   return useSyncExternalStore(subscribe, () => arrivesNow(key, stage));

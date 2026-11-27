@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef } from "react";
 
-import { cssEasing, enteredRows, LIST_MOTION } from "../motion/listMotion";
+import { cssEasing, enteredRows, LIST_MOTION, type ListReading } from "../motion/listMotion";
 import { reducedMotion } from "../tokens/motion";
 
 const MOVE = { duration: LIST_MOTION.move.duration, easing: cssEasing(LIST_MOTION.move.easing) };
@@ -8,39 +8,47 @@ const ENTER = { duration: LIST_MOTION.enter.duration, easing: cssEasing(LIST_MOT
 const BLOOM = LIST_MOTION.bloom.rise + LIST_MOTION.bloom.fall;
 
 /**
- * A stage's rows under the lists' one motion (`motion/listMotion.ts`), as the phone's list moves
- * its own: a row that changed slot glides there from where it stood, and a row new to the stage
- * fades in where it landed the first time the stage is `shown`, then its light blooms once
- * (`--cells-bloom` in cells.css). With less motion only the light blooms.
+ * A stage's rows (`keys`, in order) under the lists' one motion (`motion/listMotion.ts`): a row
+ * that changed slot glides there, and a row new to the stage fades in the first time the stage
+ * is `shown`, then its light blooms once (`--cells-bloom` in cells.css). `view` is what the list
+ * shows, null until it has been read; another view is the list read again.
  */
-export function useRowMotion(shown: boolean) {
+export function useRowMotion(keys: ReadonlyArray<string>, view: string | null, shown: boolean) {
   const list = useRef<HTMLOListElement>(null);
   const tops = useRef(new Map<string, number>());
-  const keys = useRef<ReadonlySet<string> | null>(null);
+  const reading = useRef<ListReading | null>(null);
   const entering = useRef(new Set<string>());
+  const order = keys.join(" ");
 
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Read the rows' places after each commit and animate the ones that moved or entered, before paint.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Read the rows' places when the rows change and animate those that moved or entered, before paint.
   useLayoutEffect(() => {
+    if (view === null) {
+      reading.current = null;
+      tops.current = new Map();
+      return;
+    }
+    const now = order === "" ? [] : order.split(" ");
+    const before = reading.current;
+    for (const key of enteredRows(before, view, now)) entering.current.add(key);
+    reading.current = { view, keys: new Set(now) };
     const element = list.current;
-    if (element === null) return;
     const rows = new Map<string, HTMLElement>();
-    for (const row of element.querySelectorAll<HTMLElement>(":scope > [data-cells-thread]"))
+    for (const row of element?.querySelectorAll<HTMLElement>(":scope > [data-cells-thread]") ?? [])
       rows.set(row.dataset.cellsThread!, row);
-    const before = keys.current;
-    for (const key of enteredRows(before, [...rows.keys()])) entering.current.add(key);
-    keys.current = new Set(rows.keys());
+    const was = before?.view === view ? tops.current : new Map<string, number>();
+    // Layout's own place in the list, not where a glide under way has it.
+    const base = (row: HTMLElement) =>
+      row.offsetParent === element ? 0 : (element?.offsetTop ?? 0);
+    tops.current = new Map([...rows].map(([key, row]) => [key, row.offsetTop - base(row)]));
     const still = reducedMotion();
     // A leave folds in CSS and the rows under it follow: nothing of ours moves them meanwhile.
-    const lost = before !== null && [...before].some((key) => !rows.has(key));
-    const folding = element.querySelector(":scope > [data-leaving]") !== null;
-    const was = tops.current;
-    // Layout's own place, not where a glide under way has it.
-    tops.current = new Map([...rows].map(([key, row]) => [key, row.offsetTop]));
+    const lost = before !== null && [...before.keys].some((key) => !rows.has(key));
+    const folding = element?.querySelector(":scope > [data-leaving]") != null;
     if (!still && !lost && !folding)
-      for (const [key, now] of tops.current) {
+      for (const [key, top] of tops.current) {
         const from = was.get(key);
-        if (from === undefined || from === now) continue;
-        rows.get(key)!.animate([{ translate: `0 ${from - now}px` }, { translate: "0 0" }], MOVE);
+        if (from === undefined || from === top) continue;
+        rows.get(key)!.animate([{ translate: `0 ${from - top}px` }, { translate: "0 0" }], MOVE);
       }
     for (const key of entering.current) {
       const row = rows.get(key);
@@ -59,7 +67,7 @@ export function useRowMotion(shown: boolean) {
           { duration: BLOOM, delay: still ? 0 : ENTER.duration, easing: "ease-in-out" },
         );
     }
-  });
+  }, [order, view, shown]);
 
   return list;
 }

@@ -46,6 +46,7 @@ export {
   type Bezier,
   enteredRows,
   LIST_MOTION,
+  type ListReading,
 } from "../../../../web/src/stemcells/motion/listMotion.ts";
 export {
   EMPTY_WORDS,

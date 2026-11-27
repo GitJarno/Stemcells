@@ -20,9 +20,12 @@ describe("the lists' motion", () => {
     token("settle", LIST_MOTION.tick);
   });
 
-  it("enters the rows new to a list, but none at its first reading or in a crowd", () => {
-    expect(enteredRows(null, ["waffle"])).toEqual([]);
-    expect(enteredRows(new Set(["waffle"]), ["toast", "waffle"])).toEqual(["toast"]);
-    expect(enteredRows(new Set(["waffle"]), ["a", "b", "c", "d", "e", "waffle"])).toEqual([]);
+  it("enters the rows new to a list, but none at its first reading, in a crowd or a new view", () => {
+    const before = { view: "all", keys: new Set(["waffle"]) };
+    expect(enteredRows(null, "all", ["waffle"])).toEqual([]);
+    expect(enteredRows(before, "all", ["toast", "waffle"])).toEqual(["toast"]);
+    expect(enteredRows(before, "all", ["a", "b", "c", "d", "e", "waffle"])).toEqual([]);
+    // A pick widened, or a second machine's Cells came in: the list was read again.
+    expect(enteredRows(before, "mac-mini", ["toast", "waffle"])).toEqual([]);
   });
 });

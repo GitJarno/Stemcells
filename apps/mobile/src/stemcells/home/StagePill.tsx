@@ -16,7 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useResolveClassNames } from "uniwind";
 
 import { NativePrimaryColumnContext, SegmentedControl, useOverSearch } from "../upstream/home";
-import { pillStandsIn, useBump } from "./hops";
+import { bumpNow, pillStandsIn, useBump } from "./hops";
 import { LIST_MOTION } from "./listMotion";
 import { Night } from "./Night";
 import { HomeInFront, HomeStageContext, HomeTabsContext, liftNotices, PILL_ROOM } from "./state";
@@ -51,13 +51,15 @@ export function StagePill() {
     [inFront, stages],
   );
   const bumped = useBump();
+  // Landings before this pill stood are done: a pill drawn again bumps for none of them.
+  const [landedBefore] = useState(() => bumpNow()?.count ?? 0);
   const [width, setWidth] = useState(0);
   const bump = useSharedValue(0);
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Bump the pill once on the UI thread as a Cell lands in a segment's count.
   useEffect(() => {
-    if (bumped === null) return;
+    if (bumped === null || bumped.count <= landedBefore) return;
     bump.set(withSequence(withTiming(1, BUMP_UP), withTiming(0, BUMP_DOWN)));
-  }, [bumped, bump]);
+  }, [bumped, bump, landedBefore]);
   const at = home === null || bumped === null ? -1 : stages.split(" ").indexOf(bumped.stage);
   const count = home?.options.length ?? 1;
   const middle = at < 0 ? width / 2 : (width * (at + 0.5)) / count;

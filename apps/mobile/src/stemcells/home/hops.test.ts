@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, it, vi } from "vite-plus/test";
 
 import type { EnvironmentThreadShell } from "../upstream/cells";
 import { alongBow, segmentOf } from "./flight";
@@ -73,6 +73,21 @@ describe("a Cell moved by hand", () => {
     expect(hopOf("env:jam")).toBeUndefined();
   });
 
+  it("lands at once when the pill never says where it stands, so its count lets it go", () => {
+    vi.useFakeTimers();
+    pillStandsIn({ measureInWindow: () => undefined }, ["awake", "asleep"]);
+    departs("env:bun", thread, "awake", figure);
+    resolveHops(
+      (key, stage) => stage === "asleep",
+      () => true,
+    );
+    expect(hopOf("env:bun")?.toStage).toBe("asleep");
+    vi.advanceTimersByTime(1000);
+    expect(hopOf("env:bun")).toBeUndefined();
+    vi.useRealTimers();
+    pillStandsIn(at(16, 760, 340, 36), ["awake", "asleep"]);
+  });
+
   it("flies no more than four at once; the rest only tick", () => {
     const keys = ["a", "b", "c", "d", "e"].map((name) => `env:${name}`);
     const backs = keys.map((key) => departs(key, thread, "awake", figure));
@@ -82,16 +97,18 @@ describe("a Cell moved by hand", () => {
 });
 
 describe("a row entering a stage", () => {
-  it("enters in the stage it entered until it has, and an old entrance is forgotten", () => {
+  it("enters in the stage it entered until it has", () => {
     arrive(["env:muffin"], "awake", 0);
-    expect(arrivesNow("env:muffin", "asleep")).toBe(false);
-    expect(arrivesNow("env:muffin", "awake")).toBe(true);
+    expect(arrivesNow("env:muffin", "asleep", 1)).toBe(false);
+    expect(arrivesNow("env:muffin", "awake", 1)).toBe(true);
     arrivalDone("env:muffin");
-    expect(arrivesNow("env:muffin", "awake")).toBe(false);
+    expect(arrivesNow("env:muffin", "awake", 1)).toBe(false);
+  });
+
+  it("forgets an entrance not seen for ten minutes", () => {
     arrive(["env:scone"], "asleep", 0);
-    arrive(["env:bagel"], "asleep", 10 * 60_000);
-    expect(arrivesNow("env:scone", "asleep")).toBe(false);
-    expect(arrivesNow("env:bagel", "asleep")).toBe(true);
+    expect(arrivesNow("env:scone", "asleep", 10 * 60_000 - 1)).toBe(true);
+    expect(arrivesNow("env:scone", "asleep", 10 * 60_000)).toBe(false);
   });
 });
 

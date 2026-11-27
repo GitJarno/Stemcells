@@ -57,6 +57,8 @@ export function LineHome(props: {
   readonly known: boolean;
   readonly now: string;
   readonly inView: (place: Place) => boolean;
+  /** What `inView` lets through, as a word that changes with it. */
+  readonly picks: string;
   readonly environmentId: string | null;
   /** Its machines haven't sent their Cells yet. */
   readonly connecting: boolean;
@@ -80,6 +82,7 @@ export function LineHome(props: {
     props.inView,
     { ...onPhone, asleep: onPhone.asleep + props.olderSettled },
     !props.connecting,
+    props.picks,
   );
   const tab = segments.useTab("awake");
   const stages = useStagePages(STAGES, tab);
