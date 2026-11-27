@@ -32,6 +32,7 @@ import {
   type ThreadSettingsSessionValue,
 } from "../upstream/modelPick";
 import { ACCESS_WORDS, levelLabel, lineup, type LineupEntry, selectedIn } from "./kit";
+import { useSheetFit } from "./pickSheet";
 
 type Select = Extract<ProviderOptionDescriptor, { type: "select" }>;
 type Switch = Extract<ProviderOptionDescriptor, { type: "boolean" }>;
@@ -60,9 +61,9 @@ export function CellPick(
   const configs = useAtomValue(environmentServerConfigsAtom);
   const messages = useMessages();
   const locale = useLocale();
+  const fit = useSheetFit();
   if (!session) return null;
-  // The sheet fits its content, so the catalog asks for most of the screen.
-  if (catalogOpen) return <View style={{ height: window.height * 0.9 }}>{props.catalog}</View>;
+  if (catalogOpen) return <View className="flex-1">{props.catalog}</View>;
 
   const selection = session.displayedModelSelection;
   const lines = session.providerGroups.flatMap((group) =>
@@ -97,9 +98,15 @@ export function CellPick(
   };
 
   return (
+    // Laid out on its own (absolute), so the sheet's height, 0 until it fits, never squeezes it.
     <View
       className="bg-sheet"
+      onLayout={fit.onLayout}
       style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
         paddingTop: 28,
         paddingBottom: insets.bottom + 12,
         paddingLeft: Math.max(20, insets.left + 12),
@@ -168,7 +175,10 @@ export function CellPick(
       <Pressable
         accessibilityRole="button"
         className="mt-3 self-center px-4 py-2"
-        onPress={() => setCatalogOpen(true)}
+        onPress={() => {
+          fit.whole();
+          setCatalogOpen(true);
+        }}
       >
         <AppText textRole="footnote" className="text-foreground-muted">
           All models
