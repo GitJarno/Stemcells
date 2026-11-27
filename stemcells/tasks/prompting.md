@@ -411,6 +411,10 @@ words never named.
 
 ### 13. Aski's chat uses the same reading and the same path
 
+Not built, and replaced by `aski-orchestrator.md`: Aski's chat reads a
+message with one model call checked by code, since the reader alone got
+none of five messy requests right. What follows is the earlier design.
+
 - Aski's composer inks the same words, plus the names of live Cells ("Otter,
   rebase"), in the Cell tone (`--sc-peer`).
 - Aski's page reads its own words first (`tasks/aski-room.md`, decision 14):
@@ -792,8 +796,7 @@ From the TypeScript rebuild (`SC-legacy`), keep:
    - The plan rows: sources, edits, Enter and Esc, and keep-or-drop on text
      edits.
    - Settings › Aski: thinks with, check, most Cells, plan history.
-7. **Aski's chat.** Cell names inked, the same path from Aski's tab, new
-   tabs, the guard on `t3_thread_launch` (server), and the persona change.
+7. **Aski's chat.** Replaced by `aski-orchestrator.md` and its slices.
 8. **Evals.** `scripts/aski-eval` (planner evals and the report), the
    private corpus and `--harvest`, and the "Recommended" label reading the
    report. The first run compares the strong and fast tiers.
