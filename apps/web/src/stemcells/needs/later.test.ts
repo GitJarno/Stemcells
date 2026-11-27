@@ -2,7 +2,7 @@ import { describe, expect, it } from "vite-plus/test";
 
 import type { CommandOutcome } from "../upstream/needs";
 import { needFixture } from "./fixtures";
-import type { Hold } from "./holds";
+import type { Answer } from "./answering";
 import { createPulling, laterOf } from "./later";
 import type { NeedsState } from "./stream";
 import type { LaterNeed } from "./wire";
@@ -12,9 +12,8 @@ const put = (key: string, until: string): LaterNeed => ({
   until,
 });
 
-const laterHold = (key: string, state: Hold["state"]): Hold => ({
+const laterAnswer = (key: string, state: Answer["state"]): Answer => ({
   key,
-  id: 1,
   threadId: `thread-${key}`,
   commands: [{ type: "snooze", until: "2026-10-21T13:00:00.000Z" }],
   state,
@@ -31,18 +30,18 @@ describe("what the person put off", () => {
       cells: [],
       live: true,
     };
-    const holds = new Map([
-      ["pip", laterHold("pip", "holding")],
-      ["bongo", laterHold("bongo", "failed")],
+    const answers = new Map([
+      ["pip", laterAnswer("pip", "sending")],
+      ["bongo", laterAnswer("bongo", "failed")],
     ]);
-    expect(laterOf(state, holds, new Map()).map((need) => need.key)).toEqual([
+    expect(laterOf(state, answers, new Map()).map((need) => need.key)).toEqual([
       "floof",
       "pip",
       "otter",
     ]);
     // Pulled back, it is an ask again before the server's list says so.
     const otter = state.later![0]!;
-    expect(laterOf(state, holds, new Map([["otter", otter]])).map((need) => need.key)).toEqual([
+    expect(laterOf(state, answers, new Map([["otter", otter]])).map((need) => need.key)).toEqual([
       "floof",
       "pip",
     ]);

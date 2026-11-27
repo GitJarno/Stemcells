@@ -565,9 +565,9 @@ library's dependency (above); the rest are substitutes:
   any number of projects and machines (`home/picks.ts`, kept on the phone),
   and T3's own single pick is handed to its list unset. An ask is answered in its chat (`line/ChatAsk.tsx`), sent as T3's own
   thread commands (`upstream/needs.ts`, which takes the web's
-  `proposedPlan.ts` for a plan's build), and an answer's undo line stands
-  in T3's notice, one at a time; a substitute of `ThreadUndoNotice` stands
-  T3's notice over the pill. The list's header (`ThreadListFilters`,
+  `proposedPlan.ts` for a plan's build) the moment it's given; a
+  substitute of `ThreadUndoNotice` stands T3's notice over the pill, and
+  shows none for a Sleep or Sleep until… (`stemcells/tasks/no-undo.md`). The list's header (`ThreadListFilters`,
   substituted) is its stage's top, Asleep's night sky, which scrolls away
   with it; on iOS T3's filter chips leave it for the workspace
   header's top right, where the seam in `WorkspaceToolbar.tsx` hands
@@ -636,8 +636,8 @@ library's dependency (above); the rest are substitutes:
   (`line/ChatAsk.tsx`, `stemcells/tasks/the-ask.md`). A substitute of
   `threadFeedEndFollow` has the list keep its end as its footer grows, as
   it does for a new message. Approvals and questions keep upstream's
-  panels. An answer waits on the home's undo line and stands in the card's
-  place; a line of the card jumps to its reply with upstream's
+  panels. An answer goes at once, and one that fails says so on the card;
+  a line of the card jumps to its reply with upstream's
   `requestThreadMessageJump`.
 - **Add to Chat.** A substitute of `ComposerAttachmentButton` has T3's
   plus button open our card (`attach/AttachCard.tsx`): the phone's newest

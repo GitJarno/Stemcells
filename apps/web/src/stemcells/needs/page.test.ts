@@ -17,7 +17,6 @@ function setup() {
     // The fake timers' clock (each test installs them), so time moves only as a test advances it.
     now: () => vi.getMockedSystemTime()!.getTime(),
     linger: () => LINGER,
-    keep: () => false,
     clearedFor: () => CLEARED_FOR,
   });
   page.subscribe(() => {});

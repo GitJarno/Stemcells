@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 
-import { sleptManyWords, sleptWords } from "../../../../../stemcells/words/awake.ts";
 import {
   closeUndoToast,
   showUndoToast,
@@ -9,14 +8,8 @@ import {
   useUndoNotice,
 } from "../upstream/undoNotice";
 
-/**
- * Upstream's notice in our words: "A Cell is asleep", "3 Cells asleep", "Answered 2 Cells",
- * "Discarded 2 drafts". A settle and a snooze both leave a Cell asleep.
- */
+/** Upstream's notice in our words: "Unpinned 1 Cell", "Discarded 2 drafts". */
 export function undoNoticeWords(notice: UndoNotice): string {
-  if (notice.action === "Settled" || notice.action === "Snoozed") {
-    return notice.count === 1 ? sleptWords("A Cell") : sleptManyWords(notice.count);
-  }
   const noun = notice.action === "Discarded" ? "draft" : "Cell";
   return `${notice.action} ${notice.count} ${noun}${notice.count === 1 ? "" : "s"}`;
 }

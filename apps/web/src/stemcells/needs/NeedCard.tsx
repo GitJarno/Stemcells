@@ -43,15 +43,15 @@ import {
 } from "./card";
 import { movedByHand } from "./byHand";
 import type { Shown } from "./display";
-import type { Hold } from "./holds";
-import { holds, useSettleAtOnce } from "./live";
+import type { Answer } from "./answering";
+import { answering, useSettleAtOnce } from "./live";
 import { openPeek } from "./peeking";
 import { RunFacts } from "./RunFacts";
 import { type Lit, lit, useLit } from "./answers/lit";
 import { linkAddresses, marksUp } from "./inline";
 import { tellAsk } from "./told";
 import { rereadWholeKinds, useShowsWhole } from "./whole";
-import { answering } from "./walk";
+import { answering as passFocusOn } from "./walk";
 
 /** Who the card is for: the Cell's name, or a subagent's under its parent's. */
 export function whoOf(need: Shown["need"]): string {
@@ -60,25 +60,25 @@ export function whoOf(need: Shown["need"]): string {
     : `${cellNameOf(need.parentThreadId)} › ${need.title}`;
 }
 
-/** Whether a card still takes an answer: live, and no answer of the person's held, sending or sent. */
-export function answerableOf(shown: Shown, hold: Hold | undefined): boolean {
-  if (shown.goneAt !== null || hold === undefined) return shown.goneAt === null;
-  return hold.state === "failed" || hold.state === "stale";
+/** Whether a card still takes an answer: live, and no answer of the person's sending or sent. */
+export function answerableOf(shown: Shown, answer: Answer | undefined): boolean {
+  if (shown.goneAt !== null || answer === undefined) return shown.goneAt === null;
+  return answer.state === "failed" || answer.state === "stale";
 }
 
 /** Where the words of an answer that wasn't sent went. */
-const backLine = (hold: Hold | undefined): string =>
-  hold?.wordsBack ? " Your words are back in Aski's composer." : "";
+const backLine = (answer: Answer | undefined): string =>
+  answer?.wordsBack ? " Your words are back in Aski's composer." : "";
 
 /**
  * One need, as a message (stemcells/tasks/aski-asks.md, decisions 4 to 6, and unblocking.md):
  * its Cell, project and age on one line; what to do; what the Cell did, two lines until More;
  * what waits on it and where its reply points; the options side by side, each one app action.
- * Answered (onto the undo line, `holds.ts`), settled or gone, it folds away at once.
+ * Answered (`answering.ts`), settled or gone, it folds away at once.
  */
 type NeedCardProps = {
   shown: Shown;
-  hold: Hold | undefined;
+  answer: Answer | undefined;
   /** Answered, settled or gone: it folds away, and takes no more input. */
   leaving: boolean;
   /** When this page first saw the need. */
@@ -111,7 +111,7 @@ function FailedCard(props: NeedCardProps) {
 
 function Card(props: NeedCardProps & { disk: DiskFailure; freeSpace: (() => void) | null }) {
   const { need } = props.shown;
-  const hold = props.hold;
+  const answer = props.answer;
   const now = useNowMinuteMs();
   const environmentId = usePrimaryEnvironmentId();
   const card = cardOf(need, now, props.disk);
@@ -154,9 +154,9 @@ function Card(props: NeedCardProps & { disk: DiskFailure; freeSpace: (() => void
   const whole = useShowsWhole(need.kind);
 
   const section = useRef<HTMLElement>(null);
-  const holdAnswer = (commands: ReturnType<typeof commandsFor>) => {
+  const sendAnswer = (commands: ReturnType<typeof commandsFor>) => {
     movedByHand(need.threadId);
-    holds.hold({ key: need.key, threadId: need.threadId, commands });
+    void answering.send({ key: need.key, threadId: need.threadId, commands });
   };
   // An answer of the person's own keeps the card from Aski's take.
   const keepFromAski = () => {
@@ -166,12 +166,12 @@ function Card(props: NeedCardProps & { disk: DiskFailure; freeSpace: (() => void
     // The cleanup Cell is a new Cell on the full machine: the card stays until it retries.
     if (option.choice.kind === "freeSpace") return props.freeSpace?.();
     keepFromAski();
-    answering(section.current);
+    passFocusOn(section.current);
     lit.answered(need.key);
-    holdAnswer(commandsFor(need, option.choice, given, Date.now()));
+    sendAnswer(commandsFor(need, option.choice, given, Date.now()));
   };
 
-  const answerable = answerableOf(props.shown, hold) && !props.leaving;
+  const answerable = answerableOf(props.shown, answer) && !props.leaving;
   const ref = cell === null ? null : cellRef(cell.environmentId, cell.threadId);
   const repo = useRepositoryUrl(environmentId, need.projectId);
 
@@ -311,9 +311,9 @@ function Card(props: NeedCardProps & { disk: DiskFailure; freeSpace: (() => void
           onUndo={() => keepCard(need.key)}
         />
       ) : null}
-      {hold?.state === "failed" ? (
+      {answer?.state === "failed" ? (
         <p data-need-receipt="" data-warn="">
-          {hold.why + backLine(hold)}
+          {answer.why + backLine(answer)}
         </p>
       ) : null}
       {fromWords?.kind === "chosen" && fromWords.words !== null ? (
@@ -325,9 +325,9 @@ function Card(props: NeedCardProps & { disk: DiskFailure; freeSpace: (() => void
           lit={fromWords}
           onAnswer={(answers) => {
             keepFromAski();
-            answering(section.current);
+            passFocusOn(section.current);
             lit.answered(need.key);
-            holdAnswer(commandsFor(need, { kind: "answer" }, { answers }, Date.now()));
+            sendAnswer(commandsFor(need, { kind: "answer" }, { answers }, Date.now()));
           }}
         />
       ) : null}

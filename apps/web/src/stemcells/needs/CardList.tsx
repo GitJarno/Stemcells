@@ -2,8 +2,8 @@ import type { KeyboardEvent as KeyEvent, ReactNode } from "react";
 
 import { AutonomyOffer } from "../autonomy/Cards";
 import type { Shown } from "./display";
-import { useHolds } from "./holds";
-import { holds } from "./live";
+import { useAnswers } from "./answering";
+import { answering } from "./live";
 import { OneAsk } from "./OneAsk";
 import type { PageView } from "./page";
 import { leave, step } from "./walk";
@@ -35,7 +35,7 @@ function walkKeys(event: KeyEvent<HTMLDivElement>) {
  * in front, and the all-clear line once they're gone.
  */
 export function CardList(props: { view: PageView; head: ReactNode; foot?: ReactNode }) {
-  const answers = useHolds(holds);
+  const answers = useAnswers(answering);
   const { view } = props;
   return (
     <div data-stemcells-needs-list="" onKeyDown={walkKeys}>

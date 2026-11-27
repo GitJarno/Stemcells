@@ -5,7 +5,7 @@ import { useNowMinuteMs, usePrimaryEnvironmentId } from "../upstream/needs";
 import { cardOf, whenOf } from "./card";
 import type { Shown } from "./display";
 import { lineUp } from "./front";
-import type { Hold } from "./holds";
+import type { Answer } from "./answering";
 import { pullBack, useLater } from "./live";
 import { answerableOf, NeedCard, whoOf } from "./NeedCard";
 import { plainOf } from "./inline";
@@ -33,7 +33,7 @@ interface Seat {
  */
 export function OneAsk(props: {
   shown: ReadonlyArray<Shown>;
-  answers: ReadonlyMap<string, Hold>;
+  answers: ReadonlyMap<string, Answer>;
   seen: ReadonlyMap<string, number>;
 }) {
   const environmentId = usePrimaryEnvironmentId();
@@ -153,7 +153,7 @@ export function OneAsk(props: {
               key={leaving.need.key}
               shown={leaving}
               leaving={false}
-              hold={props.answers.get(leaving.need.key)}
+              answer={props.answers.get(leaving.need.key)}
               seenAt={null}
             />
           </div>
@@ -163,7 +163,7 @@ export function OneAsk(props: {
             key={front.need.key}
             shown={front}
             leaving={false}
-            hold={props.answers.get(front.need.key)}
+            answer={props.answers.get(front.need.key)}
             seenAt={props.seen.get(front.need.key) ?? null}
             landed
           />
