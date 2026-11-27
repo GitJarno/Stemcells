@@ -36,8 +36,8 @@ the leap's physics, which no curve can hold, sit beside them there:
     6° into the leap and stretches 14% at launch, round at the top;
   - its eyes close 40 ms past the top;
   - down under the same gravity, faster and faster, stretching to 18%, lying
-    back 14°, shrinking to the count's words and going into them over the
-    last tenth. Up and down are one parabola: the time up is to the time
+    back 14°, shrinking to the count's words and going into them over its
+    last word's height. Up and down are one parabola: the time up is to the time
     down as √rise is to √fall. Its time in the air is what gravity says,
     held between 380 and 560 ms, so it lands 470 to 650 ms after the crouch
     began.
@@ -69,8 +69,11 @@ change, and an entering row's light still blooms.
   16 ms. The phone carries the poses to the UI thread whole and runs them on
   a linear clock (`home/Hop.tsx`, `poseAt` in `home/flight.ts`); the eyes
   close from an animated reaction at the pose's moment. The Mac plays them as
-  one linear WAAPI animation, its open eyes over its shut ones until the top
-  (`rail/Hops.tsx`). A Cell moved again mid-air starts a new flight.
+  one linear WAAPI animation, open-eyed then shut-eyed (`rail/Hops.tsx`).
+  The Mac leaps as the person presses Sleep, from the row as it folds (a
+  settle can take seconds while a Cell at work stops); the phone's Cell waits
+  over its row for the line, as before. A Cell moved again mid-air starts a
+  new flight.
 
 ## Plan
 
@@ -90,3 +93,7 @@ change, and an entering row's light still blooms.
 - The sidebar's asleep rows (the unfolded Duo) draw no Cell, so a Wake there
   doesn't fly; its row leaves and the count ticks.
 - The Mac's asleep rows bloom in the accent: they carry no provider tone.
+- The leap: seen on the Mac in a headless lab, frame by frame and in real
+  time. The phone's leap, its haptics and the pill's catch are not yet seen
+  on a device. On the Mac a settle that fails brings its row back after its
+  Cell has leapt.

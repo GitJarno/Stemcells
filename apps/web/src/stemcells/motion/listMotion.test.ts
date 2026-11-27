@@ -61,7 +61,11 @@ describe("Sleep's leap", () => {
     expect(ys[launch]! - ys[launch + 1]!).toBeGreaterThan(ys[top - 1]! - ys[top]!);
     expect(ys.at(-1)! - ys.at(-2)!).toBeGreaterThan(ys[top + 2]! - ys[top + 1]!);
     const landed = poses.at(-1)!;
-    expect([landed.x, landed.y, landed.opacity]).toEqual([count.x, expect.closeTo(count.y), 0]);
+    expect([landed.x, landed.y, landed.opacity]).toEqual([
+      count.x,
+      expect.closeTo(count.y),
+      expect.closeTo(0),
+    ]);
     expect(leap.eyes).toBeGreaterThan(leap.apex);
   });
 

@@ -645,6 +645,7 @@ a[data-better-item]:focus-visible > svg {
 /* A Cell on its way from one stage to the next (Hops.tsx): drawn over the
    page, placed by its own transform. */
 [data-cells-hop] {
+  display: flex;
   position: fixed;
   top: 0;
   left: 0;
@@ -652,8 +653,12 @@ a[data-better-item]:focus-visible > svg {
   pointer-events: none;
   will-change: transform;
 }
-/* A leaping Cell's open eyes over its shut ones (Hops.tsx), until its top. */
-[data-cells-hop-awake] {
+/* A leaping Cell open-eyed, then shut-eyed past its top (Hops.tsx): one
+   over the other, each shown in turn. */
+[data-cells-hop-eyes] {
+  display: flex;
+}
+[data-cells-hop-eyes] + [data-cells-hop-eyes] {
   position: absolute;
   inset: 0;
 }

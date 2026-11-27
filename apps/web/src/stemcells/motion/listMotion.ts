@@ -44,8 +44,8 @@ export const LIST_MOTION = {
     lie: 14,
     /** Its eyes close this long (ms) past the top. */
     eyes: 40,
-    /** The share of its time in the air it takes to go into the count. */
-    fade: 0.1,
+    /** It goes into the count over its last this many of the count's heights. */
+    fade: 1,
   },
   /**
    * Asleep catching it, `--sc-motion-catch`: the count gives under the landing (`give` ms,
@@ -116,13 +116,15 @@ export function leapAt(leap: Leap, ms: number): LeapPose {
   const size = 1 + (to.height / from.height - 1) * fall * fall;
   const stretched = 1 + (rising ? stretch.up * left : stretch.down * fall);
   const way = to.x < from.x ? -1 : 1;
+  const x = from.x + (to.x - from.x) * p;
+  const y = top + (from.y - top) * ((p - topAt) / topAt) ** 2;
   return {
-    x: from.x + (to.x - from.x) * p,
-    y: top + (from.y - top) * ((p - topAt) / topAt) ** 2,
+    x,
+    y,
     scaleX: size / stretched,
     scaleY: size * stretched,
     rotate: rising ? way * lean * left : -way * lie * fall * (2 - fall),
-    opacity: p < 1 - fade ? 1 : (1 - p) / fade,
+    opacity: rising ? 1 : Math.min(1, Math.hypot(to.x - x, to.y - y) / (to.height * fade)),
   };
 }
 
