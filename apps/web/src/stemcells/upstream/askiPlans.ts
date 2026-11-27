@@ -53,6 +53,7 @@ import type { CellRef } from "../tabs/layout";
 import { projectRefOf, projectRefOfKey, startingModel } from "./draftWords";
 import { type CellStart, type DraftSetup, useStartCells } from "./launch";
 import { fromPrimary } from "./planner";
+import { useRailProjects } from "./rail";
 import { useWordsCatalog, useWordsPlaces, wordsCatalogOf } from "./words";
 
 export { promptOf } from "./words";
@@ -151,24 +152,54 @@ export interface PlanWorld {
   readonly names: ReadonlySet<string>;
 }
 
+/** A catalog's providers as the models a plan names. */
+const entriesOf = (providers: ReturnType<typeof wordsCatalogOf>["catalog"]["providers"]) =>
+  providers.flatMap((provider): ModelEntry[] =>
+    provider.models.map((model) => ({
+      instanceId: provider.id,
+      id: model.id,
+      name: model.name,
+      provider: provider.words?.[0] ?? provider.name,
+      ...(model.aliases ? { aliases: model.aliases } : {}),
+      efforts: model.efforts,
+      ...(model.effortOption ? { effortOption: model.effortOption } : {}),
+    })),
+  );
+
 /** The models of the catalog's ready providers, as a plan names them. */
 function modelsOf(environmentId: string): ModelEntry[] {
   const { catalog, ready } = wordsCatalogOf(
     readEnvironmentProviders(environmentId as EnvironmentId) ?? [],
   );
-  return catalog.providers
-    .filter((provider) => ready.has(provider.id))
-    .flatMap((provider) =>
-      provider.models.map((model) => ({
-        instanceId: provider.id,
-        id: model.id,
-        name: model.name,
-        provider: provider.words?.[0] ?? provider.name,
-        ...(model.aliases ? { aliases: model.aliases } : {}),
-        efforts: model.efforts,
-        ...(model.effortOption ? { effortOption: model.effortOption } : {}),
-      })),
-    );
+  return entriesOf(catalog.providers.filter((provider) => ready.has(provider.id)));
+}
+
+/**
+ * The models the compiler thinks with: those of the driver Aski's own chat runs on, on that
+ * driver's own instance, which Aski needs installed and on to talk at all (`aski/setup.ts`).
+ */
+function thinkOf(environmentId: string): PlanWorld["think"] {
+  const snapshots = readEnvironmentProviders(environmentId as EnvironmentId) ?? [];
+  const usable = (driver: string) =>
+    snapshots.find((each) => each.instanceId === driver && each.installed && each.enabled);
+  const askis = snapshots.find((each) => isAskisInstance(each.instanceId))?.driver;
+  const own =
+    (askis === undefined ? undefined : usable(askis)) ??
+    ASKI_DRIVERS.map(usable).find((each) => each !== undefined);
+  if (own === undefined) return null;
+  return thinkWith(entriesOf(wordsCatalogOf([own]).catalog.providers), own.instanceId);
+}
+
+/**
+ * The projects a plan's Cell can start in. "No project" is where a chat with no project lives,
+ * never a project a Cell is sent to by name.
+ */
+export function usePlanPlaces(): ReturnType<typeof useWordsPlaces> {
+  const listed = useWordsPlaces();
+  const scratch = new Set(
+    useRailProjects().flatMap((project) => (project.scratch ? [project.key] : [])),
+  );
+  return { ...listed, places: listed.places.filter((place) => !scratch.has(place.id)) };
 }
 
 /**
@@ -176,12 +207,11 @@ function modelsOf(environmentId: string): ModelEntry[] {
  * (the most recently worked in first), the ready models of Aski's server, and the Cells awake.
  */
 export function usePlanWorld(aski: CellRef): () => PlanWorld {
-  const { places, recency } = useWordsPlaces();
+  const { places, recency } = usePlanPlaces();
   // Read here so a provider coming ready re-reads the world; the list itself is read at send.
   useWordsCatalog(aski.environmentId);
   return () => {
     const models = modelsOf(aski.environmentId);
-    const instance = ASKI_DRIVERS.find((driver) => models.some((m) => m.instanceId === driver));
     return {
       context: {
         places: places
@@ -197,7 +227,7 @@ export function usePlanWorld(aski: CellRef): () => PlanWorld {
             : [],
         ),
       },
-      think: instance === undefined ? null : thinkWith(models, instance),
+      think: thinkOf(aski.environmentId),
       names: new Set(places.map((place) => place.name)),
     };
   };
@@ -244,21 +274,36 @@ export interface PlanHands {
   readonly factsOf: (act: StartAct) => StartFacts;
 }
 
+/** The first ready provider's own default model: what a Cell starts on when nothing else names one. */
+function firstReadyModel(environmentId: string): Selection | null {
+  const { catalog, ready } = wordsCatalogOf(
+    readEnvironmentProviders(environmentId as EnvironmentId) ?? [],
+  );
+  const provider = catalog.providers.find(
+    (each) => ready.has(each.id) && (each.defaultModel ?? each.models[0]?.id) !== undefined,
+  );
+  const model = provider?.defaultModel ?? provider?.models[0]?.id;
+  return provider === undefined || model === undefined ? null : { instanceId: provider.id, model };
+}
+
 /** The model a Cell with none named starts on, with the effort the person said when it has it. */
 function defaultWith(
   environmentId: string,
   projectKey: string,
   effort: string | null,
 ): { selection: Selection | null; entry: ModelEntry | null } {
-  const selection = startingModel(projectRefOfKey(projectKey));
+  const models = modelsOf(environmentId);
+  // Nothing set and nothing used yet: the first ready provider's own default.
+  const selection: Selection | null =
+    startingModel(projectRefOfKey(projectKey)) ?? firstReadyModel(environmentId);
   if (selection === null) return { selection: null, entry: null };
   const entry =
-    modelsOf(environmentId).find(
+    models.find(
       (model) => model.instanceId === selection.instanceId && model.id === selection.model,
     ) ?? null;
   const level = effort === null || entry === null ? null : clampEffort(effort, entry.efforts);
   if (level === null || entry?.effortOption === undefined)
-    return { selection: selection as Selection, entry };
+    return { selection, entry };
   return {
     selection: {
       instanceId: selection.instanceId,

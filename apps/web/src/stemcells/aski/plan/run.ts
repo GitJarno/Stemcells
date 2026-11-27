@@ -86,6 +86,8 @@ export function createRunner(hands: () => RunnerHands | null) {
   const told = new Map<string, string>();
   const rows = new Map<string, string>();
   const leaving = new Map<string, ReturnType<typeof setTimeout>>();
+  /** The project each act started in, as `plan/i`: one a plan made has no key until then. */
+  const startedIn = new Map<string, string>();
 
   const startOne = async (planId: string, act: StartAct) => {
     const use = hands();
@@ -104,6 +106,7 @@ export function createRunner(hands: () => RunnerHands | null) {
     }
     if (projectKey === null)
       return changePlan(planId, (tray) => failed(tray, act.i, "That project isn't here any more."));
+    startedIn.set(`${planId}/${act.i}`, projectKey);
     const result = await use.start(act, projectKey);
     changePlan(planId, (tray) =>
       result.ok ? started(tray, act.i, Date.now()) : failed(tray, act.i, result.error),
@@ -117,10 +120,14 @@ export function createRunner(hands: () => RunnerHands | null) {
       if (status !== "starting" && status !== "started" && status !== "waiting") return [];
       const facts = use.factsOf(act);
       const why = act.why;
+      const key = startedIn.get(`${live.id}/${act.i}`);
+      const projectId = facts.projectId || (key?.slice(key.indexOf(":") + 1) ?? "");
+      // A Cell with no project yet has no place in a list of projects' Cells: it waits in the plan.
+      if (projectId === "") return [];
       return [
         {
           threadId: act.threadId,
-          projectId: facts.projectId,
+          projectId,
           projectName: act.place === null ? "" : placeLabel(act),
           title: act.title,
           modelName: facts.modelName,

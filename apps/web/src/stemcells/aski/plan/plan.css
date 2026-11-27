@@ -128,7 +128,18 @@
   border-color: var(--sc-needs-you);
 }
 
-[data-plan-why],
+/* What a waiting Cell asks, with the fields the person can still change, under its line. */
+[data-plan-check] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sc-space-sm);
+  margin-block-start: var(--sc-space-xs);
+}
+[data-plan-actions] button,
+[data-plan-head-actions] button {
+  font-size: inherit;
+}
 [data-plan-words],
 [data-plan-failed],
 [data-plan-note] {

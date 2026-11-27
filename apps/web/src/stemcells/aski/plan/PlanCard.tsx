@@ -43,7 +43,8 @@ import {
 } from "../../../../../../stemcells/words/plans.ts";
 import { useOpenFromNeeds } from "../../upstream/needs";
 import { Button } from "../../upstream/ui";
-import { useWordsCatalog, useWordsPlaces } from "../../upstream/words";
+import { usePlanPlaces } from "../../upstream/askiPlans";
+import { useWordsCatalog } from "../../upstream/words";
 import { runner } from "./PlanRunner";
 import { PlanRoom } from "./room";
 import { changePlan, closePlan, type LivePlan } from "./store";
@@ -176,11 +177,9 @@ function CellRow(props: {
         >
           {cellNameOf(act.threadId)}
         </button>
-        {waiting ? (
-          <Pickers planId={planId} act={act} />
-        ) : (
+        {waiting ? null : (
           <span data-plan-meta="">
-            {[placeLabel(act), model?.name ?? DEFAULT_MODEL, effort].filter(Boolean).join(" · ")}
+            {[placeLabel(act), model?.name, effort].filter(Boolean).join(" · ")}
           </span>
         )}
         <button
@@ -211,7 +210,12 @@ function CellRow(props: {
           {status === undefined || waiting ? null : <span data-plan-status="">{status}</span>}
         </span>
       </div>
-      {waiting && why.length > 0 ? <p data-plan-why="">{why.join(" · ")}</p> : null}
+      {waiting ? (
+        <div data-plan-check="">
+          {why.length > 0 ? <span data-plan-why="">{why.join(" · ")}</span> : null}
+          <Pickers planId={planId} act={act} />
+        </div>
+      ) : null}
       {one.status === "failed" ? <p data-plan-failed="">{one.reason ?? "It didn't start."}</p> : null}
       {waiting || whole ? <Words words={act.words} risks={act.risks} /> : null}
     </li>
@@ -222,7 +226,7 @@ function CellRow(props: {
 function Pickers(props: { planId: string; act: StartAct }) {
   const { planId, act } = props;
   const aski = use(PlanRoom);
-  const { places } = useWordsPlaces();
+  const { places } = usePlanPlaces();
   const { catalog, ready } = useWordsCatalog(aski?.environmentId ?? null);
   const place = act.place;
   // A plan Aski's chat proposed names its project and model itself: they stand as they are.
@@ -390,7 +394,7 @@ function HoldRow(props: { planId: string; one: TrayAct; act: DestroyAct }) {
         </span>
       </div>
       {waiting ? (
-        <p data-plan-why="">
+        <p data-plan-note="">
           {known ? `${HOLD_HEARD(act.words)} ${holdStays(act)}` : HOLD_UNKNOWN}
         </p>
       ) : null}
