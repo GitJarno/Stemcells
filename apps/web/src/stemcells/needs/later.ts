@@ -7,23 +7,23 @@
 import { useSyncExternalStore } from "react";
 
 import type { CommandOutcome } from "../upstream/needs";
-import { answered, type Hold } from "./holds";
+import { answered, type Answer } from "./answering";
 import type { NeedsState } from "./stream";
 import type { LaterNeed } from "./wire";
 
 /**
  * The server's put-off asks, less those pulled back, and those whose Later the person just
- * gave: on the undo line or on its way, before the server's list says so. Soonest back first.
+ * gave, before the server's list says so. Soonest back first.
  */
 export function laterOf(
   state: NeedsState,
-  holds: ReadonlyMap<string, Hold>,
+  answers: ReadonlyMap<string, Answer>,
   pulled: ReadonlyMap<string, LaterNeed>,
 ): ReadonlyArray<LaterNeed> {
   const putOff = (state.needs ?? []).flatMap((need): Array<LaterNeed> => {
-    const hold = holds.get(need.key);
-    if (!answered(hold)) return [];
-    const snooze = hold?.commands.find((command) => command.type === "snooze");
+    const answer = answers.get(need.key);
+    if (!answered(answer)) return [];
+    const snooze = answer?.commands.find((command) => command.type === "snooze");
     return snooze?.type === "snooze" ? [{ ...need, until: snooze.until }] : [];
   });
   return [...(state.later ?? []).filter((need) => !pulled.has(need.key)), ...putOff].toSorted(

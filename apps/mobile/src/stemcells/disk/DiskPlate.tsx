@@ -7,7 +7,7 @@ import { useResolveClassNames } from "uniwind";
 import { DISK_FULL, DISK_NOTICE } from "../../../../../stemcells/words/disk.ts";
 import { useOverKeyboard } from "../home/overKeyboard";
 import { PILL_ROOM, setFootRoom } from "../home/state";
-import { held } from "../line/heldLine";
+import { did } from "../line/takeBack";
 import {
   AppText,
   Button,
@@ -96,7 +96,7 @@ function DiskPlate(props: {
       Boolean,
     );
     if (!hidden) return Dialog.alert(DISK_NOTICE.hideFailed, "Try again in a moment.");
-    void held.did({
+    did({
       key,
       words: DISK_NOTICE.hidden,
       takeBack: async () => {

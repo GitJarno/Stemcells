@@ -81,7 +81,7 @@ export function useClosesSettledCells(): void {
         out.left = next.left;
         return next.workspace;
       });
-      // Undo on any device brings each back, as for a settle made here.
+      // A Wake on any device right after brings each back, as for a settle made here.
       for (const left of out.left) keepLeft(left);
     });
   }, []);

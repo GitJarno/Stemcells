@@ -21,7 +21,7 @@ export interface Addressee {
   readonly card: Card;
   /** It left the list while the person typed: nothing goes to it. */
   readonly gone: boolean;
-  /** An answer to it waits out its undo window, or has gone. */
+  /** An answer to it is on its way, or has gone. */
   readonly held: boolean;
 }
 

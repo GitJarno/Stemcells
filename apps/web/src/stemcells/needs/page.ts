@@ -30,8 +30,6 @@ export interface PageDeps {
   readonly now: () => number;
   /** How long a gone card stays, folding away. */
   readonly linger: () => number;
-  /** A gone card that stays folded past its linger, so Undo brings it back in its place. */
-  readonly keep: (key: string) => boolean;
   /** How long the all-clear line stays. */
   readonly clearedFor: () => number;
 }
@@ -61,9 +59,7 @@ export function createPage(deps: PageDeps) {
     const { needs, live } = deps.needs();
     const latest = needs ?? [];
     const shown =
-      needs === null
-        ? view.shown
-        : nextShown(view.shown, latest, { now, linger: deps.linger(), keep: deps.keep });
+      needs === null ? view.shown : nextShown(view.shown, latest, { now, linger: deps.linger() });
 
     if (needs !== null) {
       const step = nextEpisode(episode, latest, now);
@@ -98,7 +94,7 @@ export function createPage(deps: PageDeps) {
 
     // Wake for whichever clock ends next.
     const wakes = [
-      nextLeaveAt(shown, deps.linger(), deps.keep),
+      nextLeaveAt(shown, deps.linger()),
       cleared === null ? null : clearedUntil,
     ].filter((at): at is number => at !== null);
     if (timer !== null) clearTimeout(timer);
