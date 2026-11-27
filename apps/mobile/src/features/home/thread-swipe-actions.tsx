@@ -468,9 +468,14 @@ export function ThreadSwipeable(props: ThreadSwipeableProps) {
   // RNGH lifecycle events call the latest handler, so commit from this release.
   const commitFullSwipe = useCallback(
     (flung: boolean) => {
-      if (!mountedRef.current || contentRef.current !== content) return;
-      // Stemcells: a flick never armed the full swipe, so it says so as it commits.
-      if (flung) handleFullSwipeArmedChange(true);
+      if (!mountedRef.current) return;
+      // Stemcells: a stale release may have slid out a row the list has since reused.
+      if (contentRef.current !== content) {
+        if (leavesOnRelease && dismissalRef.current === null) restoreRow();
+        return;
+      }
+      // Stemcells: a flick never armed the full swipe; a row leaving at release arms it as it slides.
+      if (flung && !leavesOnRelease) handleFullSwipeArmedChange(true);
       if (fullSwipeAction === "primary") commitPrimaryAction();
       else {
         swipeableRef.current?.close();
@@ -568,7 +573,7 @@ export function ThreadSwipeable(props: ThreadSwipeableProps) {
           fullSwipeThreshold={fullSwipeThreshold}
           onFullSwipeArmedChange={handleFullSwipeArmedChange}
           primaryAction={leading ? null : { ...primaryAction, onPress: commitPrimaryAction }}
-          flick={flick}
+          flick={leading ? undefined : flick}
           secondaryAction={resolveSecondaryAction({
             close: () => methods.close(),
             onDelete,
@@ -933,14 +938,15 @@ function ThreadSwipeActions(props: {
   readonly rowHeight: number;
   readonly secondaryAction: ThreadSwipeSecondaryAction | null;
   readonly translation: SharedValue<number>;
-  readonly flick: SharedValue<Flick>;
+  /** Stemcells: given only to the full swipe's edge, so one reaction samples the row's speed. */
+  readonly flick?: SharedValue<Flick>;
 }) {
   const { edge, fullSwipeThreshold, onFullSwipeArmedChange, secondaryAction, translation } = props;
   const { flick } = props;
   // Stemcells: the row's speed under the finger, for a flick's reach.
   useAnimatedReaction(
     () => translation.value,
-    (x) => flick.set(sampled(flick.value, x, Date.now())),
+    (x) => flick?.set(sampled(flick.value, x, Date.now())),
   );
   const fullSwipeIsPrimary = props.fullSwipeAction === "primary" || secondaryAction === null;
   const actionsWidth = swipeActionsWidth(secondaryAction !== null && props.primaryAction !== null);
