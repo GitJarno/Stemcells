@@ -14,10 +14,6 @@
   --sc-motion-recede-easing: cubic-bezier(0, 0, 0.58, 1);
   --sc-motion-icon-hover-duration: 220ms;
   --sc-motion-icon-hover-easing: cubic-bezier(0.42, 0, 0.58, 1);
-  --sc-motion-beckon-in-duration: 120ms;
-  --sc-motion-beckon-in-easing: cubic-bezier(0, 0, 0.58, 1);
-  --sc-motion-beckon-out-duration: 800ms;
-  --sc-motion-beckon-out-easing: cubic-bezier(0, 0, 0.58, 1);
   --sc-motion-settle-duration: 419ms;
   --sc-motion-settle-easing: linear(
     0,
@@ -142,48 +138,6 @@
   );
   --sc-motion-unfold-response: 0.34;
   --sc-motion-unfold-damping: 0.88;
-  --sc-motion-send-duration: 586ms;
-  --sc-motion-send-easing: linear(
-    0,
-    0.0013 0.6%,
-    0.0059 1.28%,
-    0.0134 1.96%,
-    0.0235 2.65%,
-    0.036 3.33%,
-    0.0525 4.1%,
-    0.0712 4.86%,
-    0.0942 5.72%,
-    0.135 7.08%,
-    0.1852 8.62%,
-    0.4096 15.02%,
-    0.4645 16.64%,
-    0.5117 18.09%,
-    0.5618 19.71%,
-    0.6089 21.33%,
-    0.6527 22.95%,
-    0.6913 24.49%,
-    0.7268 26.02%,
-    0.7611 27.65%,
-    0.7907 29.18%,
-    0.819 30.8%,
-    0.8444 32.42%,
-    0.8682 34.13%,
-    0.8892 35.84%,
-    0.9084 37.63%,
-    0.9266 39.59%,
-    0.9419 41.55%,
-    0.9554 43.6%,
-    0.9673 45.82%,
-    0.9772 48.12%,
-    0.9855 50.6%,
-    0.9921 53.24%,
-    0.9973 56.14%,
-    1.0029 61.77%,
-    1.005 68.77%,
-    1
-  );
-  --sc-motion-send-response: 0.42;
-  --sc-motion-send-damping: 0.86;
   --sc-motion-keyboard-duration: 383ms;
   --sc-motion-keyboard-easing: linear(
     0,
@@ -264,49 +218,6 @@
   );
   --sc-motion-page-response: 0.5;
   --sc-motion-page-damping: 1;
-  --sc-motion-rise-duration: 1176ms;
-  --sc-motion-rise-easing: linear(
-    0,
-    0.0013 0.55%,
-    0.0049 1.11%,
-    0.0111 1.7%,
-    0.0202 2.34%,
-    0.0315 2.98%,
-    0.0457 3.66%,
-    0.0816 5.1%,
-    0.1157 6.29%,
-    0.1596 7.7%,
-    0.3647 13.82%,
-    0.4169 15.43%,
-    0.463 16.92%,
-    0.5117 18.58%,
-    0.5574 20.24%,
-    0.599 21.85%,
-    0.6375 23.47%,
-    0.6739 25.13%,
-    0.7073 26.79%,
-    0.7386 28.49%,
-    0.7669 30.19%,
-    0.7931 31.93%,
-    0.8178 33.76%,
-    0.8403 35.63%,
-    0.8606 37.54%,
-    0.8808 39.71%,
-    0.8992 42.01%,
-    0.9155 44.39%,
-    0.9299 46.9%,
-    0.9425 49.53%,
-    0.9536 52.34%,
-    0.9632 55.36%,
-    0.9714 58.59%,
-    0.9833 65.48%,
-    0.9914 73.77%,
-    0.996 83.16%,
-    1
-  );
-  --sc-motion-rise-response: 0.8;
-  --sc-motion-rise-damping: 1;
-  --sc-motion-rise-delay: 120ms;
   /* The media viewer's springs, played from script (spring.ts): a picture
      lifting out of its thumbnail, landing back in one, and leaning past
      the end of its row. */
@@ -320,12 +231,6 @@
      a soft spring, so the count rebounds once past its place, like a hammock. */
   --sc-motion-catch-response: 0.36;
   --sc-motion-catch-damping: 0.5;
-  --sc-motion-light-duration: 3200ms;
-  --sc-motion-light-easing: cubic-bezier(0.3, 0.1, 0.7, 0.9);
-  --sc-motion-reflow-duration: 0ms;
-  --sc-motion-reflow-easing: linear;
-  --sc-motion-cut-duration: 0ms;
-  --sc-motion-cut-easing: linear;
   --sc-timing-beat: 120ms;
   --sc-timing-linger: 1200ms;
   /* An ask folding away once it's answered or gone; the list keeps it that long. */
@@ -423,49 +328,6 @@
   --sc-quiet-size: -2px;
   --sc-quiet-weight: 400;
   --sc-font-mono: ui-monospace, "SF Mono", Menlo, monospace;
-  --sc-ease: linear(
-    0,
-    0.0015 0.64%,
-    0.0058 1.27%,
-    0.0125 1.91%,
-    0.0233 2.65%,
-    0.0368 3.4%,
-    0.0526 4.14%,
-    0.093 5.73%,
-    0.1335 7.11%,
-    0.1811 8.6%,
-    0.4033 15.07%,
-    0.456 16.67%,
-    0.5033 18.15%,
-    0.5547 19.85%,
-    0.5999 21.44%,
-    0.6421 23.04%,
-    0.6813 24.63%,
-    0.7175 26.22%,
-    0.7506 27.81%,
-    0.7808 29.41%,
-    0.8099 31.1%,
-    0.836 32.8%,
-    0.8593 34.5%,
-    0.8799 36.2%,
-    0.8992 38%,
-    0.9178 40.02%,
-    0.9336 42.04%,
-    0.9477 44.16%,
-    0.9604 46.5%,
-    0.971 48.94%,
-    0.9798 51.49%,
-    0.9925 57.11%,
-    0.9994 63.16%,
-    1.0026 70.81%,
-    1.0026 82.59%,
-    1
-  );
-  --sc-enter: 471ms;
-  --sc-beat: 120ms;
-  --sc-flick: 120ms;
-  --sc-fade: 200ms;
-  --sc-rise: 1176ms;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -480,36 +342,16 @@
     --sc-motion-recede-easing: cubic-bezier(0, 0, 0.58, 1);
     --sc-motion-icon-hover-duration: 200ms;
     --sc-motion-icon-hover-easing: cubic-bezier(0, 0, 0.58, 1);
-    --sc-motion-beckon-in-duration: 200ms;
-    --sc-motion-beckon-in-easing: cubic-bezier(0, 0, 0.58, 1);
-    --sc-motion-beckon-out-duration: 200ms;
-    --sc-motion-beckon-out-easing: cubic-bezier(0, 0, 0.58, 1);
     --sc-motion-settle-duration: 200ms;
     --sc-motion-settle-easing: cubic-bezier(0, 0, 0.58, 1);
     --sc-motion-travel-duration: 200ms;
     --sc-motion-travel-easing: cubic-bezier(0, 0, 0.58, 1);
     --sc-motion-unfold-duration: 200ms;
     --sc-motion-unfold-easing: cubic-bezier(0, 0, 0.58, 1);
-    --sc-motion-send-duration: 200ms;
-    --sc-motion-send-easing: cubic-bezier(0, 0, 0.58, 1);
     --sc-motion-keyboard-duration: 200ms;
     --sc-motion-keyboard-easing: cubic-bezier(0, 0, 0.58, 1);
     --sc-motion-page-duration: 200ms;
     --sc-motion-page-easing: cubic-bezier(0, 0, 0.58, 1);
-    --sc-motion-rise-duration: 200ms;
-    --sc-motion-rise-easing: cubic-bezier(0, 0, 0.58, 1);
-    --sc-motion-rise-delay: 0ms;
-    --sc-motion-light-duration: 200ms;
-    --sc-motion-light-easing: cubic-bezier(0, 0, 0.58, 1);
-    --sc-motion-reflow-duration: 0ms;
-    --sc-motion-reflow-easing: linear;
-    --sc-motion-cut-duration: 0ms;
-    --sc-motion-cut-easing: linear;
-    --sc-ease: cubic-bezier(0, 0, 0.58, 1);
-    --sc-enter: 200ms;
-    --sc-flick: 200ms;
-    --sc-fade: 200ms;
-    --sc-rise: 200ms;
   }
 }
 

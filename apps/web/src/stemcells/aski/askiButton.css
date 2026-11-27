@@ -98,10 +98,11 @@ html[data-stemcells-aski-turn="pipe"]::view-transition-new(*) {
   mix-blend-mode: normal;
 }
 html[data-stemcells-aski-turn="pipe"]::view-transition-old(sc-aski-turn) {
-  animation: sc-aski-fade-out 140ms cubic-bezier(0.42, 0, 1, 1) both;
+  animation: sc-aski-fade-out var(--sc-motion-leave-duration) var(--sc-motion-leave-easing) both;
 }
 html[data-stemcells-aski-turn="pipe"]::view-transition-new(sc-aski-turn) {
-  animation: sc-aski-fade-in 200ms var(--sc-motion-fade-easing) 120ms both;
+  animation: sc-aski-fade-in var(--sc-motion-fade-duration) var(--sc-motion-fade-easing)
+    var(--sc-timing-beat) both;
 }
 html[data-stemcells-aski-turn="pipe"]::view-transition-old(sc-aski-occupant) {
   animation: sc-aski-sink 180ms cubic-bezier(0.55, 0, 0.75, 0.2) both;

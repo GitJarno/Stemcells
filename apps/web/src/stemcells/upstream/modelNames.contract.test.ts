@@ -53,12 +53,25 @@ describe("concise model names' contracts with upstream", () => {
         subProvider: "Anthropic",
       }),
     ).toBe("Opus 5.5");
+    // The composer's button names a current model by family, an older one with its version.
     expect(
       getTriggerDisplayModelName(
         { slug: "gemini-3.8-flash-high", name: "x", shortName: "Gemini 3.8 Flash (High)" },
         null,
       ),
-    ).toBe("Flash 3.8 High");
+    ).toBe("Flash High");
+    expect(
+      getTriggerDisplayModelName(
+        { slug: "gemini-3.8-flash-high", name: "Gemini 3.8 Flash (High)" },
+        ProviderDriverKind.make("antigravity"),
+      ),
+    ).toBe("Flash High");
+    expect(
+      getTriggerDisplayModelName(
+        { slug: "claude-opus-4-8", name: "Claude Opus 4.8", isLegacy: true },
+        null,
+      ),
+    ).toBe("Opus 4.8");
   });
 
   it("the update notice names models concisely", () => {

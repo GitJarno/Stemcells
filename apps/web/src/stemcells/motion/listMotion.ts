@@ -1,7 +1,7 @@
 /**
- * Every row of the Cells' lists, Mac and phone, moves in three ways only (stemcells/tasks/
- * sleep-motion.md): move, enter, leave. Plain numbers so the phone reads them too; each is a
- * token of `tokens/stemcells.css`, held there by `listMotion.test.ts`.
+ * The motion system's timed primitives (`stemcells/docs/motion.md`), first made for the Cells'
+ * lists (stemcells/tasks/sleep-motion.md): move, enter, leave. Plain numbers so the phone reads
+ * them too; each is a token of `tokens/stemcells.css`, held there by `listMotion.test.ts`.
  */
 
 import { springAt } from "../tokens/spring.ts";
@@ -12,9 +12,10 @@ const RECEDE = { duration: 350, easing: [0, 0, 0.58, 1] } as const;
 export const LIST_MOTION = {
   /** A row gliding to its new slot, a row folding away, and a Cell flying to its count. */
   move: RECEDE,
-  leave: RECEDE,
-  /** A row fading in where it landed: `--sc-motion-fade`. */
+  /** Anything new fading in where it landed: `--sc-motion-fade`. */
   enter: { duration: 200, easing: [0, 0, 0.58, 1] },
+  /** Anything going fading out where it stood, quicker than it came: `--sc-motion-leave`. */
+  leave: { duration: 140, easing: [0.42, 0, 1, 1] },
   /** Its light rising over the row's own and going: up quickly, down slowly. */
   bloom: { rise: 250, fall: 650 },
   /** The count taking a Cell, one small bump: `--sc-motion-settle`'s length. */

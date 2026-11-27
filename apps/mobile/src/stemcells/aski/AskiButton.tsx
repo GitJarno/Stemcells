@@ -34,6 +34,7 @@ import { placeOf } from "../../../../../stemcells/settings/places.ts";
 import { ASKI_BUTTON } from "../../../../../stemcells/words/aski.ts";
 import { ThreadCell } from "../cell/ThreadCell";
 import { askiStandsIn } from "../home/copies";
+import { ENTER, LEAVE } from "../home/listMotion";
 import { PHONE_PAGES } from "../chat/placeLinks";
 import { askMachine } from "../upstream/machines";
 import {
@@ -177,13 +178,13 @@ function Button(props: { readonly here: Where; readonly aski: EnvironmentThreadS
     setFade({ left: paneLeft(metrics) });
     veil.set(0);
     veil.set(
-      withTiming(1, { duration: FADE_OUT_MS, easing: Easing.in(Easing.quad) }, (done) => {
+      withTiming(1, LEAVE, (done) => {
         if (!done) return;
         runOnJS(go)(next.go);
         veil.set(
           withDelay(
             HOLD_MS,
-            withTiming(0, { duration: FADE_IN_MS, easing: Easing.out(Easing.quad) }, (cleared) => {
+            withTiming(0, ENTER, (cleared) => {
               if (cleared) runOnJS(setFade)(null);
             }),
           ),
@@ -348,10 +349,8 @@ function Button(props: { readonly here: Where; readonly aski: EnvironmentThreadS
   );
 }
 
-/** The pane fades to its ground, the chat turns under it, a beat, and the new one fades in. */
-const FADE_OUT_MS = 140;
+/** The pane leaves to its ground, the chat turns under it, a beat, and the new one enters. */
 const HOLD_MS = 90;
-const FADE_IN_MS = 200;
 
 /** Down past the rim: what stood in the button sinks out of it, and what's next comes up. */
 const SINK = new Keyframe({

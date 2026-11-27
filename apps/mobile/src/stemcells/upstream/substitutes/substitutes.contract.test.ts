@@ -16,7 +16,7 @@ import * as UpstreamT3McpTools from "@t3tools/shared/t3McpToolPresentation";
 import * as UpstreamThreadLinks from "@t3tools/shared/threadLinks";
 import { EnvironmentId, ThreadId } from "@t3tools/contracts";
 import { createServer, type Plugin, type UserConfig } from "vite-plus";
-import { describe, expect, expectTypeOf, it } from "vite-plus/test";
+import { describe, expect, expectTypeOf, it, vi } from "vite-plus/test";
 
 import phoneTestConfig from "../../../../vite.config";
 import * as OurFavicon from "./favicon";
@@ -30,6 +30,13 @@ import * as OurThreadLinks from "./threadLinks";
 import * as OurThreadReference from "./threadReference";
 import * as OurThreads from "./threads";
 import * as OurThreadSubagents from "./threadSubagents";
+
+// The list's native side can't load in Node; the top-anchoring case reads what the wrap hands it.
+vi.mock("@legendapp/list/keyboard", () => ({
+  KeyboardAwareLegendList: () => null,
+  useKeyboardChatComposerInset: () => null,
+  useKeyboardScrollToEnd: () => null,
+}));
 
 /**
  * Contract: the phone's builds (Metro, for the app; Vite, for its tests) hand
@@ -625,6 +632,12 @@ const PACKAGE_CASES: Readonly<
     // to fall back on, and a block says whether its fence has closed.
     says: ["<EnrichedMarkdownText", "renderers={renderers}", "block.isComplete"],
   },
+  "@legendapp/list/keyboard": {
+    importer: "apps/mobile/src/features/threads/ThreadFeed.tsx",
+    calls: [],
+    // The chat's feed is this list, asked to hold a short chat at its end.
+    says: ["<KeyboardAwareLegendList", "alignItemsAtEnd\n", "maintainScrollAtEnd={"],
+  },
 };
 const packages: Readonly<Record<string, string>> = PACKAGES;
 const packageExpectations = Object.entries(PACKAGE_CASES).map(([name, { importer }]) => ({
@@ -805,6 +818,12 @@ describe("the phone's substitutes for upstream modules", () => {
     expectTypeOf<
       typeof import("./react-native-enriched-markdown").EnrichedMarkdownText
     >().toEqualTypeOf<typeof import("react-native-enriched-markdown").EnrichedMarkdownText>();
+    expectTypeOf<keyof typeof import("./legendapp-list-keyboard")>().toEqualTypeOf<
+      keyof typeof import("@legendapp/list/keyboard")
+    >();
+    expectTypeOf<
+      typeof import("./legendapp-list-keyboard").KeyboardAwareLegendList
+    >().toEqualTypeOf<typeof import("@legendapp/list/keyboard").KeyboardAwareLegendList>();
   });
 
   it("upstream's views still import what we replace from the substituted module", () => {
@@ -897,6 +916,17 @@ describe("the phone's substitutes for upstream modules", () => {
     } finally {
       await server.close();
     }
+  });
+
+  it("a chat lays out from its top: its list never holds a short chat at its end", async () => {
+    // Upstream asks for the end; only a first message sent from the open screen anchored the top.
+    const { KeyboardAwareLegendList } = await import("./legendapp-list-keyboard");
+    const list = KeyboardAwareLegendList({
+      alignItemsAtEnd: true,
+      data: [],
+      renderItem: () => null,
+    });
+    expect(list?.props).toMatchObject({ alignItemsAtEnd: false, data: [] });
   });
 
   it("Copy Cell copies the Cell's name and its own link, never one through T3's hosted app", () => {
