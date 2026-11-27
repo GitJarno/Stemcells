@@ -93,11 +93,14 @@ The fork exists to keep taking upstream's work for free. The reasoning is in
 
 ## Words
 
-- Words a person reads in our layer say Cell and Aski. Upstream's strings
-  stay until one of our views replaces the one that shows them.
+- Words a person reads in our layer say Cell and Aski. Upstream's messages
+  say Cell for thread in every build, by rule (`stemcells/brand/cellWords.ts`);
+  its other strings stay until the word table or one of our views replaces
+  them.
 - A word upstream writes inline in a view is never edited in its file: add
   an entry to the word table (`stemcells/brand/wordTable.ts`) and the
-  builds swap it (`stemcells/docs/fork.md`, The name transform).
+  builds swap it (`stemcells/docs/fork.md`, The name transform). Thread
+  needs none in a message: the rule says Cell there.
 - A Cell is thrown at a problem and flies until it lands. The stages a
   person reads are Awake and Asleep; Flying, Landed and Input are an awake
   Cell's own states, and an ask is answered in its chat; never Working or

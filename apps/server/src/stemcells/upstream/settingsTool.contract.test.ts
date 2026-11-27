@@ -83,8 +83,8 @@ it.effect("a Cell reads a setting and a provider through upstream's MCP server",
         name: "stemcells_settings",
         arguments: {
           paths: [
-            "Threads › Auto-settle merged threads",
-            "Threads › Response streaming",
+            "Cells › Auto-settle merged Cells",
+            "Cells › Response streaming",
             "Providers › Codex",
           ],
         },
@@ -96,8 +96,8 @@ it.effect("a Cell reads a setting and a provider through upstream's MCP server",
     expect(result.isError).toBe(false);
     expect(result.structuredContent).toEqual({
       report: [
-        "Settings › Threads › Auto-settle merged threads: Off.",
-        "Settings › Threads › Response streaming: Turn.",
+        "Settings › Cells › Auto-settle merged Cells: Off.",
+        "Settings › Cells › Response streaming: Turn.",
         "Settings › Providers › Codex: Not signed in; models: GPT-5.5.",
       ].join("\n"),
     });

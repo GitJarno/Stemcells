@@ -124,7 +124,7 @@ export function ComputerRows({ alone }: { readonly alone: boolean }) {
 
   const forget = async (environmentId: EnvironmentId, label: string) => {
     const confirmed = await requestConfirmDialog(
-      `Remove ${label} from this device?\nThis forgets its pairing and cached threads here. To reach it again, pair it again.`,
+      `Remove ${label} from this device?\nThis forgets its pairing and cached Cells here. To reach it again, pair it again.`,
       { variant: "destructive" },
     );
     if (confirmed !== true) return;

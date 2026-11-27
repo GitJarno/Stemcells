@@ -240,14 +240,28 @@ the desktop app), and their sources stay upstream's
   again.
 - **The vocabulary rides it.** Cell for thread, Subcell for subagent or
   agent, Flying for Working: each was a seam on a line upstream wrote, and
-  two of upstream's tests were edited to expect them. A word table
-  (`stemcells/brand/wordTable.ts`) now names each place by its file and
-  upstream's exact words on one line, with ours for the part that changes,
-  and the same hook swaps them. "thread" can't be renamed wherever it
-  stands, as the name is, so every entry is held to its file: a build fails
-  when the file says the words fewer or more times than the entry does, or
-  is gone. A swap that would span lines stays a seam; sentences upstream
-  assembles at runtime stay with the substitutes that rewrite them.
+  two of upstream's tests were edited to expect them. "thread" can't be
+  renamed wherever it stands, as the name is: it's in code, ids and what
+  only models read too. An i18n message (the text of `gt("…")`, `msg("…")`
+  or `<T>…</T>`) is words a person reads by construction, though, so the
+  same hook says Cell for thread in every one, by rule
+  (`stemcells/brand/cellWords.ts`): whole words in the message's text,
+  never an ICU argument or key, an id (`thread.new`) or a place its
+  keep-list names with why. A message upstream adds follows with no entry.
+  GT keys each language's catalog by a hash of the English source, so the
+  builds also file each rewritten message's translation under the hash of
+  its new text, by GT's own hash, and another language still finds it.
+  `cellWords.test.ts` fails when a message in the sources still says
+  thread after the transform, or a catalog message that says it is one the
+  transform can't see. A word table (`stemcells/brand/wordTable.ts`) keeps
+  the rest: Subcell, Flying, a casual chat, and a thread only where ours
+  says something else or the words aren't a message. It names each place by
+  its file and upstream's exact words on one line, with ours for the part
+  that changes, and wins over the rule there. Every entry is held to its
+  file: a build fails when the file says the words fewer or more times than
+  the entry does, or is gone. A swap that would span lines stays a seam;
+  sentences upstream assembles at runtime stay with the substitutes that
+  rewrite them.
 - **Tests and source runs see upstream's words.** Tests run upstream's
   code as written, so upstream's tests pass unedited. The server run from
   source (`pnpm dev:server`) isn't built and says T3 Code; that's

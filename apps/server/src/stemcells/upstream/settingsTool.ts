@@ -21,7 +21,7 @@ import { settingsReport } from "../settings/report.ts";
 
 const SettingsTool = Tool.make("stemcells_settings", {
   description:
-    "What Stemcells settings are set to on this machine: read one before you answer about it. Name each as Settings does, such as `Threads › Auto-settle merged threads` or `Providers › Codex`; a provider reads as on or off, signed in or not, and its models. Read only: to change one, show it in a `setting` fence for the person to apply.",
+    "What Stemcells settings are set to on this machine: read one before you answer about it. Name each as Settings does, such as `Cells › Auto-settle merged Cells` or `Providers › Codex`; a provider reads as on or off, signed in or not, and its models. Read only: to change one, show it in a `setting` fence for the person to apply.",
   parameters: Schema.Struct({
     paths: Schema.Array(Schema.String)
       .check(Schema.isMinLength(1), Schema.isMaxLength(20))

@@ -4,12 +4,14 @@
  * transform"). Keyed on content, not positions; no file is kept whole, and a word that only
  * contains the name (a path, an id) fails the build until an entry here keeps it.
  */
-// The same builds swap upstream's words for a thread and a subagent (`wordTable.ts`).
+// The same builds swap upstream's words for a subagent and a few lines (`wordTable.ts`), and say
+// Cell for thread in every message a person reads (`cellWords.ts`).
 // @effect-diagnostics nodeBuiltinImport:off - a build step: it reads upstream's sources on disk.
 import * as NodeFS from "node:fs";
 import * as NodePath from "node:path";
 import * as NodeURL from "node:url";
 
+import { cellEdits, rekeyCatalog } from "./cellWords.ts";
 import { NAME, ourName, UPSTREAM_NAME } from "./upstreamName.ts";
 import { type Swap, WORD_TABLE } from "./wordTable.ts";
 
@@ -551,9 +553,29 @@ export interface Transformed {
   readonly edits: ReadonlyArray<Edit>;
 }
 
+/** Cell for thread in the messages of `code` from `file`, as line edits, but where `taken` already changes. */
+function cellLineEdits(file: string, code: string, taken: ReadonlyArray<Edit>): Edit[] {
+  const lineStarts = [0];
+  for (let at = code.indexOf("\n"); at !== -1; at = code.indexOf("\n", at + 1)) {
+    lineStarts.push(at + 1);
+  }
+  return cellEdits(file, code).flatMap((cell) => {
+    const line = lineStarts.findLastIndex((start) => start <= cell.start);
+    const column = cell.start - (lineStarts[line] ?? 0);
+    const from = cell.end - cell.start;
+    // The word table's own words for a line win over the rule's.
+    const overlaps = taken.some(
+      (edit) =>
+        edit.line === line && edit.column < column + from && column < edit.column + edit.from,
+    );
+    return overlaps ? [] : [{ line, column, from, to: cell.text.length, text: cell.text }];
+  });
+}
+
 /**
  * What a build makes of `code` from `file` (relative to the repository): our name where it said
- * upstream's, and the word table's swaps. Null when the builds change nothing there.
+ * upstream's, the word table's swaps, and Cell for thread in its messages. Null when the builds
+ * change nothing there.
  */
 export function transformSource(
   file: string,
@@ -562,10 +584,10 @@ export function transformSource(
 ): Transformed | null {
   const name = renameUpstreamName(file, code);
   const words = isRenamedIn(file) ? swapWords(file, code, table) : null;
-  if (name === null && words === null) return null;
-  const edits = [...(name?.edits ?? []), ...(words?.edits ?? [])].sort(
-    (a, b) => a.line - b.line || a.column - b.column,
-  );
+  const taken = [...(name?.edits ?? []), ...(words?.edits ?? [])];
+  const cells = isRenamedIn(file) ? cellLineEdits(file, code, taken) : [];
+  if (name === null && words === null && cells.length === 0) return null;
+  const edits = [...taken, ...cells].sort((a, b) => a.line - b.line || a.column - b.column);
   const faults = [...(words?.faults ?? [])];
   const lines = code.split("\n");
   // Last first, so each column still points where it did.
@@ -764,22 +786,27 @@ const SCRIPT = /\.[cm]?[jt]sx?$/;
 
 /**
  * Upstream's translation catalogs: prose, where every "T3 Code" is the app's name, also inside a
- * compound or a genitive ("T3 Code-version", "T3 Codes"), so each says ours, without `KEPT`.
+ * compound or a genitive ("T3 Code-version", "T3 Codes"), so each says ours, without `KEPT`. A
+ * locale's catalog also files each message the builds rewrite under its new key (`cellWords.ts`).
  */
 const CATALOG = /^apps\/(?:web|mobile|desktop)\/src\/i18n\/translations\/[^/]+\.json$/;
 const CATALOG_NAME = /T3 Code(?:s(?![\p{L}\p{N}]))?/gu;
 
 /**
- * A translation catalog's text with every "T3 Code" ours, or null for any other file, or a catalog
- * that doesn't say it. The web's build and the phone's Metro worker both run it.
+ * A translation catalog's text with every "T3 Code" ours and every rewritten message under its new
+ * key too, or null for any other file, or a catalog neither changes. The web's, the server's and
+ * the desktop's builds and the phone's Metro worker all run it.
  */
 export function renameCatalog(
   file: string,
   code: string,
+  root: string = REPO_ROOT,
 ): { readonly code: string; readonly renamed: number } | null {
   if (!CATALOG.test(file)) return null;
-  const renamed = code.match(CATALOG_NAME)?.length ?? 0;
-  return renamed === 0 ? null : { code: code.replace(CATALOG_NAME, ourName(undefined)), renamed };
+  const rekeyed = rekeyCatalog(file, code, root) ?? code;
+  const renamed = rekeyed.match(CATALOG_NAME)?.length ?? 0;
+  if (renamed === 0 && rekeyed === code) return null;
+  return { code: rekeyed.replace(CATALOG_NAME, ourName(undefined)), renamed };
 }
 
 /** Whether a built file is one a person's app reads: code and pages, not source maps. */
@@ -812,7 +839,7 @@ export function upstreamNamePlugin(
       const [path = id, query = ""] = id.split("?");
       if (/(?:^|&)(?:raw|url|inline)(?:[&=]|$)/.test(query)) return null;
       const file = NodePath.relative(root, path).split(NodePath.sep).join("/");
-      const catalog = renameCatalog(file, code);
+      const catalog = renameCatalog(file, code, root);
       if (catalog !== null) {
         renamed += catalog.renamed;
         return { code: catalog.code, map: null };

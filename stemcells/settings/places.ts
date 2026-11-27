@@ -158,13 +158,19 @@ function stepsAfter(place: SettingsPlace | null, catalog: SettingsCatalog): Read
   ];
 }
 
-/** The longest step whose words start `text` as whole words, any case, one plural "s" either way. */
+/**
+ * The longest step whose words start `text` as whole words, any case, one plural "s" either way,
+ * in our words or upstream's: the build says Cell where upstream's Settings say thread.
+ */
 function stepAt(text: string, steps: ReadonlyArray<Step>): { step: Step; length: number } | null {
   let best: { step: Step; length: number } | null = null;
   const lower = text.toLowerCase();
   for (const step of steps) {
-    const label = step.label.toLowerCase();
-    const forms = label.endsWith("s") ? [label, label.slice(0, -1)] : [label, `${label}s`];
+    const ours = step.label.toLowerCase();
+    const theirs = ours.replace(/\bcell(s?)\b/g, "thread$1");
+    const forms = (theirs === ours ? [ours] : [ours, theirs]).flatMap((label) =>
+      label.endsWith("s") ? [label, label.slice(0, -1)] : [label, `${label}s`],
+    );
     for (const form of forms) {
       if (form.length === 0 || !lower.startsWith(form)) continue;
       if (WORD_GOES_ON.test(text.slice(form.length))) continue;

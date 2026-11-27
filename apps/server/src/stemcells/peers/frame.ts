@@ -42,10 +42,7 @@ export function sanitize(text: string): string {
  * to close the quotes it stands in: another agent may have set it.
  */
 export function titleOf(title: string): string {
-  const line = sanitize(title)
-    .replace(/["“”]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
+  const line = sanitize(title).replace(/["“”]/g, "").replace(/\s+/g, " ").trim();
   return line.length > TITLE_CAP ? `${line.slice(0, TITLE_CAP - 1)}…` : line;
 }
 
