@@ -11,6 +11,7 @@
     "../../scripts/lib",
     "../../stemcells/boundary/check.ts",
     "../../stemcells/brand/assets.ts",
+    "../../stemcells/brand/cellWords.ts",
     "../../stemcells/brand/name.ts",
     "../../stemcells/brand/upstreamName.ts",
     "../../stemcells/brand/nameTransform.ts",

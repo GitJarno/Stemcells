@@ -4,6 +4,7 @@
  * run of them (`packages/client-runtime/src/t3ToolSummary.ts`); the web's and the phone's
  * substitutes for those two modules say it with these instead.
  */
+import { asBuilt } from "./cells.ts";
 
 /** A tool's words, in upstream's order: [action, running, completed, detail]. */
 export type ToolLabels = readonly [
@@ -48,6 +49,4 @@ export function withCellWords<
 }
 
 /** A sentence upstream builds about a run of T3's tools, each thread in it a Cell. */
-export function inCellWords(sentence: string): string {
-  return sentence.replace(/\b[Tt]hread(s?)\b/g, (_thread, plural: string) => `Cell${plural}`);
-}
+export const inCellWords = asBuilt;

@@ -36,23 +36,23 @@ describe("what stemcells_settings answers", () => {
     expect(
       settingsReport(
         [
-          "Threads › Auto-settle merged threads",
-          "Settings › Threads › Response streaming",
+          "Cells › Auto-settle merged Cells",
+          "Settings › Cells › Response streaming",
           "Providers › Antigravity",
           "Providers › Codex",
           "Appearance › Theme",
-          "Threads",
+          "Cells",
           "System Settings › General",
         ],
         machine,
       ).split("\n"),
     ).toEqual([
-      "Settings › Threads › Auto-settle merged threads: Off.",
-      "Settings › Threads › Response streaming: Paragraph.",
+      "Settings › Cells › Auto-settle merged Cells: Off.",
+      "Settings › Cells › Response streaming: Paragraph.",
       "Settings › Providers › Antigravity: Signed in · Google AI Pro; models: Neon, Argon.",
       "Settings › Providers › Codex: not on this machine.",
       "Settings › Appearance › Themes: kept on the person's own device, which only their app reads; a setting fence shows it live.",
-      "Settings › Threads: a page; name a setting on it.",
+      "Settings › Cells: a page; name a setting on it.",
       "System Settings › General: no place in Settings reads so.",
     ]);
   });

@@ -1,3 +1,5 @@
+import { asBuilt } from "../../../../../stemcells/words/cells.ts";
+
 /**
  * Upstream's alerts about a thread, as a person reads them on the phone: a thread is a Cell, one
  * at work is flying, and a settled one sleeps (`stemcells/AGENTS.md`, Words). Whole sentences
@@ -54,10 +56,21 @@ export const CELL_ALERTS: Readonly<Record<string, string>> = {
   "Couldn't open a thread": "Couldn't open a Cell",
 };
 
+/**
+ * Each alert by upstream's words and by a build's: a build already says Cell for thread in
+ * upstream's messages (`stemcells/brand/cellWords.ts`), and tests run upstream's as written.
+ */
+const BY_WORDS: ReadonlyMap<string, string> = new Map(
+  Object.entries(CELL_ALERTS).flatMap(([theirs, ours]) => [
+    [theirs, ours],
+    [asBuilt(theirs), ours],
+  ]),
+);
+
 /** `text` in Cell words when it is one of upstream's alerts about a thread, else as it is. */
 export function inCellWords(text: string): string;
 export function inCellWords(text: string | undefined): string | undefined;
 export function inCellWords(text: string | null | undefined): string | null | undefined;
 export function inCellWords(text: string | null | undefined): string | null | undefined {
-  return typeof text === "string" ? (CELL_ALERTS[text] ?? text) : text;
+  return typeof text === "string" ? (BY_WORDS.get(text) ?? text) : text;
 }
