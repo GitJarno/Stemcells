@@ -1,0 +1,49 @@
+/* A project's mark (ProjectMark.tsx): one squircle for every project. A neutral tile unless the
+   mark sets its own fill; the ring is drawn over what is on it, so a white logo keeps its edge
+   on white and a black one on black. */
+[data-project-mark] {
+  position: relative;
+  display: inline-grid;
+  flex-shrink: 0;
+  place-items: center;
+  justify-content: center;
+  width: var(--project-mark-size);
+  height: var(--project-mark-size);
+  overflow: hidden;
+  border-radius: 28%;
+  background: color-mix(in srgb, var(--foreground) 9%, var(--background));
+  color: color-mix(in srgb, var(--foreground) 62%, var(--background));
+  line-height: 1;
+  vertical-align: middle;
+}
+/* The phone's continuous 28% corner: a superellipse reaching further along each side. */
+@supports (corner-shape: superellipse(2)) {
+  [data-project-mark] {
+    border-radius: 42%;
+    corner-shape: superellipse(1.8);
+  }
+}
+[data-project-mark]::after {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  corner-shape: inherit;
+  box-shadow: inset 0 0 0 0.5px color-mix(in srgb, var(--foreground) 18%, transparent);
+  content: "";
+  pointer-events: none;
+}
+/* Lucide draws in the middle 20 of its 24 units: 72% of the tile draws the glyph at 60%. */
+[data-project-mark] > svg {
+  width: 72%;
+  height: 72%;
+}
+[data-project-mark] > [data-project-mark-letters] {
+  width: 100%;
+  height: 100%;
+  font-family: var(--sc-font-mono, ui-monospace, monospace);
+  font-weight: 700;
+}
+[data-project-mark-emoji] {
+  font-size: calc(var(--project-mark-size) * 0.66);
+  line-height: 1;
+}

@@ -105,7 +105,7 @@ describe("a setting in a reply", () => {
       <ChatMarkdown
         cwd={undefined}
         threadRef={chat}
-        text="Open Settings → Providers → Antigravity, then Settings › Threads › Auto-settle merged threads. System Settings → General stays."
+        text="Open Settings → Providers → Antigravity, then Settings › Cells › Auto-settle merged Cells. System Settings → General stays."
       />,
     );
     await expect

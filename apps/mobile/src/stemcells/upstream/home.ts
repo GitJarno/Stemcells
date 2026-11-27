@@ -1,7 +1,7 @@
-// What the phone's home takes from upstream's: its tabs, how it opens a chat and comes back,
-// which column it stands in, whether it stands in the workspace, the top inset its list rests
-// under, where its search stands, the header's items, the machines and projects its list is
-// narrowed to, how many older settled chats the servers keep, and where the phone keeps its picks.
+// What the phone's home takes from upstream's: its tabs, how it opens a chat and comes back, its
+// column, whether it stands in the workspace, the inset its list rests under, where its search
+// stands, the header's items, the machines and projects in view, the older settled chats the
+// servers keep, where the phone keeps its picks, and when a row starts to leave.
 
 import { useAtomValue } from "@effect/atom-react";
 import { Directory, File, Paths } from "expo-file-system";
@@ -42,11 +42,11 @@ export { NativePrimaryColumnContext } from "../../native/v5-workspace-context";
 export { Toolbar } from "../../components/ui/Toolbar";
 export { Menu } from "../../components/ui/Menu";
 export { SymbolView } from "../../components/ui/AppSymbol";
-export { ProjectFavicon } from "../../components/ProjectFavicon";
 export { ENVIRONMENT_MACHINE_SYMBOLS } from "../../components/EnvironmentMachineSymbol";
 export { useProjects } from "../../state/entities";
 export { useSavedRemoteConnections } from "../../state/use-remote-environment-registry";
 export { useHomeListOptions } from "../../features/home/home-list-options";
+export { registerThreadDismissal } from "../../features/home/thread-dismissal";
 
 /** Each environment's kind of machine, where it says. */
 export function useMachineKinds() {
