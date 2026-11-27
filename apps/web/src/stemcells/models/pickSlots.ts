@@ -8,3 +8,9 @@ export const PickSlots = createContext<{
   readonly effort: ReactNode;
   readonly footer: ReactNode;
 } | null>(null);
+
+/**
+ * The family's baked levels (Antigravity's Flash High, Medium, Low), drawn by the pick and handed
+ * to the effort column so they sit in its Effort section with the model's switches.
+ */
+export const PickLevels = createContext<ReactNode>(null);

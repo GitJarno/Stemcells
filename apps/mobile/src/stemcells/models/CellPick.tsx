@@ -1,10 +1,10 @@
-// The phone's pick (`stemcells/tasks/model-pick.md`): each agent one line of its models by
-// family, then the model's effort, switches and Access, every choice one tap that applies at
-// once, in a sheet that fits them. T3's session (the sheet's provider) reads and writes; its
-// whole catalog stays one tap away for hiding models and browsing every version.
+// The phone's pick (`stemcells/tasks/model-pick.md`): Model, Effort and Access on one grid, the
+// agents' marks in a gutter and every choice a track beside it, one tap that applies at once; a
+// wide sheet sets Model beside the rest. T3's session (the sheet's provider) reads and writes,
+// and its whole catalog stays one tap away.
 import { useAtomValue } from "@effect/atom-react";
 import * as Haptics from "expo-haptics";
-import { useLocale, useMessages } from "gt-react-native";
+import { useMessages } from "gt-react-native";
 import { type Context, type ReactNode, use, useState } from "react";
 import { Pressable, ScrollView, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -15,9 +15,9 @@ import {
   canCommitPendingModel,
   ChatGptSharingStatus,
   Chip,
+  compareSemverVersions,
   Dialog,
   environmentServerConfigsAtom,
-  formatProviderUpdateRequiredNotice,
   getProviderOptionCurrentValue,
   groupModelsBySubProvider,
   isReasoningControl,
@@ -28,6 +28,7 @@ import {
   type RuntimeMode,
   SegmentedControl,
   selectableChoices,
+  SymbolView,
   type ThreadSettingsSessionProps,
   type ThreadSettingsSessionValue,
 } from "../upstream/modelPick";
@@ -43,8 +44,17 @@ interface PickModel {
   readonly isDefault: boolean;
   readonly option: ModelOption;
 }
+type Line = ReturnType<typeof linesOf>[number];
+
 /** No segment lit: a value no option has, as when Ultrathink in the prompt owns effort. */
 const NONE = "\u0000";
+/** The marks' gutter, and the gap before the tracks: every caption and track starts after both. */
+const GUTTER = 28;
+const GAP = 12;
+const INSET = GUTTER + GAP;
+/** From this width the sheet sets Model beside Effort and Access: under it, "Supervised" and
+ * "Medium" no longer fit their segments (the open Duo's sheet, about 650 points, stays one column). */
+const WIDE = 720;
 
 export function CellPick(
   props: ThreadSettingsSessionProps & {
@@ -56,24 +66,18 @@ export function CellPick(
 ) {
   const session = use(props.session);
   const [catalogOpen, setCatalogOpen] = useState(false);
+  const [width, setWidth] = useState(0);
   const window = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const configs = useAtomValue(environmentServerConfigsAtom);
-  const messages = useMessages();
-  const locale = useLocale();
   const fit = useSheetFit();
   if (!session) return null;
   if (catalogOpen) return <View className="flex-1">{props.catalog}</View>;
 
+  const wide = width >= WIDE;
   const selection = session.displayedModelSelection;
   const lines = session.providerGroups.flatMap((group) =>
-    linesOf(
-      group,
-      group.providerKey === selection?.instanceId ? selection.model : null,
-      group.updateRequired
-        ? formatProviderUpdateRequiredNotice(group.updateRequired, "", messages, locale)
-        : null,
-    ),
+    linesOf(group, group.providerKey === selection?.instanceId ? selection.model : null),
   );
   const activeLine = lines.find((line) => line.lit !== null);
   const active = activeLine ? selectedIn(activeLine.entries, activeLine.selectedSlug) : null;
@@ -97,84 +101,83 @@ export function CellPick(
     );
   };
 
+  const models = (
+    <Section title="Model" inset>
+      {/* An agent with a long catalog scrolls here; the sheet only fits what shows. */}
+      <ScrollView
+        style={{ maxHeight: window.height * (wide ? 0.6 : 0.4) }}
+        contentContainerStyle={{ gap: 12 }}
+        bounces={false}
+        showsVerticalScrollIndicator={false}
+      >
+        {lines.map((line) => (
+          <ModelLine
+            key={line.key}
+            line={line}
+            // The agent this Cell runs stands out; the others wait a step back.
+            quiet={activeLine !== undefined && line.group !== activeLine.group}
+            onChoose={choose}
+          />
+        ))}
+      </ScrollView>
+    </Section>
+  );
+  const levels =
+    active && active.entry.levels.length > 0 ? (
+      <SegmentedControl<string>
+        options={active.entry.levels.map((level) => ({
+          value: level.id || "default",
+          label: level.label,
+        }))}
+        selected={active.level === null ? NONE : active.level || "default"}
+        onSelect={(value) => {
+          const level = active.entry.levels.find((entry) => (entry.id || "default") === value);
+          if (level) choose(level.model.option);
+        }}
+      />
+    ) : null;
+  const settings = (
+    <>
+      <OptionSections session={session} levels={levels} inset={!wide} />
+      <AccessSection session={session} inset={!wide} />
+    </>
+  );
+
   return (
     // Laid out on its own (absolute), so the sheet's height, 0 until it fits, never squeezes it.
     <View
       className="bg-sheet"
-      onLayout={fit.onLayout}
+      onLayout={(event) => {
+        fit.onLayout(event);
+        setWidth(event.nativeEvent.layout.width);
+      }}
       style={{
         position: "absolute",
         top: 0,
         left: 0,
         right: 0,
-        paddingTop: 28,
-        paddingBottom: insets.bottom + 12,
+        paddingTop: 22,
+        paddingBottom: Math.max(insets.bottom, 16),
         paddingLeft: Math.max(20, insets.left + 12),
         paddingRight: Math.max(20, insets.right + 12),
       }}
     >
-      {/* An agent with a long catalog scrolls here; the sheet only fits what shows. */}
-      <ScrollView
-        style={{ maxHeight: window.height * 0.45 }}
-        contentContainerClassName="gap-2.5"
-        bounces={false}
-        showsVerticalScrollIndicator={false}
-      >
-        {lines.map((line) => (
-          <View key={line.key} className="flex-row items-start gap-3">
-            <View className="h-8 w-6 items-center justify-center">
-              <ProviderIcon provider={line.driver} iconUrl={line.iconUrl} size={20} />
-            </View>
-            <View className="flex-1 gap-1.5">
-              <View className="flex-row flex-wrap gap-2">
-                {line.label ? (
-                  <AppText textRole="footnote" className="self-center text-foreground-muted">
-                    {line.label}
-                  </AppText>
-                ) : null}
-                {line.entries.map((entry) => (
-                  <Chip
-                    key={entry.key}
-                    label={entry.label}
-                    selected={entry === line.lit}
-                    disabled={entry.model.option.isUnavailable === true}
-                    accessibilityLabel={`${entry.label}, ${line.group.providerLabel}`}
-                    onPress={() => choose(entry.model.option)}
-                  />
-                ))}
-              </View>
-              {line.notes.map((note) => (
-                <AppText key={note} textRole="caption" className="text-foreground-muted">
-                  {note}
-                </AppText>
-              ))}
-            </View>
-          </View>
-        ))}
-      </ScrollView>
-
-      <View className="mt-6 gap-3">
-        {active && active.entry.levels.length > 0 ? (
-          <SegmentedControl<string>
-            options={active.entry.levels.map((level) => ({
-              value: level.id || "default",
-              label: level.label,
-            }))}
-            selected={active.level === null ? NONE : active.level || "default"}
-            onSelect={(value) => {
-              const level = active.entry.levels.find((entry) => (entry.id || "default") === value);
-              if (level) choose(level.model.option);
-            }}
-          />
-        ) : null}
-        <OptionRows session={session} />
-        <AccessRow session={session} />
-      </View>
+      {wide ? (
+        <View className="flex-row" style={{ gap: 32 }}>
+          <View style={{ flex: 1.2 }}>{models}</View>
+          <View style={{ flex: 1, gap: 22 }}>{settings}</View>
+        </View>
+      ) : (
+        <View style={{ gap: 22 }}>
+          {models}
+          {settings}
+        </View>
+      )}
 
       <ChatGptSharingStatus provider={provider} />
       <Pressable
         accessibilityRole="button"
-        className="mt-3 self-center px-4 py-2"
+        className="mt-4 flex-row items-center gap-1 self-center px-4 py-2"
         onPress={() => {
           fit.whole();
           setCatalogOpen(true);
@@ -183,7 +186,84 @@ export function CellPick(
         <AppText textRole="footnote" className="text-foreground-muted">
           All models
         </AppText>
+        <SymbolView name="chevron.right" size={11} tintColorClassName="accent-icon-muted" />
       </Pressable>
+    </View>
+  );
+}
+
+/** A caption over its controls, both starting at the tracks' edge when inset past the marks. */
+function Section(props: {
+  readonly title: string;
+  readonly inset: boolean;
+  readonly accessory?: ReactNode;
+  readonly children: ReactNode;
+}) {
+  return (
+    <View style={{ gap: 8 }}>
+      <View
+        className="flex-row items-center justify-between"
+        style={{ minHeight: 26, paddingLeft: props.inset ? INSET : 0 }}
+      >
+        <AppText textRole="footnote" className="font-t3-medium text-foreground-muted">
+          {props.title}
+        </AppText>
+        {props.accessory ? <View className="flex-row gap-1.5">{props.accessory}</View> : null}
+      </View>
+      {props.children}
+    </View>
+  );
+}
+
+/** One agent's families as one track, its mark in the gutter; a name or note sits on the track's edge. */
+function ModelLine(props: {
+  readonly line: Line;
+  readonly quiet: boolean;
+  readonly onChoose: (option: ModelOption) => void;
+}) {
+  const { line } = props;
+  return (
+    <View style={{ gap: 4 }}>
+      {line.label ? (
+        <AppText textRole="label" className="text-foreground-muted" style={{ paddingLeft: INSET }}>
+          {line.label}
+        </AppText>
+      ) : null}
+      <View className="flex-row items-center" style={{ gap: GAP }}>
+        <View
+          className="items-center justify-center"
+          style={{ width: GUTTER, height: 36, opacity: props.quiet ? 0.45 : 1 }}
+        >
+          <ProviderIcon provider={line.driver} iconUrl={line.iconUrl} size={20} />
+        </View>
+        {line.entries.length > 0 ? (
+          <SegmentedControl<string>
+            className="flex-1"
+            options={line.entries.map((entry) => ({
+              value: entry.key,
+              label: entry.label,
+              accessibilityLabel: `${entry.label}, ${line.group.providerLabel}`,
+            }))}
+            selected={line.lit?.key ?? NONE}
+            onSelect={(key) => {
+              const entry = line.entries.find((candidate) => candidate.key === key);
+              if (entry) props.onChoose(entry.model.option);
+            }}
+          />
+        ) : (
+          <View className="flex-1" />
+        )}
+      </View>
+      {line.notes.map((note) => (
+        <AppText
+          key={note}
+          textRole="label"
+          className="text-foreground-muted"
+          style={{ paddingLeft: INSET }}
+        >
+          {note}
+        </AppText>
+      ))}
     </View>
   );
 }
@@ -192,7 +272,7 @@ export function CellPick(
  * An agent's lines: its own models, then one per backend it runs models on (fx's), each named.
  * Antigravity's default alias lights the model it stands for; hidden models stay hidden.
  */
-function linesOf(group: ProviderGroup, selected: string | null, notice: string | null) {
+function linesOf(group: ProviderGroup, selected: string | null) {
   const first = group.models[0];
   const driver = first?.providerDriver;
   const alias = (option: ModelOption) =>
@@ -211,6 +291,7 @@ function linesOf(group: ProviderGroup, selected: string | null, notice: string |
     { backend: null, options: split ? split.ungrouped : offered },
     ...(split?.groups.map((part) => ({ backend: part.subProvider, options: part.models })) ?? []),
   ];
+  const update = updateNote(group);
   return parts
     .map(({ backend, options }) => {
       const reasonOnly = backend?.unavailableReason !== undefined;
@@ -234,12 +315,22 @@ function linesOf(group: ProviderGroup, selected: string | null, notice: string |
         iconUrl: first?.providerIconUrl,
         // Two accounts of one agent say which is which; a backend says its name.
         label: backend?.name ?? (first?.providerBadge?.showBadge ? group.providerLabel : null),
-        notes: [backend?.unavailableReason, backend ? null : notice].filter(
+        notes: [backend?.unavailableReason, backend ? null : update].filter(
           (note): note is string => typeof note === "string",
         ),
       };
     })
     .filter((line) => line.entries.length > 0 || line.notes.length > 0);
+}
+
+/** Under the agent's own track, so it needs neither the agent's name nor the models'. */
+function updateNote(group: ProviderGroup) {
+  const versions = group.updateRequired?.updateRequiredModels?.map((model) => model.minVersion);
+  if (!versions?.length) return null;
+  const newest = versions.reduce((highest, version) =>
+    compareSemverVersions(version, highest) > 0 ? version : highest,
+  );
+  return `Update to ${newest} for its newest models.`;
 }
 
 /** "Anthropic: Opus 5.5" under its backend's name reads "Opus 5.5". */
@@ -252,8 +343,15 @@ function withoutBackend(name: string, backend: string) {
   return rest.replace(/^\s*[.:/-]?\s*/, "") || name;
 }
 
-/** The model's effort, its other choices, then its switches, from T3's descriptors. */
-function OptionRows(props: { readonly session: ThreadSettingsSessionValue }) {
+/**
+ * Effort: the family's baked levels or the model's own, with its switches (Fast, Ultracode) on
+ * the caption's line; then any other choice the model offers, a section each.
+ */
+function OptionSections(props: {
+  readonly session: ThreadSettingsSessionValue;
+  readonly levels: ReactNode;
+  readonly inset: boolean;
+}) {
   const { session } = props;
   const descriptors = session.displayedDescriptors;
   const selects = descriptors.filter((entry): entry is Select => entry.type === "select");
@@ -276,63 +374,76 @@ function OptionRows(props: { readonly session: ThreadSettingsSessionValue }) {
     void Haptics.selectionAsync();
     session.applyOptionChange(id, value);
   };
+  const track = (descriptor: Select) => {
+    const locked = session.promptTraits.ultrathinkInBodyText && descriptor.id === primary;
+    const choices = selectableChoices(descriptor).filter(
+      (choice) => !(hasUltracodeSwitch && choice.id === "ultracode"),
+    );
+    return (
+      <View key={descriptor.id} style={{ gap: 6, paddingLeft: props.inset ? INSET : 0 }}>
+        <View pointerEvents={locked ? "none" : "auto"} style={{ opacity: locked ? 0.5 : 1 }}>
+          <SegmentedControl<string>
+            options={choices.map((choice) => ({
+              value: choice.id,
+              label: descriptor === effort ? levelLabel(choice.label) : choice.label,
+            }))}
+            selected={valueOf(descriptor)}
+            onSelect={(value) => apply(descriptor.id, value)}
+          />
+        </View>
+        {locked ? (
+          <AppText textRole="label" className="text-foreground-muted">
+            Ultrathink in your message sets the effort.
+          </AppText>
+        ) : null}
+      </View>
+    );
+  };
+  // Fast first: it is the one most reached for.
+  const ordered = [...switches].sort(
+    (a, b) => Number(b.id === "fastMode") - Number(a.id === "fastMode"),
+  );
+  const toggles = ordered.map((descriptor) => (
+    <Chip
+      key={descriptor.id}
+      size="small"
+      label={descriptor.id === "fastMode" ? "Fast" : descriptor.label}
+      {...(descriptor.id === "fastMode"
+        ? { icon: "bolt.circle" as const }
+        : descriptor.id === "ultracode"
+          ? { icon: "point.3.connected.trianglepath.dotted" as const }
+          : {})}
+      selected={descriptor.currentValue === true}
+      onPress={() => apply(descriptor.id, descriptor.currentValue !== true)}
+    />
+  ));
+  const hasEffort = props.levels !== null || effort !== undefined;
   return (
     <>
-      {[...(effort ? [effort] : []), ...selects.filter((entry) => entry !== effort)].map(
-        (descriptor) => {
-          const locked = session.promptTraits.ultrathinkInBodyText && descriptor.id === primary;
-          const choices = selectableChoices(descriptor).filter(
-            (choice) => !(hasUltracodeSwitch && choice.id === "ultracode"),
-          );
-          return (
-            <View key={descriptor.id} className="gap-1.5">
-              {descriptor === effort ? null : (
-                <AppText textRole="footnote" className="text-foreground-muted">
-                  {descriptor.label}
-                </AppText>
-              )}
-              {locked ? (
-                <AppText textRole="footnote" className="text-foreground-muted">
-                  Ultrathink in your message sets the effort.
-                </AppText>
-              ) : null}
-              <View pointerEvents={locked ? "none" : "auto"} style={{ opacity: locked ? 0.5 : 1 }}>
-                <SegmentedControl<string>
-                  options={choices.map((choice) => ({
-                    value: choice.id,
-                    label: descriptor === effort ? levelLabel(choice.label) : choice.label,
-                  }))}
-                  selected={valueOf(descriptor)}
-                  onSelect={(value) => apply(descriptor.id, value)}
-                />
-              </View>
-            </View>
-          );
-        },
-      )}
-      {switches.length > 0 ? (
-        <View className="flex-row flex-wrap gap-2">
-          {switches.map((descriptor) => (
-            <Chip
-              key={descriptor.id}
-              label={descriptor.id === "fastMode" ? "Fast" : descriptor.label}
-              {...(descriptor.id === "fastMode"
-                ? { icon: "bolt.circle" as const }
-                : descriptor.id === "ultracode"
-                  ? { icon: "point.3.connected.trianglepath.dotted" as const }
-                  : {})}
-              selected={descriptor.currentValue === true}
-              onPress={() => apply(descriptor.id, descriptor.currentValue !== true)}
-            />
-          ))}
-        </View>
+      {hasEffort || toggles.length > 0 ? (
+        <Section title={hasEffort ? "Effort" : "Options"} inset={props.inset} accessory={toggles}>
+          {props.levels ? (
+            <View style={{ paddingLeft: props.inset ? INSET : 0 }}>{props.levels}</View>
+          ) : null}
+          {effort ? track(effort) : null}
+        </Section>
       ) : null}
+      {selects
+        .filter((descriptor) => descriptor !== effort)
+        .map((descriptor) => (
+          <Section key={descriptor.id} title={descriptor.label} inset={props.inset}>
+            {track(descriptor)}
+          </Section>
+        ))}
     </>
   );
 }
 
-/** Access in four words; a mode this agent or a policy refuses leaves the row. */
-function AccessRow(props: { readonly session: ThreadSettingsSessionValue }) {
+/** Access in four words; a mode this agent or a policy refuses leaves the track. */
+function AccessSection(props: {
+  readonly session: ThreadSettingsSessionValue;
+  readonly inset: boolean;
+}) {
   const messages = useMessages();
   const { session } = props;
   const choices = session.runtimeModeChoices.filter(
@@ -340,17 +451,21 @@ function AccessRow(props: { readonly session: ThreadSettingsSessionValue }) {
   );
   if (choices.length < 2) return null;
   return (
-    <SegmentedControl<RuntimeMode>
-      options={choices.map((choice) => ({
-        value: choice.mode,
-        label: ACCESS_WORDS[choice.mode] ?? messages(choice.label),
-        accessibilityLabel: messages(choice.label),
-      }))}
-      selected={session.runtimeMode}
-      onSelect={(mode) => {
-        void Haptics.selectionAsync();
-        session.onUpdateRuntimeMode(mode);
-      }}
-    />
+    <Section title="Access" inset={props.inset}>
+      <View style={{ paddingLeft: props.inset ? INSET : 0 }}>
+        <SegmentedControl<RuntimeMode>
+          options={choices.map((choice) => ({
+            value: choice.mode,
+            label: ACCESS_WORDS[choice.mode] ?? messages(choice.label),
+            accessibilityLabel: messages(choice.label),
+          }))}
+          selected={session.runtimeMode}
+          onSelect={(mode) => {
+            void Haptics.selectionAsync();
+            session.onUpdateRuntimeMode(mode);
+          }}
+        />
+      </View>
+    </Section>
   );
 }

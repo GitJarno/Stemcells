@@ -265,15 +265,17 @@ substitutes.
 T3's picker serves every provider's whole catalogue: tabs per provider and
 Favorites, a legacy fold, an effort column, Permissions in a menu inside
 it; on the phone a full-screen list with Options under it, each pushing a
-page, and a Save. Ours is one surface (`stemcells/tasks/model-pick.md`):
-each agent one line of its models by family, the model's effort as one row,
-its switches and Access as rows of presses. The rule that turns a catalogue
+page, and a Save. Ours is one surface (`stemcells/tasks/model-pick.md`) of
+three sections, Model, Effort and Access, on one grid alike on both: agents'
+marks hang in a gutter, each agent's families are one segmented track, the
+effort another with its switches on its caption's line, Access a third. The rule that turns a catalogue
 into lines is `apps/web/src/stemcells/models/lineup.ts`, shared with the
 phone.
 
 - **The Mac: substitutes, no seam.** `ModelPickerContent` draws the lines
   with its props (`PickLineup.tsx`); `ComposerModelEffort`'s column and
-  footer draw rows (`PickControls.tsx`), its trigger suffix stays
+  footer draw the Effort and Access sections (`PickControls.tsx`), the
+  family's baked levels reaching the column through `PickLevels`; its trigger suffix stays
   upstream's. `ProviderModelPicker`'s substitute hands T3's docked popup a
   null column, which keeps the docked behaviour (open after a pick, focus
   on effort, its shortcuts' targets) while upstream draws no column, and
