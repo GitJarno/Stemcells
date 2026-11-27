@@ -1,14 +1,8 @@
 /**
- * A Cell's tools reach its own repository's chats (`readScope/rule.ts`). Upstream checks
- * that a caller is live, not which project it is in, so one gate stands where upstream
- * builds every toolkit's handlers (`McpToolAccess.routed`): a call that names a chat is
- * asked here before upstream's handler runs, and listing and searching answer for the
- * Cell's repository. Upstream hands that spot nothing that reaches the threads or the
- * projects, so the server layer files them here while it runs, as `peers/elsewhere.ts`
- * is filed. Upstream's toolkits built alone, as its suites build them, are upstream's.
- *
- * Not asked: a call to a linked environment (it is answered there), and tools that fail
- * with their own error type (issues, pull requests, worktrees), which read no chat.
+ * The read scope's gate (`readScope/rule.ts`): `McpToolAccess.routed` builds every toolkit's
+ * handlers and can't reach the threads or projects, so the server layer files them here while
+ * it runs, as `peers/elsewhere.ts` is filed. Not asked: a call bound for a linked environment
+ * (answered there), and tools that fail with their own error type and read no chat.
  */
 import {
   type EnvironmentId,
@@ -208,9 +202,7 @@ const inRepository = (cell: Cell, projectId: string) =>
 
 /** Whether the calling Cell may hear of a project's Cells; every project, for a caller the scope doesn't bind. */
 export const projectsInReach = callingCell().pipe(
-  Effect.map(
-    (cell) => (projectId: string) => cell === null || inRepository(cell, projectId),
-  ),
+  Effect.map((cell) => (projectId: string) => cell === null || inRepository(cell, projectId)),
 );
 
 /** A parameter that names a chat: `threadId`, and `targetThreadId` (a merge back). */
