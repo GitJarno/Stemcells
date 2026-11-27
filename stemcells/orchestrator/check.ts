@@ -84,9 +84,15 @@ export function readAnswer(value: unknown): Answer | null {
   return { acts, setup: numbersOf(value.setup), talk: numbersOf(value.talk) };
 }
 
+/** Words that lead up to a place's name and say nothing of a task: "and then in the …". */
+const OPENING = new Set("and then also plus so ok okay in on for at into inside the".split(" "));
+
 /** Every place the message names exactly, by where its name starts. */
-function mentionsOf(text: string, places: readonly PlaceEntry[]): Array<{ at: number; id: string }> {
-  const out: Array<{ at: number; id: string }> = [];
+function mentionsOf(
+  text: string,
+  places: readonly PlaceEntry[],
+): Array<{ at: number; end: number; id: string }> {
+  const out: Array<{ at: number; end: number; id: string }> = [];
   const lower = text.toLowerCase();
   for (const place of places) {
     for (const name of [place.name, ...(place.aliases ?? [])]) {
@@ -98,10 +104,15 @@ function mentionsOf(text: string, places: readonly PlaceEntry[]): Array<{ at: nu
           .join("[\\s_-]*")}(?![\\p{L}\\p{N}])`,
         "gu",
       );
-      for (const match of lower.matchAll(pattern)) out.push({ at: match.index, id: place.id });
+      for (const match of lower.matchAll(pattern))
+        out.push({ at: match.index, end: match.index + match[0].length, id: place.id });
     }
   }
-  return out.sort((a, b) => a.at - b.at);
+  // "harbor-design" names Harbor Design, not Harbor: a name inside a longer one doesn't count.
+  const whole = out.filter(
+    (m) => !out.some((o) => o !== m && o.at <= m.at && o.end >= m.end && o.end - o.at > m.end - m.at),
+  );
+  return whole.sort((a, b) => a.at - b.at);
 }
 
 const firstWords = (text: string, most: number) => text.split(/\s+/u).slice(0, most).join(" ");
@@ -116,6 +127,8 @@ const projectNameOf = (heard: string) =>
   heard
     .replace(/\s+/gu, " ")
     .trim()
+    // "a new project called vacuum cleaners": the name is what follows.
+    .replace(/^(?:(?:a|an|one|another)\s+)?(?:new\s+)?project\s+(?:called|named)\s+/iu, "")
     .replace(/(^|\s)(\p{Ll})/gu, (_, gap: string, letter: string) => gap + letter.toUpperCase());
 
 export interface PlanInput {
@@ -183,17 +196,34 @@ export function planOf(input: PlanInput): PlanResult {
       return { field: { id: entry.id, name: entry.name, heard, how: "picked" }, why: ["place-picked"] };
     if (!saysExactly(heard, entry.name, entry.aliases))
       return { field: { id: entry.id, name: entry.name, heard, how: "near" }, why: ["place-near"] };
-    // Said exactly. It is this Cell's when it stands in the Cell's own words, or is the last
-    // place said before them: how a sentence carries a place forward.
+    // Said exactly. It is this Cell's when it is the first place its own words name, or the
+    // last place said before them: how a sentence carries a place forward. A name left hanging
+    // at the end of a piece, with the next item right after it and no punctuation between
+    // ("… the seat map in Ledger one for the tax report"), could belong to either, so it
+    // counts for neither.
     const own = mine.map((n) => byNumber.get(n)!).sort((a, b) => a.start - b.start);
-    const inOwn = mentions.some(
-      (m) => m.id === entry.id && own.some((piece) => m.at >= piece.start && m.at < piece.end),
-    );
-    const before = mentions.filter((m) => own.length > 0 && m.at < own[0]!.start).at(-1);
-    const field: PlaceField = { id: entry.id, name: entry.name, heard, how: "exact" };
+    const hangs = (m: { at: number; end: number }) => {
+      const piece = pieces.find((p) => m.at >= p.start && m.at < p.end);
+      const next = piece === undefined ? undefined : byNumber.get(piece.n + 1);
+      // Within one Cell's own run of pieces the words simply go on.
+      const goesOn = next !== undefined && mine.includes(piece!.n) && mine.includes(next.n);
+      if (piece === undefined || next === undefined || m.end !== piece.end || goesOn) return false;
+      // "then in Atlas" alone is no item's end: the name opens what follows.
+      const lead = text.slice(piece.start, m.at).toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? [];
+      if (!lead.some((word) => !OPENING.has(word))) return false;
+      // When what follows names a place of its own, this one ends its own item.
+      return !mentions.some((o) => o.at >= next.start && o.at < next.end && o.id !== m.id);
+    };
+    const sure = mentions.filter((m) => !hangs(m));
+    const first = sure.find((m) => own.some((piece) => m.at >= piece.start && m.at < piece.end));
+    const before =
+      own.length === 0 ? undefined : mentions.filter((m) => m.at < own[0]!.start).at(-1);
+    const carried = before !== undefined && !hangs(before) && before.id === entry.id;
     // A message that names one place only means it for every Cell, wherever it stands.
     const only = mentions.every((m) => m.id === entry.id);
-    return { field, why: inOwn || only || before?.id === entry.id ? [] : ["place-apart"] };
+    const field: PlaceField = { id: entry.id, name: entry.name, heard, how: "exact" };
+    const mineToo = first === undefined ? carried : first.id === entry.id;
+    return { field, why: mineToo || only ? [] : ["place-apart"] };
   };
 
   const modelFor = (act: AnswerAct): ModelField | null => {

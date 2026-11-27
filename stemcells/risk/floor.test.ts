@@ -40,6 +40,8 @@ describe("the risk floor", () => {
     ["purge the S3 bucket", "deletion"],
     ["delete the user accounts that never logged in", "deletion"],
     ["remove all customers from the mailing tool", "deletion"],
+    ["The third one deletes the old staging tables in Ledger", "deletion"],
+    ["drop the legacy_exports table", "deletion"],
     // access
     ["Revoke the API keys.", "access"],
     ["rotate the tokens for the bot", "access"],

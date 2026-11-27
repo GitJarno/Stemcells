@@ -211,7 +211,8 @@ const FROM_A_STRUCTURE = String.raw`(?!\s+from\s+(?:the\s+|a\s+|this\s+)?(?:dict
 /** Up to `n` words between a verb and its object, none of them a code chore. */
 const gap = (n: number) => String.raw`(?:\s+(?!${SAFE}\b)[^\s]+){0,${n}}?\s+`;
 
-const DELETE_VERBS = String.raw`(?:delete|remove|wipe|erase|purge|destroy|nuke|drop|trash|obliterate|deprovision|decommission|tear\s+down|teardown)`;
+// The third person too: a spoken list says what each Cell does ("the third one deletes …").
+const DELETE_VERBS = String.raw`(?:deletes?|removes?|wipes?|erases?|purges?|destroys?|nukes?|drops?|trash(?:es)?|obliterates?|deprovisions?|decommissions?|tears?\s+down|teardown)`;
 const DELETE_OBJECTS = String.raw`(?:repos?|repositor(?:y|ies)|folders?|director(?:y|ies)|dirs?|home|everything|databases?|dbs?|buckets?|records|data|datasets?|collections?|users|accounts?|customers|backups?|projects?|disks?|drives?|volumes?|servers?|instances?|clusters?|environments?|websites?|domains?|workspaces?|organi[sz]ations?|orgs?|inbox(?:es)?|storage|production|prod|trash|tenants?|vms?|droplets?|vaults?|keychain|mailbox(?:es)?|subscribers|contacts|leads|deals|campaigns?|ads|listings|products|catalog|inventory|orders|invoices)`;
 const CLEAR_VERBS = String.raw`(?:clear|clear\s+out|clean\s+out|empty|format|overwrite|reset|reinitiali[sz]e)`;
 const CLEAR_OBJECTS = String.raw`(?:databases?|dbs?|buckets?|disks?|drives?|volumes?|production|prod|backups?|trash|inbox(?:es)?|records|data|users|accounts?|customers|everything|storage|mailbox(?:es)?)`;
@@ -281,6 +282,9 @@ const RULES: readonly Rule[] = [
   ),
   rule("deletion", String.raw`(?<t>\b${DELETE_VERBS}${gap(4)}${DELETE_OBJECTS}\b)${NOT_AFTER}`),
   rule("deletion", String.raw`(?<t>\b${CLEAR_VERBS}${gap(3)}${CLEAR_OBJECTS}\b)${NOT_AFTER}`),
+  // A database's tables: dropped or truncated, or deleted several at once.
+  rule("deletion", String.raw`(?<t>\b(?:drops?|truncates?)${gap(3)}tables?\b)${NOT_AFTER}`),
+  rule("deletion", String.raw`(?<t>\b${DELETE_VERBS}${gap(4)}tables\b)${NOT_AFTER}`),
   // Access.
   rule(
     "access",

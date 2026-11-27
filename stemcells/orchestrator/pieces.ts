@@ -26,13 +26,15 @@ const OPENERS = new RegExp(
   String.raw`\s(?=(?:and\s+|then\s+|and\s+then\s+|plus\s+|also\s+)?(?:` +
     String.raw`(?:the\s+)?(?:${ORDINAL})\s+(?:one|agent|cell|is|will|should|for|to|in|on)\b` +
     String.raw`|another\s+(?:one|agent|cell|for|to|in|on)\b` +
-    String.raw`|one\s+(?:for|to|in|on|more|new|agent|cell)\b` +
+    String.raw`|one\s+(?:for|to|more|new|agent|cell)\b` +
     String.raw`|one\s+\S+\s+(?:agent|cell)\b` +
     String.raw`|(?:a|one|another)\s+new\s+project\b` +
     String.raw`|new\s+project\b` +
     String.raw`))`,
   "giu",
 );
+/** "one in Harbor …, one in Atlas …" opens an item; "the one in Atlas" is a thing. */
+const ONE_IN = /(?<!\bthe)\s(?=(?:and\s+|then\s+|also\s+)?one\s+(?:in|on)\s)/giu;
 /** A joining word that may start a new piece when its piece ran long. */
 const JOINS = /\s(?=(?:and|then|also|plus|but)\s)/giu;
 
@@ -85,8 +87,33 @@ function cutAt(
 const matchesIn = (text: string, span: { start: number; end: number }, regex: RegExp) =>
   [...text.slice(span.start, span.end).matchAll(regex)].map((m) => span.start + m.index);
 
-/** The message as pieces, in order. An empty message has none. */
-export function piecesOf(text: string): Piece[] {
+/**
+ * Where speech moves to another project: "… then in Ledger one for the tax report". The place
+ * goes with what follows it, so the cut stands before the joining word, not after the name.
+ */
+function placeOpeners(names: readonly string[]): RegExp | null {
+  const said = names
+    .map((name) =>
+      name
+        .replace(/([a-z])([A-Z])/gu, "$1 $2")
+        .split(/[^\p{L}\p{N}.]+/u)
+        .filter((word) => word.length > 0)
+        .map((word) => word.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&"))
+        .join("[\\s_-]*"),
+    )
+    .filter((pattern) => pattern.length > 0);
+  if (said.length === 0) return null;
+  return new RegExp(
+    String.raw`\s(?=(?:and\s+then|then|and|also|plus)\s+(?:in|on|for|inside|into)\s+(?:the\s+)?(?:${said.join("|")})(?![\p{L}\p{N}]))`,
+    "giu",
+  );
+}
+
+/**
+ * The message as pieces, in order. An empty message has none. `places` are the person's
+ * projects' names: a piece also ends where the words move on to another of them.
+ */
+export function piecesOf(text: string, places: readonly string[] = []): Piece[] {
   let spans: Array<{ start: number; end: number }> = [];
   let from = 0;
   for (const cut of [...hardCuts(text), text.length]) {
@@ -94,7 +121,20 @@ export function piecesOf(text: string): Piece[] {
     if (span) spans.push(span);
     from = cut;
   }
-  spans = spans.flatMap((span) => cutAt(text, span, matchesIn(text, span, OPENERS)));
+  const moves = placeOpeners(places);
+  spans = spans.flatMap((span) =>
+    cutAt(
+      text,
+      span,
+      [
+        ...matchesIn(text, span, OPENERS),
+        ...matchesIn(text, span, ONE_IN),
+        ...(moves ? matchesIn(text, span, moves) : []),
+      ].sort(
+        (a, b) => a - b,
+      ),
+    ),
+  );
   spans = spans.flatMap((span) =>
     wordsIn(text.slice(span.start, span.end)) <= LONG
       ? [span]

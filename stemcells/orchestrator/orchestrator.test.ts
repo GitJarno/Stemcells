@@ -48,7 +48,11 @@ function plan(
   over: Partial<CompileContext> = {},
   final = false,
 ) {
-  const pieces = piecesOf(text);
+  const all = context(over);
+  const pieces = piecesOf(
+    text,
+    all.places.flatMap((place) => [place.name, ...(place.aliases ?? [])]),
+  );
   const n = (word: string) => {
     const piece = pieces.find((p) => p.text.includes(word));
     if (!piece) throw new Error(`no piece holds "${word}": ${pieces.map((p) => p.text).join(" | ")}`);
@@ -60,7 +64,7 @@ function plan(
     text,
     pieces,
     answer: answer(n),
-    context: context(over),
+    context: all,
     mint: () => `thread-${++minted}`,
     final,
   });
@@ -221,6 +225,65 @@ describe("the tier of a Cell", () => {
     expect(starts(p)[3]!.why).toEqual(["place-apart"]);
   });
 
+  it("gives a project said after a joining word to what follows it", () => {
+    const text =
+      "in Harbor I need an agent for the seat map and another for the ticket printer then in Atlas one for the tax report";
+    const p = made(
+      plan(text, (n) => ({
+        acts: [
+          { kind: "start", pieces: [n("seat map")], place: "Harbor", placeHeard: "Harbor" },
+          { kind: "start", pieces: [n("ticket printer")], place: "Harbor", placeHeard: "Harbor" },
+          { kind: "start", pieces: [n("tax report")], place: "Atlas", placeHeard: "Atlas" },
+        ],
+        setup: [n("then in Atlas")],
+        talk: [],
+      })),
+    );
+    expect(starts(p).map((a) => [a.words, a.tier])).toEqual([
+      ["in Harbor I need an agent for the seat map", "start"],
+      ["the ticket printer", "start"],
+      ["the tax report", "start"],
+    ]);
+  });
+
+  it("starts nothing in a project whose name hangs between two items", () => {
+    // No punctuation and no joining word: "in Atlas" could end the first item or open the second.
+    const text = "in Harbor one for the seat map in Atlas one for the tax report";
+    const either = (first: string, second: string) =>
+      starts(
+        made(
+          plan(text, (n) => ({
+            acts: [
+              { kind: "start", pieces: [n("seat map")], place: first, placeHeard: first },
+              { kind: "start", pieces: [n("tax report")], place: second, placeHeard: second },
+            ],
+            setup: [],
+            talk: [],
+          })),
+        ),
+      ).map((a) => a.tier);
+    expect(either("Harbor", "Atlas")).toEqual(["start", "check"]);
+    expect(either("Atlas", "Atlas")).toEqual(["check", "check"]);
+  });
+
+  it("takes the first project a Cell's own words name, not one its task mentions", () => {
+    const text = "one agent in Harbor to make the header match the one in Atlas. Another for the footer";
+    const tierWith = (place: string) =>
+      starts(
+        made(
+          plan(text, (n) => ({
+            acts: [
+              { kind: "start", pieces: [n("header")], place, placeHeard: place },
+              { kind: "start", pieces: [n("footer")] },
+            ],
+            setup: [],
+            talk: [],
+          })),
+        ),
+      )[0]!.tier;
+    expect([tierWith("Harbor"), tierWith("Atlas")]).toEqual(["start", "check"]);
+  });
+
   it("gives a message's one place to every Cell, wherever it stands", () => {
     const p = made(
       plan("fix the header. Then update the footer. Both in Harbor", (n) => ({
@@ -321,7 +384,14 @@ describe("the tier of a Cell", () => {
   it("makes a new project a check, named as the person said it", () => {
     const p = made(
       plan("a new project called vacuum cleaners about a comparison site", (n) => ({
-        acts: [{ kind: "new", pieces: [n("vacuum")], place: "vacuum cleaners", placeHeard: "vacuum cleaners" }],
+        acts: [
+          {
+            kind: "new",
+            pieces: [n("vacuum")],
+            place: "vacuum cleaners",
+            placeHeard: "a new project called vacuum cleaners",
+          },
+        ],
         setup: [],
         talk: [],
       })),

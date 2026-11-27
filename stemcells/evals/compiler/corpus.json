@@ -1,0 +1,218 @@
+{
+  "context": {
+    "places": [
+      { "id": "harbor", "name": "Harbor" },
+      { "id": "atlas", "name": "Atlas" },
+      { "id": "harbor-design", "name": "Harbor Design" },
+      { "id": "ledger", "name": "Ledger" },
+      { "id": "lanterns", "name": "Lanterns" },
+      { "id": "reviews", "name": "Reviews" },
+      { "id": "kiosk", "name": "Kiosk" },
+      { "id": "plain-project", "name": "plain-project" }
+    ],
+    "models": [
+      { "instanceId": "claudeAgent", "id": "claude-fable-5-1", "name": "Fable 5.1", "provider": "claude", "efforts": ["low", "medium", "high", "xhigh", "max"], "effortOption": "effort" },
+      { "instanceId": "claudeAgent", "id": "claude-opus-5-5", "name": "Opus 5.5", "provider": "claude", "efforts": ["low", "medium", "high", "xhigh", "max"], "effortOption": "effort" },
+      { "instanceId": "claudeAgent", "id": "claude-haiku-5-5", "name": "Haiku 5.5", "provider": "claude", "efforts": ["low", "medium", "high"], "effortOption": "effort" },
+      { "instanceId": "codex", "id": "gpt-6.1-sol", "name": "Sol 6.1", "provider": "codex", "efforts": ["low", "medium", "high", "xhigh", "max"], "effortOption": "reasoningEffort" },
+      { "instanceId": "antigravity", "id": "gemini-4-neon", "name": "Neon 4", "provider": "gemini", "efforts": ["low", "medium", "high", "xhigh"], "effortOption": "thought_level" }
+    ],
+    "cells": [
+      { "threadId": "t-otter", "name": "Otter" },
+      { "threadId": "t-badger", "name": "Badger" }
+    ]
+  },
+  "cases": [
+    {
+      "name": "a group's model covers its items, and the last names its own",
+      "dictated": true,
+      "text": "Fable agent on high one for the product detail page gallery in Harbor the second for Kiosk's film detail page showtimes one for Atlas posting the changelog and one Neon agent for copywriting the drop ads in Lanterns",
+      "cells": [
+        { "says": "gallery", "place": "Harbor", "model": "Fable 5.1", "effort": "high", "tier": "start", "not": "showtimes" },
+        { "says": "showtimes", "place": "Kiosk", "model": "Fable 5.1", "effort": "high", "tier": "start", "not": "gallery" },
+        { "says": "changelog", "place": "Atlas", "model": "Fable 5.1", "effort": "high", "tier": "start", "not": "drop ads" },
+        { "says": "drop ads", "place": "Lanterns", "model": "Neon 4", "effort": null, "tier": "start", "not": "changelog" }
+      ]
+    },
+    {
+      "name": "misheard model and project wait or mark, and never start in a guess",
+      "dictated": true,
+      "text": "table agent on high one for the product detail page gallery in harbour and one soul agent for the ad copy in atlas",
+      "cells": [
+        { "says": "gallery", "place": "Harbor", "model": "Fable 5.1", "effort": "high", "tier": "check" },
+        { "says": "ad copy", "place": "Atlas", "model": "Sol 6.1", "effort": null, "tier": "start" }
+      ]
+    },
+    {
+      "name": "a later sentence sets one Cell's model, and a new project is asked for",
+      "dictated": false,
+      "text": "Hey can you do one agent for the Harbor sign-in page and another agent for the Atlas docs. The Atlas one should use Sol. Also a new project called vacuum cleaners that will be a comparison site for vacuum cleaners in Finland",
+      "cells": [
+        { "says": "sign-in", "place": "Harbor", "model": null, "effort": null, "tier": "start" },
+        { "says": "docs", "place": "Atlas", "model": "Sol 6.1", "effort": null, "tier": "start" },
+        { "says": "comparison site", "place": "new:Vacuum Cleaners", "model": null, "effort": null, "tier": "check" }
+      ]
+    },
+    {
+      "name": "a list is a Cell an item",
+      "dictated": false,
+      "text": "- Harbor: verify the booking page is complete\n- Atlas: research alternative competitors\n- a new project called Vacuum Cleaners about a comparison site",
+      "cells": [
+        { "says": "booking page", "place": "Harbor", "model": null, "effort": null, "tier": "start" },
+        { "says": "competitors", "place": "Atlas", "model": null, "effort": null, "tier": "start" },
+        { "says": "comparison site", "place": "new:Vacuum Cleaners", "model": null, "effort": null, "tier": "check" }
+      ]
+    },
+    {
+      "name": "a count that opens the message adds no Cell, a correction replaces, and a risky task waits",
+      "dictated": true,
+      "text": "Start three agents. First one fixes the header in Harbor with Opus at max. Second one with Fable no I meant Sol writes the docs in Atlas. Third one deletes the old staging tables in Ledger",
+      "cells": [
+        { "says": "header", "place": "Harbor", "model": "Opus 5.5", "effort": "max", "tier": "start" },
+        { "says": "docs", "place": "Atlas", "model": "Sol 6.1", "effort": null, "tier": "start" },
+        { "says": "staging tables", "place": "Ledger", "model": null, "effort": null, "tier": "check" }
+      ]
+    },
+    {
+      "name": "one Cell from an address",
+      "dictated": false,
+      "text": "Harbor fix the header so it wraps on narrow screens",
+      "cells": [{ "says": "header", "place": "Harbor", "model": null, "effort": null, "tier": "start" }]
+    },
+    {
+      "name": "one long task is one Cell",
+      "dictated": true,
+      "text": "start an agent in Atlas to go through the docs and find every page that still mentions the old installer and then rewrite those pages so they match the new flow and also check the links and make a list of the ones that are broken",
+      "cells": [{ "says": "old installer", "place": "Atlas", "model": null, "effort": null, "tier": "start" }]
+    },
+    {
+      "name": "the same task for a count of Cells",
+      "dictated": false,
+      "text": "spawn 3 Sol agents in Ledger on the flaky export test",
+      "cells": [
+        { "says": "flaky export", "place": "Ledger", "model": "Sol 6.1", "effort": null, "tier": "start" },
+        { "says": "flaky export", "place": "Ledger", "model": "Sol 6.1", "effort": null, "tier": "start" },
+        { "says": "flaky export", "place": "Ledger", "model": "Sol 6.1", "effort": null, "tier": "start" }
+      ]
+    },
+    {
+      "name": "no project named: the Cells wait",
+      "dictated": true,
+      "text": "one agent for the passkey sign-in endpoints and another one for the release notes",
+      "cells": [
+        { "says": "passkey", "place": "*", "model": null, "effort": null, "tier": "check" },
+        { "says": "release notes", "place": "*", "model": null, "effort": null, "tier": "check" }
+      ]
+    },
+    {
+      "name": "a project mentioned inside a task is not where the Cell starts",
+      "dictated": false,
+      "text": "one agent in Harbor to make the header match the one in Atlas, and one in Ledger to add the export button",
+      "cells": [
+        { "says": "match the one in Atlas", "place": "Harbor", "model": null, "effort": null, "tier": "start" },
+        { "says": "export button", "place": "Ledger", "model": null, "effort": null, "tier": "start" }
+      ]
+    },
+    {
+      "name": "an everyday word that is a project's name routes nowhere",
+      "dictated": false,
+      "text": "one agent in Atlas to write an essay in plain prose about the reviews we got, another in Harbor to tidy the footer",
+      "cells": [
+        { "says": "plain prose", "place": "Atlas", "model": null, "effort": null, "tier": "*" },
+        { "says": "footer", "place": "Harbor", "model": null, "effort": null, "tier": "*" }
+      ]
+    },
+    {
+      "name": "deleting a project is held, and nothing else starts first",
+      "dictated": true,
+      "text": "delete the Reviews project and start an agent in Harbor for the footer",
+      "holds": [{ "target": "project", "place": "Reviews" }],
+      "cells": [{ "says": "footer", "place": "Harbor", "model": null, "effort": null, "tier": "check" }]
+    },
+    {
+      "name": "archiving named Cells is held",
+      "dictated": false,
+      "text": "archive Otter and Badger",
+      "holds": [{ "target": "cells", "cells": ["Otter", "Badger"] }],
+      "cells": []
+    },
+    {
+      "name": "a task that deletes inside its work is a Cell that waits, not a deletion",
+      "dictated": false,
+      "text": "start an agent in Ledger to delete the unused feature flags and drop the legacy_exports table",
+      "cells": [{ "says": "feature flags", "place": "Ledger", "model": null, "effort": null, "tier": "check" }]
+    },
+    {
+      "name": "a question beside the Cells is talk",
+      "dictated": false,
+      "text": "start an agent in Harbor for the footer and one in Atlas for the sitemap. Also what happened in Ledger yesterday?",
+      "talk": "what happened",
+      "cells": [
+        { "says": "footer", "place": "Harbor", "model": null, "effort": null, "tier": "start" },
+        { "says": "sitemap", "place": "Atlas", "model": null, "effort": null, "tier": "start" }
+      ]
+    },
+    {
+      "name": "a word to a running Cell and a setting are talk",
+      "dictated": false,
+      "text": "spin up an agent in Kiosk for the seat map. Otter, rebase onto main. And turn the sounds off",
+      "talk": "rebase",
+      "cells": [{ "says": "seat map", "place": "Kiosk", "model": null, "effort": null, "tier": "start" }]
+    },
+    {
+      "name": "two-word project, said with a dash",
+      "dictated": false,
+      "text": "harbor-design: tidy the colour tokens. Atlas: fix the search box",
+      "cells": [
+        { "says": "colour tokens", "place": "Harbor Design", "model": null, "effort": null, "tier": "start" },
+        { "says": "search box", "place": "Atlas", "model": null, "effort": null, "tier": "start" }
+      ]
+    },
+    {
+      "name": "effort words in ordinary prose set nothing",
+      "dictated": false,
+      "text": "one agent in Harbor to fix the high contrast theme, one in Atlas to lower the max upload size",
+      "cells": [
+        { "says": "high contrast", "place": "Harbor", "model": null, "effort": null, "tier": "start" },
+        { "says": "max upload", "place": "Atlas", "model": null, "effort": null, "tier": "start" }
+      ]
+    },
+    {
+      "name": "a model's name in prose picks nothing",
+      "dictated": false,
+      "text": "start an agent in Lanterns to write a haiku for the launch page and one in Atlas to explain the sol command in the docs",
+      "cells": [
+        { "says": "haiku", "place": "Lanterns", "model": null, "effort": null, "tier": "start" },
+        { "says": "sol command", "place": "Atlas", "model": null, "effort": null, "tier": "start" }
+      ]
+    },
+    {
+      "name": "one instruction for all of them reaches each",
+      "dictated": true,
+      "text": "two agents one for the checkout page in Harbor and one for the cart page in Harbor and both of them should write tests first",
+      "cells": [
+        { "says": "checkout", "place": "Harbor", "model": null, "effort": null, "tier": "start", "also": "tests first" },
+        { "says": "cart page", "place": "Harbor", "model": null, "effort": null, "tier": "start", "also": "tests first" }
+      ]
+    },
+    {
+      "name": "a place carried through a run of tasks",
+      "dictated": true,
+      "text": "in Kiosk I need an agent for the seat map and another for the ticket printer then in Ledger one for the tax report",
+      "cells": [
+        { "says": "seat map", "place": "Kiosk", "model": null, "effort": null, "tier": "start" },
+        { "says": "ticket printer", "place": "Kiosk", "model": null, "effort": null, "tier": "start" },
+        { "says": "tax report", "place": "Ledger", "model": null, "effort": null, "tier": "start" }
+      ]
+    },
+    {
+      "name": "risky by voice: force-push waits, the other starts",
+      "dictated": true,
+      "text": "one agent in Atlas to force push the release branch and one in Harbor to update the readme",
+      "cells": [
+        { "says": "release branch", "place": "Atlas", "model": null, "effort": null, "tier": "check" },
+        { "says": "readme", "place": "Harbor", "model": null, "effort": null, "tier": "start" }
+      ]
+    }
+  ]
+}

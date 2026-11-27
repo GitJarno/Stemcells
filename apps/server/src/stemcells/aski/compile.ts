@@ -86,7 +86,10 @@ export const compile = Effect.fn("AskiCompile.compile")(function* (input: {
   readonly times?: { readonly first: Duration.Duration; readonly second: Duration.Duration };
 }) {
   const { id, text, context } = input;
-  const pieces = piecesOf(text);
+  const pieces = piecesOf(
+    text,
+    context.places.flatMap((place) => [place.name, ...(place.aliases ?? [])]),
+  );
   const floor = (tries: ReadonlyArray<Try>): Compiled => ({
     plan: floorPlan(id, pieces, context.dictated),
     tries,
