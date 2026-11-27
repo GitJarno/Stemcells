@@ -1,32 +1,24 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { proposedPlan } from "../../../../../../stemcells/orchestrator/check.ts";
 import { PLAN_PATH } from "../../../../../../stemcells/orchestrator/wire.ts";
 import { fenceReader } from "./fence";
+import { proposed } from "./proposed.fixture";
 import { makeTrays } from "./trays";
 
-/** A plan as `stemcells_propose` makes it on the server. */
-const proposed = proposedPlan({
-  id: "plan-proposed-1",
-  cells: [
-    {
-      projectId: "p-harbor",
-      projectName: "Harbor",
-      title: "Tidy the tokens",
-      words: "Tidy the design tokens.",
-    },
-    {
-      projectId: "p-atlas",
-      projectName: "Atlas",
-      title: "Write the docs",
-      words: "Write the docs for the parser.",
-    },
-  ],
-  mint: (() => {
-    let n = 0;
-    return () => `thread-${n++}`;
-  })(),
-});
+const plan = proposed("plan-proposed-1", [
+  {
+    projectId: "p-harbor",
+    projectName: "Harbor",
+    title: "Tidy the tokens",
+    words: "Tidy the design tokens.",
+  },
+  {
+    projectId: "p-atlas",
+    projectName: "Atlas",
+    title: "Write the docs",
+    words: "Write the docs for the parser.",
+  },
+]);
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
@@ -39,21 +31,22 @@ describe("a ```plan fence reading its plan", () => {
       trays,
       async (environmentId, path) => {
         asked.push(`${environmentId} ${path}`);
-        return json({ plan: proposed, outcome: null });
+        return json({ plan, outcome: null });
       },
       () => {},
     );
     // Two views of the same fence ask together.
-    await expect(
-      Promise.all([open("mac", proposed.id), open("mac", proposed.id)]),
-    ).resolves.toEqual(["plan", "plan"]);
+    await expect(Promise.all([open("mac", plan.id), open("mac", plan.id)])).resolves.toEqual([
+      "plan",
+      "plan",
+    ]);
     expect(asked).toEqual([`mac ${PLAN_PATH}?id=plan-proposed-1`]);
-    const entry = trays.read().get(proposed.id);
+    const entry = trays.read().get(plan.id);
     expect(entry).toMatchObject({ door: "fence", environmentId: "mac", state: "tray" });
     expect(entry?.tray?.acts.map((one) => one.status)).toEqual(["waiting", "waiting"]);
     expect(entry?.tray?.acts.map((one) => one.act.why)).toEqual([["proposed"], ["proposed"]]);
     // Seen again, it is read from the phone's own store.
-    await open("mac", proposed.id);
+    await open("mac", plan.id);
     expect(asked).toHaveLength(1);
   });
 
@@ -63,7 +56,7 @@ describe("a ```plan fence reading its plan", () => {
       trays,
       async () =>
         json({
-          plan: proposed,
+          plan,
           outcome: [
             { i: 0, status: "started" },
             { i: 1, status: "waiting" },
@@ -71,11 +64,11 @@ describe("a ```plan fence reading its plan", () => {
         }),
       () => {},
     );
-    await open("mac", proposed.id);
+    await open("mac", plan.id);
     expect(
       trays
         .read()
-        .get(proposed.id)
+        .get(plan.id)
         ?.tray?.acts.map((one) => one.status),
     ).toEqual(["started", "waiting"]);
   });
@@ -96,12 +89,12 @@ describe("a ```plan fence reading its plan", () => {
     let reachable = false;
     const open = fenceReader(
       trays,
-      async () => (reachable ? json({ plan: proposed, outcome: null }) : null),
+      async () => (reachable ? json({ plan, outcome: null }) : null),
       () => {},
     );
-    await expect(open("mac", proposed.id)).resolves.toBe("unreachable");
+    await expect(open("mac", plan.id)).resolves.toBe("unreachable");
     expect(trays.read().size).toBe(0);
     reachable = true;
-    await expect(open("mac", proposed.id)).resolves.toBe("plan");
+    await expect(open("mac", plan.id)).resolves.toBe("plan");
   });
 });

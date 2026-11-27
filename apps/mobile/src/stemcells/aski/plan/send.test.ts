@@ -9,6 +9,9 @@ const plan = { id: "plan-1", acts: [], from: "read" } as unknown as Plan;
 function door(over: Partial<PlanDoor<string>> = {}) {
   const log: string[] = [];
   const settled: Array<Plan | null> = [];
+  let tell: () => void = () => {};
+  /** Resolves once the door is told what came of the plan. */
+  const told = new Promise<void>((resolve) => (tell = resolve));
   const made: PlanDoor<string> = {
     text: "start two agents, one for the header and one for the docs",
     plain: true,
@@ -31,34 +34,33 @@ function door(over: Partial<PlanDoor<string>> = {}) {
     settled: (_id, got) => {
       log.push("settled");
       settled.push(got);
+      tell();
     },
     forget: () => log.push("forget"),
     wait: () => new Promise(() => {}),
     ...over,
   };
-  return { made, log, settled };
+  return { made, log, settled, told };
 }
-
-const flush = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
 
 describe("a message to Aski's chat on its way out", () => {
   it("tells the server a plan is coming, then sends, with the compiler reading beside it", async () => {
-    const { made, log, settled } = door();
+    const { made, log, settled, told } = door();
     await expect(sendThroughPlan(made)).resolves.toBe("message-1");
-    await flush();
+    await told;
     expect(log).toEqual(["expect", "reading", "compile", "send", "settled"]);
     expect(settled).toEqual([plan]);
   });
 
   it("returns the send without waiting for the compiler", async () => {
     let finish: (made: Plan) => void = () => {};
-    const { made, settled } = door({
+    const { made, settled, told } = door({
       compile: () => new Promise<Plan>((resolve) => (finish = resolve)),
     });
     await expect(sendThroughPlan(made)).resolves.toBe("message-1");
     expect(settled).toEqual([]);
     finish(plan);
-    await flush();
+    await told;
     expect(settled).toEqual([plan]);
   });
 
@@ -108,7 +110,6 @@ describe("a message to Aski's chat on its way out", () => {
       },
     });
     await expect(sendThroughPlan(made)).resolves.toBeNull();
-    await flush();
     expect(stopped).toBe(true);
     expect(log).toContain("forget");
     // The plan the compiler made anyway is never carried out.

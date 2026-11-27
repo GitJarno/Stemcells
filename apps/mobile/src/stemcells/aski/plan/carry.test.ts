@@ -85,15 +85,26 @@ function world() {
       else timers.push(timer);
     }
   };
-  const settle = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
-  return { trays, hands, log, told, advance, settle, carrier: carry(trays, hands) };
+  const statuses = () =>
+    trays
+      .read()
+      .get("plan-1")
+      ?.tray?.acts.map((one) => one.status) ?? [];
+  /** Resolves on the store change that leaves the plan's acts standing as `want`. */
+  const until = (...want: string[]) =>
+    new Promise<void>((resolve) => {
+      const reached = () => statuses().join() === want.join();
+      if (reached()) return resolve();
+      const off = trays.subscribe(() => {
+        if (!reached()) return;
+        off();
+        resolve();
+      });
+    });
+  return { trays, hands, log, told, advance, until, statuses, carrier: carry(trays, hands) };
 }
 
-const statuses = (w: ReturnType<typeof world>) =>
-  w.trays
-    .read()
-    .get("plan-1")
-    ?.tray?.acts.map((one) => one.status);
+const statuses = (w: ReturnType<typeof world>) => w.statuses();
 
 describe("carrying a plan out", () => {
   it("starts each Cell once, however often the tray changes, and stays where the person is", async () => {
@@ -102,11 +113,10 @@ describe("carrying a plan out", () => {
     w.trays.arrived("plan-1", planOf([start(0), start(1, { tier: "check", why: ["place-near"] })]));
     // The store changes again while the first Cell is still on its way.
     w.trays.refuse("plan-1", 9, "unrelated");
-    await w.settle();
+    await w.until("started", "waiting");
     expect(w.log).toEqual(["start thread-0 in p-harbor"]);
-    expect(statuses(w)).toEqual(["started", "waiting"]);
     w.trays.change("plan-1", (tray) => confirm(tray, 1));
-    await w.settle();
+    await w.until("started", "started");
     expect(w.log).toEqual(["start thread-0 in p-harbor", "start thread-1 in p-harbor"]);
     expect(statuses(w)).toEqual(["started", "started"]);
   });
@@ -122,10 +132,9 @@ describe("carrying a plan out", () => {
         start(1, { tier: "check", why: ["new-project"], place }),
       ]),
     );
-    await w.settle();
     expect(w.log).toEqual([]);
     w.trays.change("plan-1", (tray) => confirm(confirm(tray, 0), 1));
-    await w.settle();
+    await w.until("started", "started");
     expect(w.log).toEqual([
       "create Otter Docs",
       "start thread-0 in p-new",
@@ -142,7 +151,7 @@ describe("carrying a plan out", () => {
     w.carrier.stop();
     w.trays.reading("plan-1", "mac", "aski-chat");
     w.trays.arrived("plan-1", planOf([start(0)]));
-    await w.settle();
+    await w.until("failed");
     expect(w.trays.read().get("plan-1")?.tray?.acts[0]).toMatchObject({
       status: "failed",
       reason: "Sol 6.1 can’t start now.",
@@ -154,7 +163,7 @@ describe("carrying a plan out", () => {
     const w = world();
     w.trays.reading("plan-1", "mac", "aski-chat");
     w.trays.arrived("plan-1", planOf([start(0), start(1, { tier: "check", why: ["risky"] })]));
-    await w.settle();
+    await w.until("started", "waiting");
     w.advance(200);
     expect(w.told).toEqual([
       {
@@ -184,7 +193,6 @@ describe("carrying a plan out", () => {
     // A tap's worth of everything a tray can be told: nothing is deleted, and nothing starts.
     w.trays.change("plan-1", (tray) => confirm(tray, 0));
     w.trays.change("plan-1", (tray) => confirm(tray, 1));
-    await w.settle();
     expect(w.log).toEqual([]);
     expect(statuses(w)).toEqual(["waiting", "waiting"]);
     await w.carrier.destroy("plan-1", 0);
@@ -192,7 +200,7 @@ describe("carrying a plan out", () => {
     expect(statuses(w)).toEqual(["done", "waiting"]);
     // With the deletion dealt with, the Cell after it can start.
     w.trays.change("plan-1", (tray) => confirm(tray, 1));
-    await w.settle();
+    await w.until("done", "started");
     expect(w.log).toEqual(["destroy Atlas", "start thread-1 in p-harbor"]);
   });
 
@@ -215,7 +223,7 @@ describe("carrying a plan out", () => {
     const w = world();
     w.trays.reading("plan-1", "mac", "aski-chat");
     w.trays.arrived("plan-1", planOf([start(0), start(1)]));
-    await w.settle();
+    await w.until("started", "started");
     w.advance(4_000);
     await w.carrier.callBack("plan-1");
     expect(w.log.slice(-2)).toEqual(["call back thread-0", "call back thread-1"]);
