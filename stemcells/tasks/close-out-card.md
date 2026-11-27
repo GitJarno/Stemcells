@@ -36,9 +36,10 @@ the next step. State reads faster drawn.
    the card with no foot: the records describe the latest run only. The
    rule above the foot is the point: what the Cell says, then what shows it.
 5. **The look.** The label sits in the card's hairline, as a field's does;
-   no fill, no icons, the reply's own type. `you` takes the composer's
-   warmth (the needs-you ink, a faint wash, the card's edge); a Left with no
-   owner word does too, as the server makes it the person's. `me` is the
+   no fill, no icons, the reply's own type. `you` takes Input's indigo, as
+   the row's icon and the ask say it (its ink, a faint wash, the card's
+   edge); a Left with no owner word does too, as the server makes it the
+   person's. `me` is the
    reply's ink, `waiting` the dim one. Nothing animates. The owner's word
    keeps a margin of its own in a 370 px pane, the narrowest captured.
 6. **Copied, it is the Cell's lines.** The reply's copy button copies the

@@ -3,6 +3,7 @@ import { useRef, useState, type RefObject } from "react";
 
 import { ASKI_UNAVAILABLE } from "../aski/AskiPane";
 import { NeedsTabCount } from "../needs/NeedsTabCount";
+import { CellAskIcon } from "../rail/StatusIcon";
 import { RenameField } from "../rename/RenameField";
 import type { AskiChat } from "../upstream/aski";
 import { useCellTitle } from "../upstream/thread";
@@ -268,6 +269,7 @@ function TabTitle(props: {
         {name}
         {count}
       </span>
+      <CellAskIcon cell={cell} />
     </>
   );
 }

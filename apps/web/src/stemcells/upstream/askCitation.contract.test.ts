@@ -1,7 +1,7 @@
 /**
- * Upstream's timeline finds a citation's words in the text it draws (`findAssistantCitationText`)
- * and highlights them. The docked ask's "Where it asked" relies on finding the Cell's words
- * there, which its markdown no longer shows.
+ * Upstream's timeline finds a citation's words in the text it draws (`findAssistantCitationText`,
+ * which its highlight range reads too). The ask's highlights in the reply, and its lines' jumps,
+ * rely on finding the Cell's words there, which its markdown no longer shows.
  */
 import { findAssistantCitationText } from "@t3tools/shared/assistantCitations";
 import { describe, expect, it } from "vite-plus/test";
@@ -14,10 +14,10 @@ const reply =
 // What the timeline draws of `reply`.
 const drawn = "Built the header tokens.\nShould I ship tokens.css to the site?";
 
-describe("where the docked ask asked", () => {
+describe("the words an ask was built from", () => {
   it("cites the asking words as the chat draws them", () => {
     const start = reply.indexOf("Should");
-    const citation = askCitationOf(thread, { messageId: "m1", start, end: reply.length }, reply);
+    const citation = askCitationOf(thread, "m1", reply, { start, end: reply.length });
     expect(citation?.text).toBe("Should I ship tokens.css to the site?");
     const found = citation && findAssistantCitationText(drawn, citation);
     expect(found && drawn.slice(found.start, found.end)).toBe(
@@ -26,7 +26,7 @@ describe("where the docked ask asked", () => {
   });
 
   it("cites a reply's opening when the ask quotes none of it", () => {
-    const citation = askCitationOf(thread, { messageId: "m1", start: null, end: null }, reply);
+    const citation = askCitationOf(thread, "m1", reply, null);
     expect(citation && findAssistantCitationText(drawn, citation)).toEqual({ start: 0, end: 62 });
   });
 });

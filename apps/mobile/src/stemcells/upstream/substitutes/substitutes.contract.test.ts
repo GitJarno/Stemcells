@@ -334,6 +334,18 @@ const CASES: Readonly<Record<string, Case>> = {
       ],
     },
   },
+  "apps/mobile/src/features/threads/threadFeedEndFollow.ts": {
+    exports: view(
+      "apps/mobile/src/features/threads/threadFeedEndFollow.ts",
+      "threadFeedEndFollow.ts",
+    ),
+    importers: {
+      "apps/mobile/src/features/threads/ThreadFeed.tsx": [
+        "./threadFeedEndFollow",
+        ["THREAD_FEED_MAINTAIN_SCROLL_AT_END"],
+      ],
+    },
+  },
   "apps/mobile/src/features/threads/threadListAnimations.ts": {
     exports: view(
       "apps/mobile/src/features/threads/threadListAnimations.ts",

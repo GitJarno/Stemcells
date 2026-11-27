@@ -4,3 +4,4 @@
 export { MailFold } from "../../chat/MailFold";
 export { MessageImages } from "../../chat/MessageImages";
 export { withoutPictures } from "../../chat/sentImages";
+export { withAskAtEnd } from "../../line/ChatAsk";

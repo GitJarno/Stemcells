@@ -199,7 +199,7 @@ const PROSE: Record<NonNullable<Need["prose"]>["cue"], string> = {
   offer: "Offers to go on",
   stopped: "Stopped short of done. Go on?",
   // Only when the Cell's close-out gave no step to show.
-  left: "Left a step to you. Done it?",
+  left: "Left a step to you. Done?",
 };
 
 /** A sentence's end: its stop, any closing quote or bracket, then space. */
@@ -226,7 +226,7 @@ export function askOf(
 
 /**
  * A step that asks the person to decide ("decide whether…", "say which…", "merge it or tell
- * me"): Done it would answer nothing, so it takes the person's words (landing-asks.md, 4).
+ * me"): Done would answer nothing, so it takes the person's words (landing-asks.md, 4).
  */
 const DECIDES =
   /\b(?:decide|choose)\b|\bpick (?:one|between|which|option|\d)|\b(?:say|tell me) (?:whether|which|if|what)\b|\bor (?:tell me|say)\b|\b(?:say|give the) go\b/i;
@@ -238,7 +238,7 @@ const DECIDES =
 const didIt = (steps: number) =>
   option(
     "did-it",
-    steps > 1 ? "All done" : "Done it",
+    steps > 1 ? "All done" : "Done",
     { kind: "didIt" },
     // Never recommended: "ok the rest" mustn't say the person did what only they can do.
     { consequence: `Sends “${PHRASES.didIt}”` },

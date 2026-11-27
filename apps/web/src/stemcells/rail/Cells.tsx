@@ -3,15 +3,11 @@ import {
   ChartNoAxesColumnIcon,
   ChevronDownIcon,
   ChevronsLeftIcon,
-  CircleCheckIcon,
-  CircleDashedIcon,
   FolderPlusIcon,
   ListIcon,
-  MessageCircleQuestionIcon,
   MoonIcon,
   SearchIcon,
   SettingsIcon,
-  ShieldQuestionIcon,
   SquarePenIcon,
   SunIcon,
 } from "lucide-react";
@@ -93,6 +89,7 @@ import {
 } from "./awake";
 import { useColumnStore, type ColumnStage } from "./column";
 import { shows } from "./filter";
+import { STATUS_ICON } from "./StatusIcon";
 import { Hops } from "./Hops";
 import { standingsOf, type Standings } from "./moves";
 import { DiskPlate } from "./DiskPlate";
@@ -653,16 +650,6 @@ function CellLine(props: {
     </li>
   );
 }
-
-/** T3's sidebar status icons and their colours (`components/sidebar/SidebarThreadRow.tsx`). */
-const STATUS_ICON: Readonly<
-  Record<RowStatus, { readonly Icon: typeof CircleDashedIcon; readonly className: string }>
-> = {
-  working: { Icon: CircleDashedIcon, className: "text-info-foreground" },
-  input: { Icon: MessageCircleQuestionIcon, className: "text-indigo-600 dark:text-indigo-300" },
-  approval: { Icon: ShieldQuestionIcon, className: "text-warning-foreground" },
-  done: { Icon: CircleCheckIcon, className: "text-success-foreground" },
-};
 
 /** The icon's place before the time, kept when there is none, so every row's time lines up. */
 function RowStatusIcon(props: { status: RowStatus | null }) {

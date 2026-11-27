@@ -351,7 +351,6 @@
   --sc-timing-glow-fade: 300ms;
   --sc-timing-glow-breath: 3200ms;
   --sc-timing-glow-drift: 9000ms;
-  --sc-timing-bob: 1300ms;
   /* The spawn (docs/interaction.md): the sent words' letters leave
      `letter-stagger` apart, all of them within `letters-span`, and go
      round Aski once an `orbit-turn`; the streams leave Aski `spawn-stagger`
@@ -1567,6 +1566,21 @@
   --sc-rarity-rare: rgba(81, 162, 255, 1);
   --sc-rarity-legendary: rgba(255, 137, 4, 1);
   --sc-rarity-secret: rgba(166, 132, 255, 1);
+}
+
+/* Input, the same in every skin: what a Cell asks of the person, in the indigo T3's row
+   icon wears for it (Tailwind's indigo-600, -300 in the dark). The words of a reply an ask
+   was built from wear its wash: the person's at --sc-input-you, the Cell's own fainter. */
+:root {
+  --sc-input: oklch(0.511 0.262 276.966);
+  --sc-input-you: color-mix(in oklab, var(--sc-input) 16%, transparent);
+  --sc-input-next: color-mix(in oklab, var(--sc-input) 7%, transparent);
+}
+
+:root.dark {
+  --sc-input: oklch(0.785 0.115 274.713);
+  --sc-input-you: color-mix(in oklab, var(--sc-input) 30%, transparent);
+  --sc-input-next: color-mix(in oklab, var(--sc-input) 14%, transparent);
 }
 
 /* The provider's mark in a Cell's composer: the words' ink at this share
