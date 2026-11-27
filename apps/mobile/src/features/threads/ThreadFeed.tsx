@@ -2397,7 +2397,7 @@ function renderFeedEntry(
         <Animated.View
           // A prompt sits close to its own response; the answer's margin separates turns.
           className={cn("items-end", props.userMessageGrouping.groupedWithNext ? "mb-1" : "mb-2")}
-          {...(enterAnimated ? { entering: FadeInDown.duration(220) } : {})}
+          {...(enterAnimated ? { entering: Stemcells.entering(FadeInDown.duration(220)) } : {})}
         >
           {presentation.attribution === "t3code" ? (
             <Text className="mb-1 pr-1 font-t3-medium text-2xs text-foreground-muted opacity-60">
@@ -2685,7 +2685,7 @@ function renderFeedEntry(
             : "mb-1 px-1",
           hasWideBlock && "w-full",
         )}
-        {...(enterAnimated ? { entering: FadeIn.duration(220) } : {})}
+        {...(enterAnimated ? { entering: Stemcells.entering(FadeIn.duration(220)) } : {})}
       >
         {renderedText.trim().length > 0 ? (
           <MarkdownImageAvailableWidthContext value={props.markdownContentWidth}>
