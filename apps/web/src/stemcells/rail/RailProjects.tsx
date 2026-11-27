@@ -2,15 +2,15 @@ import { askiCellOf, isAskiTab } from "../tabs/askiTab";
 import { activeTab, focusedPane } from "../tabs/layout";
 import { useWorkspaceStore } from "../tabs/store";
 import { useNavigateToCell } from "../upstream/routes";
+import { ProjectMark } from "../project/ProjectMark";
 import {
-  ProjectFavicon,
   useCellProjectKey,
   useRailChats,
   useRailProjects,
   type RailProject,
 } from "../upstream/rail";
 import { useMinute } from "./clock";
-import { badgeLetters, railTiles, tileSummary, type RailTile } from "./projects";
+import { railTiles, tileSummary, type RailTile } from "./projects";
 import { RailTip } from "./RailParts";
 
 /**
@@ -67,21 +67,15 @@ function ProjectTile(props: { tile: RailTile; on: boolean; onOpen: () => void })
   );
 }
 
-/**
- * The project's mark on a badge: its letters in its colour, or the icon or
- * emoji chosen for it; an amber dot at the corner while a chat there needs
- * you.
- */
+/** The project's mark on a badge; an amber dot at its corner while a chat there needs you. */
 function ProjectBadge(props: { project: RailProject; dot: RailTile["dot"] }) {
-  const { mark, record } = props.project;
   return (
-    <span data-stemcells-badge={mark.kind} className={mark.colorClass ?? undefined} aria-hidden>
-      {mark.kind === "letters" ? (
-        badgeLetters(mark.text)
-      ) : (
-        <ProjectFavicon project={record} className="size-3.5" />
-      )}
+    <span data-stemcells-badge="" aria-hidden>
+      <ProjectMark project={props.project.record} size={RAIL_MARK} />
       {props.dot ? <span data-stemcells-badge-dot={props.dot} /> : null}
     </span>
   );
 }
+
+/** The rail's project mark, in px: most of its 32 px plate. */
+const RAIL_MARK = 22;

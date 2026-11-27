@@ -42,7 +42,6 @@ import type { CellRef } from "../tabs/layout";
 import { threadRefOf } from "./routes";
 
 export { EnvironmentMachineIcon } from "../../components/EnvironmentMachineIcon";
-export { ProjectFavicon } from "../../components/ProjectFavicon";
 
 /** Why a chat's new title wasn't applied: it isn't loaded here, or this window may not change it. */
 const CANT_RENAME_CELL = "Can't rename this Cell here";
