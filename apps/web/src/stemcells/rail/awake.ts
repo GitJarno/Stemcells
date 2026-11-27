@@ -53,23 +53,6 @@ export function byRecent<C extends Launchable>(
 /** What an awake Cell's row says: flying, asking, landed and not yet opened, or seen. */
 export type RowState = "flying" | "needs" | "news" | "seen";
 
-/**
- * An awake row's light: a lamp in its provider's tone behind the Cell, whatever it says; its
- * status icon says the rest (`ROW_STATUS`).
- */
-export interface RowLight {
-  readonly strength: "full" | "faint";
-  /** The band crossing on the wall clock's beat, in step with the composer's. */
-  readonly band: boolean;
-}
-
-export const ROW_LIGHT: Readonly<Record<RowState, RowLight>> = {
-  flying: { strength: "full", band: true },
-  needs: { strength: "full", band: false },
-  news: { strength: "full", band: false },
-  seen: { strength: "faint", band: false },
-};
-
 /** A row's state from the machine's word on its Cell and whether its last landing was opened. */
 export function rowStateOf(
   stage: "needs-you" | "working" | "done" | undefined,

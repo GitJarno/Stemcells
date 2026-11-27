@@ -26,8 +26,8 @@ export function ComposerAttachmentButton(
         {...props}
         supportsFiles={false}
         onPickMedia={async () => {
-          // A keyboard still up, or still leaving, as the card rises hides its foot (Photos,
-          // Files, Add N), so the card waits until it's down. React Native's Keyboard.dismiss
+          // A keyboard still up, or still leaving, as the card rises covers its photos, so the
+          // card waits until it's down. React Native's Keyboard.dismiss
           // blurs only its own TextInputs; T3's composer is a native view.
           await Promise.race([KeyboardController.dismiss(), wait(KEYBOARD_GONE_BY)]);
           setOpen(true);

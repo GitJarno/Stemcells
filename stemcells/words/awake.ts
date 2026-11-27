@@ -15,20 +15,14 @@ export const STATUS_WORDS = {
   done: "Landed",
 } as const;
 
-/** Putting a Cell away, putting it away until a time, and bringing it back. */
+/** Putting a Cell away and bringing it back. Putting it away until a time is upstream's own Snooze. */
 export const SLEEP = "Sleep";
-export const SLEEP_UNTIL = "Sleep until…";
 export const WAKE = "Wake";
 
 export const EMPTY_WORDS = {
   awake: "No Cells awake.",
   asleep: "No Cells asleep.",
 } as const;
-
-/** What the undo line says once a Cell, or several, sleeps or wakes. */
-export const sleptWords = (who: string) => `${who} is asleep`;
-export const sleptManyWords = (count: number) => `${count} Cells asleep`;
-export const wokeWords = (who: string) => `${who} is awake`;
 
 /** A timed sleep's row, in place of its time: when it wakes. */
 export const wakesWords = (when: string) => `Wakes ${when}`;

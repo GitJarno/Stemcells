@@ -7,19 +7,16 @@ import { cellNameOf } from "../../cell/name";
 import { lastDiskFailure } from "../../disk/pressure";
 import { cardOf } from "../card";
 import type { Shown } from "../display";
-import type { Hold } from "../holds";
+import { answered, type Answer } from "../answering";
 import { whoOf } from "../NeedCard";
 import type { Addressee } from "./read";
 
-const HELD = new Set<Hold["state"]>(["holding", "sending", "sent"]);
-
 export function addresseesOf(
   shown: ReadonlyArray<Shown>,
-  held: ReadonlyMap<string, Hold>,
+  answers: ReadonlyMap<string, Answer>,
   now: number,
 ): ReadonlyArray<Addressee> {
   return shown.map(({ need, goneAt }) => {
-    const hold = held.get(need.key)?.state;
     return {
       number: need.number,
       who: whoOf(need),
@@ -29,7 +26,7 @@ export function addresseesOf(
       // As its card reads the disk, so "as recommended" never retries a Cell the full disk stopped.
       card: cardOf(need, now, need.kind === "failed" ? lastDiskFailure(need.key) : null),
       gone: goneAt !== null,
-      held: hold !== undefined && HELD.has(hold),
+      held: answered(answers.get(need.key)),
     };
   });
 }

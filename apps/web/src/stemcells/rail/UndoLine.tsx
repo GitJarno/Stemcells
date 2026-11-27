@@ -5,7 +5,7 @@ import { cn, InlineButton } from "../upstream/ui";
 import { undoNoticeWords } from "./undoNotice";
 
 /**
- * Upstream's undo line above the stages, in our words: the newest act, an answer or a settle,
+ * Upstream's undo line above the stages, in our words: the newest act, an unpin or a discard,
  * and the keys that take it back (stemcells/tasks/left-column-v3.md, decision 8). Upstream
  * announces it. It sits over the list's foot, as upstream's sits over its shelves, so nothing
  * moves when it comes and goes.

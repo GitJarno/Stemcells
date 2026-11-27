@@ -22,10 +22,10 @@ import { lit } from "./answers/lit";
 import { movedByHand } from "./byHand";
 import { cardOf, type CardOption } from "./card";
 import { askButtonsOf } from "./askButtons";
-import { answered, useHolds, type Hold } from "./holds";
+import { answered, useAnswers, type Answer } from "./answering";
 import { type AskPassage, chatAskOf } from "./inChat";
 import { plainOf } from "./inline";
-import { holds } from "./live";
+import { answering } from "./live";
 import { Words } from "./NeedCard";
 import { useNeeds } from "./stream";
 import type { Need, NeedsList } from "./wire";
@@ -41,7 +41,7 @@ const STEPS_SHOWN = 3;
  */
 export function ChatAsk(props: { cell: CellRef }) {
   const state = useNeeds();
-  const answers = useHolds(holds);
+  const answers = useAnswers(answering);
   const list: NeedsList | null =
     state.needs === null
       ? null
@@ -55,7 +55,7 @@ export function ChatAsk(props: { cell: CellRef }) {
   const ask = {
     cell: props.cell,
     need: shown,
-    hold: answers.get(shown.key),
+    answer: answers.get(shown.key),
     leaving: need === null,
     onLeft: () => setKept(null),
   };
@@ -69,7 +69,7 @@ export function ChatAsk(props: { cell: CellRef }) {
 interface AskProps {
   readonly cell: CellRef;
   readonly need: Need;
-  readonly hold: Hold | undefined;
+  readonly answer: Answer | undefined;
   readonly leaving: boolean;
   readonly onLeft: () => void;
 }
@@ -109,7 +109,7 @@ function InlineAsk(props: AskProps & { disk: DiskFailure; freeSpace: (() => void
   const choose = (option: CardOption) => {
     if (option.choice.kind === "freeSpace") return props.freeSpace?.();
     if (autonomy?.taking.some((each) => each.key === need.key)) void keepCard(need.key);
-    holdAnswer(need, option);
+    sendAnswer(need, option);
   };
   const { primary, notNow } = buttons;
   const signIn = need.kind === "sign-in" ? () => open.providerSetup(need.providerInstanceId) : null;
@@ -159,7 +159,7 @@ function InlineAsk(props: AskProps & { disk: DiskFailure; freeSpace: (() => void
           </Jump>
         </p>
       ) : null}
-      {props.hold?.state === "failed" ? <p data-chat-ask-receipt="">{props.hold.why}</p> : null}
+      {props.answer?.state === "failed" ? <p data-chat-ask-receipt="">{props.answer.why}</p> : null}
       {primary !== null || signIn !== null || buttons.rest.length > 0 || notNow !== null ? (
         <div data-chat-ask-buttons="">
           {primary !== null ? (
@@ -223,11 +223,11 @@ function Jump(props: { to: (() => void) | null; kind: AskPassage["kind"]; childr
   );
 }
 
-/** Through the holds, as Aski's card answers: onto the undo line, then upstream's commands. */
-function holdAnswer(need: Need, option: CardOption) {
+/** As Aski's card answers: upstream's commands, at once. */
+function sendAnswer(need: Need, option: CardOption) {
   lit.answered(need.key);
   movedByHand(need.threadId);
-  holds.hold({
+  void answering.send({
     key: need.key,
     threadId: need.threadId,
     commands: commandsFor(need, option.choice, {}, Date.now()),

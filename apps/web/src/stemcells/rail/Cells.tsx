@@ -27,7 +27,7 @@ import { leaving, page, useSettleAtOnce, useWakeByHand } from "../needs/live";
 import { useNeeds } from "../needs/stream";
 import type { CellStanding, Condition } from "../needs/wire";
 import { toneTokenOf } from "../glow/light";
-import { crossing, resweep, sweep } from "../motion/beat";
+import { resweep, rowCrossing, sweep } from "../motion/beat";
 import { drawnMoonPhase } from "../motion/moon";
 import { type Sight, watchSight } from "../motion/sight";
 import { ProjectMark } from "../project/ProjectMark";
@@ -82,7 +82,6 @@ import {
 import {
   byRecent,
   type Launchable,
-  ROW_LIGHT,
   rowStateOf,
   type RowState,
   type RowStatus,
@@ -118,7 +117,7 @@ type Ref = { readonly environmentId: string; readonly threadId: string };
 /**
  * The left column as the Cells' line (stemcells/tasks/awake-asleep.md): the Cells awake, open by
  * default, and those asleep, each stage a row at the foot that opens it in its place. An ask is
- * answered in its Cell's chat, and its Awake row wears Input's light. It reads the Cells, never
+ * answered in its Cell's chat, and its Awake row wears Input's icon. It reads the Cells, never
  * the route, so moving between tabs leaves it as it is.
  */
 export function Cells() {
@@ -618,7 +617,7 @@ function CellLine(props: {
         >
           {light === null ? null : (
             <span data-cells-light="" aria-hidden>
-              <RowBand on={ROW_LIGHT[light.state].band} />
+              <RowBand on={light.state === "flying"} />
             </span>
           )}
           <CellMark cell={ref} />
@@ -671,8 +670,8 @@ const BAND_WIDTH = 48;
 const BAND_LEAN = "skewX(-24deg)";
 
 /**
- * The flying Cell's band, crossing its row on the composer's beat (`motion/beat.ts`), the column
- * standing for the pane it crosses. Only a transform moves; it holds unseen, steps beside
+ * The flying Cell's band, crossing its own row on the composer's beat (`motion/beat.ts`): slowly,
+ * so a list of flying Cells reads as work going on rather than flashes. Only a transform moves; it holds unseen, steps beside
  * another app and stays still with less motion. A landing lets the pass under way finish, so
  * the light comes to rest rather than going out.
  */
@@ -694,9 +693,7 @@ function RowBand(props: { on: boolean }) {
         crossingNow = null;
         return;
       }
-      const pane = column.getBoundingClientRect();
-      const left = plate.getBoundingClientRect().left - pane.left;
-      const { from, to } = crossing(pane.width, left, BAND_WIDTH / 2);
+      const { from, to } = rowCrossing(plate.getBoundingClientRect().width, BAND_WIDTH);
       const stepped = sight === "unfocused";
       if (crossingNow) resweep(crossingNow, from, to, BAND_LEAN, stepped);
       else crossingNow = sweep(band, from, to, BAND_LEAN, stepped);

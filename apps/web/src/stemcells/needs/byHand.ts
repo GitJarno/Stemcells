@@ -4,7 +4,7 @@
  * (stemcells/tasks/left-column-v3.md, decision 6).
  */
 
-/** Long enough for an answer's undo line and its Cell's turn to start, or a stop and settle. */
+/** Long enough for an answer's Cell to start its turn, or for a stop and settle. */
 const BY_HAND_MS = 60_000;
 
 const moved = new Map<string, number>();

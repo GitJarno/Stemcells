@@ -12,7 +12,7 @@ export type Sent = Extract<Reading, { readonly kind: "option" | "answer" }>;
 
 export interface Enter {
   /**
-   * Answers for the holds, by card number, each with the words that said
+   * Answers to send, by card number, each with the words that said
    * it after the card's number: they go back to the composer if it isn't
    * sent (`giveBack.ts`).
    */
