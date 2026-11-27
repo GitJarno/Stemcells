@@ -118,7 +118,7 @@ type Ref = { readonly environmentId: string; readonly threadId: string };
 /**
  * The left column as the Cells' line (stemcells/tasks/awake-asleep.md): the Cells awake, open by
  * default, and those asleep, each stage a row at the foot that opens it in its place. An ask is
- * answered in its Cell's chat, and its Awake row wears Input's light. It reads the Cells, never
+ * answered in its Cell's chat, and its Awake row wears Input's icon. It reads the Cells, never
  * the route, so moving between tabs leaves it as it is.
  */
 export function Cells() {
