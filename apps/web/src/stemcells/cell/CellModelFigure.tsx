@@ -62,7 +62,7 @@ export function CellModelFigure(props: {
       const tall = Math.round((BOX.height + MARGIN.y * 2) * points * dpr);
       const wide = Math.round((BOX.width + MARGIN.x * 2) * points * dpr);
       const coarse = Math.ceil(tall / ROWS);
-      const whole = wholeView(grown, Math.round(tall / coarse), 0.45, Math.round(wide / coarse));
+      const whole = wholeView(grown, Math.round(tall / coarse), 0, Math.round(wide / coarse));
       // Headwear takes room over the box: the picture is that much taller, and stands over it.
       const over = roomOver(figureOf(poseAt("rest", STILL.rest, grown)), whole, layers);
       const view = over === 0 ? whole : tallerView(whole, over);

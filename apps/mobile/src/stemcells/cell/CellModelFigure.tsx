@@ -41,12 +41,7 @@ import {
 const GROWN = grownOf(undefined);
 
 /** Two pixels to a cell of the miniature, margin and all: the hero art's own grid. */
-const VIEW = wholeView(
-  GROWN,
-  (BOX.height + MARGIN.y * 2) * 2,
-  0.45,
-  (BOX.width + MARGIN.x * 2) * 2,
-);
+const VIEW = wholeView(GROWN, (BOX.height + MARGIN.y * 2) * 2, 0, (BOX.width + MARGIN.x * 2) * 2);
 
 /** What a look has on and the picture it needs: taller than `VIEW` by the room its headwear takes. */
 interface Dress {

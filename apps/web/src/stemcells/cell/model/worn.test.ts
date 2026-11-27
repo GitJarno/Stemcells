@@ -9,7 +9,7 @@ import { cellOf, roomOver, wear, wornLayers } from "./worn.ts";
 
 const HUE = [255, 129, 84] as const;
 /** The phone's picture of a Cell as it is born: the drawn Cell's own grid. */
-const PHONE = wholeView(0, 32, 0.45, 34);
+const PHONE = wholeView(0, 32, 0, 34);
 
 const layersIn = (look: string) => layersOf(curated(look)!.wardrobe, false);
 
@@ -31,7 +31,7 @@ function pictured(look: string, act: "rest" | "landed", view = PHONE) {
 describe("the drawn wardrobe on the modelled Cell", () => {
   it("keeps a piece's pixels whole on the phone, and doubles them at the Mac's size", () => {
     const half = (rows: number) =>
-      standOf(figureOf(poseAt("rest", 1000, 0)), wholeView(0, rows, 0.45)).half;
+      standOf(figureOf(poseAt("rest", 1000, 0)), wholeView(0, rows)).half;
     expect(cellOf(half(32))).toBe(1);
     expect(cellOf(half(64))).toBe(2);
   });

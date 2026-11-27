@@ -18,8 +18,9 @@ pictures a second.
 
 ## The design
 
-- **One body that grows.** `grown` runs from a newborn mound (today's
-  silhouette) to a figure with a head, arms and feet. A Cell's growth is
+- **One body that grows.** `grown` runs from a newborn mochi (today's
+  silhouette: a dome widest where it sits) to a figure with a head, arms
+  and feet. It faces front unless something turns it. A Cell's growth is
   already a fact (`cell-growth.md`); here it shapes the body itself.
 - **The laptop is its desk.** Sent to work, it pulls a laptop out, flips it
   open and lifts off: in the air with the screen lit is Flying. Thinking is
@@ -130,3 +131,9 @@ turn of the face; a back piece shows only past the body. Left bare: a
 fabric or an outfit's dye (a knight's plate stays the body's colour), what
 a hand held (the model has its laptop), and a moving piece stands at its
 first frame. Not seen on a phone: no simulator was free that day.
+
+The person, seeing it on the phone: it stood side-on, and it was an egg, not
+the mochi a Cell is. So a Cell faces front by default (a turn is for a
+reason, such as another Cell), and the newborn is widest at its foot with a
+nearly flat underside. Its laptop then stands between it and the viewer,
+lid's back out, its eyes over it.
