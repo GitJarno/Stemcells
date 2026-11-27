@@ -30,9 +30,8 @@ const FALL = { duration: LIST_MOTION.bloom.fall, easing: Easing.inOut(Easing.cub
 /** The row's last child: its light under the row's content, the fade over it. */
 export function Arrival(props: {
   readonly thread: EnvironmentThreadShell;
-  /** Where it lies over the row, and the Cell's middle from its left, as `RowLight`'s. */
+  /** Where it lies over the row, as `RowLight`'s. */
   readonly fill: ViewStyle;
-  readonly anchorX: number;
 }) {
   const stage = use(HomeStageContext);
   // In sight: the home in front and this row's stage the one shown.
@@ -40,21 +39,12 @@ export function Arrival(props: {
   const key = cellKey(props.thread);
   const arrives = useArrives(key, stage);
   if (!arrives || !seen) return null;
-  return (
-    <Entering
-      key={key}
-      rowKey={key}
-      thread={props.thread}
-      fill={props.fill}
-      anchorX={props.anchorX}
-    />
-  );
+  return <Entering key={key} rowKey={key} thread={props.thread} fill={props.fill} />;
 }
 
 function Entering(props: {
   readonly thread: EnvironmentThreadShell;
   readonly fill: ViewStyle;
-  readonly anchorX: number;
   readonly rowKey: string;
 }) {
   const { rowKey } = props;
@@ -85,7 +75,7 @@ function Entering(props: {
   return (
     <>
       <Animated.View pointerEvents="none" style={[props.fill, { zIndex: -1 }, lit]}>
-        <RowLight thread={props.thread} band={false} fill={FILL} anchorX={props.anchorX} />
+        <RowLight thread={props.thread} band={false} fill={FILL} />
       </Animated.View>
       {fades ? (
         <Animated.View

@@ -120,32 +120,37 @@ export interface SkyPalette {
   readonly ground: string;
 }
 
+/**
+ * Day is a late dusk, not a blue noon: it sits at the edge of the eye beside the list all day, so
+ * it stays near the ground's darkness (light: its paleness), warmest low down, the sun a soft
+ * apricot behind the folder's button. Night keeps its deep blue, the moon and the stars.
+ */
 export const SKY: Readonly<Record<Scheme, SkyPalette>> = {
   dark: {
-    day: { zenith: "#173553", horizon: "#3B6589" },
+    day: { zenith: "#131A2A", horizon: "#2E2638" },
     night: { zenith: "#04050D", horizon: "#141938" },
-    sun: "#FFF4DA",
+    sun: "#D9B394",
     setting: "#FF9E7A",
     moon: "#F2EFE6",
     moonShadow: "#1A1D3A",
-    halo: 0.22,
+    halo: 0.12,
     warm: { inner: "#E9845E", outer: "#9E4C7A", peak: 0.42 },
-    cloud: { colour: "#FFFFFF", alpha: 0.075 },
+    cloud: { colour: "#FFFFFF", alpha: 0.05 },
     star: "#FFFFFF",
     starLight: 1,
     ink: "#F5F5F5",
     ground: "#0D0D0D",
   },
   light: {
-    day: { zenith: "#9EC5EA", horizon: "#D3E6F6" },
+    day: { zenith: "#C9D0E3", horizon: "#EFE3DD" },
     night: { zenith: "#7F89BB", horizon: "#B9BFDF" },
-    sun: "#FFFBF0",
+    sun: "#FBE6D2",
     setting: "#FFB08A",
     moon: "#FFFFFF",
     moonShadow: "#6E78AA",
-    halo: 0.5,
+    halo: 0.38,
     warm: { inner: "#F5A27F", outer: "#D98AA8", peak: 0.5 },
-    cloud: { colour: "#FFFFFF", alpha: 0.5 },
+    cloud: { colour: "#FFFFFF", alpha: 0.35 },
     star: "#FFFFFF",
     starLight: 2,
     ink: "#27272A",

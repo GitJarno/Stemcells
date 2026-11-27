@@ -338,12 +338,12 @@
   text-align: end;
 }
 
-/* An awake row's light (stemcells/tasks/awake-asleep.md, decision 3): the
-   only a flying Cell's row is lit: a lamp in its provider's tone round the
-   Cell and the band crossing it, the sense of work going on. Its icon and
-   time already say the rest, so asking and landed rows stay dark. The lamp
-   is an ellipse as tall as the row, gone by its edges, so two lit rows
-   never meet as boxes. The tone is typed, so a recolour fades. */
+/* An awake row's light (stemcells/tasks/awake-asleep.md, decision 3): only a
+   flying Cell's row is lit, a field of its provider's tone in the row's own
+   shape with the band crossing it, the sense of work going on. Its icon and
+   time already say the rest, so asking and landed rows stay dark. The field
+   stands a little in from the row's top and bottom, so two lit rows never
+   meet. The tone is typed, so a recolour fades. */
 @property --cells-row-tone {
   syntax: "<color>";
   inherits: true;
@@ -357,16 +357,11 @@
 /* The light clips its band, never the Cell, which may hop out of its box. */
 [data-cells-light] {
   position: absolute;
-  inset: 0;
+  inset: var(--cells-field-inset) 0;
   z-index: -1;
   overflow: clip;
   border-radius: inherit;
-  background: radial-gradient(
-    var(--cells-lamp),
-    color-mix(in srgb, var(--cells-row-tone) 30%, transparent),
-    color-mix(in srgb, var(--cells-row-tone) 10%, transparent) 50%,
-    transparent
-  );
+  background: color-mix(in srgb, var(--cells-row-tone) 13%, transparent);
   pointer-events: none;
   transition: opacity var(--sc-motion-fade-duration) var(--sc-motion-fade-easing);
 }
@@ -383,8 +378,6 @@
   top: 0;
   left: 0;
   height: 100%;
-  /* Feathered top and bottom, as the lamp is: light passing, not a box. */
-  mask-image: linear-gradient(transparent, #000 35% 65%, transparent);
   background: linear-gradient(
     to right,
     transparent,
@@ -402,26 +395,19 @@
   initial-value: 0;
 }
 [data-cells-open] {
-  /* The Cell's middle: the row's padding and half the Cell's width. */
-  --cells-row-cell-x: calc(var(--sc-space-md) + 0.6rem);
-  /* The lamp's shape, round the Cell: wide, and as tall as the row. */
-  --cells-lamp: ellipse 72% 50% at var(--cells-row-cell-x) 50%;
+  /* Where a lit row's field stands in from its top and bottom: dark between two. */
+  --cells-field-inset: 2px;
   position: relative;
   isolation: isolate;
 }
 [data-cells-open]::before {
   content: "";
   position: absolute;
-  inset: 0;
+  inset: var(--cells-field-inset) 0;
   z-index: -1;
   border-radius: inherit;
-  /* The row's own lamp, a little stronger: it settles to the light's level. */
-  background: radial-gradient(
-    var(--cells-lamp),
-    color-mix(in srgb, var(--cells-bloom-tone) 42%, transparent),
-    color-mix(in srgb, var(--cells-bloom-tone) 14%, transparent) 50%,
-    transparent
-  );
+  /* The row's own field, a little stronger: it settles to the light's level. */
+  background: color-mix(in srgb, var(--cells-bloom-tone) 24%, transparent);
   opacity: var(--cells-bloom);
   pointer-events: none;
   --cells-bloom-tone: var(--cells-row-tone);

@@ -1,6 +1,6 @@
-// A flying Cell's row light (`Wave.tsx`, stemcells/tasks/awake-asleep.md): a lamp round the Cell
-// in its provider's tone and the band crossing it, the sense of work going on; an entering row's
-// bloom wears the lamp alone. Its status icon says what it does or needs.
+// A flying Cell's row light (`Wave.tsx`, stemcells/tasks/awake-asleep.md): the row's field in its
+// provider's tone and the band crossing it, the sense of work going on; an entering row's bloom
+// wears the field alone. Its status icon says what it does or needs.
 
 import { use } from "react";
 import { StyleSheet, type ViewStyle } from "react-native";
@@ -23,9 +23,8 @@ export function RowLight(props: {
   readonly thread: EnvironmentThreadShell;
   /** The band crossing on the beat: while the Cell flies. */
   readonly band: boolean;
-  /** Where it lies over the row, and the Cell's middle from the row's left. */
+  /** Where it lies over the row: the row's own shape, clear of the next row's. */
   readonly fill: ViewStyle;
-  readonly anchorX: number;
 }) {
   const inFront = use(HomeInFront);
   const provider = TONES[toneTokenOf(useDriverOf(props.thread))] ?? TONES["--sc-accent"];
@@ -43,11 +42,10 @@ export function RowLight(props: {
         tone={tone}
         glass={glass}
         ink={ink}
-        anchorX={props.anchorX}
         fill={props.fill}
         inSight={inFront}
         band={props.band}
-        glow
+        field
       />
     </Animated.View>
   );

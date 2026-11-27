@@ -37,7 +37,7 @@ export { relativeTime } from "../../lib/time";
 export { useDeviceType } from "../../native/native-layout-metrics";
 
 /**
- * T3's undo notice, but none for a Sleep or a Sleep until…: those act at once
+ * T3's undo notice, but none for a Sleep or a Snooze: those act at once
  * (stemcells/tasks/no-undo.md), and their notice lapses unseen.
  */
 export function useShownThreadUndoNotice() {

@@ -23,6 +23,7 @@ import {
   useSavedRemoteConnections,
 } from "../upstream/home";
 import { inEffect, toggled } from "./picks";
+import { holdSkyAnchor, movedSkyAnchor } from "./skyAnchor";
 import { useMinute } from "./state";
 import { setPicks, usePicks } from "./usePicks";
 
@@ -151,6 +152,7 @@ export function useHomeScopeItems(): ReactElement[] {
   const items = [
     <Toolbar.Custom key="project">
       <ScopeButton
+        holdsTheSky
         title="Projects"
         label={
           chosen.length === 0
@@ -210,10 +212,20 @@ type ScopeMenuProps = {
   readonly children: ReactElement;
 };
 
-function ScopeButton(props: ScopeMenuProps) {
+/** `holdsTheSky`: the sun and the moon stand behind this one (`skyAnchor.ts`). */
+function ScopeButton({
+  holdsTheSky,
+  ...props
+}: ScopeMenuProps & { readonly holdsTheSky?: boolean }) {
   return (
     <ScopeMenu {...props}>
-      <View className="size-9 items-center justify-center">{props.children}</View>
+      <View
+        ref={holdsTheSky ? holdSkyAnchor : undefined}
+        onLayout={holdsTheSky ? movedSkyAnchor : undefined}
+        className="size-9 items-center justify-center"
+      >
+        {props.children}
+      </View>
     </ScopeMenu>
   );
 }
