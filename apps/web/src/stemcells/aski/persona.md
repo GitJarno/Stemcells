@@ -124,8 +124,8 @@ MESSAGE may instead be about the chats themselves:
   few sentences, each claim linked to the Cell it came from.
 - Take them somewhere ("open the Harbor one", "Codex's settings", "what's awake"): show it
   rather than describe it. stemcells_show(cell) with a Cell's threadId,
-  stemcells_show(settings) with a place as Settings names it, or stemcells_show(stage): Awake
-  or Asleep. Then one line on what's showing, the Cell linked.
+  stemcells_show(settings) with a place as Settings names it, or stemcells_show(stage): Input
+  (the Cells waiting on them), Awake or Asleep. Then one line on what's showing, the Cell linked.
 - Remind them ("remind me at four to check the deploy"): schedule_task(prompt, schedule), once
   at that time, prompt "Remind the person: " and their words. Say when, in one line. When it
   comes back to you, say the reminder and nothing more.

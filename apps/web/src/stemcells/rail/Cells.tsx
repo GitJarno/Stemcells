@@ -22,6 +22,8 @@ import {
 
 import { onListOf } from "../needs/CardList";
 import { conditionLineOf } from "../needs/conditionLines";
+import { byWaiting } from "../inbox/loop";
+import { inboxOpened, useInbox } from "../inbox/useInbox";
 import { useLeaving } from "../needs/leaving";
 import { leaving, page, useSettleAtOnce, useWakeByHand } from "../needs/live";
 import { useNeeds } from "../needs/stream";
@@ -78,6 +80,7 @@ import {
   WAKE,
   wakesWords,
 } from "../../../../../stemcells/words/awake.ts";
+import { clearedWords, STEM_CELL_FACTS } from "../../../../../stemcells/words/inbox.ts";
 import {
   byRecent,
   type Launchable,
@@ -87,7 +90,7 @@ import {
   type RowStatus,
   rowStatusOf,
 } from "./awake";
-import { useColumnStore, type ColumnStage } from "./column";
+import { COLUMN_STAGES, useColumnStore, type ColumnStage } from "./column";
 import { shows } from "./filter";
 import { STATUS_ICON } from "./StatusIcon";
 import { Hops } from "./Hops";
@@ -114,10 +117,10 @@ const ASLEEP_SHOWN = 30;
 type Ref = { readonly environmentId: string; readonly threadId: string };
 
 /**
- * The left column as the Cells' line (stemcells/tasks/awake-asleep.md): the Cells awake, open by
- * default, and those asleep, each stage a row at the foot that opens it in its place. An ask is
- * answered in its Cell's chat, and its Awake row wears Input's light. It reads the Cells, never
- * the route, so moving between tabs leaves it as it is.
+ * The left column as the Cells' line (stemcells/tasks/awake-asleep.md, inbox.md): Input, the
+ * Cells that ask, longest waiting first; the Cells awake; those asleep. Each stage is a row at
+ * the foot that opens it in its place. It reads the Cells, never the route, so moving between
+ * tabs leaves it as it is.
  */
 export function Cells() {
   const navigate = useNavigate();
@@ -171,12 +174,32 @@ export function Cells() {
           (cell) => awakeRowOf(cell, environmentId, sleeping.has(cell.threadId), asked),
         );
   const staying = awake.filter((row) => !row.leaving);
+  // Input (inbox.md, decisions 1 and 2): the same rows, those that ask, the longest waiting first.
+  const asking = byWaiting(
+    staying.filter((row) => row.stage === "needs-you" && row.holds === null),
+    (row) => row.cell.threadId,
+    (row) => row.since,
+  );
+  const { loop, fact } = useInbox({
+    queue: asking.map((row) => row.cell.threadId),
+    stage,
+    environmentId,
+  });
+  const cleared =
+    loop.cleared === null
+      ? null
+      : clearedWords(
+          [...loop.cleared.cells].filter((id) => staying.some((row) => row.cell.threadId === id))
+            .length,
+          loop.cleared.ms,
+        );
   // A Cell a shared stop holds (conditions.md) reads `working` on the wire and isn't flying.
   const held = staying.filter((row) => row.holds !== null);
   // What the stages list, once read: another project is the list read again (`rowMotion.ts`).
   const rowsView =
     cells === null || environmentId === null ? null : `${environmentId}|${projectKey}`;
   const counts: Record<ColumnStage, number> = {
+    needs: asking.length,
     awake: staying.length,
     asleep: asleepCount,
   };
@@ -211,6 +234,17 @@ export function Cells() {
           onAim={setAim}
           proxy={proxy}
           pages={{
+            needs: (
+              <AwakeRows
+                stage="needs"
+                rows={asking}
+                now={now}
+                view={rowsView}
+                shown={stage === "needs"}
+                onOpened={inboxOpened}
+                empty={<AllClear cleared={cleared} fact={STEM_CELL_FACTS[fact] ?? null} />}
+              />
+            ),
             awake: (
               <>
                 {(conditions ?? []).map((condition) => (
@@ -221,7 +255,14 @@ export function Cells() {
                     now={now}
                   />
                 ))}
-                <Awake rows={awake} now={now} view={rowsView} shown={stage === "awake"} />
+                <AwakeRows
+                  stage="awake"
+                  rows={awake}
+                  now={now}
+                  view={rowsView}
+                  shown={stage === "awake"}
+                  empty={<p data-cells-none="">{EMPTY_WORDS.awake}</p>}
+                />
               </>
             ),
             asleep: (
@@ -243,7 +284,7 @@ export function Cells() {
         />
         <nav data-cells-stages="" aria-label="Stages">
           <UndoLine />
-          {(["awake", "asleep"] as const).map((each) => (
+          {COLUMN_STAGES.map((each) => (
             <StageRow
               key={each}
               stage={each}
@@ -450,12 +491,19 @@ function Holding(props: { condition: Condition; count: number; now: number }) {
   );
 }
 
-/** Every Cell awake, each with Sleep, which stops one at work first (`upstream/settle.ts`). */
-function Awake(props: {
+/**
+ * Awake's Cells, or Input's, each with Sleep, which stops one at work first
+ * (`upstream/settle.ts`).
+ */
+function AwakeRows(props: {
+  stage: "needs" | "awake";
   rows: ReadonlyArray<AwakeRow>;
   now: number;
   view: string | null;
   shown: boolean;
+  empty: ReactNode;
+  /** A row's chat opened by the person. */
+  onOpened?: (threadId: string) => void;
 }) {
   const sleep = useSettleAtOnce();
   const list = useRowMotion(
@@ -463,18 +511,33 @@ function Awake(props: {
     props.view,
     props.shown,
   );
-  if (props.rows.length === 0) return <p data-cells-none="">{EMPTY_WORDS.awake}</p>;
+  if (props.rows.length === 0) return props.empty;
   return (
-    <ol ref={list} data-cells-rows="" aria-label={STAGE_WORDS.awake}>
+    <ol ref={list} data-cells-rows="" aria-label={STAGE_WORDS[props.stage]}>
       {props.rows.map((row) => (
         <AwakeCell
           key={row.cell.threadId}
           row={row}
           now={props.now}
           onSleep={() => void sleep(row.cell)}
+          onOpened={props.onOpened}
         />
       ))}
     </ol>
+  );
+}
+
+/**
+ * Input with nothing asking: once a clearing ends, what it did and a fact about stem cells,
+ * until the person turns away (inbox.md, decision 7); else that nothing needs them.
+ */
+function AllClear(props: { cleared: string | null; fact: string | null }) {
+  if (props.cleared === null) return <p data-cells-none="">{EMPTY_WORDS.needs}</p>;
+  return (
+    <div data-cells-none="" data-cells-cleared="">
+      <p>{props.cleared}</p>
+      {props.fact === null ? null : <p data-cells-fact="">{props.fact}</p>}
+    </div>
   );
 }
 
@@ -509,7 +572,12 @@ function Asleep(props: {
  * been like this beside T3's icon for what it does or needs. Behind the Cell a lamp in its
  * provider's tone (stemcells/tasks/awake-asleep.md, decision 3); Sleep takes the time's place.
  */
-function AwakeCell(props: { row: AwakeRow; now: number; onSleep: () => void }) {
+function AwakeCell(props: {
+  row: AwakeRow;
+  now: number;
+  onSleep: () => void;
+  onOpened: ((threadId: string) => void) | undefined;
+}) {
   const { row } = props;
   const ref = { ...row.cell, draftId: null };
   const { driver, unseen } = useCellLightFacts(ref);
@@ -524,6 +592,7 @@ function AwakeCell(props: { row: AwakeRow; now: number; onSleep: () => void }) {
       light={{ state, tone }}
       when={row.since === null ? null : compactAge(row.since, props.now)}
       act={{ label: SLEEP, icon: <MoonIcon aria-hidden />, run: props.onSleep }}
+      onOpened={props.onOpened}
     />
   );
 }
@@ -573,11 +642,15 @@ function CellLine(props: {
   /** How long it has been like this; upstream's age while the stream doesn't say. */
   when: string | null;
   act: { readonly label: string; readonly icon: ReactNode; readonly run: () => void };
+  onOpened?: ((threadId: string) => void) | undefined;
 }) {
   const open = useOpenCell();
   const ref = { ...props.cell, draftId: null };
   const shell = useCellShell(ref);
-  const onOpen = () => open(props.cell);
+  const onOpen = () => {
+    open(props.cell);
+    props.onOpened?.(props.cell.threadId);
+  };
   const { light } = props;
   const status =
     light === null ? null : rowStatusOf(light.state, shell?.hasPendingApprovals === true);

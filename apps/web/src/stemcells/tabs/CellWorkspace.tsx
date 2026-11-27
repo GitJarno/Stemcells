@@ -66,6 +66,7 @@ import { DropWash } from "./DropWash";
 import { cellPlaces } from "./cellPlaces";
 import {
   provideCellBeside,
+  provideCellHere,
   provideCellPlaces,
   provideNewCellPane,
   provideNewCellTab,
@@ -392,6 +393,26 @@ export function CellWorkspace(props: {
   const provideBeside = useEffectEvent(openBeside);
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Provide the open-beside command while mounted.
   useEffect(() => provideCellBeside((cell) => provideBeside(cell)), []);
+
+  /**
+   * Input's next ask in the focused pane, in place of the chat there (stemcells/tasks/inbox.md,
+   * decision 5); a pane already showing it takes focus instead. Aski's tab and a draft keep
+   * theirs: the chat opens as any does.
+   */
+  const openHere = (cell: CellRef) => {
+    const workspace = readWorkspace();
+    const holder = paneShowing(workspace, cell);
+    if (holder) return focusPaneAndRoute(holder.pane.id);
+    const focused = focusedPane(workspace);
+    const tab = activeTab(workspace);
+    if (!focused || !tab || isAskiTab(tab) || focused.cell?.draftId != null)
+      return navigateToCell(cell);
+    updateWorkspace((current) => setCell(current, focused.id, cell));
+    routeToFocused();
+  };
+  const provideHere = useEffectEvent(openHere);
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Provide Input's open-here command while mounted.
+  useEffect(() => provideCellHere((cell) => provideHere(cell)), []);
 
   const focusFromOutside = useEffectEvent(focusPaneAndRoute);
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Provide where the Cells are while mounted.

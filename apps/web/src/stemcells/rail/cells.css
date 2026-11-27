@@ -157,6 +157,16 @@
   padding: var(--sc-space-md) var(--sc-space-lg);
   color: var(--sc-faint);
 }
+/* Input's all-clear: what the clearing did, then a fact in quieter ink (inbox.md, decision 7). */
+[data-cells-cleared] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sc-space-xs);
+  color: var(--sc-dim);
+}
+[data-cells-fact] {
+  color: var(--sc-faint);
+}
 /* A Cell's row folds away as it leaves its stage (Sleep, Wake), the lists'
    leave (`motion/listMotion.ts`): its height and its light go together, once,
    on the move's curve; with less motion it only fades. */
@@ -434,6 +444,9 @@ span[data-cells-stage-mark]::before {
   block-size: 0.5rem;
   border-radius: 50%;
   background: currentColor;
+}
+[data-cells-stage="needs"] [data-cells-stage-mark] {
+  color: var(--sc-input);
 }
 [data-cells-stage="awake"] [data-cells-stage-mark] {
   color: var(--sc-working);

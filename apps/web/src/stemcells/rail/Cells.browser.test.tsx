@@ -542,11 +542,12 @@ describe("swiping the column", () => {
     await expect.element(screen.getByText("Nightly report")).toBeInViewport();
     await swipe(column, -1);
     await open(/Awake\s*5/);
+    await swipe(column, -1);
+    await open(/^Input\s*\d+$/);
 
     // Past the first stage the column gives a little, and comes back.
     await swipe(column, -1);
-    await open(/Awake\s*5/);
-    await expect.element(screen.getByText("Chat thread-w")).toBeInViewport();
+    await open(/^Input\s*\d+$/);
   });
 });
 

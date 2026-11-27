@@ -45,9 +45,9 @@ describe("the left column", () => {
   it("opens on Awake unless the person opened another stage", () => {
     expect(parseColumnStage(null)).toBe("awake");
     expect(parseColumnStage("asleep")).toBe("asleep");
+    expect(parseColumnStage("needs")).toBe("needs");
     expect(parseColumnStage("snoozed")).toBe("awake");
-    // Older lines' stages, and Pinned and Input beside them.
-    expect(parseColumnStage("needs")).toBe("awake");
+    // Older lines' stages, and Pinned beside them.
     expect(parseColumnStage("working")).toBe("awake");
     expect(parseColumnStage("landed")).toBe("awake");
     expect(parseColumnStage("pinned")).toBe("awake");
