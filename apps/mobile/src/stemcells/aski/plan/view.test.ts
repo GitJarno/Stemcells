@@ -1,9 +1,13 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { DICTATED_NOTE, type StartAct } from "../../../../../../stemcells/orchestrator/plan.ts";
-import { confirm, trayOf } from "../../../../../../stemcells/orchestrator/tray.ts";
+import {
+  DICTATED_NOTE,
+  type DestroyAct,
+  type StartAct,
+} from "../../../../../../stemcells/orchestrator/plan.ts";
+import { confirm, done, held, trayOf } from "../../../../../../stemcells/orchestrator/tray.ts";
 import { proposed } from "./proposed.fixture";
-import { headOf, messageSpans, modelLine } from "./view";
+import { headOf, messageSpans, modelLine, whyLines } from "./view";
 
 describe("what a plan's rows say", () => {
   it("shows every word of a Cell's message, the risky phrase apart and the note plain", () => {
@@ -73,5 +77,31 @@ describe("what a plan's rows say", () => {
       line: "2 Cells · 1 flying · 1 waiting on you",
       startAll: false,
     });
+  });
+
+  it("counts Cells alone beside a deletion, and nothing waits after one that is done", () => {
+    const plan = proposed("plan-12345678", [
+      { projectId: "p-harbor", projectName: "Harbor", title: "a", words: "do a" },
+    ]);
+    const cell: StartAct = {
+      ...(plan.acts[0] as StartAct),
+      tier: "check",
+      why: ["after-hold"],
+    };
+    const deletion: DestroyAct = {
+      kind: "destroy",
+      i: 1,
+      pieces: [2],
+      tier: "hold",
+      why: [],
+      target: "project",
+      place: { id: "mac:p-atlas", name: "Atlas", heard: "Atlas", how: "exact" },
+      cells: [],
+      words: "delete the Atlas project",
+    };
+    const tray = trayOf({ ...plan, acts: [cell, deletion] });
+    expect(headOf(tray).line).toBe("1 Cell · 1 waiting on you");
+    expect(whyLines(cell, held(tray))).toHaveLength(1);
+    expect(whyLines(cell, held(done(tray, 1)))).toEqual([]);
   });
 });

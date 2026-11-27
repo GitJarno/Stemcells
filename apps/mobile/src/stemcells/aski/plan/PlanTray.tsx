@@ -3,13 +3,15 @@
 // directly on the composer, in the thumb's reach. One quiet line while Aski reads, then the
 // plan's rows. It scrolls inside itself, and stands lower while the keyboard is up.
 
+import { useEffect, useState } from "react";
 import { ScrollView, useWindowDimensions, View } from "react-native";
 import Animated from "react-native-reanimated";
 
 import { FLOOR_LINE, headline } from "../../../../../../stemcells/words/plans.ts";
 import { entering, exiting } from "../../home/listMotion";
-import { AppText, useKeyboardState } from "../../upstream/plans";
+import { AppText, useIsFocused, useKeyboardState } from "../../upstream/plans";
 import { PlanPanel, usePlans } from "./PlanRows";
+import { standing } from "./standing";
 import { overComposer, type PlanEntry } from "./trays";
 import { usePlanWorld } from "./usePlanWorld";
 
@@ -34,10 +36,18 @@ function Standing(props: {
   const keyboard = useKeyboardState((state) => state.isVisible);
   // Over a keyboard the chat keeps a strip of its own above the tray.
   const most = keyboard ? Math.max(132, window.height * 0.24) : Math.min(440, window.height * 0.46);
+  const focused = useIsFocused();
+  const [height, setHeight] = useState(0);
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Aski's button floats over every screen from a layer of its own: it is told how tall the tray stands while this chat is in front.
+  useEffect(() => {
+    standing.set(focused ? height : 0);
+    return () => standing.set(0);
+  }, [focused, height]);
   return (
     <Animated.View
       entering={entering()}
       exiting={exiting()}
+      onLayout={(event) => setHeight(event.nativeEvent.layout.height)}
       className="w-full self-center px-[12px] pb-1.5"
       style={{ maxWidth: props.maxWidth }}
     >

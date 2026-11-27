@@ -84,8 +84,13 @@ export function launchOf(act: StartAct, setup: LaunchSetup): Launch {
   const selection = selectionOf(act, setup);
   if (selection === null)
     return { ok: false, reason: `No model to start a Cell in ${setup.projectName} on.` };
-  if (!setup.ready(selection.instanceId))
-    return { ok: false, reason: `${selection.model} can’t start now.` };
+  if (!setup.ready(selection.instanceId)) {
+    const name =
+      setup.models.find(
+        (model) => model.instanceId === selection.instanceId && model.id === selection.model,
+      )?.name ?? selection.model;
+    return { ok: false, reason: `${name} can’t start now.` };
+  }
   return {
     ok: true,
     input: buildProjectThreadStartTurnInput({

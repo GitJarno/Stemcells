@@ -78,10 +78,13 @@ export function unsureOf(act: StartAct): { readonly place: boolean; readonly mod
   };
 }
 
-/** Why a Cell waits, a line each, in the plan's own words. */
-export function whyLines(act: StartAct): string[] {
+/**
+ * Why a Cell waits, a line each, in the plan's own words. `held` says a deletion still waits:
+ * once it is done or dropped, nothing is "after" it.
+ */
+export function whyLines(act: StartAct, held: boolean): string[] {
   const lines = act.why.flatMap((why) => {
-    const line = whyLine(act, why);
+    const line = why === "after-hold" && !held ? null : whyLine(act, why);
     return line === null ? [] : [line];
   });
   if (act.model?.how === "near") lines.push(`Heard “${act.model.heard}”. ${act.model.name}?`);
@@ -121,11 +124,13 @@ export function headOf(tray: Tray): {
   /** Several Cells wait and can start: one tap starts them. */
   readonly startAll: boolean;
 } {
-  const cells = tray.acts.filter(
-    (one) => one.act.kind === "start" && one.status !== "dropped" && one.status !== "called-back",
+  // A deletion waits on its own card: the headline counts Cells alone.
+  const starts = tray.acts.filter((one) => one.act.kind === "start");
+  const cells = starts.filter(
+    (one) => one.status !== "dropped" && one.status !== "called-back",
   ).length;
-  const { flying, waiting } = counts(tray);
-  const startable = tray.acts.filter(
+  const { flying, waiting } = counts({ ...tray, acts: starts });
+  const startable = starts.filter(
     (one) => one.act.kind === "start" && one.status === "waiting" && canStart(one.act),
   ).length;
   return {

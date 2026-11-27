@@ -6,7 +6,7 @@
 import * as Haptics from "expo-haptics";
 import * as Linking from "expo-linking";
 import { AppState, Keyboard, Platform, Pressable, useWindowDimensions, View } from "react-native";
-import { Fragment, useEffect, useLayoutEffect, useState } from "react";
+import { Fragment, useEffect, useLayoutEffect, useState, useSyncExternalStore } from "react";
 import Animated, { Easing, LinearTransition } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FullWindowOverlay } from "react-native-screens";
@@ -52,6 +52,7 @@ import {
   type Where,
 } from "./turn";
 import { keyboardShows } from "./keyboard";
+import { standing } from "./plan/standing";
 import { PIPE } from "./pipe";
 import { railStyle, useRail, useRailAski } from "./rail";
 import { arrivedAt, beginTurn, keyOf, turning, usePipeStyle, useTurn } from "./turning";
@@ -314,9 +315,11 @@ function Place(props: { readonly children: React.ReactNode }) {
   useRailAski();
   // Aski is one of ours from its first frame, before the store has heard it.
   const ours = Math.max(told, 1);
+  // Over a plan's tray when one stands on the composer: its controls are the thumb's first.
+  const tray = useSyncExternalStore(standing.subscribe, standing.read, standing.read);
   const style = railStyle({ metrics, window, index: ours - 1, ours, size: SIZE }) ?? {
     right: insets.right + SIDE,
-    bottom: insets.bottom + OVER_COMPOSER,
+    bottom: insets.bottom + OVER_COMPOSER + tray,
   };
   return (
     <Animated.View

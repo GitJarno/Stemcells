@@ -271,10 +271,7 @@ function CellRow(props: {
             accessibilityLabel={`Project: ${place}`}
             accessibilityRole="button"
           >
-            <Pressable
-              hitSlop={10}
-              className="max-w-[70%] flex-row items-center gap-1 active:opacity-70"
-            >
+            <Pressable hitSlop={10} className="flex-row items-center gap-1 active:opacity-70">
               {placeWords}
               <SymbolView
                 name="chevron.down"
@@ -290,7 +287,7 @@ function CellRow(props: {
             accessibilityLabel={`${NEW_PROJECT_NAME}: ${place}`}
             hitSlop={10}
             onPress={rename}
-            className="max-w-[70%] flex-row items-center gap-1 active:opacity-70"
+            className="flex-row items-center gap-1 active:opacity-70"
           >
             {placeWords}
             <SymbolView
@@ -326,7 +323,7 @@ function CellRow(props: {
       {waiting ? (
         <View className="flex-row items-end gap-2 pt-1">
           <View className="flex-1 gap-0.5">
-            {whyLines(act).map((line) => (
+            {whyLines(act, props.blocked).map((line) => (
               <View key={line} className="flex-row items-center gap-1.5">
                 <View className="size-1.5 rounded-full bg-stage-input" />
                 <AppText className="flex-1 text-xs text-foreground-secondary">{line}</AppText>

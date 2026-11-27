@@ -42,6 +42,7 @@ export { SymbolView } from "../../components/ui/AppSymbol";
 export { Menu } from "../../components/ui/Menu";
 export * as Dialog from "../../components/ui/Dialog";
 export { useKeyboardState } from "react-native-keyboard-controller";
+export { useIsFocused } from "@react-navigation/native";
 export { useProjects } from "../../state/entities";
 
 /** The option ids that hold a model's effort, in upstream's order of preference. */

@@ -68,6 +68,7 @@ export function carry(trays: Trays, hands: Hands): Carrier {
   const making = new Map<string, ReturnType<Hands["create"]>>();
   const told = new Map<string, Tray>();
   const telling = new Map<string, () => void>();
+  const sent = new Map<string, string>();
   const leaving = new Map<string, () => void>();
   const destroying = new Set<string>();
 
@@ -105,13 +106,16 @@ export function carry(trays: Trays, hands: Hands): Carrier {
         telling.delete(entry.id);
         const now = trays.read().get(entry.id)?.tray ?? tray;
         const learned = learnedOf(now);
-        void hands
-          .tell(entry.environmentId, {
-            id: entry.id,
-            acts: outcomeOf(now),
-            ...(learned.places.length + learned.models.length > 0 ? { learned } : {}),
-          })
-          .catch(() => undefined);
+        const outcome = {
+          id: entry.id,
+          acts: outcomeOf(now),
+          ...(learned.places.length + learned.models.length > 0 ? { learned } : {}),
+        };
+        // Starting and started read alike to the server: the same news isn't told twice.
+        const news = JSON.stringify(outcome);
+        if (sent.get(entry.id) === news) return;
+        sent.set(entry.id, news);
+        void hands.tell(entry.environmentId, outcome).catch(() => undefined);
       }),
     );
   };
@@ -157,7 +161,11 @@ export function carry(trays: Trays, hands: Hands): Carrier {
       if (!told.has(entry.id) && entry.door === "fence") told.set(entry.id, tray);
       if (told.get(entry.id) !== tray) tellSoon(entry, tray);
     }
-    for (const id of told.keys()) if (!trays.read().has(id)) told.delete(id);
+    for (const id of told.keys()) {
+      if (trays.read().has(id)) continue;
+      told.delete(id);
+      sent.delete(id);
+    }
     hands.rows(entries);
   };
 

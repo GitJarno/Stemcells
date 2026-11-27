@@ -101,6 +101,11 @@ async function destroy(environmentId: string, act: DestroyAct): Promise<Went> {
       place === null ? null : (place.projectId ?? (place.id && placeOfKey(place.id)?.projectId));
     if (projectId == null || projectId === "")
       return { ok: false, reason: "No project to delete." };
+    // Deleting a project takes its chats along, and Aski's is where this plan is read.
+    const { shells } = readMachine(environmentId);
+    const aski = askiChatsOf(shells);
+    if (shells.some((shell) => shell.projectId === projectId && aski.has(shell.id)))
+      return { ok: false, reason: "Aski’s own chat is in that project. It stays." };
     return deleteProject(environmentId, projectId);
   }
   const ids = cellsOf(environmentId, act).filter((id) => cellExists(environmentId, id));
