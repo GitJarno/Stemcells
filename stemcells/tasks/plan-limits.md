@@ -13,8 +13,14 @@ left, when it resets, and whether the pace so far runs out first.
   on, the one in the worst state; with none working, the plan of the chat
   touched last. The binding plan of all would always be red for someone with
   ten plans, where an empty one is just the one they hopped off.
-- **Two windows, two rings**: outer the long window (7d, else monthly),
-  inner the session (5h). No figure: the hover has the numbers.
+- **One ring, one figure** (2026-11-28, after Claude's app): the ring fills
+  to what the plan's binding window (the one that stops it first) has
+  used, the percent inside; once out, the wait until it frees ("45m").
+  Used, not left, everywhere: the ring, the card and the page read alike.
+- **A click opens the card**, not a hover: "Limits", the headline, then a
+  block per plan, the ring's plan first and then the most room, so the next
+  plan to hop to sits under the one you're on; out plans last. Each block a
+  row per window: Session, Week, then each model's own week by name.
 - **The pace is the window's own average**: used ÷ elapsed since it
   opened, read once a tenth of the window has passed and 3% is used. It
   runs out before the reset when that rate empties it first. No history.
@@ -39,7 +45,17 @@ left, when it resets, and whether the pace so far runs out first.
 - [x] Usage page substitute, contract test, seams.md
 - [x] Typecheck, lint, tests, drift; a capture of the real components
       rendered with sample plans (no dev app: the disk was near full)
-- [ ] Pull request, check-local, merge
+- [x] Pull request, check-local, merge (#273)
+
+## One ring and a card (2026-11-28)
+
+- [x] `plans.ts`: card rows, the binding window, the ring's figure, the
+      card's order; the pure half of `upstream/limits.ts` in
+      `upstream/limitAccounts.ts`, for the phone
+- [x] Mac: the ring with its figure, a click opens the card; the page in
+      the same blocks
+- [ ] Phone: the ring in the chat's bar and the home's, the card in a sheet
+- [ ] Browser test and captures on both; pull request, check-local, merge
 
 ## Review
 

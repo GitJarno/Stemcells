@@ -74,7 +74,7 @@ export function PlanRing(props: { on: boolean }) {
           </b>
         </span>
       </PopoverTrigger>
-      <PopoverPopup side="right" align="end" sideOffset={10} padding="none">
+      <PopoverPopup side="right" align="end" sideOffset={10} padding="none" width="lg">
         <PlanCard
           plans={plans}
           ring={ring}

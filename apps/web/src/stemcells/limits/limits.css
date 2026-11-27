@@ -4,10 +4,6 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  width: 22rem;
-  max-width: calc(100vw - 6rem);
-  max-height: min(36rem, calc(100vh - 4rem));
-  overflow-y: auto;
   padding: 14px 16px 12px;
   font-family: var(--sc-font-ui);
 }

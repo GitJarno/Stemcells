@@ -84,7 +84,7 @@ export function PlanRing() {
           className="font-t3-bold"
           style={[
             NUMBERS,
-            { fontSize: 10, lineHeight: 12, letterSpacing: -0.2 },
+            { fontSize: 9, lineHeight: 11, letterSpacing: -0.3 },
             ring.tone === "fine" ? null : { color: ink },
           ]}
           allowFontScaling={false}

@@ -61,8 +61,9 @@ function Row(props: { readonly row: PlanRow; readonly ink: string; readonly cloc
         ) : null}
       </View>
       <AppText
-        className="w-11 text-right text-xs font-t3-bold"
+        className="w-12 text-right text-xs font-t3-bold"
         style={[NUMBERS, reading.tone === "out" ? { color: ERROR } : null]}
+        numberOfLines={1}
       >
         {used}%
       </AppText>
