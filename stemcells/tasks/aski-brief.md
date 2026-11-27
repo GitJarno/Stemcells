@@ -30,13 +30,14 @@ have to trust.
 
 A finished Cell has a verdict, by rule:
 
-| Verdict  | When                                                                                              | Wire      |
-| -------- | ------------------------------------------------------------------------------------------------- | --------- |
-| Shown    | Its pull request merged or its checks pass, or its own checks last ran clean                      | `shown`   |
-| Its word | It says it is done and nothing above shows it                                                     | `claimed` |
-| Short    | The run was stopped or rolled back, a check it ran last failed, or its pull request's checks fail | `short`   |
+| Verdict  | When                                                                                                                                      | Wire      |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| Shown    | Its pull request merged or its checks pass, or its own checks last ran clean                                                              | `shown`   |
+| Its word | It says it is done and nothing above shows it                                                                                             | `claimed` |
+| Short    | The run was stopped or rolled back, a check it ran last failed, its pull request's checks fail, or its turn ended on `Left: waiting`/`me` | `short`   |
 
-A failing fact outranks a passing one, and both outrank the Cell's word.
+A failing fact outranks a passing one, and both outrank the Cell's word,
+except its word that work is left: a Cell saying it's short is believed.
 A run stopped by hand, cancelled or rolled back used to read as done with
 no line; it now lands short and says why.
 

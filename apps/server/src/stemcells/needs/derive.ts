@@ -152,7 +152,7 @@ export function runEnded(shell: Shell): number {
 }
 
 /** Waits on what finishes without the person: its own background work, or another Cell. */
-export const waitsOnItsOwn = (shell: Shell) =>
+const waitsOnItsOwn = (shell: Shell) =>
   shell.blockedOnThreadWait === true || (shell.pendingBackgroundTasks ?? []).length > 0;
 
 /**

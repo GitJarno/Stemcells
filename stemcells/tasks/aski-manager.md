@@ -116,9 +116,14 @@ chat:
 
 | Stage     | Colour | When                                                                                                                    |
 | --------- | ------ | ----------------------------------------------------------------------------------------------------------------------- |
-| Working   | yellow | a run is under way, or it said it waits on its own work (`Left: waiting`)                                               |
+| Working   | yellow | a run is under way, or its turn waits on work it awaits (another Cell, a subagent, a command it marked awaited)         |
 | Needs you | red    | anything in the needs list: a permission, a question, a plan, a limit, a failure, a stall, an ask in prose, `Left: you` |
 | Done      | green  | its turn ended, nothing is asked, and it isn't settled                                                                  |
+
+A turn that ended on `Left: waiting` or `Left: me` is done, landed short:
+nothing runs until a message wakes it, so showing it at work lied. Nor does
+a dev server it left running keep it at work (T3's own rule: only awaited
+work holds a turn).
 
 A settled Cell has no stage: it leaves the roster and the slate.
 

@@ -34,7 +34,8 @@ Aski reads the Cell's close-out, not its prose.
 - **Ask**: red, one card. A choice goes through the question tool (2 to 4
   options, the recommendation first). `Left: you` is for a step only the
   person can take (sign in, send the mail).
-- **Waiting**: yellow, at work, no card: `Left: waiting` or `Left: me`.
+- **Waiting**: done, landed short, no card: `Left: waiting` or `Left: me`.
+  Its line says what's left; it's at work again once something wakes it.
 
 Prose with no contract gets the fallback card, in the Cell's own words.
 

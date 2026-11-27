@@ -1,14 +1,14 @@
 /**
  * Every Cell's stage (stemcells/tasks/aski-manager.md, decision 7), the same in Aski's
  * roster, its tab and its chat: at work, needs you, or done. Facts first: needs you is the
- * list's own cards, a run under way is at work, and only a Cell whose turn ended is read for
- * its own word (`closeOut.ts`); done is what's left. Pure.
+ * list's own cards, and at work is a run under way or work its turn waits on; done is what's
+ * left. A Cell whose turn ended on `Left: waiting` has landed: nothing runs until it's woken. Pure.
  */
 import * as DateTime from "effect/DateTime";
 
-import { isSnoozed, type Shell } from "../upstream/needs.ts";
+import { backgroundWorkHolds, isSnoozed, type Shell } from "../upstream/needs.ts";
 import type { Stop } from "../../../../../stemcells/closeOut/closeOut.ts";
-import { ACTIVE_RUN, askiThreadOf, waitsOnItsOwn, type Need } from "./derive.ts";
+import { ACTIVE_RUN, askiThreadOf, type Need } from "./derive.ts";
 import type { Brief } from "./evidence.ts";
 import { landingOf, type Landing } from "./verdict.ts";
 
@@ -20,7 +20,7 @@ export interface CellStanding {
   /** Its chat's title: what it is on. */
   readonly title: string;
   readonly stage: Stage;
-  /** Its own word: what it delivered when done, or what it waits on while at work. */
+  /** Its own word: what it delivered, or what is left and who it waits on. */
   readonly line: string | null;
   /** When it was made: the roster lists the newest first and never reorders. */
   readonly createdAt: string;
@@ -68,9 +68,9 @@ export function standingsOf(
     const atWork =
       ACTIVE_RUN.has(shell.status) ||
       shell.activeRunId !== null ||
-      waitsOnItsOwn(shell) ||
-      holds !== null ||
-      stop?.waits === true;
+      shell.blockedOnThreadWait === true ||
+      backgroundWorkHolds(shell) ||
+      holds !== null;
     const stage: Stage = needsYou.has(shell.id) ? "needs-you" : atWork ? "working" : "done";
     const brief = briefs.get(shell.id) ?? null;
     const since =
@@ -89,7 +89,7 @@ export function standingsOf(
         createdAt: DateTime.formatIso(shell.createdAt),
         since: since == null ? null : DateTime.formatIso(since),
         holds: stage === "working" ? holds : null,
-        landing: stage === "done" ? landingOf(shell.status, brief) : null,
+        landing: stage === "done" ? landingOf(shell.status, brief, stop?.waits === true) : null,
         brief,
       },
     ];
