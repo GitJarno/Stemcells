@@ -20,7 +20,7 @@ import { glyphsIn } from "../words/spawn/play";
 import type { Arrival } from "./arrivals";
 
 /** Beats from a row's landing to its line's first step: the row it pushed down has cleared it by then. */
-const SETTLE_LEAD = 1;
+const SETTLE_LEAD = 2;
 
 /** The mark of the field a check row is unsure of. */
 export function Unsure(props: { row: Planned; field: NonNullable<Planned["unsure"]> }) {

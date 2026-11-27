@@ -68,6 +68,11 @@ subscribePlannedRows(arrivals.sync);
 /** Whether a row landing in Awake now would be seen: the list on screen, on its stage. */
 export const awakeInSight = (): boolean => topSlot() !== null;
 
+/** The threads whose planned rows are on their way to Awake: the machine's own row for one waits until it lands. */
+export function useArrivalsComing(): ReadonlySet<string> {
+  return useSyncExternalStore(arrivals.subscribe, arrivals.coming, arrivals.coming);
+}
+
 /** The planned rows standing in Awake, in the order they landed. */
 export function useArrivals(): readonly Arrival[] {
   return useSyncExternalStore(arrivals.subscribe, arrivals.read, arrivals.read);

@@ -465,22 +465,37 @@
   --cells-settle-ink: var(--sc-dim);
 }
 /* While its line says its birth a row shows no time: its light says it flies, and the words
-   need the room. What fits is chosen by the row's own width, the title always: the model at
-   any width, its effort from the default width up, the name in a wider column. */
+   need the room. What fits is chosen by the row's own width, the title always: then the model
+   (not in the narrowest column), its effort, and the name, as the column is drawn wider. */
 [data-cells-row][data-born] {
   container-type: inline-size;
+  /* A container's track no longer takes the row's width from its words. */
+  grid-template-columns: minmax(0, 1fr);
 }
 [data-cells-row][data-born] [data-cells-row-end] {
   display: none;
 }
-@container (max-width: 17.5rem) {
+@container (max-width: 20.5rem) {
   [data-cells-birth-name] {
     display: none;
   }
 }
-@container (max-width: 14.5rem) {
+@container (max-width: 17.5rem) {
   [data-cells-birth-effort] {
     display: none;
+  }
+}
+@container (max-width: 13.5rem) {
+  [data-cells-birth-chip] {
+    display: none;
+  }
+}
+/* Its birth words gone, the title glides into their place (`useTitleGlide`), and only then its time shows. */
+[data-cells-row][data-was-born] [data-cells-row-end] {
+  transition: opacity var(--sc-motion-fade-duration) var(--sc-motion-fade-easing)
+    var(--sc-motion-recede-duration);
+  @starting-style {
+    opacity: 0;
   }
 }
 /* Its light comes as the machine lists it, rather than standing there at once. */
@@ -497,6 +512,7 @@
 }
 [data-settling] {
   position: relative;
+  overflow: clip;
   color: transparent;
 }
 [data-settling]::after {
@@ -532,6 +548,13 @@
 [data-cells-row][data-outline]
   :is([data-cells-row-project], [data-cells-birth], [data-cells-row-title]) {
   opacity: 0.55;
+}
+/* Unsure of its words, the mark stands at the title's end, not the row's. */
+[data-cells-row-title]:has(+ [data-cells-unsure]) {
+  flex: 0 1 auto;
+}
+[data-settling-line] [data-cells-unsure] {
+  visibility: hidden;
 }
 [data-cells-unsure] {
   flex-shrink: 0;

@@ -60,7 +60,9 @@ export function useRowMotion(
         // From where a glide under way has it now, so one arrival after another never jumps it back.
         const under = gliding.current.get(key);
         const off =
-          under?.playState === "running" ? new DOMMatrix(getComputedStyle(row).translate).f : 0;
+          under?.playState === "running"
+            ? Number.parseFloat(getComputedStyle(row).translate.split(" ")[1] ?? "") || 0
+            : 0;
         under?.cancel();
         const glide = row.animate(
           [{ translate: `0 ${from - top + off}px` }, { translate: "0 0" }],
