@@ -6,10 +6,20 @@
  */
 import type { EnvironmentThreadShell } from "@t3tools/client-runtime/state/shell";
 
+import { scopeProjectRef } from "@t3tools/client-runtime/environment";
+import { resolveThreadProviderStack } from "@t3tools/client-runtime/state/models";
+
 import { appAtomRegistry } from "../../rpc/atomRegistry";
-import { readThreadShell, readThreadShells, waitForThreadShell } from "../../state/entities";
+import {
+  readProject,
+  readThreadShell,
+  readThreadShells,
+  waitForThreadShell,
+} from "../../state/entities";
+import { readEnvironmentProviders } from "../../state/environments";
 import { environmentThreadShells } from "../../state/threads";
 import { isAskisInstance } from "../aski/setup";
+import { conciseModelName } from "../models/names";
 import type { CellRef } from "../tabs/layout";
 import { draftProject } from "./newCell";
 import { threadRefOf } from "./routes";
@@ -76,6 +86,41 @@ export function subscribeLaunches(listener: (cells: CellRef[]) => void): () => v
   };
   take(readThreadShells());
   return appAtomRegistry.subscribe(environmentThreadShells.threadShellsAtom, take);
+}
+
+/** What a launched chat's row says of it before the machine lists its Cell (`rail/launched.ts`). */
+export interface LaunchFacts {
+  readonly projectId: string;
+  readonly projectName: string;
+  readonly title: string;
+  readonly modelName: string;
+  readonly effort: string | undefined;
+  readonly driver: string | undefined;
+  readonly born: number;
+}
+
+/** A launched chat's facts as upstream holds them now; null until its chat is known here. */
+export function launchFactsOf(cell: CellRef): LaunchFacts | null {
+  const shell = readThreadShell(threadRefOf(cell));
+  if (shell === null) return null;
+  const project = readProject(scopeProjectRef(shell.environmentId, shell.projectId));
+  const instanceId = resolveThreadProviderStack(shell).at(-1) ?? null;
+  const provider = readEnvironmentProviders(shell.environmentId)?.find(
+    (candidate) => candidate.instanceId === instanceId,
+  );
+  const slug = shell.modelSelection.model;
+  const effort = shell.modelSelection.options?.find((option) => /effort/i.test(option.id))?.value;
+  return {
+    projectId: shell.projectId,
+    projectName: project?.title ?? "",
+    title: shell.title,
+    modelName: conciseModelName(
+      provider?.models.find((model) => model.slug === slug)?.name ?? slug,
+    ),
+    effort: typeof effort === "string" ? effort : undefined,
+    driver: provider?.driver ?? instanceId ?? undefined,
+    born: Date.parse(shell.createdAt) || Date.now(),
+  };
 }
 
 /**
