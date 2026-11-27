@@ -34,8 +34,7 @@ pictures a second.
 - **Each place draws its own size.** A 16-pixel Cell is drawn for 16
   pixels, framed on its face; nothing is a big picture shrunk.
 - **Pure TypeScript on the CPU**, free of the DOM, so the Mac, the phone
-  and the art tools share it as they share the kit. A 80 × 64 picture took
-  about 7 ms in the prototype; a row's 40 × 32 about 3.
+  and the art tools share it as they share the kit.
 
 ## Slices
 
@@ -59,8 +58,14 @@ pictures a second.
 - [x] Prototype, and the person's choice of look
 - [x] `shapes.ts`, `tones.ts`, `body.ts`, `sprite.ts`, `acts.ts`
 - [x] `cells model`: the sheet and a turn
-- [ ] Tests: eyes at every size and clear of the lid, the outline, nothing
+- [x] Tests: eyes at every size and clear of the lid, the outline, nothing
       cut off, each act's shape
-- [ ] Checks, pull request, merge
+- [x] Checks, pull request, merge
 
 ## Review
+
+Slice 1 landed as planned, with no surface changed. The tests earned their
+keep at once: they caught a cheering Cell's hands cut off at the top of the
+picture, which the prototype had too. Measured in node on the Mac, a picture
+takes 4.9 ms at 64 rows, 1.1 ms at 32 and 0.3 ms at 16 (a grown Cell with
+headphones and a backpack). The phone is unmeasured; slice 2 starts there.

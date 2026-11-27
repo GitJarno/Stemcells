@@ -18,15 +18,16 @@ lands is worn; a scene that lands can be played.
 `stemcells/scripts/cells` runs from any worktree, with no dev server and no
 build. It uses node's own TypeScript.
 
-| Command                        | What it makes                                                                                                                                  |
-| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `cells render <look> [scene…]` | `sheet.png`: every frame of each scene, at the miniature and the hero, on black and on light. Also one animated PNG per scene, size and frame  |
-| `cells pack <theme>`           | A still sheet of every piece and outfit in a pack, at rest and cheering                                                                        |
-| `cells lookbook [theme…]`      | `lookbook.html`: packs animated, outfits side by side. With no theme it shows every drawn pack                                                 |
-| `cells crew [day] [count]`     | `crew-<day>.png`: a crew in view dealt together on a day (`YYYY-MM-DD`, today by default), twelve Cells by default, at rest and cheering       |
-| `cells cast [name…]`           | `cast.png`: the Cells' own looks by name, at rest and landed. Every name by default; a name with no look is drawn bare and marked `none`       |
-| `cells manner [temperament…]`  | `manner-<look>.png`: each temperament's rest (a picture a hold) and its beats frame by frame, at both sizes. `--look <look>`, `--ground light` |
-| `cells check [theme…]`         | The rules below. Exits 1 on a failure. `--original` adds notes on the original's art                                                           |
+| Command                        | What it makes                                                                                                                                             |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `cells render <look> [scene…]` | `sheet.png`: every frame of each scene, at the miniature and the hero, on black and on light. Also one animated PNG per scene, size and frame             |
+| `cells pack <theme>`           | A still sheet of every piece and outfit in a pack, at rest and cheering                                                                                   |
+| `cells lookbook [theme…]`      | `lookbook.html`: packs animated, outfits side by side. With no theme it shows every drawn pack                                                            |
+| `cells crew [day] [count]`     | `crew-<day>.png`: a crew in view dealt together on a day (`YYYY-MM-DD`, today by default), twelve Cells by default, at rest and cheering                  |
+| `cells cast [name…]`           | `cast.png`: the Cells' own looks by name, at rest and landed. Every name by default; a name with no look is drawn bare and marked `none`                  |
+| `cells manner [temperament…]`  | `manner-<look>.png`: each temperament's rest (a picture a hold) and its beats frame by frame, at both sizes. `--look <look>`, `--ground light`            |
+| `cells model [piece…]`         | `model.png` and `model-turn.apng`: the 3D model drawn as sprites (`cell/model/`), its acts from newborn to grown, and a whole turn moving. `--grown 0..1` |
+| `cells check [theme…]`         | The rules below. Exits 1 on a failure. `--original` adds notes on the original's art                                                                      |
 
 A `<look>` is one of:
 
