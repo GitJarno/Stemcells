@@ -18,6 +18,8 @@ export function useLineMotion<C extends Cell>(
   cells: ReadonlyArray<C>,
   inView: (cell: C) => boolean,
   counts: Readonly<Record<LineStage, number>>,
+  /** The machines have sent their Cells: until then no reading is the first. */
+  ready: boolean,
 ): Readonly<Record<LineStage, number>> {
   const hops = useHops();
   const before = useRef<Record<HopStage, ReadonlySet<string>> | null>(null);
@@ -25,6 +27,10 @@ export function useLineMotion<C extends Cell>(
   const has = (list: ReadonlyArray<C>, key: string) => list.some((cell) => cellKey(cell) === key);
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Hand each reading of the line to the hops' store before it paints: the rows that entered a stage, and where the Cells on their way went.
   useLayoutEffect(() => {
+    if (!ready) {
+      before.current = null;
+      return;
+    }
     const now = { awake: keysIn("awake"), asleep: keysIn("asleep") };
     for (const stage of STAGES)
       arrive(enteredRows(before.current?.[stage] ?? null, [...now[stage]]), stage);

@@ -74,10 +74,13 @@ export function LineHome(props: {
   const line = lineOf(props.cells, props.readings, props.now, answered, byRecord(props.now));
   const states = useSteadyStates(line.states);
   const onPhone = countsOf(line, props.inView);
-  const counts = useLineMotion(line, props.cells, props.inView, {
-    ...onPhone,
-    asleep: onPhone.asleep + props.olderSettled,
-  });
+  const counts = useLineMotion(
+    line,
+    props.cells,
+    props.inView,
+    { ...onPhone, asleep: onPhone.asleep + props.olderSettled },
+    !props.connecting,
+  );
   const tab = segments.useTab("awake");
   const stages = useStagePages(STAGES, tab);
   // Only once every machine has answered: a cold start would clear the icon a closed app was given.
