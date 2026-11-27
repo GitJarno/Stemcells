@@ -133,7 +133,7 @@ Mac:
 - A caught word's bloom: `words/words.css:68` with `words/plugin.ts:20`
   (600 ms, said twice).
 - Aski's button sinks and rises on curves of its own:
-  `aski/askiButton.css:109,112`.
+  `aski/askiButton.css:108,111`.
 - A second curve for a change in place: `--sc-motion-icon-hover` (220 ms,
   ease in-out, `tokens/stemcells.css:15-16`) beside `flick`.
 - A walk's curve: `needs/stroll.ts:75` (`(.2, .8, .2, 1)`, not `move`).
