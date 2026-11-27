@@ -77,6 +77,19 @@ export function crossing(
 }
 
 /**
+ * Where a band crossing one list row runs: over the row alone, from just clear of its left edge
+ * to just past its right, with room for the band's lean. On the beat's pass that is a slow glide,
+ * where the pane's crossing would flick past a narrow row in a fraction of it.
+ */
+export function rowCrossing(
+  rowWidth: number,
+  band: number,
+): { readonly from: number; readonly to: number } {
+  return { from: -band - ROW_LEAN_ROOM, to: rowWidth + ROW_LEAN_ROOM };
+}
+const ROW_LEAN_ROOM = 16;
+
+/**
  * One working sweep: `element` slides along x from `from` to `to` pixels in
  * the beat's pass, rests, and goes again, on the beat. `lean` follows the
  * slide in the transform (a shear, say). `stepped` crosses on the Cells'

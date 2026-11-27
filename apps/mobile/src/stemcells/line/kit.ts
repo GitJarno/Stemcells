@@ -35,11 +35,9 @@ export {
 export { type LineStage } from "../../../../web/src/stemcells/rail/moves.ts";
 export {
   byRecent,
-  ROW_LIGHT,
   rowStateOf,
   rowStatusOf,
   type Launchable,
-  type RowLight,
   type RowStatus,
 } from "../../../../web/src/stemcells/rail/awake.ts";
 export {
