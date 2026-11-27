@@ -1,6 +1,6 @@
 /**
  * What the left column's rail reads from upstream: the projects in the
- * order upstream's sidebar lists them, their marks, the chats in them and
+ * order upstream's sidebar lists them, the chats in them and
  * each chat's status, the shortcuts the rail names, and upstream's own
  * foot controls. `rail.contract.test.ts` pins what the rail relies on.
  */
@@ -21,8 +21,6 @@ import { barColor } from "../../components/usage/UsageLimits";
 import { PROVIDER_PRESENTATION } from "../../components/usage/usageProviders";
 import { useSidebarProjectGroups } from "../../hooks/useSidebarProjectGroups";
 import { shortcutLabelForCommand } from "../../keybindings";
-import { deriveProjectIdentity } from "../../projectIdentity";
-import { projectIconColorClassName } from "../../projectIconColors";
 import { useQuietThreadShell, useThreadShells } from "../../state/entities";
 import { environmentPresentations } from "../../state/presentation";
 import { primaryEnvironmentIdAtom } from "../../state/primaryEnvironment";
@@ -35,27 +33,20 @@ import { statusOfShell, type CellStatus } from "./status";
 
 export { isElectron } from "../../env";
 
-export { ProjectFavicon } from "../../components/ProjectFavicon";
 export { SidebarUpdatePill } from "../../components/sidebar/SidebarUpdatePill";
 export { formatDuration };
 
-/** A project as the rail draws it: upstream's group, its mark, where its chats are. */
+/** A project as the rail draws it: upstream's group and where its chats are. */
 export interface RailProject {
   readonly key: string;
   readonly name: string;
-  /** The project's own record, for upstream's mark when it is an icon or emoji. */
+  /** The project's own record, for its mark (`project/ProjectMark.tsx`). */
   readonly record: ProjectFaviconProject;
-  readonly mark: RailMark;
   /** Every project of the group, as `environmentId:projectId`. */
   readonly memberKeys: ReadonlyArray<string>;
   /** Where a new Cell starts while the column shows this project (`newCellProject.ts`). */
   readonly scope: NewCellScope;
 }
-
-/** Letters in a colour (the person's, or derived from the name), or upstream's icon or emoji. */
-export type RailMark =
-  | { readonly kind: "letters"; readonly text: string; readonly colorClass: string }
-  | { readonly kind: "icon"; readonly colorClass: string | null };
 
 /** A chat the rail counts: open, the person's own (not a subagent's), with its status. */
 export interface RailChat {
@@ -66,30 +57,13 @@ export interface RailChat {
 }
 
 export function useRailProjects(): ReadonlyArray<RailProject> {
-  return useSidebarProjectGroups().map((group) => {
-    const icon = group.projectIcon ?? null;
-    const derived = deriveProjectIdentity(group.title);
-    const mark: RailMark =
-      icon?.kind === "monogram"
-        ? { kind: "letters", text: icon.text, colorClass: projectIconColorClassName(icon.color) }
-        : icon?.kind === "lucide"
-          ? { kind: "icon", colorClass: projectIconColorClassName(icon.color) }
-          : icon?.kind === "emoji"
-            ? { kind: "icon", colorClass: null }
-            : {
-                kind: "letters",
-                text: derived.monogram,
-                colorClass: projectIconColorClassName(derived.color),
-              };
-    return {
-      key: group.projectKey,
-      name: group.displayName,
-      record: group,
-      mark,
-      memberKeys: group.memberProjectRefs.map((ref) => `${ref.environmentId}:${ref.projectId}`),
-      scope: group,
-    };
-  });
+  return useSidebarProjectGroups().map((group) => ({
+    key: group.projectKey,
+    name: group.displayName,
+    record: group,
+    memberKeys: group.memberProjectRefs.map((ref) => `${ref.environmentId}:${ref.projectId}`),
+    scope: group,
+  }));
 }
 
 /**

@@ -36,7 +36,6 @@ export { NativePrimaryColumnContext } from "../../native/v5-workspace-context";
 export { Toolbar } from "../../components/ui/Toolbar";
 export { Menu } from "../../components/ui/Menu";
 export { SymbolView } from "../../components/ui/AppSymbol";
-export { ProjectFavicon } from "../../components/ProjectFavicon";
 export { ENVIRONMENT_MACHINE_SYMBOLS } from "../../components/EnvironmentMachineSymbol";
 export { useProjects } from "../../state/entities";
 export { useSavedRemoteConnections } from "../../state/use-remote-environment-registry";

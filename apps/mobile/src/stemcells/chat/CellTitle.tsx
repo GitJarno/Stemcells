@@ -24,7 +24,7 @@ import { ThreadCell } from "../cell/ThreadCell";
 import { tellDeed } from "../collection/read";
 import { useColumnWidth } from "./header";
 import { askiChatStandsIn } from "../home/copies";
-import { ProjectMark } from "../home/RowCell";
+import { ProjectMark } from "../project/ProjectMark";
 import {
   AppText,
   type EnvironmentThreadShell,
@@ -37,8 +37,8 @@ import { useSavedConnection } from "../upstream/push";
 
 /** The Cell's points per cell of its miniature: about the height of the two lines beside it. */
 const POINTS = 2;
-/** The project's mark beside the one-liner: its capitals' height and a little over. */
-const MARK = 14;
+/** The project's mark beside the one-liner: as tall as its line. */
+const MARK = 16;
 /**
  * A soft glow of the ground behind the name's letters: unseen over the plain page, it holds
  * them off whatever scrolls under the bar's blur.
