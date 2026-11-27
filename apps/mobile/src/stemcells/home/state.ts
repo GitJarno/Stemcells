@@ -128,16 +128,6 @@ export function pillBottom(rest: number, above: number, keyboard: number, progre
   return rest + Math.max(0, keyboard + progress * (above - rest));
 }
 
-/**
- * The pill's foot as the keyboard moves: from `rest` to `above` over the keyboard's top, never
- * under its rest, in step with the keyboard's `progress` as T3's composer moves
- * (`KeyboardStickyView`). `keyboard` is the keyboard's height now.
- */
-export function pillBottom(rest: number, above: number, keyboard: number, progress: number) {
-  "worklet";
-  return rest + Math.max(0, keyboard + progress * (above - rest));
-}
-
 const lifts = new Map<object, number>();
 let lift = 0;
 const liftListeners = new Set<() => void>();
