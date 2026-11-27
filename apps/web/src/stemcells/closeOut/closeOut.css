@@ -56,22 +56,21 @@
   grid-column: 1 / -1;
 }
 
-/* The person's step: the composer's warmth when a Cell needs them, at the card's edge. */
+/* The person's step: Input's indigo, as the row's icon and the ask say it. */
 [data-stemcells-close-out][data-asks] {
   border-color: color-mix(
     in srgb,
-    var(--sc-needs-you) calc(var(--sc-tint-edge) * 100%),
+    var(--sc-input) calc(var(--sc-tint-edge) * 100%),
     var(--sc-hairline)
   );
 }
 [data-close-out-line][data-stands="you"] {
   margin-inline: calc(var(--sc-space-xl) * -1);
   padding: var(--sc-space-xs) var(--sc-space-xl);
-  background: color-mix(in srgb, var(--sc-needs-you) calc(var(--sc-tint-fill) * 50%), transparent);
-  box-shadow: inset 2px 0 0 var(--sc-needs-you);
+  background: color-mix(in srgb, var(--sc-input) calc(var(--sc-tint-fill) * 50%), transparent);
 }
 [data-stands="you"] > [data-close-out-owner] {
-  color: var(--sc-needs-you);
+  color: var(--sc-input);
 }
 [data-stands="you"] > [data-close-out-words] > .chat-markdown {
   color: var(--sc-text);

@@ -34,7 +34,7 @@ export const MOODS: readonly Mood[] = [
   "braced",
 ];
 
-/** Whether a Cell in `mood` waits on the person: it asks, with the "?" over it. */
+/** Whether a Cell in `mood` waits on the person: it asks. */
 export function asksYou(mood: Mood): boolean {
   return mood === "needsYou" || mood === "needsApproval";
 }

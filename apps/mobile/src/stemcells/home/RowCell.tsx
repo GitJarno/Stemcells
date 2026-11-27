@@ -22,6 +22,7 @@ import { ThreadCell } from "../cell/ThreadCell";
 import { RowLight } from "../glow/RowLight";
 import { ROW_LIGHT, rowStateOf, type RowStatus, rowStatusOf, STATUS_WORDS } from "../line/kit";
 import { cellKey } from "../line/line";
+import { STATUS_SYMBOL } from "../line/StatusSymbol";
 import { ProjectMark } from "../project/ProjectMark";
 import { titleMarkLayout } from "../project/titleMark";
 import { CODE_FONT } from "../tokens";
@@ -209,29 +210,6 @@ function AwakeRow(props: {
   );
 }
 
-/** T3's status symbols and colours on the phone (`features/threads/thread-list-v2-items.tsx`). */
-const STATUS_SYMBOL = {
-  working: {
-    name: "circle.dashed",
-    tint: "accent-adaptive-sky-600-400",
-    ink: "text-adaptive-sky-600-400",
-  },
-  input: {
-    name: "questionmark.bubble",
-    tint: "accent-adaptive-indigo-600-300",
-    ink: "text-adaptive-indigo-600-300",
-  },
-  approval: {
-    name: "exclamationmark.shield",
-    tint: "accent-warning-foreground",
-    ink: "text-warning-foreground",
-  },
-  done: {
-    name: "checkmark.circle",
-    tint: "accent-adaptive-emerald-700-300",
-    ink: "text-adaptive-emerald-700-300",
-  },
-} as const satisfies Record<RowStatus, unknown>;
 const STATUS_SIZE = 13;
 /** Three characters of the time's code font (an advance of about 0.6 of its 14 pt), right-aligned. */
 const TIME_SLOT = Math.ceil(14 * 0.61 * 3);

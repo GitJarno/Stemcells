@@ -1,12 +1,11 @@
 // The colours of Stemcells' own marks on the phone, as the web's tokens set
 // them (`apps/web/src/stemcells/tokens/stemcells.css`): what waits on you,
-// what works, what is done, and the notch's black the "?" is written in.
+// what works, and what is done.
 // `tokens.test.ts` holds them to the web's.
 
 export const NEEDS_YOU = "#FDBE48";
 export const WORKING = "#8393FF";
 export const DONE = "#2AD394";
-export const NOTCH = "#000000";
 /** A chart's series, in their fixed order (`--sc-data-hue-1` to `-4`): never cycled. */
 export const DATA_HUES = ["#5071DE", "#B38C15", "#009F7D", "#BB2C54"] as const;
 /** A change's added and removed lines, as the web's diff counts colour them. */

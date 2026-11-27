@@ -3,6 +3,7 @@ import { useLayoutEffect, useRef, useState, type RefObject } from "react";
 import { createPortal } from "react-dom";
 
 import { cellNameOf } from "../cell/name";
+import { CellAskIcon } from "../rail/StatusIcon";
 import { useCellTitle } from "../upstream/thread";
 import { startChatCarry } from "../windows/ChatCarry";
 import {
@@ -219,6 +220,7 @@ export function CellPill(props: { cell: CellRef }) {
       <CellMark cell={props.cell} />
       <span data-stemcells-cell-pill-name="">{cellNameOf(props.cell.threadId)}</span>
       {title ? <span data-stemcells-cell-pill-title="">{title}</span> : null}
+      <CellAskIcon cell={props.cell} />
     </div>
   );
 }

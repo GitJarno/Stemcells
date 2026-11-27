@@ -12,11 +12,11 @@ export {
   needsListOf,
 } from "../../../../web/src/stemcells/needs/wire.ts";
 export {
-  askAnchorOf,
+  askPlaceOf,
   chatAskOf,
   type ChatMessage,
 } from "../../../../web/src/stemcells/needs/inChat.ts";
-export { dockedButtonsOf } from "../../../../web/src/stemcells/needs/docked.ts";
+export { askButtonsOf } from "../../../../web/src/stemcells/needs/askButtons.ts";
 export { handSettledAtFrom } from "../../../../web/src/stemcells/tabs/handSettles.ts";
 export { cardOf, type CardOption } from "../../../../web/src/stemcells/needs/card.ts";
 export { type Fact } from "../../../../web/src/stemcells/needs/facts.ts";
