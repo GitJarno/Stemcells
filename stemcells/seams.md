@@ -604,7 +604,7 @@ library's dependency (above); the rest are substitutes:
   thread commands (`upstream/needs.ts`, which takes the web's
   `proposedPlan.ts` for a plan's build) the moment it's given; a
   substitute of `ThreadUndoNotice` stands T3's notice over the pill, and
-  shows none for a Sleep or Sleep until… (`stemcells/tasks/no-undo.md`). The list's header (`ThreadListFilters`,
+  shows none for a Sleep or a Snooze (`stemcells/tasks/no-undo.md`). The list's header (`ThreadListFilters`,
   substituted) is its stage's top, the same room on each, under the
   header's sky (`home/Sky.tsx`); a substitute of `WorkspaceConnectionTitle` carries the header's
   title row up with the list in front, the sky with it (`home/head.ts`,

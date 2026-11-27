@@ -9,7 +9,7 @@ to fix anyway.
 ## Decisions
 
 1. **Act at once.** An answer (a card's button, Later, Nothing to do), Sleep,
-   Sleep until… and Wake are sent the moment the person acts, with no undo
+   Snooze and Wake are sent the moment the person acts, with no undo
    line and no hold, on the phone and the Mac, from every place they're
    offered: rows, swipes, the chat's ask, Aski's room, menus, keys.
 2. **Undo stays where it saves something.** Deleting a Cell, or anything

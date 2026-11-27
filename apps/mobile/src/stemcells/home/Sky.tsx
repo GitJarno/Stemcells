@@ -3,8 +3,15 @@
 // the one progress (`useSky.ts`), on the UI thread; while it stands, nothing moves or redraws.
 // It goes up and out with the title as the list in front scrolls (`head.ts`).
 
-import { memo, type ReactNode, useState } from "react";
-import { type StyleProp, StyleSheet, useWindowDimensions, type ViewStyle } from "react-native";
+import { memo, type ReactNode, use, useEffect, useRef, useState } from "react";
+import {
+  type StyleProp,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+  type ViewInstance,
+  type ViewStyle,
+} from "react-native";
 import Animated, { useAnimatedStyle, useReducedMotion } from "react-native-reanimated";
 import Svg, {
   Circle,
@@ -31,14 +38,17 @@ import {
   warmth,
 } from "../line/kit";
 import { useAppearancePreferences, useContentTopInset, useHomeSidebar } from "../upstream/home";
-import { STAGE_ROOM, useMoonPhase } from "./state";
+import { HomeInFront, STAGE_ROOM, useMoonPhase } from "./state";
 import { useHeadStyle } from "./head";
+import { subscribeSkyAnchor, useSkyAnchor } from "./skyAnchor";
 import { fallen } from "./useSky";
 
-/** Where the sun and moon stand: clear of two trailing header buttons, in the bar's row. */
+/** Where the sun and moon stand until the folder's place is read: clear of the bar's buttons, in its row. */
 const BODY_FROM_RIGHT = 128;
 const BODY_LEAST_ACROSS = 0.55;
 const BODY_OVER_BAR_FOOT = 26;
+
+type Point = { readonly x: number; readonly y: number };
 /** How far down the header the stars reach, of the bar's foot. */
 const STARS_REACH = 0.92;
 const { r: R, sinks: SINKS, rises: RISES, halo: HALO } = SKY_SHAPE.body;
@@ -54,28 +64,75 @@ export function Sky() {
   const [measured, setMeasured] = useState<number | null>(null);
   const { themeAppearance } = useAppearancePreferences();
   const lifted = useHeadStyle();
+  const { frame, at, read } = useBehindTheFolder();
   if (top === 0) return null;
   // The sidebar's width is its own: it draws once measured.
   const width = measured ?? (sidebar ? null : window.width);
   const height = top + STAGE_ROOM + SKY_SHAPE.tail;
   return (
-    <Animated.View
+    <View
+      ref={frame}
       pointerEvents="none"
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
-      style={[{ position: "absolute", left: 0, right: 0, top: 0, height }, lifted]}
-      onLayout={({ nativeEvent }) => setMeasured(nativeEvent.layout.width)}
+      style={{ position: "absolute", left: 0, right: 0, top: 0, height }}
+      onLayout={({ nativeEvent }) => {
+        setMeasured(nativeEvent.layout.width);
+        read();
+      }}
     >
-      {width === null ? null : (
-        <Heavens
-          width={width}
-          height={height}
-          top={top}
-          palette={SKY[themeAppearance === "light" ? "light" : "dark"]}
-        />
-      )}
-    </Animated.View>
+      <Animated.View style={[StyleSheet.absoluteFill, lifted]}>
+        {width === null ? null : (
+          <Heavens
+            width={width}
+            height={height}
+            top={top}
+            body={at}
+            palette={SKY[themeAppearance === "light" ? "light" : "dark"]}
+          />
+        )}
+      </Animated.View>
+    </View>
   );
+}
+
+/**
+ * Where the folder button stands over the sky (`skyAnchor.ts`), read from both views in the
+ * window. The frame is the sky's unlifted place, so a scrolled header reads the same. UIKit
+ * places the bar's items on its own, unseen by React, so it reads again once the screen is idle.
+ */
+function useBehindTheFolder() {
+  const frame = useRef<ViewInstance>(null);
+  const anchor = useSkyAnchor();
+  const inFront = use(HomeInFront);
+  const [at, setAt] = useState<Point | null>(null);
+  const read = () => {
+    const sky = frame.current;
+    const folder = anchor;
+    if (sky === null || folder === null) {
+      setAt(null);
+      return;
+    }
+    sky.measureInWindow((skyX, skyY) =>
+      folder.measureInWindow((x, y, width, height) => {
+        if (width === 0) return;
+        const next = { x: x + width / 2 - skyX, y: y + height / 2 - skyY };
+        setAt((before) => (before?.x === next.x && before.y === next.y ? before : next));
+      }),
+    );
+  };
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Read the folder's place in the native header while the home is in front: now, once idle, and whenever the button is laid out again.
+  useEffect(() => {
+    if (!inFront) return;
+    read();
+    const settled = requestIdleCallback(read, { timeout: 1_000 });
+    const unsubscribe = subscribeSkyAnchor(read);
+    return () => {
+      cancelIdleCallback(settled);
+      unsubscribe();
+    };
+  }, [inFront, read]);
+  return { frame, at, read };
 }
 
 const Heavens = memo(function Heavens(props: {
@@ -83,11 +140,17 @@ const Heavens = memo(function Heavens(props: {
   readonly height: number;
   /** The bar's foot. */
   readonly top: number;
+  /** Where the folder button stands, its middle; the sun and the moon stand behind it. */
+  readonly body: Point | null;
   readonly palette: SkyPalette;
 }) {
   const { width, height, top, palette } = props;
-  const x = Math.max(width * BODY_LEAST_ACROSS, width - BODY_FROM_RIGHT);
-  const y = top - BODY_OVER_BAR_FOOT;
+  const behind =
+    props.body !== null && props.body.x > R && props.body.x < width - R && props.body.y > 0
+      ? props.body
+      : null;
+  const x = behind?.x ?? Math.max(width * BODY_LEAST_ACROSS, width - BODY_FROM_RIGHT);
+  const y = behind?.y ?? top - BODY_OVER_BAR_FOOT;
   const whole = top / 2 / height;
   const reach = top * STARS_REACH;
   const fill = { position: "absolute", left: 0, top: 0, width, height } as const;

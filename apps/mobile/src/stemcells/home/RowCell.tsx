@@ -17,7 +17,7 @@ import { useResolveClassNames } from "uniwind";
 import { AskiFigure } from "../aski/AskiFigure";
 import { useIsAskiChat } from "../aski/useAskiChat";
 import { formingFrom } from "../cell/forming";
-import { BOX, cellNameOf, clockSeconds } from "../cell/kit";
+import { cellNameOf, clockSeconds } from "../cell/kit";
 import { ThreadCell } from "../cell/ThreadCell";
 import { RowLight } from "../glow/RowLight";
 import { rowStateOf, type RowStatus, rowStatusOf, STATUS_WORDS } from "../line/kit";
@@ -36,7 +36,11 @@ import {
   threadHasUnseenCompletion,
   type ThreadPrPresentation,
 } from "../upstream/cells";
-import { ENVIRONMENT_MACHINE_SYMBOLS, type EnvironmentMachineKind } from "../upstream/home";
+import {
+  ENVIRONMENT_MACHINE_SYMBOLS,
+  type EnvironmentMachineKind,
+  useHomeSidebar,
+} from "../upstream/home";
 import { relativeTime } from "../upstream/needs";
 import { Arrival } from "./Arrival";
 import { sendCopy } from "./copies";
@@ -172,21 +176,30 @@ export function CellBesideRow(props: {
           ) : null}
         </View>
       </View>
-      <Arrival thread={props.thread} fill={AWAKE_FILL} anchorX={CARD_ANCHOR} />
+      <Arrival thread={props.thread} fill={AWAKE_FILL} />
     </View>
   );
 }
 
 /** The card's padding, `pl-3 pr-4 py-3` (`upstream/substitutes/thread-list-v2-row-appearance.ts`): its light fills the card. */
 const AWAKE_FILL = { position: "absolute", top: -12, right: -16, bottom: -12, left: -12 } as const;
+/**
+ * In the iPad's and the unfolded Duo's sidebar, T3's row (12 by 10 padding, corners of 12): a lit
+ * row's field is that shape, a little in from its top and bottom, so two lit rows never meet.
+ */
+const SIDEBAR_FIELD = {
+  position: "absolute",
+  top: -8,
+  right: -12,
+  bottom: -8,
+  left: -12,
+  borderRadius: 10,
+  overflow: "hidden",
+} as const;
 /** Every row on the home's tabs, Awake's and Asleep's: room to tap one, and dark between their glows. */
 const ROW_HEIGHT = 52;
 /** What a row's own padding takes of that: a card's `py-3`, a slim row's `py-2`. */
 const PADDED = { card: 24, slim: 16 } as const;
-/** The Cell's middle from the card's left edge. */
-const AWAKE_ANCHOR = 12 + BOX.width;
-/** A two-line card's Cell stands in the middle of its 52-point column. */
-const CARD_ANCHOR = 12 + 26;
 /** A slim row, from its Cell's own box: the row's `pl-3 py-2`, and on past its end, where the card clips. */
 const SLIM_FILL = { position: "absolute", top: -8, bottom: -8, left: -12, width: 800 } as const;
 
@@ -200,15 +213,14 @@ function AwakeRow(props: {
   const state = use(CellStates).get(key);
   const rowState = rowStateOf(state?.stage, threadHasUnseenCompletion(thread));
   const status = rowStatusOf(rowState, thread.hasPendingApprovals);
+  const field = useHomeSidebar() ? SIDEBAR_FIELD : AWAKE_FILL;
   return (
     <View className="flex-row items-center gap-2" style={{ minHeight: ROW_HEIGHT - PADDED.card }}>
-      {rowState === "flying" ? (
-        <RowLight key={key} thread={thread} band fill={AWAKE_FILL} anchorX={AWAKE_ANCHOR} />
-      ) : null}
+      {rowState === "flying" ? <RowLight key={key} thread={thread} band fill={field} /> : null}
       <Figure thread={thread} points={2} />
       <View className="min-w-0 flex-1">{props.children}</View>
       {state?.since ? <Since since={state.since} status={status} /> : null}
-      <Arrival thread={thread} fill={AWAKE_FILL} anchorX={AWAKE_ANCHOR} />
+      <Arrival thread={thread} fill={field} />
     </View>
   );
 }
@@ -346,7 +358,7 @@ export function SlimRowCell(props: {
       style={tabs ? { minHeight: ROW_HEIGHT - PADDED.slim } : undefined}
     >
       <Figure thread={props.thread} points={2} />
-      <Arrival thread={props.thread} fill={SLIM_FILL} anchorX={12 + BOX.width} />
+      <Arrival thread={props.thread} fill={SLIM_FILL} />
     </View>
   );
 }

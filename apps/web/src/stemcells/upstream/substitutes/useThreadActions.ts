@@ -10,7 +10,7 @@ import { markHandSettle, unmarkHandSettle } from "../../tabs/handSettles";
 
 export * from "../../../hooks/useThreadActions";
 
-// Sleep and Sleep until… act at once (stemcells/tasks/no-undo.md): their undo is let go as
+// Sleep and Snooze act at once (stemcells/tasks/no-undo.md): their undo is let go as
 // they land, as upstream lets go one a later act supersedes, so no notice or ⌘Z stands.
 export function useThreadActions() {
   const actions = useUpstreamThreadActions();

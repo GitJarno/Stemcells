@@ -1,6 +1,6 @@
 // Replaces `features/home/ThreadUndoNotice.tsx` (`substitutes.cjs`): while the stages' pill stands
 // where T3's notice would (`home/StagePill.tsx`), the notice stands over the pill. A Sleep or a
-// Sleep until… shows none (`upstream/needs.ts`, `useShownThreadUndoNotice`).
+// Snooze shows none (`upstream/needs.ts`, `useShownThreadUndoNotice`).
 import { StyleSheet, View } from "react-native";
 
 import * as Upstream from "../../../features/home/ThreadUndoNotice";

@@ -36,11 +36,13 @@ until they're unblocked.
    is the stage itself, said without a word. It stays restrained: no gradient
    anywhere else, no glow but the sun's and moon's own soft halo, nothing that
    moves while it stands.
-4. **Day is a clear morning seen from a dark room.** In the dark appearance,
-   a deep steel blue (`#173553`) lightening toward the horizon, never a bright
-   sky over a dark list. A sun disc, warm white, with a faint halo, where the
-   moon stands at night, and two faint wisps of cloud. In the light
-   appearance, a pale morning blue fading into the white screen.
+4. **Day is a late dusk, quiet at the edge of the eye.** It stands beside
+   the list all day, so it keeps near the ground (2026-11-27: a blue noon
+   drew the eye from every chat). In the dark appearance, a deep slate
+   (`#131A2A`) warming toward a dusky plum at the horizon. A soft apricot
+   sun with a faint halo, where the moon stands at night, and two faint
+   wisps of cloud. In the light appearance, a pale periwinkle warming to
+   peach, fading into the white screen.
 5. **Dawn is the sun at the horizon:** low and faint, the horizon at its
    warmest, the brightest stars the last ones out, the sky between night and
    day. It is the same moment a sunset passes through, so dawn is a point on
@@ -123,8 +125,10 @@ between dawn and night would read wrong.
 
 - The phone, folded or not: the sky's height is the bar's foot plus the
   stage's 8 pt and the tail, so it follows each bar. The sun and moon stand
-  in the bar row, clear of two trailing buttons (`BODY_FROM_RIGHT`), never
-  nearer the title than 55% across.
+  behind the folder's button, read from where it is (`home/skyAnchor.ts`),
+  so they never meet the title or the battery; their halo shows round the
+  button's glass. Until it is read, they stand in the bar row clear of two
+  trailing buttons (`BODY_FROM_RIGHT`).
 - The unfolded foldable and the iPad: the home is the native split's sidebar;
   the sky draws across the sidebar's width once measured.
 - Android: T3's bar stands in flow over the body, opaque, so there is no room

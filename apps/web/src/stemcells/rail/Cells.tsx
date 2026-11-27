@@ -566,7 +566,7 @@ function Asleep(props: {
 
 /**
  * An awake Cell on one line: the Cell, its project's mark and its title, and how long it has
- * been like this beside T3's icon for what it does or needs. Behind the Cell a lamp in its
+ * been like this beside T3's icon for what it does or needs. Flying, its row is a field in its
  * provider's tone (stemcells/tasks/awake-asleep.md, decision 3); Sleep takes the time's place.
  */
 function AwakeCell(props: {

@@ -30,14 +30,15 @@ questions; the agent's state shows inside the row.
 3. **A flying Cell's row is lit; its hue says the provider.**
    One line per Cell, as Asleep's rows are: the Cell, its project's mark
    and title, a time. While the Cell flies, the composer's light
-   (`glow/Wave.tsx`, `apps/web/src/stemcells/glow/`) is a lamp round it in
-   the provider's tone (Claude's orange, Codex's green), and the band
-   crosses the row on the wall clock's beat, slowly, over the row alone. It
-   is the felt sense of work going on; the status icon and the time's
-   colour already say the state, so asking, landed and asleep rows wear no
-   light. The lamp is an ellipse as tall as the row and gone by its edges:
-   lit rows never meet as boxes, and the only box in the list is the open
-   Cell's. A landing lets the light come to rest and go out. No provider
+   (`glow/Wave.tsx`, `apps/web/src/stemcells/glow/`) fills its row as a
+   field in the provider's tone (Claude's orange, Codex's green), and the
+   band crosses the row on the wall clock's beat, slowly, over the row
+   alone. It is the felt sense of work going on; the status icon and the
+   time's colour already say the state, so asking, landed and asleep rows
+   wear no light. The field is the row's own shape, standing a little in
+   from its top and bottom, so two lit rows never touch (2026-11-27: a lamp
+   round the Cell read as a sliver, not a field). A landing lets the light
+   come to rest and go out. No provider
    name or icon in text, and no coloured edge. The time means "how long
    it's been like this": flying for, landed for, waiting for, asleep for.
 4. **The verb is Sleep; its reverse is Wake.** It pairs with the stages and
