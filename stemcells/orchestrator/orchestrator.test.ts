@@ -5,6 +5,20 @@ import { wantsCompiler } from "./gate.ts";
 import { clampEffort, saysExactly } from "./names.ts";
 import { piecesOf } from "./pieces.ts";
 import { DICTATED_NOTE, type CompileContext, type Plan, type StartAct } from "./plan.ts";
+import {
+  callable,
+  confirm,
+  confirmAll,
+  done,
+  drop,
+  learnedOf,
+  outcomeOf,
+  setPlace,
+  settled,
+  started,
+  trayOf,
+} from "./tray.ts";
+import { planIdOfFence, thinkWith } from "./wire.ts";
 import { withoutLead } from "./words.ts";
 
 const context = (over: Partial<CompileContext> = {}): CompileContext => ({
@@ -493,5 +507,89 @@ describe("a plan Aski's chat proposes", () => {
       why: ["proposed", "risky"],
       place: { projectId: "harbor", how: "picked" },
     });
+  });
+});
+
+describe("a plan as a client carries it out", () => {
+  const two = () =>
+    trayOf(
+      made(
+        plan("In Harbor fix the header. In harbour design tidy the tokens", (n) => ({
+          acts: [
+            { kind: "start", pieces: [n("header")], place: "Harbor", placeHeard: "Harbor" },
+            { kind: "start", pieces: [n("tokens")], place: "Harbor Design", placeHeard: "harbour design" },
+          ],
+          setup: [],
+          talk: [],
+        })),
+      ),
+    );
+
+  it("starts what may start, and waits on the rest", () => {
+    expect(two().acts.map((one) => one.status)).toEqual(["starting", "waiting"]);
+  });
+
+  it("learns a name heard near only from the person's own yes", () => {
+    const tray = two();
+    expect(learnedOf(tray)).toEqual({ places: [], models: [] });
+    expect(learnedOf(confirm(tray, 1)).places).toEqual([
+      { heard: "harbour design", name: "Harbor Design" },
+    ]);
+    // A place they picked instead teaches nothing: the word wasn't that project.
+    const picked = confirm(setPlace(tray, 1, { id: "p-atlas", name: "Atlas" }), 1);
+    expect(learnedOf(picked)).toEqual({ places: [], models: [] });
+    expect(picked.acts[1]!.act).toMatchObject({ place: { name: "Atlas", how: "exact" }, why: [] });
+  });
+
+  it("tells the server what came of each act, and knows when it is over", () => {
+    const tray = started(drop(two(), 1), 0, 1_000);
+    expect(outcomeOf(tray)).toEqual([
+      { i: 0, status: "started" },
+      { i: 1, status: "dropped" },
+    ]);
+    expect(settled(tray)).toBe(true);
+    expect([callable(tray, 5_000).length, callable(tray, 20_000).length]).toEqual([1, 0]);
+  });
+
+  it("starts nothing while a deletion is held, and a Cell with no project never starts", () => {
+    const tray = trayOf(
+      made(
+        plan("delete the Harbor project. In Atlas write the docs. Also the readme", (n) => ({
+          acts: [
+            { kind: "destroy", target: "project", pieces: [n("delete")], place: "Harbor", placeHeard: "Harbor" },
+            { kind: "start", pieces: [n("docs")], place: "Atlas", placeHeard: "Atlas" },
+            { kind: "start", pieces: [n("readme")] },
+          ],
+          setup: [],
+          talk: [],
+        })),
+      ),
+    );
+    expect(confirmAll(tray).acts.map((one) => one.status)).toEqual(["waiting", "waiting", "waiting"]);
+    const after = confirmAll(done(tray, 0));
+    expect(after.acts.map((one) => one.status)).toEqual(["done", "starting", "waiting"]);
+  });
+});
+
+describe("the wire", () => {
+  it("reads a plan's id from its fence, and nothing else", () => {
+    expect(planIdOfFence("\n3f2a9c1e-77aa-4c1b-9d7e-0a1b2c3d4e5f\n")).toBe(
+      "3f2a9c1e-77aa-4c1b-9d7e-0a1b2c3d4e5f",
+    );
+    expect(planIdOfFence("rm -rf")).toBeNull();
+  });
+
+  it("thinks with the fast model first and a stronger one second", () => {
+    const models = [
+      { instanceId: "claudeAgent", id: "claude-opus-5-5", efforts: ["low", "high"], effortOption: "effort" },
+      { instanceId: "claudeAgent", id: "claude-haiku-5-5", efforts: ["low", "high"], effortOption: "effort" },
+      { instanceId: "codex", id: "gpt-6.1-sol", efforts: [] },
+    ];
+    expect(thinkWith(models, "claudeAgent")).toEqual({
+      fast: { instanceId: "claudeAgent", model: "claude-haiku-5-5", options: [{ id: "effort", value: "low" }] },
+      strong: { instanceId: "claudeAgent", model: "claude-opus-5-5", options: [{ id: "effort", value: "low" }] },
+    });
+    expect(thinkWith(models, "codex")).toEqual({ fast: { instanceId: "codex", model: "gpt-6.1-sol" } });
+    expect(thinkWith(models, "cursor")).toBeNull();
   });
 });
