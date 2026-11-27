@@ -1,7 +1,6 @@
 // @effect-diagnostics globalDate:off - Cells are placed on the reader's own calendar, as questions name it.
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { assert, it } from "@effect/vitest";
-import { ProjectId } from "@t3tools/contracts";
 import * as DateTime from "effect/DateTime";
 import * as Effect from "effect/Effect";
 import * as FileSystem from "effect/FileSystem";
@@ -12,7 +11,13 @@ import * as TestClock from "effect/testing/TestClock";
 
 import { ASKI_INSTANCE_ID } from "../aski/instanceId.ts";
 import { openLedgerFile } from "../upstream/ledger.ts";
-import { instanceId, runId, shellFixture, threadId } from "../upstream/needs.fixture.ts";
+import {
+  instanceId,
+  projectId as projectIdOf,
+  runId,
+  shellFixture,
+  threadId,
+} from "../upstream/needs.fixture.ts";
 import type { Shell } from "../upstream/needs.ts";
 import type { RecallProject, RecallSource } from "../upstream/recall.ts";
 import type { RunRead } from "./card.ts";
@@ -45,7 +50,7 @@ const cell = (
   return {
     shell: shellFixture({
       id,
-      projectId: ProjectId.make(projectId),
+      projectId: projectIdOf(projectId),
       title,
       createdAt: time(born),
       latestRunId: runId(`${id}-run-1`),

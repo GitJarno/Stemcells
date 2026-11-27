@@ -1,15 +1,17 @@
 // Replaces `features/threads/ThreadDetailScreen.tsx` (`substitutes.cjs`): tells the chat on
-// screen to its words (`chat/inView.ts`) and its feed's end (`line/ChatAsk.tsx`), gives way to the
-// home on return to a Cell settled elsewhere (`chat/useClosesOnReturn.ts`), and hands its
-// pictures to the viewer (`chat/ChatGallery.tsx`).
+// screen to its words (`chat/inView.ts`), its feed's end (`line/ChatAsk.tsx`) and its pictures'
+// viewer (`chat/ChatGallery.tsx`), closes on return to a Cell settled elsewhere, and in Aski's
+// chat puts the Cells a question found under it (`recall/recall.ts`).
 import {
   ThreadDetailScreen as UpstreamThreadDetailScreen,
   type ThreadDetailScreenProps,
 } from "../../../features/threads/ThreadDetailScreen";
+import { useIsAskiChat } from "../../aski/useAskiChat";
 import { ChatGallery } from "../../chat/ChatGallery";
 import { ChatInView } from "../../chat/inView";
 import { useClosesOnReturn } from "../../chat/useClosesOnReturn";
 import { AskChatContext } from "../../line/ChatAsk";
+import { useRecallFeed } from "../../recall/recall";
 
 export * from "../../../features/threads/ThreadDetailScreen";
 
@@ -19,6 +21,11 @@ export function ThreadDetailScreen(props: ThreadDetailScreenProps) {
     threadId: props.selectedThread.id,
   };
   useClosesOnReturn(chat);
+  const feed = useRecallFeed(
+    props.selectedThreadFeed,
+    chat.environmentId,
+    useIsAskiChat(chat.threadId),
+  );
   return (
     <ChatInView value={chat}>
       <ChatGallery
@@ -30,7 +37,7 @@ export function ThreadDetailScreen(props: ThreadDetailScreenProps) {
         }}
       >
         <AskChatContext value={{ ...chat, canAnswer: props.canOperateThread }}>
-          <UpstreamThreadDetailScreen {...props} />
+          <UpstreamThreadDetailScreen {...props} selectedThreadFeed={feed} />
         </AskChatContext>
       </ChatGallery>
     </ChatInView>

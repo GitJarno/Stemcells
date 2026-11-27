@@ -5,11 +5,14 @@
  * through the same reads the needs list makes (`needs.ts`).
  */
 import {
+  EnvironmentId,
+  isListedThreadLineage,
   type OrchestrationV2DomainEvent,
   repositoryGroupingKeyOf,
   type RunId,
-  type ThreadId,
+  ThreadId,
 } from "@t3tools/contracts";
+import { formatThreadLink } from "@t3tools/shared/threadLinks";
 import * as DateTime from "effect/DateTime";
 import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
@@ -30,6 +33,16 @@ import * as ServerRuntimeStartup from "../../serverRuntimeStartup.ts";
 import type { RunRead } from "../recall/card.ts";
 import { openLedgerFile, readThreadIdsAfter } from "./ledger.ts";
 import { RUN_RECORD_FIELDS, runRecordsFilter, runRecordsOf, type Shell } from "./needs.ts";
+
+/** Upstream's own rule for a chat its lists show: not a Subcell's, a side chat or a workflow's step. */
+export const isListed = (shell: Shell): boolean => isListedThreadLineage(shell.lineage);
+
+/** A chat as upstream's thread link, which both clients draw as its pill. */
+export const cellLink = (environmentId: string, threadId: string, title: string): string =>
+  formatThreadLink(
+    { environmentId: EnvironmentId.make(environmentId), threadId: ThreadId.make(threadId) },
+    title,
+  );
 
 /** A project as recall reads it: its title to hear and show, its repository to scope by. */
 export interface RecallProject {

@@ -1,5 +1,3 @@
-import { EnvironmentId, ThreadId } from "@t3tools/contracts";
-import { formatThreadLink } from "@t3tools/shared/threadLinks";
 import * as Cause from "effect/Cause";
 import * as Clock from "effect/Clock";
 import * as Context from "effect/Context";
@@ -204,8 +202,6 @@ export const make = Effect.fn("Recall.make")(function* (source: UpstreamRecall.R
     );
   }
 
-  const environment = EnvironmentId.make(source.environmentId);
-
   const search = Effect.fn("Recall.search")(
     function* (query: RecallQuery) {
       const projects = yield* source.projects;
@@ -234,10 +230,7 @@ export const make = Effect.fn("Recall.make")(function* (source: UpstreamRecall.R
         .map(({ card }): RecallCard => ({
           ...card,
           environmentId: source.environmentId,
-          link: formatThreadLink(
-            { environmentId: environment, threadId: ThreadId.make(card.threadId) },
-            card.title,
-          ),
+          link: UpstreamRecall.cellLink(source.environmentId, card.threadId, card.title),
         }));
       return {
         cards,

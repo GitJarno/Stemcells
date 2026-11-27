@@ -10,6 +10,7 @@ import { AnswersProvider } from "../needs/answers/room";
 import { NeedsFrame } from "../needs/NeedsFrame";
 import { Peek } from "../needs/Peek";
 import { usePeek } from "../needs/peeking";
+import { RecallScope } from "../recall/RecallPills";
 import { subscribeLaunches } from "../upstream/landing";
 import { AskiFigure } from "./AskiFigure";
 import { copiesOut } from "./copies";
@@ -93,13 +94,16 @@ export function AskiPane(props: {
             <ComposerRoofSlot value={aski ? <AskiPerch aski={aski} /> : null}>
               {/* Words in its composer answer the cards beside it. */}
               <AnswersProvider>
-                <ChatPaneView
-                  target={props.target}
-                  ownsWindowInput={ownsInput}
-                  focused={props.focused}
-                  panelHost={null}
-                  bare
-                />
+                {/* A question about the past shows the Cells it found under it. */}
+                <RecallScope value>
+                  <ChatPaneView
+                    target={props.target}
+                    ownsWindowInput={ownsInput}
+                    focused={props.focused}
+                    panelHost={null}
+                    bare
+                  />
+                </RecallScope>
               </AnswersProvider>
             </ComposerRoofSlot>
           ) : (

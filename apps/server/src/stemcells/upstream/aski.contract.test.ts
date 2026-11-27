@@ -21,6 +21,7 @@ import { codexAppServerArgs } from "../../provider/codexLaunchArgs.ts";
 import { ArcsToolkit } from "./arcsTool.ts";
 import { SettingsToolkit } from "./settingsTool.ts";
 import { ShowToolkit } from "./showTool.ts";
+import { RecallToolkit } from "./recallTool.ts";
 import { StandingToolkit } from "./standingTool.ts";
 
 const DEFAULT_CLAUDE_SETTINGS = Schema.decodeSync(ClaudeSettings)({});
@@ -37,6 +38,7 @@ const offered: Record<string, Tool.Any> = {
   ...ProjectToolkit.tools,
   ...ThreadToolkit.tools,
   ...StandingToolkit.tools,
+  ...RecallToolkit.tools,
   ...ArcsToolkit.tools,
   ...SettingsToolkit.tools,
   ...ShowToolkit.tools,

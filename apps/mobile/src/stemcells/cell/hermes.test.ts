@@ -49,6 +49,7 @@ describe("what the phone takes from the web", () => {
       ...modulesFrom(NodePath.join(here, "../disk/kit.ts")),
       ...modulesFrom(NodePath.join(here, "../words/kit.ts")),
       ...modulesFrom(NodePath.join(here, "../collection/kit.ts")),
+      ...modulesFrom(NodePath.join(here, "../recall/kit.ts")),
       ...modulesFrom(
         NodePath.join(here, "../upstream/substitutes/react-native-enriched-markdown.tsx"),
       ),

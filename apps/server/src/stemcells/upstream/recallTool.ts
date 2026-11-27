@@ -72,7 +72,7 @@ const RecallTool = Tool.make("stemcells_recall", {
   // It answers for the Cell that calls it, so a client outside the app is never offered it.
   .annotate(McpSchema.EnabledWhen, McpInvocationContext.hiddenFromOutsideClients);
 
-const RecallToolkit = Toolkit.make(RecallTool);
+export const RecallToolkit = Toolkit.make(RecallTool);
 
 const timeOf = (words: string | undefined): number | null => {
   const read = words === undefined ? Number.NaN : Date.parse(words);

@@ -1,4 +1,3 @@
-import { ThreadId } from "@t3tools/contracts";
 import { describe, expect, it } from "vite-plus/test";
 
 import { ASKI_INSTANCE_ID } from "../aski/instanceId.ts";
@@ -178,7 +177,7 @@ describe("a Cell's card", () => {
       hasCard({
         ...landed,
         lineage: {
-          rootThreadId: ThreadId.make("thread-film"),
+          rootThreadId: threadId("thread-film"),
           parentThreadId: root,
           relationshipToParent: "fork",
           sideChat: true,

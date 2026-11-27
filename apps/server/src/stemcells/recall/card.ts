@@ -4,7 +4,6 @@
  * it is the Cell's own close-out, with the verdict the room's cards stand on (`needs/verdict.ts`).
  * Pure.
  */
-import { isListedThreadLineage } from "@t3tools/contracts";
 import * as DateTime from "effect/DateTime";
 
 import { stopOf } from "../../../../../stemcells/closeOut/closeOut.ts";
@@ -14,6 +13,7 @@ import { ACTIVE_RUN } from "../needs/derive.ts";
 import { briefOf, capped, factsOf, type RunRecords } from "../needs/evidence.ts";
 import { landingOf } from "../needs/verdict.ts";
 import { isSnoozed, pullRequestOf, type Shell } from "../upstream/needs.ts";
+import { isListed } from "../upstream/recall.ts";
 
 /** A card as the store keeps it: its link and its machine are added as it is read. */
 export type KeptCard = Omit<RecallCard, "link" | "environmentId">;
@@ -62,7 +62,7 @@ const TOUCHES_MOST = 400;
 export function hasCard(shell: Shell): boolean {
   return (
     shell.deletedAt === null &&
-    isListedThreadLineage(shell.lineage) &&
+    isListed(shell) &&
     shell.providerInstanceId !== ASKI_INSTANCE_ID &&
     shell.latestRunId !== null
   );
