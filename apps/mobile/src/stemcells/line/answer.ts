@@ -1,24 +1,26 @@
-// An answer to the ask a chat docks: it takes the ask off at once and waits on the undo line
-// before it goes (`held.ts`).
+// An answer to the ask a chat ends on: it takes the ask off and goes at once (`answering.ts`).
 
+import { sendThreadCommand } from "../upstream/needs";
 import { type AskActs, whoOf } from "./Ask";
-import type { Act } from "./held";
-import { held } from "./heldLine";
-import { commandsFor, sleptWords } from "./kit";
+import { type Act, createAnswering } from "./answering";
+import { commandsFor } from "./kit";
 import type { Ask } from "./line";
+
+export const answering = createAnswering({ send: sendThreadCommand, now: Date.now });
 
 /** Choosing and Later for `ask`. */
 export function answersFor(ask: Ask): AskActs {
   const { need, environmentId } = ask;
-  const who = whoOf(need);
-  const hold = (commands: Act["commands"], words: string) =>
-    void held.hold({ key: ask.key, environmentId, threadId: need.threadId, who, words, commands });
+  const send = (commands: Act["commands"]) =>
+    void answering.send({
+      key: ask.key,
+      environmentId,
+      threadId: need.threadId,
+      who: whoOf(need),
+      commands,
+    });
   return {
-    choose: (option, given = {}) =>
-      hold(
-        commandsFor(need, option.choice, given, Date.now()),
-        option.choice.kind === "wait" ? sleptWords(who) : `Answered ${who}`,
-      ),
-    later: () => hold(commandsFor(need, { kind: "later" }, {}, Date.now()), sleptWords(who)),
+    choose: (option, given = {}) => send(commandsFor(need, option.choice, given, Date.now())),
+    later: () => send(commandsFor(need, { kind: "later" }, {}, Date.now())),
   };
 }

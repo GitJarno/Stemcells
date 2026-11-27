@@ -17,8 +17,6 @@ export function nextShown(
   options: {
     readonly now: number;
     readonly linger: number;
-    /** A gone card kept folded past its linger: an answer still on the undo line. */
-    readonly keep?: (key: string) => boolean;
   },
 ): ReadonlyArray<Shown> {
   const byKey = new Map(latest.map((need) => [need.key, need]));
@@ -26,8 +24,7 @@ export function nextShown(
     const live = byKey.get(shown.need.key);
     if (live !== undefined) return [{ need: live, goneAt: null }];
     const goneAt = shown.goneAt ?? options.now;
-    const leaving =
-      options.now - goneAt >= options.linger && options.keep?.(shown.need.key) !== true;
+    const leaving = options.now - goneAt >= options.linger;
     return leaving ? [] : [{ need: shown.need, goneAt }];
   });
   const seen = new Set(previous.map((shown) => shown.need.key));
@@ -45,15 +42,9 @@ export function nextShown(
   return same ? previous : next;
 }
 
-/** When the next gone card leaves the list; a kept one waits for what keeps it to change. */
-export function nextLeaveAt(
-  shown: ReadonlyArray<Shown>,
-  linger: number,
-  keep: (key: string) => boolean = () => false,
-): number | null {
-  const times = shown.flatMap((each) =>
-    each.goneAt === null || keep(each.need.key) ? [] : [each.goneAt + linger],
-  );
+/** When the next gone card leaves the list. */
+export function nextLeaveAt(shown: ReadonlyArray<Shown>, linger: number): number | null {
+  const times = shown.flatMap((each) => (each.goneAt === null ? [] : [each.goneAt + linger]));
   return times.length === 0 ? null : Math.min(...times);
 }
 

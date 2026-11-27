@@ -24,7 +24,7 @@ import Animated, {
   withSequence,
   withTiming,
 } from "react-native-reanimated";
-import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
+import Svg, { Defs, LinearGradient, Mask, RadialGradient, Rect, Stop } from "react-native-svg";
 
 import { GLOW } from "../tokens";
 import { stopOf } from "./colour";
@@ -34,6 +34,7 @@ import {
   bandStops,
   bandWidth,
   crossing,
+  rowCrossing,
   luminanceOf,
   type Rgb,
   strength,
@@ -43,10 +44,26 @@ import {
 } from "./kit";
 
 const BEAT_EASING = Easing.bezier(...BEAT_POINTS);
-/** A faint light: a landing already seen. */
-const FAINT = 0.4;
-/** A row's light, as the Mac's (`apps/web/src/stemcells/rail/cells.css`, `[data-cells-light]`). */
-const ROW_TINT = 0.13;
+/**
+ * A row's lamp, as the Mac's (`apps/web/src/stemcells/rail/cells.css`, `[data-cells-light]`): an
+ * ellipse round the Cell, this share of the row wide and as tall as the row, so it is gone by the
+ * row's edges and lit rows never meet as boxes.
+ */
+const LAMP = {
+  reach: 0.72,
+  stops: [
+    { at: 0, alpha: 0.3 },
+    { at: 0.5, alpha: 0.1 },
+    { at: 1, alpha: 0 },
+  ],
+} as const;
+/** The band over a row, feathered top and bottom as the lamp is. */
+const FEATHER = [
+  { at: 0, alpha: 0 },
+  { at: 0.35, alpha: 1 },
+  { at: 0.65, alpha: 1 },
+  { at: 1, alpha: 0 },
+] as const;
 /** A landing ends the band: it fades as the light comes to rest. */
 const BAND_ENDS = FadeOut.duration(400);
 
@@ -66,9 +83,7 @@ export function Wave(props: {
   readonly inSight: boolean;
   /** The band crossing on the beat; without it the wash rests. On by default. */
   readonly band?: boolean;
-  /** At a clearly lower strength. */
-  readonly faint?: boolean;
-  /** A row's even tint, where the wash would reach across what it fills. */
+  /** A row's lamp round the anchor, where the wash would reach across what it fills. */
   readonly glow?: boolean;
 }) {
   // react-native-svg reads a gradient's `url(#…)` by id: no colons in it.
@@ -89,15 +104,9 @@ export function Wave(props: {
       {size === null || size.width === 0 ? null : (
         <>
           {props.glow === true ? (
-            <Glow tone={props.tone} size={size} faint={props.faint === true} />
+            <Glow id={`${id}-lamp`} tone={props.tone} size={size} anchorX={props.anchorX} />
           ) : (
-            <Wash
-              id={`${id}-wash`}
-              tone={props.tone}
-              size={size}
-              anchorX={props.anchorX}
-              faint={props.faint === true}
-            />
+            <Wash id={`${id}-wash`} tone={props.tone} size={size} anchorX={props.anchorX} />
           )}
           {props.band === false ? null : (
             <Crossing
@@ -107,6 +116,7 @@ export function Wave(props: {
               ink={props.ink}
               size={size}
               inSight={props.inSight}
+              row={props.glow === true}
             />
           )}
         </>
@@ -123,6 +133,8 @@ function Crossing(props: {
   readonly ink: Rgb;
   readonly size: Size;
   readonly inSight: boolean;
+  /** Over one list row: across the row alone, slowly, feathered top and bottom. */
+  readonly row: boolean;
 }) {
   const box = useRef<ViewInstance>(null);
   const [left, setLeft] = useState<number | null>(null);
@@ -131,7 +143,11 @@ function Crossing(props: {
   const awake = useAwake();
   const x = useSharedValue(0);
   const band = bandWidth(props.size);
-  const path = left === null ? null : crossing(screen, left, band / 2);
+  const path = props.row
+    ? rowCrossing(props.size.width, band)
+    : left === null
+      ? null
+      : crossing(screen, left, band / 2);
   const from = path?.from ?? null;
   const to = path?.to ?? null;
   const runs = props.inSight && awake && !reduced;
@@ -181,6 +197,7 @@ function Crossing(props: {
           )}
           width={band}
           height={props.size.height}
+          feathered={props.row}
         />
       </Animated.View>
     </Animated.View>
@@ -193,18 +210,13 @@ function Wash(props: {
   readonly tone: Rgb;
   readonly size: Size;
   readonly anchorX: number;
-  readonly faint: boolean;
 }) {
   const { width, height } = props.size;
   const anchor = { x: props.anchorX, y: height / 2 };
   const { far } = washEnds(props.size, anchor);
   const colours = washColours(props.tone);
   return (
-    <Svg
-      width={width}
-      height={height}
-      style={{ position: "absolute", opacity: props.faint ? FAINT : 1 }}
-    >
+    <Svg width={width} height={height} style={{ position: "absolute" }}>
       <Defs>
         <LinearGradient
           id={props.id}
@@ -225,21 +237,32 @@ function Wash(props: {
   );
 }
 
-/** A row's pill, tinted evenly in the tone. */
-function Glow(props: { readonly tone: Rgb; readonly size: Size; readonly faint: boolean }) {
+/** A row's lamp: the tone round the anchor, fading out before the row's edges. */
+function Glow(props: {
+  readonly id: string;
+  readonly tone: Rgb;
+  readonly size: Size;
+  readonly anchorX: number;
+}) {
   const { width, height } = props.size;
+  const colour = `rgb(${props.tone.join(", ")})`;
   return (
-    <Svg
-      width={width}
-      height={height}
-      style={{ position: "absolute", opacity: props.faint ? FAINT : 1 }}
-    >
-      <Rect
-        width={width}
-        height={height}
-        fill={`rgb(${props.tone.join(", ")})`}
-        fillOpacity={ROW_TINT}
-      />
+    <Svg width={width} height={height} style={{ position: "absolute" }}>
+      <Defs>
+        <RadialGradient
+          id={props.id}
+          gradientUnits="userSpaceOnUse"
+          cx={props.anchorX}
+          cy={height / 2}
+          rx={width * LAMP.reach}
+          ry={height / 2}
+        >
+          {LAMP.stops.map((stop) => (
+            <Stop key={stop.at} offset={stop.at} stopColor={colour} stopOpacity={stop.alpha} />
+          ))}
+        </RadialGradient>
+      </Defs>
+      <Rect width={width} height={height} fill={`url(#${props.id})`} />
     </Svg>
   );
 }
@@ -251,6 +274,7 @@ function Band(props: {
   readonly alpha: number;
   readonly width: number;
   readonly height: number;
+  readonly feathered: boolean;
 }) {
   return (
     <Svg width={props.width} height={props.height}>
@@ -261,8 +285,25 @@ function Band(props: {
             return <Stop key={offset} offset={offset} stopColor={color} stopOpacity={opacity} />;
           })}
         </LinearGradient>
+        {props.feathered ? (
+          <>
+            <LinearGradient id={`${props.id}-feather`} x1={0} y1={0} x2={0} y2={1}>
+              {FEATHER.map((stop) => (
+                <Stop key={stop.at} offset={stop.at} stopColor="#fff" stopOpacity={stop.alpha} />
+              ))}
+            </LinearGradient>
+            <Mask id={`${props.id}-mask`}>
+              <Rect width={props.width} height={props.height} fill={`url(#${props.id}-feather)`} />
+            </Mask>
+          </>
+        ) : null}
       </Defs>
-      <Rect width={props.width} height={props.height} fill={`url(#${props.id})`} />
+      <Rect
+        width={props.width}
+        height={props.height}
+        fill={`url(#${props.id})`}
+        mask={props.feathered ? `url(#${props.id}-mask)` : undefined}
+      />
     </Svg>
   );
 }

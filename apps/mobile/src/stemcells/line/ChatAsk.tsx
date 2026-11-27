@@ -1,7 +1,7 @@
 // The ask a Cell's chat ends on (stemcells/tasks/the-ask.md): what it takes to decide and
 // nothing more, under the Cell's last reply and scrolling with it, the reply being its context.
-// A tap on a line shows the reply it came from. An answer stands in its place with Undo until
-// it goes.
+// A tap on a line shows the reply it came from. An answer goes at once; one that fails says so
+// here.
 
 import { createContext, type ReactElement, type ReactNode, use, useSyncExternalStore } from "react";
 import { View } from "react-native";
@@ -10,9 +10,8 @@ import Animated, { FadeInDown, FadeOut } from "react-native-reanimated";
 import { useMinute } from "../home/state";
 import { AppText, useProjectAt } from "../upstream/cells";
 import { jumpToMessage, relativeTime, useChatMessages } from "../upstream/needs";
-import { answersFor } from "./answer";
-import { chooserOf, type FailureDisk, Pill, Quiet, useFailureDisk, Words } from "./Ask";
-import { held } from "./heldLine";
+import { answering, answersFor } from "./answer";
+import { chooserOf, type FailureDisk, Pill, useFailureDisk, Words } from "./Ask";
 import { askButtonsOf, askPlaceOf, cardOf, repositoryUrlOf, STATUS_WORDS } from "./kit";
 import { type Ask, chatAskIn } from "./line";
 import { useKeepReadingChat, useReadings } from "./readings";
@@ -27,7 +26,7 @@ const STEPS = 3;
  */
 function useShownAsk(environmentId: string | null, threadId: string): Ask | null {
   const readings = useReadings();
-  const { answered } = useSyncExternalStore(held.subscribe, held.read);
+  const { answered } = useSyncExternalStore(answering.subscribe, answering.read);
   if (environmentId === null) return null;
   return chatAskIn(readings.get(environmentId), environmentId, threadId, answered);
 }
@@ -69,34 +68,35 @@ function AskAtEnd() {
 }
 
 function ChatAsk(props: AskChat & { readonly ask: Ask | null }) {
-  const { line } = useSyncExternalStore(held.subscribe, held.read);
-  const about = line?.kind === "held" ? line.act : line?.kind === "said" ? line.about : null;
-  const ours =
-    about !== null &&
-    about.environmentId === props.environmentId &&
-    about.threadId === props.threadId;
-  // An answer to this chat's ask stands where the ask stood, until it goes.
-  const shown = ours && line !== null && line.kind !== "done" ? line : null;
-  if (props.ask === null && shown === null) return null;
+  const { failed } = useSyncExternalStore(answering.subscribe, answering.read);
+  // An answer to this chat that didn't go: on its ask's card, or alone once the ask is off.
+  const failure =
+    [...failed.values()].find(
+      (each) => each.environmentId === props.environmentId && each.threadId === props.threadId,
+    )?.words ?? null;
+  if (props.ask === null && failure === null) return null;
   return (
     <Animated.View
-      key={shown === null ? props.ask?.key : `line:${shown.kind}`}
+      key={props.ask?.key ?? "failure"}
       className="mb-3"
       entering={FadeInDown.duration(220)}
       exiting={FadeOut.duration(140)}
     >
-      {shown !== null ? (
-        <View className={`${CARD} flex-row items-center gap-3 py-2.5`}>
-          <AppText className="flex-1 text-sm text-foreground-secondary" numberOfLines={2}>
-            {shown.kind === "held" ? shown.act.words : shown.words}
-          </AppText>
-          {shown.kind === "held" ? <Quiet label="Undo" onPress={held.undo} /> : null}
+      {props.ask === null ? (
+        <View className={`${CARD} py-2.5`}>
+          <AppText className="text-sm text-foreground-secondary">{failure}</AppText>
         </View>
-      ) : props.ask?.need.kind === "failed" ? (
-        <FailedCard ask={props.ask} canAnswer={props.canAnswer} />
-      ) : props.ask ? (
-        <Card ask={props.ask} canAnswer={props.canAnswer} disk={null} freeSpace={null} />
-      ) : null}
+      ) : props.ask.need.kind === "failed" ? (
+        <FailedCard ask={props.ask} canAnswer={props.canAnswer} failure={failure} />
+      ) : (
+        <Card
+          ask={props.ask}
+          canAnswer={props.canAnswer}
+          failure={failure}
+          disk={null}
+          freeSpace={null}
+        />
+      )}
     </Animated.View>
   );
 }
@@ -104,7 +104,12 @@ function ChatAsk(props: AskChat & { readonly ask: Ask | null }) {
 /** As upstream's approval card (`PendingApprovalCard.tsx`). */
 const CARD = "rounded-[20px] border border-border bg-card-alt px-4";
 
-type CardProps = { readonly ask: Ask; readonly canAnswer: boolean };
+type CardProps = {
+  readonly ask: Ask;
+  readonly canAnswer: boolean;
+  /** Why the last answer to this chat didn't go. */
+  readonly failure: string | null;
+};
 
 function FailedCard(props: CardProps) {
   return <Card {...props} {...useFailureDisk(props.ask)} />;
@@ -156,6 +161,9 @@ function Card(props: CardProps & FailureDisk) {
         <AppText className="text-sm text-foreground-muted" {...line}>
           Then <Words text={card.next} repo={repo} />
         </AppText>
+      ) : null}
+      {props.failure !== null ? (
+        <AppText className="text-sm text-foreground-secondary">{props.failure}</AppText>
       ) : null}
       {props.canAnswer && (primary !== null || rest.length > 0 || notNow !== null) ? (
         <View className="flex-row flex-wrap items-center gap-2 pt-1">

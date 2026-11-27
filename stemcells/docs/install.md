@@ -145,8 +145,8 @@ your computer:
 A Cell that asks you something asks in its own chat: a card at the chat's
 end holds the question and its answers, and a tap on one of its lines
 takes you to the reply it came from. **Not now** puts it off, and the
-composer answers in your own words. An answer leaves at once, and a line says what
-you did, with **Undo**; it's sent when the line goes. The app's icon counts
+composer answers in your own words. An answer is sent the moment you give
+it, as Sleep and Wake are: a Cell slept by mistake is one Wake away. The app's icon counts
 every ask, and holding Aski's button offers the next one.
 
 ### Notifications on your phone

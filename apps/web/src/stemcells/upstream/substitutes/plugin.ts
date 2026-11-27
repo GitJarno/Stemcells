@@ -89,6 +89,10 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   "apps/web/src/components/chat/UsageLimitRecoveryBanner.tsx": "UsageLimitRecoveryBanner.tsx",
   // Several Cells' readout stands in the composer's model picker's place.
   "apps/web/src/components/chat/ProviderModelPicker.tsx": "ProviderModelPicker.tsx",
+  // One pick for model and effort (`stemcells/tasks/model-pick.md`): each agent one line of
+  // its models by family, then effort, switches and Access as rows of presses, no menus.
+  "apps/web/src/components/chat/ModelPickerContent.tsx": "ModelPickerContent.tsx",
+  "apps/web/src/components/chat/ComposerModelEffort.tsx": "ComposerModelEffort.tsx",
   // The terminal drawer opens at about ten rows, its buttons in a row of their own.
   "apps/web/src/components/ThreadTerminalDrawer.tsx": "ThreadTerminalDrawer.tsx",
   // The stash sits on the Cell's line, on the row with its name.
@@ -130,7 +134,7 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
   // context, read off the entries it draws.
   "apps/web/src/components/chat/MessagesTimeline.tsx": "MessagesTimeline.tsx",
   // A settle the person sends marks itself, so its pane closes and an
-  // auto-settle's never does.
+  // auto-settle's never does; a settle and a snooze keep no undo.
   "apps/web/src/hooks/useThreadActions.ts": "useThreadActions.ts",
   // Attachments carried between chats: a chat takes a carry as it takes
   // files off the disk, and a transcript's pictures and videos are carried
@@ -156,6 +160,8 @@ export const SUBSTITUTES: Readonly<Record<string, string>> = {
 export const UPSTREAM_TESTS_OF_UPSTREAM: ReadonlyArray<string> = [
   // The star prompt our substitute never shows.
   "apps/web/src/components/GitHubStarPrompt.test.ts",
+  // The settle and snooze undo our substitute lets go as each lands.
+  "apps/web/src/hooks/useThreadActions.undo.test.ts",
 ];
 
 /**

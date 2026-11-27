@@ -4,7 +4,7 @@
 // counts every one, whatever the picks show.
 
 import { useEffect, useSyncExternalStore, useState, type ReactNode } from "react";
-import { AppState, View } from "react-native";
+import { View } from "react-native";
 
 import { takeAskedStage, useAskedStage } from "../aski/turn";
 import { DiskFoot } from "../disk/DiskPlate";
@@ -15,7 +15,7 @@ import { CellStates, HomeTabsContext, tabChoice } from "../home/state";
 import { inTab } from "../home/tabs";
 import { useLineMotion } from "../home/useLineMotion";
 import { type EnvironmentThreadShell, resolveThreadWorkingStartedAt } from "../upstream/cells";
-import { held } from "./heldLine";
+import { answering } from "./answer";
 import { EMPTY_WORDS, type LineStage } from "./kit";
 import { askCount, type CellState, countsOf, lineOf, SEGMENTS } from "./line";
 import type { Reading } from "./read";
@@ -72,7 +72,7 @@ export function LineHome(props: {
     pending: boolean,
   ) => ReactNode;
 }) {
-  const { answered } = useSyncExternalStore(held.subscribe, held.read);
+  const { answered } = useSyncExternalStore(answering.subscribe, answering.read);
   const line = lineOf(props.cells, props.readings, props.now, answered, byRecord(props.now));
   const states = useSteadyStates(line.states);
   const onPhone = countsOf(line, props.inView);
@@ -95,15 +95,8 @@ export function LineHome(props: {
     for (const [environmentId, reading] of props.readings)
       if (reading.state !== "none")
         for (const need of reading.list?.needs ?? []) asked.add(`${environmentId}:${need.key}`);
-    held.keepOnly(asked, Date.now());
+    answering.keepOnly(asked, Date.now());
   }, [props.readings]);
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Send a held answer as the app leaves the front: the person chose it.
-  useEffect(() => {
-    const subscription = AppState.addEventListener("change", (next) => {
-      if (next !== "active") void held.letGo();
-    });
-    return () => subscription.remove();
-  }, []);
 
   // T3's list narrows to the pickers too; handed only those, an empty segment says so in ours.
   const page = (stage: LineStage) => {
@@ -142,7 +135,7 @@ export function LineHome(props: {
       <View style={{ flex: 1 }}>
         <StagePages home={stages} tab={tab} night={home.night} render={page} />
         <DiskFoot />
-        <UndoLine held={held} />
+        <UndoLine />
       </View>
     </HomeTabsContext>
   );

@@ -1,12 +1,12 @@
-// Add to Chat, as the original app's card has it: a sheet of the newest photos and videos, camera
-// first, where a tap picks one in order and a second tap lets it go. "Add N" puts them in the
-// composer in that order through T3's own picking (`staged.ts`). Leaving by another door (the
-// camera, Files, the system's picker) adds what's picked first, so nothing chosen drops.
+// Add to Chat: the newest photos and videos, camera first; a tap picks one in order, a second lets
+// it go, and "Add N" hands them to T3's own picking (`staged.ts`). Another door adds the picks first.
+// Every action stands in the top row: react-native-screens can lay the card out taller than the
+// sheet shows, which once hid a bar at its foot below the screen; the top always shows.
 
 import { Image } from "expo-image";
 import * as Haptics from "expo-haptics";
 import * as ImagePicker from "expo-image-picker";
-import { type RefObject, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   AccessibilityInfo,
   Alert,
@@ -15,9 +15,8 @@ import {
   StyleSheet,
   useWindowDimensions,
   View,
-  type ViewInstance,
 } from "react-native";
-import { LegendList, type LegendListRef } from "@legendapp/list/react-native";
+import { LegendList } from "@legendapp/list/react-native";
 import Animated, {
   type SharedValue,
   useAnimatedStyle,
@@ -30,14 +29,7 @@ import { FormSheet } from "react-native-screens";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useResolveClassNames } from "uniwind";
 
-import {
-  AppText,
-  formSheetDetents,
-  GlassSurface,
-  IconButton,
-  SymbolView,
-} from "../upstream/attach";
-import { footLift } from "./foot";
+import { AppText, formSheetDetents, IconButton, SymbolView } from "../upstream/attach";
 import {
   type Access,
   accessTo,
@@ -55,8 +47,6 @@ import { pickingThese } from "./staged";
 const PAGE = 90;
 /** The squares' hairline. */
 const GAP = 2;
-/** The bar's height: a source, or the Add pill. */
-const BAR = 56;
 /** How long the Add pill says the cap after a refused tap, ms. */
 const SAYS_CAP_FOR = 1600;
 const CAP = `Up to ${GO} at a time`;
@@ -91,19 +81,7 @@ export function AttachCard(props: {
   // What to do once the card is down: UIKit presents nothing over a sheet still leaving.
   const after = useRef<(() => Promise<void>) | null>(null);
   const [shown, setShown] = useState(false);
-  const [lift, setLift] = useState(0);
-  const card = useRef<ViewInstance>(null);
-  // Sliding in, the card stands below its place: a measure then would lift the bar mid-card.
-  const arrived = useRef(false);
-  const window = useWindowDimensions();
   if (props.open && !shown) setShown(true);
-  /** Where the card's foot stands against the window's: its layout, its arrival and each detent move it. */
-  const measureFoot = () => {
-    if (!arrived.current) return;
-    card.current?.measureInWindow((_x, top, _width, height) =>
-      setLift(footLift({ top, height, window: window.height })),
-    );
-  };
   const leave = (then: () => Promise<void>) => {
     after.current = then;
     props.onClose();
@@ -115,16 +93,10 @@ export function AttachCard(props: {
       detents={DETENTS}
       prefersGrabberVisible
       nativeContainerStyle={sheet}
-      onDidAppear={() => {
-        arrived.current = true;
-        measureFoot();
-      }}
-      onDetentChanged={measureFoot}
       onNativeDismiss={props.onClose}
       onDidDisappear={() => {
         // A sheet of the system's over the card (Choose more) can report it gone while it stays.
         if (props.open) return;
-        arrived.current = false;
         setShown(false);
         const then = after.current;
         after.current = null;
@@ -134,21 +106,12 @@ export function AttachCard(props: {
         );
       }}
     >
-      {shown ? (
-        <Card {...props} lift={lift} ref={card} onLayout={measureFoot} leave={leave} />
-      ) : null}
+      {shown ? <Card {...props} leave={leave} /> : null}
     </FormSheet>
   );
 }
 
-function Card({
-  ref,
-  ...props
-}: {
-  /** How far above the card's foot the sheet's visible foot is (`foot.ts`). */
-  readonly lift: number;
-  readonly ref: RefObject<ViewInstance | null>;
-  readonly onLayout: () => void;
+function Card(props: {
   readonly onClose: () => void;
   readonly supportsFiles: boolean;
   readonly onPickMedia: () => Promise<void>;
@@ -165,7 +128,6 @@ function Card({
   const window = useWindowDimensions();
   const [width, setWidth] = useState(window.width);
   const [sayingCap, setSayingCap] = useState(false);
-  const list = useRef<LegendListRef>(null);
   const loading = useRef(false);
   const capTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const shake = useSharedValue(0);
@@ -251,10 +213,9 @@ function Card({
     ...shots.map((shot) => ({ kind: "shot", shot }) as const),
   ];
   const size = width > 0 ? (width - 2 * GAP) / 3 : 0;
-  const { lift } = props;
   const full = picks.length >= GO;
 
-  /** A tap on a dimmed photo: the Add pill shakes its head and says the cap for a moment. */
+  /** A tap on a dimmed photo: the Add pill shakes its head and the title says the cap for a moment. */
   const refuse = () => {
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     AccessibilityInfo.announceForAccessibility(CAP);
@@ -274,40 +235,56 @@ function Card({
 
   return (
     <View
-      ref={ref}
       className="flex-1 bg-sheet"
-      onLayout={(event) => {
-        setWidth(event.nativeEvent.layout.width);
-        props.onLayout();
-      }}
+      onLayout={(event) => setWidth(event.nativeEvent.layout.width)}
     >
-      <View className="flex-row items-center px-3 pb-2 pt-4">
+      <View className="flex-row items-center gap-2 px-3 pb-2 pt-4">
         <IconButton
           variant="tonal"
           icon="xmark"
           accessibilityLabel="Close"
           onPress={props.onClose}
         />
-        <AppText className="flex-1 text-center text-[17px] font-semibold text-foreground">
-          {access === "none" ? "Photos" : "Recents"}
+        <AppText
+          className="flex-1 text-center text-[17px] font-semibold text-foreground"
+          numberOfLines={1}
+          adjustsFontSizeToFit
+        >
+          {sayingCap ? CAP : access === "none" ? "Photos" : "Recents"}
         </AppText>
-        <IconButton
-          variant="tonal"
-          icon="magnifyingglass"
-          accessibilityLabel="All photos"
-          onPress={() => thenAdd(props.onPickMedia)}
-        />
+        {props.supportsFiles ? (
+          <IconButton
+            variant="tonal"
+            icon="folder"
+            accessibilityLabel="Files"
+            onPress={() => thenAdd(props.onPickFiles)}
+          />
+        ) : null}
+        {picks.length === 0 ? (
+          <IconButton
+            variant="tonal"
+            icon="magnifyingglass"
+            accessibilityLabel="All photos"
+            onPress={() => thenAdd(props.onPickMedia)}
+          />
+        ) : (
+          <AddPill
+            picks={picks.length}
+            sayingCap={sayingCap}
+            shake={shake}
+            onPress={() => thenAdd(async () => {})}
+          />
+        )}
       </View>
       {size > 0 ? (
         // oxlint-disable-next-line t3code/require-registered-list-scroll -- the grid scrolls inside a form sheet, which has no header to register with.
         <LegendList
-          ref={list}
           data={tiles}
           numColumns={3}
           keyExtractor={(tile) => (tile.kind === "shot" ? tile.shot.id : tile.kind)}
           columnWrapperStyle={{ gap: GAP }}
           ItemSeparatorComponent={Hairline}
-          contentContainerStyle={{ paddingBottom: BAR + insets.bottom + 24 + lift }}
+          contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}
           estimatedItemSize={size}
           extraData={{ picks, full, size }}
           onEndReachedThreshold={1.5}
@@ -342,17 +319,6 @@ function Card({
           }
         />
       ) : null}
-      <Bar
-        picks={picks.length}
-        sayingCap={sayingCap}
-        shake={shake}
-        supportsFiles={props.supportsFiles}
-        bottom={insets.bottom}
-        lift={lift}
-        onPhotos={() => list.current?.scrollToOffset({ offset: 0, animated: true })}
-        onFiles={() => thenAdd(props.onPickFiles)}
-        onAdd={() => thenAdd(async () => {})}
-      />
     </View>
   );
 }
@@ -470,110 +436,29 @@ function ShotTile(props: {
   );
 }
 
-/**
- * The bar at the card's foot. At rest: the sources, Photos lit (a tap
- * scrolls back to the newest). With photos picked: Files steps down to its
- * ring and "Add N" takes the row; a refused tap shakes it and it says the
- * cap for a moment.
- */
-function Bar(props: {
+/** "Add N", in the top row where the magnifier stood: a refused tap shakes it. */
+function AddPill(props: {
   readonly picks: number;
   readonly sayingCap: boolean;
   readonly shake: SharedValue<number>;
-  readonly supportsFiles: boolean;
-  readonly bottom: number;
-  readonly lift: number;
-  readonly onPhotos: () => void;
-  readonly onFiles: () => void;
-  readonly onAdd: () => void;
+  readonly onPress: () => void;
 }) {
   const { shake } = props;
   const shaking = useAnimatedStyle(() => ({ transform: [{ translateX: shake.get() }] }));
   return (
-    <View
-      pointerEvents="box-none"
-      className="absolute inset-x-0 flex-row gap-3 px-4"
-      style={{ bottom: props.lift, paddingBottom: Math.max(props.bottom, 16) }}
-    >
-      {props.picks === 0 ? (
-        <GlassSurface className="flex-row self-center p-1" style={{ borderRadius: BAR / 2 }}>
-          <Source symbol="photo" title="Photos" lit onPress={props.onPhotos} />
-          {props.supportsFiles ? (
-            <Source symbol="folder" title="Files" onPress={props.onFiles} />
-          ) : null}
-        </GlassSurface>
-      ) : (
-        <>
-          {props.supportsFiles ? (
-            <GlassSurface style={{ width: BAR, height: BAR, borderRadius: BAR / 2 }}>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Files"
-                onPress={props.onFiles}
-                className="flex-1 items-center justify-center active:opacity-70"
-              >
-                <SymbolView name="folder" size={20} tintColorClassName="accent-foreground" />
-              </Pressable>
-            </GlassSurface>
-          ) : null}
-          <Animated.View className="flex-1" style={shaking}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={`Add ${props.picks}`}
-              accessibilityValue={props.sayingCap ? { text: CAP } : undefined}
-              onPress={props.onAdd}
-              className="items-center justify-center rounded-full bg-primary active:opacity-80"
-              style={{ height: BAR }}
-            >
-              <AppText
-                className="text-[17px] font-semibold text-primary-foreground"
-                numberOfLines={1}
-              >
-                {props.sayingCap ? CAP : `Add ${props.picks}`}
-              </AppText>
-            </Pressable>
-          </Animated.View>
-        </>
-      )}
-    </View>
-  );
-}
-
-/** One source on the bar: its symbol over its word; the lit one, where you are, on a pill of light. */
-function Source(props: {
-  readonly symbol: "photo" | "folder";
-  readonly title: string;
-  readonly lit?: boolean;
-  readonly onPress: () => void;
-}) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={props.title}
-      accessibilityState={{ selected: props.lit === true }}
-      onPress={props.onPress}
-      className={
-        props.lit === true
-          ? "min-w-20 items-center justify-center rounded-full bg-subtle px-4"
-          : "min-w-20 items-center justify-center rounded-full px-4 active:opacity-70"
-      }
-      style={{ height: BAR - 8 }}
-    >
-      <SymbolView
-        name={props.symbol}
-        size={19}
-        tintColorClassName={props.lit === true ? "accent-foreground" : "accent-icon-muted"}
-      />
-      <AppText
-        className={
-          props.lit === true
-            ? "text-[12px] font-semibold text-foreground"
-            : "text-[12px] font-semibold text-foreground-muted"
-        }
+    <Animated.View style={shaking}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`Add ${props.picks}`}
+        accessibilityValue={props.sayingCap ? { text: CAP } : undefined}
+        onPress={props.onPress}
+        className="h-12 min-w-24 items-center justify-center rounded-full bg-primary px-5 active:opacity-80"
       >
-        {props.title}
-      </AppText>
-    </Pressable>
+        <AppText className="text-[17px] font-semibold text-primary-foreground" numberOfLines={1}>
+          {`Add ${props.picks}`}
+        </AppText>
+      </Pressable>
+    </Animated.View>
   );
 }
 
