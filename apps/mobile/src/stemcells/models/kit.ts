@@ -2,7 +2,9 @@
 // nowhere else, so the phone and the Mac line models up and name them alike.
 
 export {
+  ACCESS_WORDS,
   everyVersion,
+  levelLabel,
   lineup,
   type LineupEntry,
   type LineupLevel,
