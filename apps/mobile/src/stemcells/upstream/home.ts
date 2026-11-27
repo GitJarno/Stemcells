@@ -1,36 +1,23 @@
 // What the phone's home takes from upstream's: its tabs, how it opens a chat and comes back, its
-// column, whether it stands in the workspace, the inset its list rests under, where its search
-// stands, the header's items, the machines and projects in view, the older settled chats the
-// servers keep, where the phone keeps its picks, and when a row starts to leave.
+// column, whether it stands in the workspace, the inset its list rests under, the header's items,
+// the machines and projects in view, the older settled chats the servers keep, where the phone
+// keeps its picks, and when a row starts to leave. Where its foot stands: `overSearch.ts`.
 
 import { useAtomValue } from "@effect/atom-react";
 import { Directory, File, Paths } from "expo-file-system";
 import { use } from "react";
 import { Keyboard } from "react-native";
-import { useKeyboardState } from "react-native-keyboard-controller";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { COMPOSER_BOTTOM_GUTTER } from "../../components/ComposerSurface";
 import { usePaneRole } from "../../components/ui/Pane";
 import { useBarInset } from "../../components/ui/useBarInset";
 import { useAdaptiveWorkspaceLayout } from "../../features/layout/adaptive-workspace-context";
 import { useWorkspaceTabs } from "../../features/layout/workspace/WorkspaceTabsContext";
 import { useSelectWorkspaceDetail } from "../../features/layout/workspace/useSelectWorkspaceDetail";
-import {
-  useCompactWorkspaceTabs,
-  useSidebarWorkspaceTabs,
-} from "../../features/layout/workspace/useSystemWorkspaceTabBar";
 import { writeFileAtomically } from "../../lib/atomic-file";
 import { isDuoDevice } from "../../lib/device-type";
-import {
-  useDeviceType,
-  useDuoBottomBarInset,
-  useNativeColumnLayoutMetrics,
-  useNativeLayoutMetrics,
-} from "../../native/native-layout-metrics";
+import { useDeviceType } from "../../native/native-layout-metrics";
 import { NativePrimaryColumnContext } from "../../native/v5-workspace-context";
 import { threadListEnvironmentsAtom } from "../../state/presentation";
-import { homeFoot } from "./homeFoot";
 
 export type { EnvironmentMachineKind } from "@t3tools/contracts";
 
@@ -111,33 +98,4 @@ export function readKept(name: string): string | null {
 /** Writes a small file of ours whole, so a crash mid-write leaves the last one. */
 export function writeKept(name: string, text: string): Promise<void> {
   return writeFileAtomically(keptFile(name), text).catch(() => undefined);
-}
-
-/** The home's foot on iOS (`homeFoot.ts`), and the sides a view over it keeps. */
-export function useOverSearch(): {
-  readonly notice: number;
-  readonly pill: number;
-  readonly rest: number;
-  readonly above: number;
-  readonly left: number;
-  readonly right: number;
-} {
-  const insets = useSafeAreaInsets();
-  const deviceType = useDeviceType();
-  const workspace = useWorkspaceTabs();
-  const sides = deviceType === "phone" ? { left: 29, right: 23 } : { left: 20, right: 20 };
-  const foot = homeFoot({
-    deviceType,
-    insetsBottom: insets.bottom,
-    column: useNativeColumnLayoutMetrics(),
-    root: useNativeLayoutMetrics(),
-    searchMode: workspace?.state.tabs.threads.searchMode,
-    bottomClearance: workspace?.bottomClearance ?? 0,
-    sidebarPicker: useSidebarWorkspaceTabs() === "picker",
-    compactTabs: useCompactWorkspaceTabs(),
-    duoBar: useDuoBottomBarInset(),
-    keyboardHeight: useKeyboardState((keyboard) => keyboard.height),
-    composerGutter: COMPOSER_BOTTOM_GUTTER,
-  });
-  return { ...foot, ...sides };
 }

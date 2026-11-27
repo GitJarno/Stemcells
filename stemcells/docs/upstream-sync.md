@@ -390,3 +390,16 @@ limit holds it until the limit lifts.
   seam keeps `enabled` false. Upstream now exports
   `trackPendingWorkspaceDefault`, which retired our copy of its steps and
   a substitute.
+- 2026-11-27, later (65 commits, one conflict): four breaks were ours,
+  from the same day's merges, not upstream's. `check-local` runs only the
+  quick gates, so upstream's phone suites first met them here. Two were
+  import loops: a hook that needs the composer surface, beside helpers the
+  rows import (`stemcells/upstream/home.ts`), and a type re-exported from
+  the sheet that imports our pick. Upstream's graph counts a static type
+  import as an edge; `import()` types it leaves out. Two were the feed seam
+  reaching modules upstream's preview test can't load, which now mocks the
+  seam module whole. Before merging phone work, run
+  `apps/mobile/src/dependency-graph.test.ts`. Upstream's phone moved its
+  default text face to the system's on iOS, with a picker; anything of
+  ours set from one face's metrics reads the face in use
+  (`project/titleMark.ts`).

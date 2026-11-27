@@ -1,4 +1,4 @@
-// Where the home's foot stands on iOS (`useOverSearch`, `home.ts`), from what T3's layout reads,
+// Where the home's foot stands on iOS (`useOverSearch`, `overSearch.ts`), from what T3's layout reads,
 // apart from the hooks so Node can test it.
 
 import { isDuoDevice, type DeviceType } from "../../lib/device-type";

@@ -5,7 +5,7 @@
  */
 import {
   T3_CODE_ORCHESTRATION_INSTRUCTIONS,
-  T3_CODE_ORCHESTRATION_SECTIONS,
+  t3CodeOrchestrationSections,
 } from "@t3tools/provider-core/server/orchestrationInstructions";
 import { HTML_RENDER_TOOL_NAME } from "@t3tools/shared/htmlRender";
 import { describe, expect, it } from "vite-plus/test";
@@ -14,20 +14,21 @@ import { MAX_SERIES, parseChart } from "../../../../../stemcells/chart/parse.ts"
 import { BINDINGS } from "../../../../../stemcells/settings/controls.ts";
 import { readSettingFence } from "../../../../../stemcells/settings/fence.ts";
 
-const at = T3_CODE_ORCHESTRATION_SECTIONS.findIndex((section) => section.startsWith("### Forms"));
-const forms = T3_CODE_ORCHESTRATION_SECTIONS[at] ?? "";
+const sections = t3CodeOrchestrationSections();
+const at = sections.findIndex((section) => section.startsWith("### Forms"));
+const forms = sections[at] ?? "";
 
 describe("the forms every agent is taught", () => {
   it("is one of upstream's sections, after upstream's own and before the close-out", () => {
     expect(T3_CODE_ORCHESTRATION_INSTRUCTIONS).toContain(forms);
     // A level-three heading: it reads on from upstream's last section, which is one too.
-    expect(T3_CODE_ORCHESTRATION_SECTIONS[at - 1]).toMatch(/^### Visuals and preview/);
-    expect(at).toBe(T3_CODE_ORCHESTRATION_SECTIONS.length - 2);
+    expect(sections[at - 1]).toMatch(/^### Visuals and preview/);
+    expect(at).toBe(sections.length - 2);
   });
 
   it("sends a bespoke visual to the tool upstream draws pages with", () => {
     expect(forms).toContain(`\`${HTML_RENDER_TOOL_NAME}\``);
-    expect(T3_CODE_ORCHESTRATION_SECTIONS[at - 1]).toContain(`\`${HTML_RENDER_TOOL_NAME}\``);
+    expect(sections[at - 1]).toContain(`\`${HTML_RENDER_TOOL_NAME}\``);
   });
 
   it("teaches the chart fence the clients read", () => {

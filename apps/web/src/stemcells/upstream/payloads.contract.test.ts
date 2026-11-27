@@ -105,7 +105,7 @@ describe("a carry's contracts with upstream's drop", () => {
       1,
     );
     expect(tokenPaste).toMatch(
-      /export function readPastedPlainText\(clipboardData: Pick<DataTransfer, "getData">\): string \{\s*return clipboardData\.getData\("text\/plain"\)/,
+      /export function readPastedPlainText\(clipboardData: Pick<DataTransfer, "getData">\): string \{\s*return clipboardData\s*\.getData\("text\/plain"\)/,
     );
   });
 

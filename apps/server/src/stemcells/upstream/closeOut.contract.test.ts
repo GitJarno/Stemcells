@@ -6,14 +6,14 @@
  */
 import {
   T3_CODE_ORCHESTRATION_INSTRUCTIONS,
-  T3_CODE_ORCHESTRATION_SECTIONS,
+  t3CodeOrchestrationSections,
 } from "@t3tools/provider-core/server/orchestrationInstructions";
 import { describe, expect, it } from "vite-plus/test";
 
 import { readCloseOut, stopOf } from "../../../../../stemcells/closeOut/closeOut.ts";
 
 const closeOut =
-  T3_CODE_ORCHESTRATION_SECTIONS.find((section) =>
+  t3CodeOrchestrationSections().find((section) =>
     section.startsWith("## Stemcells: say where you stand"),
   ) ?? "";
 
@@ -24,8 +24,11 @@ describe("the close-out every Cell is given", () => {
   });
 
   it("comes after upstream's sections, which keep their places", () => {
-    // Codex numbers its entries by place, and upstream's tests read them so.
-    expect(T3_CODE_ORCHESTRATION_SECTIONS.at(-1)).toBe(closeOut);
+    // Codex numbers its entries by place, and upstream's tests read them so; Codex picks the
+    // sections by whether the provider offers native subagents.
+    for (const nativeSubagents of [true, false]) {
+      expect(t3CodeOrchestrationSections(nativeSubagents).at(-1)).toBe(closeOut);
+    }
   });
 
   it("fits a Codex entry whole", () => {

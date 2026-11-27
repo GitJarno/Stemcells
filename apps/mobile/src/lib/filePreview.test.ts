@@ -300,7 +300,12 @@ vi.mock("../features/layout/workspace-content-width", () => ({
   useWorkspaceSettledContentWidth: () => null,
 }));
 vi.mock("../features/settings/appearance/AppearancePreferencesProvider", () => ({
-  useAppearancePreferences: () => ({ appearance: { baseFontSize: 14 }, themeAppearance: "dark" }),
+  useAppearancePreferences: () => ({
+    appearance: { baseFontSize: 14 },
+    themeAppearance: "dark",
+    fontFamilies: { regular: "System", medium: "System", bold: "System" },
+    monoFontFamily: "ui-monospace",
+  }),
 }));
 vi.mock("./useUniwindTheme", () => ({
   useUniwindTheme: () => new Proxy({}, { get: () => "#000000" }),
@@ -318,7 +323,13 @@ vi.mock("../features/threads/LinkRequestCard", () => ({ LinkRequestCard: () => n
 vi.mock("../features/threads/worktree-setup-card", () => ({}));
 vi.mock("../features/threads/CopyTextButton", () => ({ CopyTextButton: () => null }));
 vi.mock("../features/threads/thread-work-log", () => ({ THREAD_DISCLOSURE_TRANSITION_MS: 100 }));
-vi.mock("../stemcells/chat/MailFold", () => ({ MailFold: () => null }));
+vi.mock("../stemcells/upstream/seams/ThreadFeed", () => ({
+  MailFold: () => null,
+  MessageImages: () => null,
+  withoutPictures: (attachments: unknown) => attachments,
+  withAskAtEnd: (footer: ReactNode) => footer,
+  entering: (upstream: unknown) => upstream,
+}));
 vi.mock("../features/threads/CollapsibleUserMessageBody", () => ({
   CollapsibleUserMessageBody: (props: { children: ReactNode }) => props.children,
 }));
