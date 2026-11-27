@@ -105,14 +105,14 @@ describe("a setting in a reply", () => {
       <ChatMarkdown
         cwd={undefined}
         threadRef={chat}
-        text="Open Settings → Providers → Antigravity, then Settings › Threads › Auto-settle merged threads. System Settings → General stays."
+        text="Open Settings → Providers → Antigravity, then Settings › Cells › Auto-settle merged Cells. System Settings → General stays."
       />,
     );
     await expect
       .element(screen.getByRole("link", { name: "Settings Providers Antigravity" }))
       .toHaveAttribute("href", "/settings/providers?environmentId=env&instanceId=antigravity");
     await expect
-      .element(screen.getByRole("link", { name: "Settings Threads Auto-settle merged threads" }))
+      .element(screen.getByRole("link", { name: "Settings Cells Auto-settle merged Cells" }))
       .toHaveAttribute("href", "/settings/threads#auto-settle-merged-threads");
     expect(screen.container.querySelectorAll("[data-stemcells-place]")).toHaveLength(2);
     window.getSelection()?.selectAllChildren(screen.container);
