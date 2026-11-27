@@ -1,4 +1,4 @@
-// The moon over Settled, at its real phase: how far into its month
+// The moon over Asleep, at its real phase: how far into its month
 // it is, and the lit part as an SVG path. A mean synodic month from a known
 // new moon is within a day of the sky, which is all a drawing needs.
 
@@ -11,6 +11,14 @@ const DAY_MS = 86_400_000;
 export function moonPhase(ms: number): number {
   const days = (ms - NEW_MOON_MS) / DAY_MS;
   return (((days / SYNODIC_DAYS) % 1) + 1) % 1;
+}
+
+/**
+ * The phase as a sky draws it: held to a few hundred steps, so the moon's path redraws a few
+ * times a day, not each minute.
+ */
+export function drawnMoonPhase(ms: number): number {
+  return Math.round(moonPhase(ms) * 240) / 240;
 }
 
 /**

@@ -67,7 +67,7 @@ questions; the agent's state shows inside the row.
   Asleep's count takes it.
 - Wake: the Cell opens its eyes and its row stands at Awake's top.
 - Launch: a word from rest lifts the row to the top and its band starts.
-- Asleep keeps the night sky (`home/Night.tsx`).
+- Asleep is night and Awake day, behind the header (`day-night.md`).
 
 ## Plan
 

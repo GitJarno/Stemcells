@@ -7,6 +7,3 @@ import { Scrim } from "./Scrim";
 export function Veil(props: ComponentProps<typeof Scrim> & { readonly followsBar?: boolean }) {
   return <Scrim {...props} />;
 }
-
-/** Whether the veil blurs, so takes no colour, rather than fading into its ground. */
-export const blurs = false;
