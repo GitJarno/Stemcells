@@ -4,7 +4,13 @@
 // T3's row hands control here (`features/threads/thread-list-v2-items.tsx`).
 
 import { type ReactNode, use, useEffect, useRef } from "react";
-import { Pressable, View, type ViewInstance, type ViewStyle } from "react-native";
+import {
+  Pressable,
+  useWindowDimensions,
+  View,
+  type ViewInstance,
+  type ViewStyle,
+} from "react-native";
 import { useReducedMotion } from "react-native-reanimated";
 import { useResolveClassNames } from "uniwind";
 
@@ -17,6 +23,8 @@ import { RowLight } from "../glow/RowLight";
 import { ROW_LIGHT, rowStateOf, type RowStatus, rowStatusOf, STATUS_WORDS } from "../line/kit";
 import { cellKey } from "../line/line";
 import { STATUS_SYMBOL } from "../line/StatusSymbol";
+import { ProjectMark } from "../project/ProjectMark";
+import { titleMarkLayout } from "../project/titleMark";
 import { CODE_FONT } from "../tokens";
 import {
   AppText,
@@ -28,11 +36,7 @@ import {
   threadHasUnseenCompletion,
   type ThreadPrPresentation,
 } from "../upstream/cells";
-import {
-  ENVIRONMENT_MACHINE_SYMBOLS,
-  type EnvironmentMachineKind,
-  ProjectFavicon,
-} from "../upstream/home";
+import { ENVIRONMENT_MACHINE_SYMBOLS, type EnvironmentMachineKind } from "../upstream/home";
 import { relativeTime } from "../upstream/needs";
 import { Arrival } from "./Arrival";
 import { sendCopy } from "./copies";
@@ -240,47 +244,33 @@ function Since(props: { readonly since: string; readonly status: RowStatus | nul
 
 const MARK = 12;
 const MARK_GAP = 6;
-/** A title's project mark: the size of the title's capitals and a little over, and the gap after it. */
-const TITLE_MARK = 16;
-const TITLE_MARK_GAP = 7;
-/** An inline view sits on the text's baseline; this centres the mark on the capitals instead. */
-const TITLE_MARK_DROP = 2.5;
 
-/** A project's own icon. */
-export function ProjectMark(props: {
-  readonly project: EnvironmentProject;
-  readonly size: number;
-}) {
-  const { project } = props;
-  return (
-    <ProjectFavicon
-      environmentId={project.environmentId}
-      faviconPath={project.faviconPath}
-      projectIcon={project.projectIcon}
-      projectTitle={project.title}
-      workspaceRoot={project.workspaceRoot}
-      size={props.size}
-    />
-  );
+function useTitleMarkLayout() {
+  const { fontScale } = useWindowDimensions();
+  const base = useResolveClassNames("text-base").fontSize;
+  return titleMarkLayout((typeof base === "number" ? base : 16) * fontScale);
 }
 
-const TITLE_MARK_STYLE: ViewStyle = {
-  width: TITLE_MARK + TITLE_MARK_GAP,
-  height: TITLE_MARK,
-  transform: [{ translateY: TITLE_MARK_DROP }],
-};
+/**
+ * The room for the project's mark on a title's first line, inside its text: a second line runs
+ * under the mark, so no column of its own costs every line. Every title it leads is `text-base`;
+ * the type grows with the app's text size and the system's, the mark too.
+ */
+function TitleSpace() {
+  const { width } = useTitleMarkLayout();
+  return <View style={{ width, height: 0 }} />;
+}
 
 /**
- * The project's mark as a title's first glyph, inside its text: it takes room on the first line
- * only, and a second line runs under it, so no column of its own costs every line.
+ * The project's mark over its room (`TitleSpace`), the title's sibling rather than inside its text:
+ * React Native's iOS layout sets an inline view lower the larger the text, and a view as tall as
+ * the mark makes the line taller. Its parent holds the title's text at its top left.
  */
-export function TitleMark(props: {
-  readonly project: EnvironmentProject;
-  readonly faint?: boolean;
-}) {
+function TitleMark(props: { readonly project: EnvironmentProject; readonly faint?: boolean }) {
+  const { size, top } = useTitleMarkLayout();
   return (
-    <View style={props.faint ? [TITLE_MARK_STYLE, { opacity: 0.4 }] : TITLE_MARK_STYLE}>
-      <ProjectMark project={props.project} size={TITLE_MARK} />
+    <View style={{ position: "absolute", left: 0, top, opacity: props.faint ? 0.4 : 1 }}>
+      <ProjectMark project={props.project} size={size} />
     </View>
   );
 }
@@ -310,28 +300,32 @@ const HIDDEN: ViewStyle = { display: "none" };
 
 /**
  * How T3's card lays out beside a Cell, two lines at most: its project's mark leads the title
- * (`lead`), and the time keeps the width of the marks under it, so the title's second line never
- * runs beneath them. A failed chat's error takes the second line, and the title one. On Awake,
+ * (`lead`, its room in the text; `mark`, the mark over it), and the time keeps the width of the
+ * marks under it, so the title's second line never runs beneath them. A failed chat's error takes the second line, and the title one. On Awake,
  * one line: the faint mark and the title, as Asleep's rows are.
  */
 export function useCardLines(card: boolean, sidebar: boolean, error: boolean, marks: CardMarks) {
   const awake = use(HomeStageContext) === "awake";
   const beside = card && (!sidebar || awake);
-  if (!beside) return { beside, titleLines: 2, trailing: NOTHING, meta: NOTHING, lead: null };
+  const { project } = marks;
+  if (!beside)
+    return { beside, titleLines: 2, trailing: NOTHING, meta: NOTHING, lead: null, mark: null };
+  const lead = project ? <TitleSpace /> : null;
   if (awake) {
-    const lead = marks.project ? <TitleMark project={marks.project} faint /> : null;
+    const mark = project ? <TitleMark project={project} faint /> : null;
     // A failed Cell keeps its error under the title: the one thing a light can't say.
     const meta = error ? { paddingLeft: 0, paddingRight: 0 } : HIDDEN;
-    return { beside, titleLines: 1, trailing: NOTHING, meta, lead };
+    return { beside, titleLines: 1, trailing: NOTHING, meta, lead, mark };
   }
   const width = marksWidth(marks);
   return {
     beside,
     titleLines: error ? 1 : 2,
     trailing: { minWidth: width, justifyContent: "flex-end" } satisfies ViewStyle,
-    // The project's mark is inside the title, so nothing stands in front of it to inset past.
+    // The project's mark leads the title's first line, so nothing stands in front of it to inset past.
     meta: error ? { paddingLeft: 0, paddingRight: width + MARK_GAP } : HIDDEN,
-    lead: marks.project ? <TitleMark project={marks.project} /> : null,
+    lead,
+    mark: project ? <TitleMark project={project} /> : null,
   };
 }
 
@@ -353,8 +347,16 @@ export function SlimRowCell(props: {
   );
 }
 
-/** A slim row's project, leading its title, faint as the row is, as a card's leads its. */
+/** A slim row's project, leading its title, faint as the row is, as a card's leads its: its room in the title's text. */
 export function SlimRowProject(props: {
+  readonly project: EnvironmentProject | null;
+  readonly sidebar: boolean;
+}) {
+  return props.project && !props.sidebar ? <TitleSpace /> : null;
+}
+
+/** A slim row's project mark, over its room (`SlimRowProject`), the title's sibling. */
+export function SlimRowMark(props: {
   readonly project: EnvironmentProject | null;
   readonly sidebar: boolean;
 }) {

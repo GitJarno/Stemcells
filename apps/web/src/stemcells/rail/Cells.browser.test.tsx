@@ -225,13 +225,13 @@ vi.mock("../upstream/cellRow", async () => {
       cloneElement(props.trigger, undefined, props.children),
   };
 });
+vi.mock("../project/ProjectMark", () => ({ ProjectMark: () => null }));
 vi.mock("../upstream/rail", () => ({
   isElectron: false,
   openSearch: () => undefined,
   openAddProject: () => undefined,
   SidebarUpdatePill: () => <li data-testid="upstream-update-pill" />,
   useShortcutLabel: () => "⌘K",
-  ProjectFavicon: () => null,
   useRailProjects: () => [
     {
       key: "harbor",

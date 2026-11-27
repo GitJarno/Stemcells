@@ -51,6 +51,7 @@
     "../../stemcells/brand/mark.ts",
     "../../stemcells/brand/name.ts",
     "../../stemcells/brand/nameTransform.ts",
+    "../../stemcells/brand/projectMark.ts",
     "../../stemcells/brand/upstreamName.ts",
     "../../stemcells/brand/wordTable.ts",
     "../../stemcells/chart/layout.ts",

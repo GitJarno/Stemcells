@@ -13,10 +13,10 @@ import { useCellStage } from "../needs/stream";
 import { CellAskIcon } from "../rail/StatusIcon";
 import { RenameField } from "../rename/RenameField";
 import { CellMark } from "../tabs/CellMark";
+import { ProjectMark } from "../project/ProjectMark";
 import { PaneCellContext, PaneComposerContext } from "../tabs/paneCell";
 import {
   EnvironmentMachineIcon,
-  ProjectFavicon,
   useCellParent,
   useCellProject,
   useCellRunsOn,
@@ -173,9 +173,10 @@ export function CellComposerLine() {
                   />
                 }
               >
-                <ProjectFavicon
+                <ProjectMark
                   project={project.record}
-                  className="composer-line-project-mark size-3.5 shrink-0"
+                  size={16}
+                  className="composer-line-project-mark"
                 />
                 <span className="composer-line-project-name min-w-0 truncate">{place.name}</span>
               </TooltipTrigger>
