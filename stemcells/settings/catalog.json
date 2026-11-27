@@ -38,7 +38,7 @@
     },
     {
       "path": "/settings/threads",
-      "label": "Threads"
+      "label": "Cells"
     },
     {
       "path": "/settings/browser",
@@ -204,7 +204,7 @@
     },
     {
       "id": "thread-details-items",
-      "title": "Thread details",
+      "title": "Cell details",
       "page": "/settings/appearance"
     },
     {
@@ -442,22 +442,22 @@
     },
     {
       "id": "auto-settle-inactive-threads",
-      "title": "Auto-settle inactive threads",
+      "title": "Auto-settle inactive Cells",
       "page": "/settings/threads"
     },
     {
       "id": "compact-idle-threads",
-      "title": "Compact idle threads",
+      "title": "Compact idle Cells",
       "page": "/settings/providers"
     },
     {
       "id": "auto-settle-merged-threads",
-      "title": "Auto-settle merged threads",
+      "title": "Auto-settle merged Cells",
       "page": "/settings/threads"
     },
     {
       "id": "keep-threads-with-pull-requests",
-      "title": "Keep threads with a PR",
+      "title": "Keep Cells with a PR",
       "page": "/settings/threads",
       "anchor": "auto-settle-inactive-threads"
     },
@@ -469,7 +469,7 @@
     },
     {
       "id": "thread-notifications",
-      "title": "Thread notifications",
+      "title": "Cell notifications",
       "page": "/settings/general"
     },
     {
@@ -544,7 +544,7 @@
     },
     {
       "id": "continue-threads-after-server-update",
-      "title": "Continue threads after restarts",
+      "title": "Continue Cells after restarts",
       "page": "/settings/maintenance"
     },
     {
@@ -559,7 +559,7 @@
     },
     {
       "id": "new-threads",
-      "title": "New threads",
+      "title": "New Cells",
       "page": "/settings/threads"
     },
     {
@@ -614,7 +614,7 @@
     },
     {
       "id": "thread-title-instructions",
-      "title": "Thread title instructions",
+      "title": "Cell title instructions",
       "page": "/settings/threads"
     },
     {
@@ -998,89 +998,89 @@
     },
     {
       "id": "keybinding-threadPanel.toggle",
-      "title": "Thread Panel",
+      "title": "Cell Panel",
       "page": "/settings/keybindings"
     },
     {
       "id": "keybinding-thread.jump.1",
-      "title": "Thread: Jump: 1",
+      "title": "Cell: Jump: 1",
       "page": "/settings/keybindings"
     },
     {
       "id": "keybinding-thread.jump.2",
-      "title": "Thread: Jump: 2",
+      "title": "Cell: Jump: 2",
       "page": "/settings/keybindings"
     },
     {
       "id": "keybinding-thread.jump.3",
-      "title": "Thread: Jump: 3",
+      "title": "Cell: Jump: 3",
       "page": "/settings/keybindings"
     },
     {
       "id": "keybinding-thread.jump.4",
-      "title": "Thread: Jump: 4",
+      "title": "Cell: Jump: 4",
       "page": "/settings/keybindings"
     },
     {
       "id": "keybinding-thread.jump.5",
-      "title": "Thread: Jump: 5",
+      "title": "Cell: Jump: 5",
       "page": "/settings/keybindings"
     },
     {
       "id": "keybinding-thread.jump.6",
-      "title": "Thread: Jump: 6",
+      "title": "Cell: Jump: 6",
       "page": "/settings/keybindings"
     },
     {
       "id": "keybinding-thread.jump.7",
-      "title": "Thread: Jump: 7",
+      "title": "Cell: Jump: 7",
       "page": "/settings/keybindings"
     },
     {
       "id": "keybinding-thread.jump.8",
-      "title": "Thread: Jump: 8",
+      "title": "Cell: Jump: 8",
       "page": "/settings/keybindings"
     },
     {
       "id": "keybinding-thread.jump.9",
-      "title": "Thread: Jump: 9",
+      "title": "Cell: Jump: 9",
       "page": "/settings/keybindings"
     },
     {
       "id": "keybinding-thread.next",
-      "title": "Thread",
+      "title": "Cell",
       "page": "/settings/keybindings"
     },
     {
       "id": "keybinding-thread.pin",
-      "title": "Thread",
+      "title": "Cell",
       "page": "/settings/keybindings"
     },
     {
       "id": "keybinding-thread.previous",
-      "title": "Thread",
+      "title": "Cell",
       "page": "/settings/keybindings"
     },
     {
       "id": "keybinding-thread.regenerateTitle",
-      "title": "Thread",
+      "title": "Cell",
       "page": "/settings/keybindings",
       "anchor": "keybindings"
     },
     {
       "id": "keybinding-thread.settle",
-      "title": "Thread",
+      "title": "Cell",
       "page": "/settings/keybindings"
     },
     {
       "id": "keybinding-thread.stop",
-      "title": "Thread",
+      "title": "Cell",
       "page": "/settings/keybindings",
       "anchor": "keybindings"
     },
     {
       "id": "keybinding-thread.undo",
-      "title": "Thread",
+      "title": "Cell",
       "page": "/settings/keybindings"
     },
     {
@@ -1472,7 +1472,7 @@
     },
     {
       "id": "archive",
-      "title": "Archived threads",
+      "title": "Archived Cells",
       "page": "/settings/archived"
     },
     {

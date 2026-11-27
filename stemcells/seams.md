@@ -353,13 +353,25 @@ What keeps T3's name, on purpose:
 
 Stemcells says Cell where upstream says thread, Subcell for a subagent or
 an agent, Flying for Working, and a casual chat for one in no project.
-Where upstream writes those words inline in a view, the builds swap them,
-and the file stays upstream's text (`stemcells/brand/wordTable.ts`;
-`stemcells/docs/fork.md`, "The name transform").
+The builds say them in upstream's views, and the files stay upstream's
+text (`stemcells/docs/fork.md`, "The name transform").
 
-- **An entry** names a file, upstream's exact words on one line (enough
-  that only that place says them), the part that changes, ours, and how
-  many times the file says them. Ours comes from `stemcells/words/`.
+- **Cell, by rule.** Every i18n message (`gt("…")`, `msg("…")`,
+  `<T>…</T>`) says Cell and Cells where upstream's says thread and threads
+  (`stemcells/brand/cellWords.ts`): whole words in its text, never an ICU
+  argument or select key, an id (`thread.new`), a translator's context, or
+  a place `KEPT_THREADS` keeps with why. Each language's catalog also files
+  a rewritten message's translation under the GT hash of its new text, so
+  other languages still find it. Our code that knows one of upstream's
+  sentences by its words matches it as a build prints it (`asBuilt`,
+  `stemcells/words/cells.ts`).
+- **An entry** (`stemcells/brand/wordTable.ts`) names a file, upstream's
+  exact words on one line (enough that only that place says them), the
+  part that changes, ours, and how many times the file says them. Ours
+  comes from `stemcells/words/`. Entries hold the other words, a thread
+  where ours says something else ("A Cell is asleep" for "Settled
+  thread"), and words a person reads outside a message; an entry wins over
+  the rule on its words.
 - **Where it runs.** In the name transform's own hook, so in every build
   that renames the app: the web (dev and production), the server and the
   desktop app's `pack`, and the phone's Metro. Tests run upstream's code
@@ -368,16 +380,22 @@ and the file stays upstream's text (`stemcells/brand/wordTable.ts`;
   sources before it transforms anything, and each file again as it bundles
   it: words said fewer or more times than their entry says, a file that is
   gone, or two entries on the same words fail the build, naming the file
-  and the words. `wordTable.test.ts` holds the same in the `ours` gate.
+  and the words. `wordTable.test.ts` holds the same in the `ours` gate,
+  and `cellWords.test.ts` fails when a message in the phone's, the web's
+  or the desktop's sources still says thread after the transform, or a
+  catalog message that says it is one the transform can't see.
   The table refuses a key that spans lines, a file no build transforms
   (our folders, tests, anything outside the apps' and packages' `src`),
   and ours that holds code.
 - **After a sync that fails here,** upstream reworded a line or said it
-  somewhere new: fix that entry. Never put our word back in the file.
+  somewhere new: fix that entry. When `cellWords.test.ts` fails, upstream
+  writes a message a way `cellWords.ts` doesn't read yet: teach it, or keep
+  the place with why. Never put our word back in the file.
 - **Left as they are:** sentences upstream assembles at runtime, which the
   substitutes rewrite (`stemcells/words/subcells.ts`; Subcells, below);
   words a component of ours draws (the work verbs, the phone's alerts in
-  `cell/words.ts`); and a swap that would span lines.
+  `cell/words.ts`); a swap that would span lines; and each language's own
+  word for a thread in its translations.
 
 ### Stemcells' mark
 
