@@ -8,7 +8,7 @@ import {
 import { STATUS_WORDS } from "../../../../../stemcells/words/awake.ts";
 import { useCellStage } from "../needs/stream";
 import type { CellRef } from "../tabs/layout";
-import { useCellStatus } from "../upstream/status";
+import { useCellShell } from "../upstream/cellRow";
 import { cn } from "../upstream/ui";
 import type { RowStatus } from "./awake";
 
@@ -43,7 +43,12 @@ export function StatusIcon(props: { status: RowStatus }) {
 export function CellAskIcon(props: { cell: CellRef | null }) {
   const { cell } = props;
   const stage = useCellStage(cell?.draftId === null ? cell.threadId : null);
-  const approval = useCellStatus(cell) === "Pending Approval";
-  if (stage !== "needs-you") return null;
+  if (cell === null || stage !== "needs-you") return null;
+  return <AskingIcon cell={cell} />;
+}
+
+/** Approval by the Cell's own pending approvals, as its row reads it (`rowStatusOf`). */
+function AskingIcon(props: { cell: CellRef }) {
+  const approval = useCellShell(props.cell)?.hasPendingApprovals === true;
   return <StatusIcon status={approval ? "approval" : "input"} />;
 }
