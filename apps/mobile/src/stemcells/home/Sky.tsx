@@ -121,6 +121,7 @@ const Heavens = memo(function Heavens(props: {
       </Warms>
       <Fades span={SKY_SPANS.cloudsGo} out style={fill}>
         <Clouds
+          id="clouds"
           width={width}
           reach={top}
           colour={palette.cloud.colour}
@@ -128,7 +129,13 @@ const Heavens = memo(function Heavens(props: {
         />
       </Fades>
       <Warms peak={1} style={fill}>
-        <Clouds width={width} reach={top} colour={palette.warm.inner} alpha={palette.cloud.alpha} />
+        <Clouds
+          id="warm-clouds"
+          width={width}
+          reach={top}
+          colour={palette.warm.inner}
+          alpha={palette.cloud.alpha}
+        />
       </Warms>
       {starGroups(x / width).map((stars, n) => (
         <Fades key={SKY_SPANS.stars[n]!.join()} span={SKY_SPANS.stars[n]!} style={fill}>
@@ -179,6 +186,7 @@ function Gradient(props: {
 
 /** Two wisps, each a soft ellipse and a smaller lobe over it. */
 function Clouds(props: {
+  readonly id: string;
   readonly width: number;
   readonly reach: number;
   readonly colour: string;
@@ -187,7 +195,7 @@ function Clouds(props: {
   return (
     <Svg width={props.width} height={props.reach}>
       <Defs>
-        <RadialGradient id="cloud" cx="50%" cy="50%" r="50%">
+        <RadialGradient id={props.id} cx="50%" cy="50%" r="50%">
           <Stop offset={0} stopColor={props.colour} stopOpacity={props.alpha} />
           <Stop offset={1} stopColor={props.colour} stopOpacity={0} />
         </RadialGradient>
@@ -202,7 +210,7 @@ function Clouds(props: {
             cy={cy}
             rx={cloud.width / 2}
             ry={cloud.height / 2}
-            fill="url(#cloud)"
+            fill={`url(#${props.id})`}
           />,
           <Ellipse
             key={`${cloud.x}:lobe`}
@@ -210,7 +218,7 @@ function Clouds(props: {
             cy={cy - cloud.height * 0.35}
             rx={cloud.width / 4}
             ry={cloud.height * 0.4}
-            fill="url(#cloud)"
+            fill={`url(#${props.id})`}
           />,
         ];
       })}
