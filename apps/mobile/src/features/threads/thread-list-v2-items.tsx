@@ -4,6 +4,7 @@ import * as Dialog from "../../components/ui/Dialog";
 import { FailureWords } from "../../stemcells/disk/FailureWords";
 import {
   CellBesideRow,
+  openOnPressIn,
   SlimRowCell,
   SlimRowProject,
   swipeEdgeOf,
@@ -1701,6 +1702,7 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
           if (event.nativeEvent.actionName === "openPullRequests") handleOpenPullRequests();
           if (event.nativeEvent.actionName === "dismissWoke") handleAcknowledgeWoke();
         }}
+        onPressIn={() => openOnPressIn(thread)}
         onPress={() => {
           close();
           selectThread();
@@ -1734,6 +1736,7 @@ export const ThreadListV2Row = memo(function ThreadListV2Row(props: {
         accessibilityRole="button"
         accessibilityState={{ selected }}
         className={rowAppearance.className}
+        onPressIn={() => openOnPressIn(thread)}
         onPress={() => {
           close();
           selectThread();

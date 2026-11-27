@@ -319,4 +319,5 @@ export function SlimRowProject(props: {
   return props.project && !props.sidebar ? <TitleMark project={props.project} faint /> : null;
 }
 
+export { openOnPressIn } from "./opening";
 export { swipeEdgeOf, swipeHint } from "./swipes";
