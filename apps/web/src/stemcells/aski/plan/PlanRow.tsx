@@ -113,10 +113,17 @@ export function PlanRow(props: {
   const { driver, unseen } = useCellLightFacts(cell);
   // What can't be taken back is read before it is sent: its words stand open.
   const [whole, setWhole] = useState(() => waiting && act.why.includes("risky"));
-  const facts = props.rows.factsOf(act);
+  // Read of upstream for a task and for a Cell this window just sent, whose line then stands as
+  // it was sent. A plan read back under an old message says what the plan itself names.
+  const facts =
+    one.status === "started" && one.startedAt === undefined ? null : props.rows.factsOf(act);
   const project = props.rows.projectOf(act);
   // A plan Aski's chat proposed names its project and its model itself: they stand as they are.
-  const fixed = act.selection !== undefined || act.place?.projectId !== undefined;
+  // So does a plan drawn outside Aski's chat, where no server is known to pick from.
+  const fixed =
+    act.selection !== undefined || act.place?.projectId !== undefined || props.environmentId === "";
+  const model = facts?.modelName ?? act.model?.name ?? "";
+  const effort = facts?.effort ?? act.model?.effort?.level ?? act.effort;
   const why = waiting ? whyLines(act, props.holding) : [];
 
   const line = useRef<HTMLDivElement>(null);
@@ -154,8 +161,7 @@ export function PlanRow(props: {
         ref={line}
         data-plan-line=""
         {...rowPlateProps({
-          light:
-            state === null ? null : { state, tone: toneTokenOf(driver ?? facts.driver ?? null) },
+          light: state === null ? null : { state, tone: toneTokenOf(driver) },
           // A Cell opens as its row in Awake does; a task opens its words.
           onOpen: one.status === "started" ? () => open.chat(threadId) : toggle,
         })}
@@ -163,7 +169,7 @@ export function PlanRow(props: {
         {state === null ? null : <RowField />}
         {sent ? (
           <RowCell>
-            <CellMark cell={cell} forms={cardFormKey(threadId)} driver={facts.driver} />
+            <CellMark cell={cell} forms={cardFormKey(threadId)} driver={facts?.driver} />
           </RowCell>
         ) : null}
         {waiting && !fixed ? (
@@ -197,7 +203,7 @@ export function PlanRow(props: {
           </Own>
         ) : (
           <span data-plan-meta="">
-            {[facts.modelName || DEFAULT_MODEL, facts.effort].filter(Boolean).join(" · ")}
+            {[model || (waiting ? DEFAULT_MODEL : ""), effort].filter(Boolean).join(" · ")}
           </span>
         )}
         {one.status === "started" && one.startedAt !== undefined ? (

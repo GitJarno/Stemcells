@@ -87,6 +87,10 @@
 [data-plan-line] > [data-cells-row-title] {
   flex: 1 1 auto;
 }
+/* A task's words are in full ink, as an awake Cell's: only a row asleep reads quieter. */
+[data-plan-row] > [data-plan-line]:not([data-light]) > [data-cells-row-title] {
+  color: inherit;
+}
 [data-plan-own] {
   display: inline-flex;
   flex: none;
