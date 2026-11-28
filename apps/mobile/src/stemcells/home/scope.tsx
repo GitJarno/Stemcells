@@ -11,6 +11,7 @@ import { fillColour } from "../battery/marks";
 import { useBatteries } from "../battery/useBatteries";
 import { useAppearancePreferences } from "../upstream/battery";
 import { PlanRing } from "../limits/PlanRing";
+import { useRingBeside } from "../limits/ringBeside";
 import { ProjectMark } from "../project/ProjectMark";
 import { buildHomeProjectScopes } from "../upstream/cells";
 import { useHasLimits } from "../upstream/limits";
@@ -130,6 +131,8 @@ function MachinesButton() {
 
 export function useHomeScopeItems(): ReactElement[] {
   const hasLimits = useHasLimits();
+  // A chat beside the home shows the ring over itself; the home's would be a second.
+  const ringBeside = useRingBeside();
   const projects = useProjects();
   const machines = useMachineList();
   const { options } = useHomeListOptions(new Set(machines.map((machine) => machine.id)));
@@ -198,7 +201,7 @@ export function useHomeScopeItems(): ReactElement[] {
       </Toolbar.Custom>,
     );
   }
-  if (hasLimits) {
+  if (hasLimits && !ringBeside) {
     items.push(
       <Toolbar.Custom key="plan">
         <PlanRing />
