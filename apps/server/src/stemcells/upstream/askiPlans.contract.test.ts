@@ -11,6 +11,10 @@ import {
   ProviderInstanceId,
   ThreadId,
 } from "@t3tools/contracts";
+import {
+  formatComposerContextReference,
+  threadContextRecord,
+} from "@t3tools/shared/composerContextReferences";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import * as Schema from "effect/Schema";
@@ -22,7 +26,8 @@ import * as McpHttpServer from "../../mcp/McpHttpServer.ts";
 import type * as McpInvocationContext from "../../mcp/McpInvocationContext.ts";
 import { McpInvocationContext as InvocationContext } from "../../mcp/McpInvocationContext.ts";
 import * as McpToolAccess from "../../mcp/McpToolAccess.ts";
-import { clearBook, planOfId, settlePlan } from "../aski/book.ts";
+import { proposedPlan } from "../../../../../stemcells/orchestrator/check.ts";
+import { clearBook, planForMessage, planOfId, putPlan, settlePlan } from "../aski/book.ts";
 import { projectsOf } from "./planner.fixture.ts";
 import { guardStands } from "./askiTools.ts";
 import { registerPlanTools } from "./planTool.ts";
@@ -84,7 +89,9 @@ const layerTest = Layer.mergeAll(
   registerPlanTools(McpHttpServer.toolkitRegistration),
 ).pipe(
   Layer.provideMerge(McpHttpServer.layerInProcessMcpServer),
-  Layer.provide(projectsOf([{ id: "harbor", workspaceRoot: "/projects/harbor", title: "Harbor" } as never])),
+  Layer.provide(
+    projectsOf([{ id: "harbor", workspaceRoot: "/projects/harbor", title: "Harbor" } as never]),
+  ),
 );
 
 const client = McpSchema.McpServerClient.of({
@@ -166,25 +173,27 @@ const call = (
   });
 
 it.layer(layerTest)("Aski's chat and plans", (it) => {
-  it.effect("refuses Aski's instance every tool that starts, makes or deletes, and no one else", () =>
-    Effect.gen(function* () {
-      for (const name of ["t3_thread_launch", "t3_project_delete"]) {
-        expect(yield* call(from(askis), name)).toMatchObject({
-          refused: expect.stringContaining("Aski's chat"),
+  it.effect(
+    "refuses Aski's instance every tool that starts, makes or deletes, and no one else",
+    () =>
+      Effect.gen(function* () {
+        for (const name of ["t3_thread_launch", "t3_project_delete"]) {
+          expect(yield* call(from(askis), name)).toMatchObject({
+            refused: expect.stringContaining("Aski's chat"),
+          });
+          // A helper Aski started runs on Aski's instance too.
+          expect(yield* call(from(askis, true), name)).toHaveProperty("refused");
+          expect(yield* call(from(codex), name)).toEqual({ ok: { ran: true } });
+        }
+        // Putting a Cell to sleep is Aski's to do; archiving one is a deletion.
+        expect(yield* call(from(askis), "t3_thread_organize", { action: "settle" })).toEqual({
+          ok: { ran: true },
         });
-        // A helper Aski started runs on Aski's instance too.
-        expect(yield* call(from(askis, true), name)).toHaveProperty("refused");
-        expect(yield* call(from(codex), name)).toEqual({ ok: { ran: true } });
-      }
-      // Putting a Cell to sleep is Aski's to do; archiving one is a deletion.
-      expect(yield* call(from(askis), "t3_thread_organize", { action: "settle" })).toEqual({
-        ok: { ran: true },
-      });
-      expect(yield* call(from(askis), "t3_thread_organize", { action: "archive" })).toHaveProperty(
-        "refused",
-      );
-      expect(yield* call(from(askis), "t3_thread_list")).toEqual({ ok: { ran: true } });
-    }),
+        expect(
+          yield* call(from(askis), "t3_thread_organize", { action: "archive" }),
+        ).toHaveProperty("refused");
+        expect(yield* call(from(askis), "t3_thread_list")).toEqual({ ok: { ran: true } });
+      }),
   );
 
   it.effect("lets no agent delete a project while Stemcells' server stands", () =>
@@ -201,38 +210,41 @@ it.layer(layerTest)("Aski's chat and plans", (it) => {
     ),
   );
 
-  it.effect("refuses a helper of Aski's what it refuses Aski, however far down and on any instance", () =>
-    Effect.scoped(
-      Effect.gen(function* () {
-        yield* guardStands(
-          threadsOf({
-            "thread:aski": { on: askis, parent: null },
-            helper: { on: codex, parent: "thread:aski" },
-            "helper's helper": { on: codex, parent: "helper" },
-            "thread:codex": { on: codex, parent: null },
-            "a Cell's helper": { on: codex, parent: "thread:codex" },
-          }),
-        );
-        for (const helper of ["helper", "helper's helper"]) {
-          expect(yield* call(from(codex, true, helper), "t3_thread_launch")).toMatchObject({
-            refused: expect.stringContaining("Aski's chat starts no Cell"),
+  it.effect(
+    "refuses a helper of Aski's what it refuses Aski, however far down and on any instance",
+    () =>
+      Effect.scoped(
+        Effect.gen(function* () {
+          yield* guardStands(
+            threadsOf({
+              "thread:aski": { on: askis, parent: null },
+              helper: { on: codex, parent: "thread:aski" },
+              "helper's helper": { on: codex, parent: "helper" },
+              "thread:codex": { on: codex, parent: null },
+              "a Cell's helper": { on: codex, parent: "thread:codex" },
+            }),
+          );
+          for (const helper of ["helper", "helper's helper"]) {
+            expect(yield* call(from(codex, true, helper), "t3_thread_launch")).toMatchObject({
+              refused: expect.stringContaining("Aski's chat starts no Cell"),
+            });
+            expect(
+              yield* call(from(codex, true, helper), "t3_thread_organize", { action: "archive" }),
+            ).toHaveProperty("refused");
+          }
+          expect(yield* call(from(codex, true, "a Cell's helper"), "t3_thread_launch")).toEqual({
+            ok: { ran: true },
           });
-          expect(
-            yield* call(from(codex, true, helper), "t3_thread_organize", { action: "archive" }),
-          ).toHaveProperty("refused");
-        }
-        expect(yield* call(from(codex, true, "a Cell's helper"), "t3_thread_launch")).toEqual({
-          ok: { ran: true },
-        });
-      }),
-    ),
+        }),
+      ),
   );
 
   it.effect("lets Aski schedule a reminder to its own chat, and no other work", () =>
     Effect.scoped(
       Effect.gen(function* () {
         yield* guardStands(threadsOf({ "thread:aski": { on: askis, parent: null } }));
-        const schedule = (input: Record<string, unknown>) => call(from(askis), "schedule_task", input);
+        const schedule = (input: Record<string, unknown>) =>
+          call(from(askis), "schedule_task", input);
         expect(yield* schedule({})).toEqual({ ok: { ran: true } });
         expect(yield* schedule({ projectId: "askis-project" })).toEqual({ ok: { ran: true } });
         // A schedule in another project, or one that makes its own chat, is a Cell on a timer.
@@ -252,7 +264,9 @@ it.layer(layerTest)("Aski's chat and plans", (it) => {
         expect(yield* call(from(askis), "t3_workflow", { action: "read" })).toEqual({
           ok: { ran: true },
         });
-        expect(yield* call(from(askis), "t3_workflow", { action: "start" })).toHaveProperty("refused");
+        expect(yield* call(from(askis), "t3_workflow", { action: "start" })).toHaveProperty(
+          "refused",
+        );
       }),
     ),
   );
@@ -306,8 +320,10 @@ it.layer(layerTest)("Aski's chat and plans", (it) => {
             otter: { on: codex, parent: null },
           }),
         );
-        const send = (caller: McpInvocationContext.McpInvocationScope, input: Record<string, unknown>) =>
-          call(caller, "t3_thread_send", input);
+        const send = (
+          caller: McpInvocationContext.McpInvocationScope,
+          input: Record<string, unknown>,
+        ) => call(caller, "t3_thread_send", input);
         expect(
           yield* send(from(askis), { threadId: "otter", message: "Use the new tokens." }),
         ).toEqual({ ok: { ran: true } });
@@ -323,7 +339,10 @@ it.layer(layerTest)("Aski's chat and plans", (it) => {
         }
         // A helper passes nothing on to a Cell; Aski and its helpers talk freely.
         expect(
-          yield* send(from(codex, true, "helper"), { threadId: "otter", message: "Use the new tokens." }),
+          yield* send(from(codex, true, "helper"), {
+            threadId: "otter",
+            message: "Use the new tokens.",
+          }),
         ).toHaveProperty("refused");
         expect(
           yield* send(from(askis), { threadId: "helper", message: "Look at the logs as well." }),
@@ -351,7 +370,9 @@ it.layer(layerTest)("Aski's chat and plans", (it) => {
       ).toMatchObject({ refused: expect.stringContaining("No project lantern") });
       expect(
         yield* call(from(askis), "stemcells_propose", {
-          cells: [{ ...cells[0], modelSelection: { instanceId: "aski", model: "claude-opus-5-5" } }],
+          cells: [
+            { ...cells[0], modelSelection: { instanceId: "aski", model: "claude-opus-5-5" } },
+          ],
         }),
       ).toMatchObject({ refused: expect.stringContaining("Aski's own") });
 
@@ -377,5 +398,23 @@ it.layer(layerTest)("Aski's chat and plans", (it) => {
       );
       expect(yield* call(from(codex), "stemcells_plan", { id: planId })).toHaveProperty("refused");
     }),
+  );
+});
+
+// The Cell a person turned to Aski from rides in the message as upstream's chip, which is no
+// part of the words its plan was made from.
+it("finds a message's plan past a Cell's chip in its text", async () => {
+  clearBook();
+  const chip = formatComposerContextReference(
+    threadContextRecord({ environmentId, threadId: ThreadId.make("otter") }, "Otter [draft] (2)"),
+  );
+  const plan = proposedPlan({
+    id: "chip-plan",
+    cells: [{ projectId: "harbor", projectName: "Harbor", title: "Header", words: "Fix it." }],
+    mint: () => "thread-1",
+  });
+  putPlan({ plan, text: "Fix the header", threadId: "aski", at: 1_000 });
+  expect((await planForMessage("aski", `${chip} fix the header`, 2_000))?.plan.id).toBe(
+    "chip-plan",
   );
 });

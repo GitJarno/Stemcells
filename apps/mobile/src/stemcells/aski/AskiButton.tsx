@@ -26,7 +26,6 @@ import { askiStandsIn } from "../home/copies";
 import { PHONE_PAGES } from "../chat/placeLinks";
 import { askMachine } from "../upstream/machines";
 import {
-  carryChip,
   GlassSurface,
   Menu,
   Dialog,
@@ -38,6 +37,7 @@ import {
 import { useThreadShellsSelected, type EnvironmentThreadShell } from "../upstream/cells";
 import { useHomeThreadSelection, useShowHome } from "../upstream/home";
 import { AskiFigure } from "./AskiFigure";
+import { carry } from "./carried";
 import {
   answeredSince,
   askStage,
@@ -150,9 +150,8 @@ function Button(props: { readonly here: Where; readonly aski: EnvironmentThreadS
     if (turning()) return;
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const next = turnFrom(here, aski, backTo());
-    const from = shellOf(here);
-    if (!inAski && from !== null)
-      carryChip(aski, { environmentId: from.environmentId, threadId: from.id, title: from.title });
+    // From a Cell, Aski is told which; from the home, none.
+    if (!inAski) carry(aski, here.kind === "cell" ? here : null);
     const leave = () => {
       rememberBack(next.back);
       go(next.go);

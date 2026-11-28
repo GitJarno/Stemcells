@@ -22,3 +22,9 @@ export const ASKI_BUTTON = {
   /** When a fresh Aski can't be made. */
   freshFailed: "Couldn't start a new Aski",
 } as const;
+
+/** The Cell a turn to Aski brought along, on the pill over Aski's composer on the phone. */
+export const ASKI_CARRIED = {
+  about: (name: string) => `About ${name}`,
+  drop: (name: string) => `Leave ${name} out`,
+} as const;

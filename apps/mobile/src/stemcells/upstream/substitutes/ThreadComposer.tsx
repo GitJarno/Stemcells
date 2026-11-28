@@ -1,11 +1,13 @@
 // Replaces `features/threads/ThreadComposer.tsx` (`substitutes.cjs`): the feed blurs under the
-// composer (`edge/Veil.ios.tsx`), which wears the Flying light (`glow/ComposerLight.tsx`), reads
-// Aski's instance as the driver's own, answers its chat's ask in words (`line/ChatAsk.tsx`), and
-// in Aski's own chat sends through the compiler and carries its plan's tray (`aski/plan/`).
+// composer (`edge/Veil.ios.tsx`), which wears the Flying light, reads Aski's instance as the
+// driver's own, answers its chat's ask in words, and in Aski's own chat sends through the
+// compiler with its plan's tray (`aski/plan/`) and the Cell a turn came from (`aski/carried.ts`).
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useResolveClassNames } from "uniwind";
 
 import * as Upstream from "../../../features/threads/ThreadComposer";
+import { carriedTo, carry } from "../../aski/carried";
+import { CarriedPill } from "../../aski/CarriedPill";
 import { clearDictated } from "../../aski/plan/dictated";
 import { DictationMark } from "../../aski/plan/DictationMark";
 import { PlanTray } from "../../aski/plan/PlanTray";
@@ -15,6 +17,7 @@ import { useIsAskiChat } from "../../aski/useAskiChat";
 import { Veil } from "../../edge/Veil";
 import { ComposerFlight } from "../../glow/ComposerLight";
 import { useChatAsk } from "../../line/ChatAsk";
+import { attachCell } from "../askiTurn";
 import { cellSelection } from "../cellInstance";
 
 export * from "../../../features/threads/ThreadComposer";
@@ -47,12 +50,26 @@ export const ThreadComposer: typeof Upstream.ThreadComposer = (props) => {
   const onSendMessage: typeof props.onSendMessage = !plans
     ? props.onSendMessage
     : async (followUp, stillSendable) => {
+        // Read before the chip joins: the compiler reads the person's words alone.
         const door = planDoor(chat);
+        // A message that answers an approval or edits a queued one is that, and no plan.
+        const itsOwn = !props.redirectsApproval && !props.queuedEdit;
+        const from = itsOwn ? carriedTo(chat) : null;
         const sent = await sendThroughPlan({
           ...door,
-          // A message that answers an approval or edits a queued one is that, and no plan.
-          able: door.able && !props.redirectsApproval && !props.queuedEdit,
-          send: () => props.onSendMessage(followUp, stillSendable),
+          able: door.able && itsOwn,
+          send: async () => {
+            const detach = from === null ? null : attachCell(door.key, from);
+            let went = false;
+            try {
+              const sent = await props.onSendMessage(followUp, stillSendable);
+              went = sent !== null;
+              return sent;
+            } finally {
+              if (!went) detach?.();
+              else if (detach !== null) carry(chat, null);
+            }
+          },
         });
         if (sent !== null) clearDictated(door.key);
         return sent;
@@ -69,6 +86,11 @@ export const ThreadComposer: typeof Upstream.ThreadComposer = (props) => {
       {plans ? (
         <>
           <DictationMark />
+          <CarriedPill
+            environmentId={props.environmentId}
+            threadId={thread.id}
+            maxWidth={props.contentMaxWidth}
+          />
           <PlanTray
             environmentId={props.environmentId}
             threadId={thread.id}

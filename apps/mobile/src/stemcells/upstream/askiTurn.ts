@@ -3,7 +3,6 @@
 // Aski's chat's turn items, and a new Cell's draft.
 
 import { useAtomValue } from "@effect/atom-react";
-import { scopedThreadKey, scopeThreadRef } from "@t3tools/client-runtime/environment";
 import type { EnvironmentId, OrchestrationV2ThreadProjection, ThreadId } from "@t3tools/contracts";
 import * as DateTime from "effect/DateTime";
 import { Atom } from "effect/reactivity";
@@ -13,13 +12,14 @@ import {
 } from "@t3tools/shared/composerContextReferences";
 
 import { useAdaptiveWorkspaceLayout } from "../../features/layout/adaptive-workspace-context";
+import { appAtomRegistry } from "../../state/atom-registry";
 import {
   getComposerDraftSnapshot,
   insertComposerDraftContext,
-  setComposerDraftContext,
   setComposerDraftText,
 } from "../../state/use-composer-drafts";
-import { environmentThreadDetails } from "../../state/threads";
+import { environmentThreadDetails, environmentThreadShells } from "../../state/threads";
+import { takesCell } from "../aski/carried";
 
 export { GlassSurface } from "../../components/ui/GlassSurface";
 export { Menu } from "../../components/ui/Menu";
@@ -29,39 +29,36 @@ export { useDeviceType, useNativeLayoutMetrics } from "../../native/native-layou
 export { NativeWorkspaceTabActivityContext } from "../../native/v5-workspace-context";
 
 /**
- * Puts the chip of the Cell `from` in Aski's composer: Aski reads it as what "this" means. Only
- * into a draft with nothing in it but an earlier carried chip, which it replaces: words the
- * person wrote are theirs.
+ * Puts the chip of the Cell `from` at the head of a draft as it is sent: Aski reads it as what
+ * "this" means. Answers how to take it out again should the message not go; null when it has no
+ * place (`takesCell`) or the Cell is gone. `askiTurn.contract.test.ts` pins what this leans on.
  */
-export function carryChip(
-  aski: { readonly environmentId: string; readonly threadId: string },
-  from: { readonly environmentId: string; readonly threadId: string; readonly title: string },
-): void {
-  const draftKey = scopedThreadKey(
-    scopeThreadRef(aski.environmentId as EnvironmentId, aski.threadId as ThreadId),
-  );
+export function attachCell(
+  draftKey: string,
+  from: { readonly environmentId: string; readonly threadId: string },
+): (() => void) | null {
+  const cell = appAtomRegistry
+    .get(environmentThreadShells.threadShellsAtom)
+    .find((shell) => shell.environmentId === from.environmentId && shell.id === from.threadId);
+  const before = getComposerDraftSnapshot(draftKey);
+  if (cell === undefined || !takesCell(before.text)) return null;
   const record = threadContextRecord(
-    {
-      environmentId: from.environmentId as EnvironmentId,
-      threadId: from.threadId as ThreadId,
-    },
-    from.title,
+    { environmentId: cell.environmentId, threadId: cell.id },
+    cell.title,
   );
-  const draft = getComposerDraftSnapshot(draftKey);
-  const records = draft.context?.records ?? [];
-  if (records.some((each) => each.contextId === record.contextId)) return;
-  const carried = records.length === 1 && records[0]!.kind === "thread" ? records[0]! : null;
-  const onlyCarried =
-    carried !== null && draft.text.trim() === formatComposerContextReference(carried).trim();
-  if (draft.attachments.length > 0 || (draft.text.trim().length > 0 && !onlyCarried)) return;
-  if (onlyCarried) {
-    setComposerDraftText(draftKey, "");
-    setComposerDraftContext(draftKey, undefined);
-  }
-  insertComposerDraftContext(draftKey, {
-    text: formatComposerContextReference(record),
-    context: { version: 1, records: [record] },
-  });
+  if (before.context?.records.some((each) => each.contextId === record.contextId)) return null;
+  const went = insertComposerDraftContext(
+    draftKey,
+    { text: formatComposerContextReference(record), context: { version: 1, records: [record] } },
+    { text: before.text, start: 0, end: 0 },
+  );
+  if (!went) return null;
+  const attached = getComposerDraftSnapshot(draftKey).text;
+  return () => {
+    // Taking the reference out of the text takes its record with it.
+    if (getComposerDraftSnapshot(draftKey).text === attached)
+      setComposerDraftText(draftKey, before.text);
+  };
 }
 
 export interface ToolCall {

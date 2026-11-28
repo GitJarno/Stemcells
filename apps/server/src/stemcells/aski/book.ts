@@ -36,11 +36,21 @@ const entries = new Map<string, BookEntry>();
 /** Plans a client said are coming: asked for, not yet made. */
 const expected = new Map<
   string,
-  { readonly threadId: string; readonly text: string; readonly at: number; readonly made: Array<() => void> }
+  {
+    readonly threadId: string;
+    readonly text: string;
+    readonly at: number;
+    readonly made: Array<() => void>;
+  }
 >();
 /** How long a plan may be on its way before a message stops waiting for it. */
 const MAKING_MS = 40_000;
 const waiting = new Map<string, Array<(outcome: ReadonlyArray<ActOutcome>) => void>>();
+
+// A Cell's chip in a message (upstream's thread context link) says what Aski should look at;
+// it is no part of the words a plan was made from. `askiPlans.contract.test.ts` pins its form.
+const CHIP = /\[[^[\]\n]*\]\(t3-context:\/\/v1\/thread\/[^\s)]+\)/gu;
+const wordsOf = (text: string): string => flat(text.replace(CHIP, " "));
 
 function prune(now: number) {
   for (const [id, entry] of entries) if (now - entry.at > KEPT_MS) entries.delete(id);
@@ -114,7 +124,7 @@ function madeFor(threadId: string, words: string, now: number): BookEntry | null
   let found: BookEntry | null = null;
   for (const entry of entries.values()) {
     if (entry.threadId !== threadId || now - entry.at > NOTE_MS) continue;
-    if (flat(entry.text) !== words) continue;
+    if (wordsOf(entry.text) !== words) continue;
     if (found === null || entry.at >= found.at) found = entry;
   }
   return found;
@@ -130,9 +140,9 @@ export async function planForMessage(
   text: string,
   now: number,
 ): Promise<BookEntry | null> {
-  const words = flat(text);
+  const words = wordsOf(text);
   const coming = [...expected.values()].filter(
-    (one) => one.threadId === threadId && flat(one.text) === words && now - one.at <= MAKING_MS,
+    (one) => one.threadId === threadId && wordsOf(one.text) === words && now - one.at <= MAKING_MS,
   );
   if (coming.length > 0)
     await Promise.all(
