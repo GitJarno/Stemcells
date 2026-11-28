@@ -3,7 +3,6 @@ import * as Layer from "effect/Layer";
 import * as ArcsHttp from "./arcs/http.ts";
 import * as AskiCompileHttp from "./aski/compileHttp.ts";
 import * as AskiHttp from "./aski/http.ts";
-import * as AskiKeeper from "./aski/Keeper.ts";
 import * as AsksHttp from "./asks/http.ts";
 import * as AttachmentsHttp from "./attachments/http.ts";
 import * as AutonomyHttp from "./autonomy/http.ts";
@@ -36,7 +35,6 @@ export const layer = Layer.mergeAll(
   ArcsHttp.layer,
   AskiCompileHttp.layer,
   AskiHttp.layer,
-  AskiKeeper.layer,
   AsksHttp.layer,
   AttachmentsHttp.layer,
   AutonomyHttp.layer,

@@ -13,6 +13,8 @@ export const COMPILE_PATH = `${ASKI_PATH}/compile`;
 export const PLAN_PATH = `${ASKI_PATH}/plan`;
 /** GET ?thread=: the plans made in one of Aski's chats, newest first, each with what came of it. */
 export const PLANS_PATH = `${ASKI_PATH}/plans`;
+/** POST: a Cell the server is to start itself: one that comes after others, or gets a worktree. */
+export const QUEUE_PATH = `${ASKI_PATH}/queue`;
 /** POST: what came of a plan's acts, and the names the person confirmed. */
 export const OUTCOME_PATH = `${ASKI_PATH}/outcome`;
 /** GET, DELETE: the names Aski has learned. */
@@ -40,7 +42,14 @@ export interface OutcomeRequest {
   readonly id: string;
   readonly acts: ReadonlyArray<{
     readonly i: number;
-    readonly status: "started" | "waiting" | "dropped" | "failed" | "called-back" | "done";
+    readonly status:
+      | "started"
+      | "waiting"
+      | "queued"
+      | "dropped"
+      | "failed"
+      | "called-back"
+      | "done";
     readonly reason?: string;
   }>;
   readonly learned?: {
@@ -143,3 +152,21 @@ export function planOfMessage(
   }
   return found;
 }
+
+/**
+ * A Cell handed to the server to start (decisions 16 and 17), with what the client would have
+ * started it with. Its words are the server's own copy of the plan's.
+ */
+export interface QueueRequest {
+  readonly id: string;
+  readonly i: number;
+  readonly projectId: string;
+  /** The model as a launch takes it. */
+  readonly modelSelection: Selection;
+  readonly runtimeMode: string;
+  readonly interactionMode: string;
+  /** In a worktree of its own, when the project's folder is a repository. */
+  readonly worktree: boolean;
+}
+
+export type QueueReply = { readonly ok: true } | { readonly ok: false; readonly error: string };

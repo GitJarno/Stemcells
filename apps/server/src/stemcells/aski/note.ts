@@ -86,6 +86,8 @@ function lineOf(act: Act, outcome: ActOutcome | undefined, standing: Standing | 
     case "started":
     case "starting":
       return `- Started: ${cell}.${standing === null ? "" : ` Now: ${standingWords(standing)}.`}`;
+    case "queued":
+      return `- Queued: ${name}, "${act.title}" in ${where}${on}. Stemcells starts it itself once the Cells it comes after have landed; the person can start or drop it on the plan's card.`;
     case "failed":
       return `- Didn't start: ${name}, "${act.title}" in ${where}${outcome?.reason ? ` (${outcome.reason})` : ""}.`;
     case "dropped":
@@ -125,4 +127,18 @@ export function planReport(
       : []),
     ...(talk.length > 0 ? [`- Yours to answer: "${talk.join(" … ")}".`] : []),
   ].join("\n");
+}
+
+/**
+ * The line a Cell that came after others is told, after its own words: whom it came after. It
+ * is handed nothing they wrote (decision 16).
+ */
+export function afterNote(
+  before: ReadonlyArray<{ readonly threadId: string; readonly title: string }>,
+  sameFolder: boolean,
+): string {
+  const whom = before
+    .map((one) => `${cellNameOf(one.threadId)} (“${one.title}”, thread ${one.threadId})`)
+    .join(" and ");
+  return `Stemcells, telling you, not the person: you were asked to start once ${whom} had landed, and ${before.length === 1 ? "it has" : "they have"}.${sameFolder ? " You work in the folder it worked in: its changes are here." : ""}`;
 }

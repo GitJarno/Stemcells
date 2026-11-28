@@ -152,6 +152,17 @@ export interface StartAct extends ActBase {
   /** The level the person said, kept for a default model whose ladder the client knows. */
   readonly effort: string | null;
   readonly risks: readonly RiskMark[];
+  /**
+   * The acts (by `i`) whose Cells must land before this one starts, when the person said so
+   * (decision 16); absent for none. `afterHeard` is their words for it.
+   */
+  readonly after?: readonly number[];
+  readonly afterHeard?: string;
+  /**
+   * Where it works, when the person said: true in a worktree of its own, false in the project's
+   * folder (decision 17); absent for the project's default.
+   */
+  readonly apart?: boolean;
 }
 
 /** A project to delete, or Cells to archive. Always a hold. */

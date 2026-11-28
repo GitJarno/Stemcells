@@ -79,6 +79,10 @@ const SCHEMA = JSON.stringify({
           title: { type: "string" },
           target: { enum: ["project", "cells"] },
           cells: { type: "array", items: { type: "string" } },
+          after: { type: "array", items: { type: "number" } },
+          afterHeard: { type: "string" },
+          apart: { type: "boolean" },
+          apartHeard: { type: "string" },
         },
       },
     },
@@ -134,7 +138,12 @@ function ask(prompt: string, on: string): Promise<{ answer: unknown; ms: number 
 }
 
 async function compile(one: Case): Promise<{ plan: Plan; ms: number; tries: number }> {
-  const context: CompileContext = { ...corpus.context, cap: 6, always: false, dictated: one.dictated };
+  const context: CompileContext = {
+    ...corpus.context,
+    cap: 6,
+    always: false,
+    dictated: one.dictated,
+  };
   const pieces = piecesOf(
     one.text,
     context.places.flatMap((place) => [place.name, ...(place.aliases ?? [])]),
@@ -197,22 +206,29 @@ function score(one: Case, plan: Plan, ms: number, tries: number): Score {
     }
     const [act] = left.splice(at, 1);
     const place = placeOf(act!);
-    const placeRight =
-      want.place === "*" || (place !== null && said(place) === said(want.place));
+    const placeRight = want.place === "*" || (place !== null && said(place) === said(want.place));
     mark(placeRight, `"${want.says}": place ${place} for ${want.place}`);
     mark(
       (act!.model?.name ?? null) === want.model,
       `"${want.says}": model ${act!.model?.name ?? null} for ${want.model}`,
     );
     const level = act!.model?.effort?.level ?? act!.effort;
-    mark((level ?? null) === want.effort, `"${want.says}": effort ${level ?? null} for ${want.effort}`);
+    mark(
+      (level ?? null) === want.effort,
+      `"${want.says}": effort ${level ?? null} for ${want.effort}`,
+    );
     mark(
       want.tier === "*" || act!.tier === want.tier,
       `"${want.says}": ${act!.tier} (${act!.why.join(", ")}) for ${want.tier}`,
     );
-    if (want.not !== undefined) mark(!has(act!.words, want.not), `"${want.says}" was told "${want.not}"`);
-    if (want.also !== undefined) mark(has(act!.words, want.also), `"${want.says}" wasn't told "${want.also}"`);
-    if (act!.tier === "start" && (!placeRight || (want.not !== undefined && has(act!.words, want.not))))
+    if (want.not !== undefined)
+      mark(!has(act!.words, want.not), `"${want.says}" was told "${want.not}"`);
+    if (want.also !== undefined)
+      mark(has(act!.words, want.also), `"${want.says}" wasn't told "${want.also}"`);
+    if (
+      act!.tier === "start" &&
+      (!placeRight || (want.not !== undefined && has(act!.words, want.not)))
+    )
       wrongStarts.push(`"${want.says}" started in ${place}`);
   }
   for (const extra of left) {
@@ -225,7 +241,8 @@ function score(one: Case, plan: Plan, ms: number, tries: number): Score {
     const found = destroys.some(
       (act) =>
         act.target === want.target &&
-        (want.place === undefined || (act.place !== null && said(act.place.name) === said(want.place))) &&
+        (want.place === undefined ||
+          (act.place !== null && said(act.place.name) === said(want.place))) &&
         (want.cells === undefined ||
           want.cells.every((name) => act.cells.some((cell) => said(cell.name) === said(name)))),
     );
@@ -258,8 +275,14 @@ await Promise.all(
       const result = score(one, plan, ms, tries);
       scores.push(result);
       const ok = result.misses.length + result.wrongStarts.length + result.holdsMissed.length === 0;
-      console.log(`${ok ? "ok  " : "MISS"} ${(result.ms / 1000).toFixed(1)}s ${result.tries > 1 ? "(2 calls) " : ""}${one.name}`);
-      for (const miss of [...result.wrongStarts.map((w) => `WRONG START: ${w}`), ...result.holdsMissed.map((h) => `NOT HELD: ${h}`), ...result.misses])
+      console.log(
+        `${ok ? "ok  " : "MISS"} ${(result.ms / 1000).toFixed(1)}s ${result.tries > 1 ? "(2 calls) " : ""}${one.name}`,
+      );
+      for (const miss of [
+        ...result.wrongStarts.map((w) => `WRONG START: ${w}`),
+        ...result.holdsMissed.map((h) => `NOT HELD: ${h}`),
+        ...result.misses,
+      ])
         console.log(`       ${miss}`);
     }
   }),

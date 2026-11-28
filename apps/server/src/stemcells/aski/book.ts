@@ -15,7 +15,7 @@ import {
 /** What became of one act. `waiting` is a check or a hold the person hasn't answered. */
 export interface ActOutcome {
   readonly i: number;
-  readonly status: "started" | "waiting" | "dropped" | "failed" | "called-back" | "done";
+  readonly status: "started" | "waiting" | "queued" | "dropped" | "failed" | "called-back" | "done";
   /** Why it failed, for Aski's line. */
   readonly reason?: string | undefined;
 }
@@ -30,6 +30,21 @@ export interface BookEntry {
   readonly outcome: ReadonlyArray<ActOutcome> | null;
   /** The message in Aski's chat it was made from, once that message's turn began. */
   readonly messageId: string | null;
+  /** What each queued act starts with, by act, as its client handed it over (`line.ts`). */
+  readonly launches?: Readonly<Record<string, Launch>>;
+}
+
+/** What a queued Cell starts with: what its client would have started it with. */
+export interface Launch {
+  readonly projectId: string;
+  /** The model as a launch takes it, checked where it is handed over. */
+  readonly modelSelection: unknown;
+  readonly runtimeMode: string;
+  readonly interactionMode: string;
+  /** In a worktree of its own, when the project's folder is a repository. */
+  readonly worktree: boolean;
+  /** When it was handed over, in epoch milliseconds. */
+  readonly at: number;
 }
 
 /** How a Cell stands, as the needs list has it (`needs/stage.ts`). */
@@ -115,6 +130,32 @@ export function tieMessage(id: string, messageId: string): void {
   if (entry === undefined || entry.messageId !== null) return;
   entries.set(id, { ...entry, messageId });
   touch();
+}
+
+/** A deletion of this plan still waits for the person's hand: nothing of it starts before. */
+const heldOf = (entry: BookEntry): boolean =>
+  entry.plan.acts.some((act) => {
+    if (act.kind !== "destroy") return false;
+    const status = entry.outcome?.find((one) => one.i === act.i)?.status;
+    return status !== "done" && status !== "dropped";
+  });
+
+/**
+ * A client hands the server a Cell to start itself (decision 16). Refused for a plan or a Cell
+ * the book doesn't have, and while a deletion of the plan is held.
+ */
+export function queueAct(id: string, i: number, launch: Launch): "queued" | "unknown" | "held" {
+  const entry = entries.get(id);
+  const act = entry?.plan.acts.find((one) => one.i === i);
+  if (entry === undefined || act === undefined || act.kind !== "start") return "unknown";
+  if (heldOf(entry)) return "held";
+  const outcome = [
+    ...(entry.outcome ?? []).filter((one) => one.i !== i),
+    { i, status: "queued" as const },
+  ].sort((a, b) => a.i - b.i);
+  entries.set(id, { ...entry, outcome, launches: { ...entry.launches, [i]: launch } });
+  touch();
+  return "queued";
 }
 
 /** The plans made in one of Aski's chats, newest first. */
@@ -222,7 +263,13 @@ export function settlePlan(id: string, acts: ReadonlyArray<ActOutcome>): boolean
   const merged = new Map((entry.outcome ?? []).map((act) => [act.i, act]));
   for (const act of acts) if (known.has(act.i)) merged.set(act.i, act);
   const outcome = [...merged.values()].sort((a, b) => a.i - b.i);
-  entries.set(id, { ...entry, outcome });
+  // An act told as anything but queued is no longer the server's to start.
+  const launches = Object.fromEntries(
+    Object.entries(entry.launches ?? {}).filter(
+      ([i]) => merged.get(Number(i))?.status === "queued",
+    ),
+  );
+  entries.set(id, { ...entry, outcome, launches });
   touch();
   for (const tell of waiting.get(id) ?? []) tell(outcome);
   waiting.delete(id);

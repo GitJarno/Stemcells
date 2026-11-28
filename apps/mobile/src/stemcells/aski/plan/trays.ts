@@ -4,7 +4,14 @@
 // (`carry.ts`). It holds state alone: no timer and no request starts here.
 
 import type { Plan } from "../../../../../../stemcells/orchestrator/plan.ts";
-import { type Status, type Tray, trayOf } from "../../../../../../stemcells/orchestrator/tray.ts";
+import {
+  type ToldOutcome,
+  type Tray,
+  trayOf,
+  trayWith,
+} from "../../../../../../stemcells/orchestrator/tray.ts";
+
+export { type ToldOutcome, trayWith };
 
 /** Where a plan stands on the phone: over Aski's composer, or in the reply that proposed it. */
 export type Door = "composer" | "fence";
@@ -26,35 +33,7 @@ export interface PlanEntry {
   readonly refused: ReadonlyMap<number, string>;
 }
 
-/** What the server says came of an act, as `GET …/plan` answers. */
-export interface ToldOutcome {
-  readonly i: number;
-  readonly status: Exclude<Status, "starting">;
-  readonly reason?: string | undefined;
-}
-
 const NONE: ReadonlyMap<number, string> = new Map();
-
-/** A plan as it stands after what the server already knows came of it. */
-export function trayWith(plan: Plan, outcome: ReadonlyArray<ToldOutcome> | null): Tray {
-  const tray = trayOf(plan);
-  if (outcome === null) return tray;
-  const told = new Map(outcome.map((one) => [one.i, one]));
-  return {
-    ...tray,
-    acts: tray.acts.map((one) => {
-      const known = told.get(one.act.i);
-      // A Cell told as started long ago can't be called back: it carries no start time.
-      return known === undefined || known.status === "waiting"
-        ? one
-        : {
-            act: one.act,
-            status: known.status,
-            ...(known.reason === undefined ? {} : { reason: known.reason }),
-          };
-    }),
-  };
-}
 
 export interface Trays {
   readonly read: () => ReadonlyMap<string, PlanEntry>;

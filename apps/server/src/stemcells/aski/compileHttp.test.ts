@@ -23,6 +23,7 @@ import {
 import type { Plan } from "../../../../../stemcells/orchestrator/plan.ts";
 import { clearBook } from "./book.ts";
 import { ASKI_PATH, COMPILE_BODY_MOST, makeLayer, TEXT_MOST } from "./compileHttp.ts";
+import * as Keeper from "./Keeper.ts";
 
 // Contract: a message becomes a plan only through the checks. The route answers only a caller
 // who may start work, runs each call in a private folder, asks once more with what failed (on
@@ -67,6 +68,8 @@ beforeEach(() => {
 
 function serve(lean: Lean, first = Duration.seconds(5)) {
   const routes = makeLayer({ first, second: Duration.seconds(5) }).pipe(
+    // The line itself is `line.test.ts`'s: here a walk starts nothing.
+    Layer.provide(Layer.succeed(Keeper.Line, { walk: Effect.void })),
     Layer.provideMerge(Layer.mergeAll(auth, registry(lean), configAt(stateDir))),
     Layer.provideMerge(
       HttpPlatform.layer.pipe(
@@ -137,7 +140,13 @@ const asked = (over: Record<string, unknown> = {}) => ({
 const answer = (second = "Harbor Design") => ({
   acts: [
     { kind: "start", pieces: [1], place: "Harbor", placeHeard: "Harbor", title: "Fix the header" },
-    { kind: "start", pieces: [2], place: second, placeHeard: "harbour design", title: "Tidy tokens" },
+    {
+      kind: "start",
+      pieces: [2],
+      place: second,
+      placeHeard: "harbour design",
+      title: "Tidy tokens",
+    },
   ],
   setup: [],
   talk: [],
@@ -205,7 +214,9 @@ describe("Aski's compile routes", () => {
   it("refuse a request too large to read and a message too long", async () => {
     const web = serve(lean());
     try {
-      expect((await web.handler(send("/compile", "x".repeat(COMPILE_BODY_MOST + 1)))).status).toBe(413);
+      expect((await web.handler(send("/compile", "x".repeat(COMPILE_BODY_MOST + 1)))).status).toBe(
+        413,
+      );
       expect(
         (await web.handler(send("/compile", asked({ text: "x".repeat(TEXT_MOST + 1) })))).status,
       ).toBe(413);
@@ -255,13 +266,57 @@ describe("Aski's compile routes", () => {
         ["start", []],
         ["start", []],
       ]);
-      expect((await web.handler(send("/learned", undefined, undefined, "DELETE"))).status).toBe(200);
+      expect((await web.handler(send("/learned", undefined, undefined, "DELETE"))).status).toBe(
+        200,
+      );
       expect(
         await (
           await web.handler(send("/learned", undefined, AuthOrchestrationReadScope, "GET"))
         ).json(),
       ).toEqual({ places: [], models: [] });
       expect((await web.handler(send("/outcome", { id: "nope", acts: [] }))).status).toBe(404);
+    } finally {
+      await web.dispose();
+    }
+  });
+  it("take a Cell for the server to start, only from who may start work, and list a chat's plans", async () => {
+    const web = serve(lean(answer()));
+    const handed = (over: Record<string, unknown> = {}) => ({
+      id: "plan-0001",
+      i: 0,
+      projectId: "harbor",
+      modelSelection: { instanceId: "claudeAgent", model: "claude-fable-5-1" },
+      runtimeMode: "full-access",
+      interactionMode: "default",
+      worktree: false,
+      ...over,
+    });
+    try {
+      await web.handler(send("/compile", asked()));
+      expect((await web.handler(send("/queue", handed(), AuthOrchestrationReadScope))).status).toBe(
+        403,
+      );
+      expect((await web.handler(send("/queue", handed({ id: "plan-none" })))).status).toBe(404);
+      expect((await web.handler(send("/queue", handed({ runtimeMode: "anything" })))).status).toBe(
+        400,
+      );
+      // No Cell runs on Aski's own instance, however it is started.
+      expect(
+        (
+          await web.handler(
+            send("/queue", handed({ modelSelection: { instanceId: "aski", model: "m" } })),
+          )
+        ).status,
+      ).toBe(400);
+      expect((await web.handler(send("/queue", handed()))).status).toBe(200);
+      const listed = (await (
+        await web.handler(
+          send("/plans?thread=aski-thread", undefined, AuthOrchestrationReadScope, "GET"),
+        )
+      ).json()) as { plans: Array<{ id: string; outcome: unknown }> };
+      expect(listed.plans.map((kept) => [kept.id, kept.outcome])).toEqual([
+        ["plan-0001", [{ i: 0, status: "queued" }]],
+      ]);
     } finally {
       await web.dispose();
     }
