@@ -332,15 +332,7 @@ export function createRunner(hands: () => RunnerHands | null) {
     /** A waiting Cell is switched off, or back on. */
     toggle: (planId: string, i: number) => changePlan(planId, (tray) => toggle(tray, i)),
     /** A queued Cell goes, or a deletion the person no longer wants: nothing else drops alone. */
-    drop: (planId: string, i: number) =>
-      changePlan(planId, (tray) => {
-        const one = tray.acts.find((each) => each.act.i === i);
-        if (one?.act.kind !== "destroy" || one.status !== "waiting") return drop(tray, i);
-        return {
-          ...tray,
-          acts: tray.acts.map((each) => (each === one ? { ...one, status: "dropped" } : each)),
-        };
-      }),
+    drop: (planId: string, i: number) => changePlan(planId, (tray) => drop(tray, i)),
     /** The person won't wait for the Cells a queued one comes after. */
     startNow: (planId: string, i: number) => {
       const before = planOf(planId)?.tray ?? null;
