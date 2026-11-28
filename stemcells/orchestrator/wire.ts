@@ -133,9 +133,13 @@ export const planWords = (text: string): string => flat(text.replace(CHIP, " "))
 /** How long after a plan a message with its words still counts as that plan's message. */
 export const PLAN_NOTE_MS = 2 * 60_000;
 
+/** How far a message's clock may run ahead of the server's, when a plan is matched by time. */
+const SKEW_MS = 5_000;
+
 /**
  * The plan a message in Aski's chat was made into: the one the server tied to it, else the
- * latest untied one made from the same words within `PLAN_NOTE_MS` of it.
+ * first untied one made from the same words after it, within `PLAN_NOTE_MS`. The first, so
+ * the same words said twice keep a plan each.
  */
 export function planOfMessage(
   plans: ReadonlyArray<KeptPlan>,
@@ -147,8 +151,8 @@ export function planOfMessage(
   let found: KeptPlan | null = null;
   for (const plan of plans) {
     if (plan.messageId !== null || plan.words !== words) continue;
-    if (Math.abs(plan.at - message.at) > PLAN_NOTE_MS) continue;
-    if (found === null || plan.at > found.at) found = plan;
+    if (plan.at < message.at - SKEW_MS || plan.at > message.at + PLAN_NOTE_MS) continue;
+    if (found === null || plan.at < found.at) found = plan;
   }
   return found;
 }

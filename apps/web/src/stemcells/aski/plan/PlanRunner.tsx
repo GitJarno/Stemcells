@@ -43,6 +43,7 @@ export function PlanRunner(props: { aski: CellRef | null }) {
     hands = {
       ...own,
       tell: (outcome) => void tellOutcome(outcome),
+      tabless: opensNoTab,
       arrive: (threadIds) => {
         opensNoTab(threadIds);
         const figure = askiFigure();

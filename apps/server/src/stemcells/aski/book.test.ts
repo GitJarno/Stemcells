@@ -106,9 +106,14 @@ describe("a plan that is kept", () => {
 
   it("is found under its message by the message's id, or by its words and time until it has one", () => {
     putPlan({ plan: plan("p8"), text: "Fix the header", threadId: "aski", at: 10_000 });
-    putPlan({ plan: plan("p9"), text: "Fix the header", threadId: "aski", at: 500_000 });
-    const message = { id: "m2", text: "fix  the header", at: 11_000 };
+    putPlan({ plan: plan("p9"), text: "Fix the header", threadId: "aski", at: 40_000 });
+    const message = { id: "m2", text: "fix  the header", at: 9_000 };
+    // Said twice within the minute, untied: each message keeps the first plan made after it.
     expect(planOfMessage(plansOf("aski"), message)?.id).toBe("p8");
+    expect(planOfMessage(plansOf("aski"), { ...message, id: "m3", at: 38_000 })?.id).toBe("p9");
+    expect(
+      planOfMessage(plansOf("aski"), { ...message, id: "m0", at: 9_000 - 600_000 }),
+    ).toBeNull();
     // Said again later: each message keeps its own plan.
     tieMessage("p8", "m2");
     tieMessage("p9", "m3");

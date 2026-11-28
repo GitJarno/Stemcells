@@ -90,6 +90,8 @@ export interface RunnerHands {
   }) => void;
   /** These Cells form in Awake and open no tab; Aski throws a copy of itself to each. */
   readonly arrive: (threadIds: readonly string[]) => void;
+  /** These Cells open no tab when they start, whoever starts them. */
+  readonly tabless: (threadIds: readonly string[]) => void;
   /** Says a deletion or a call-back failed. */
   readonly report: (title: string, why: string) => void;
 }
@@ -112,6 +114,8 @@ export function createRunner(hands: () => RunnerHands | null) {
   const destroying = new Set<string>();
   /** Queued acts handed to the server, as `plan/i`: each is handed over once. */
   const handed = new Set<string>();
+  /** Queued acts whose Cells were said to open no tab, as `plan/i`. */
+  const quiet = new Set<string>();
   /** Acts on their way that the server starts, as `plan/i`: it hears `queued` of them until it has. */
   const serverStarts = new Set<string>();
   /** Rows of a plan under its message that Awake's own rows took over, as `plan/thread`. */
@@ -244,6 +248,11 @@ export function createRunner(hands: () => RunnerHands | null) {
           const projectKey = use.projectKeyOf(act.place);
           if (projectKey !== null && serverStartsIn(use, act, projectKey)) serverStarts.add(key);
           void startOne(use, plan.id, act);
+        }
+        // The server starts it whenever its turn comes: it forms in Awake then, and opens no tab.
+        if (one.status === "queued" && !quiet.has(key)) {
+          quiet.add(key);
+          use.tabless([act.threadId]);
         }
         // What the server held when this window read the plan is its own already.
         if (one.status === "queued" && !handed.has(key) && !plan.handed.includes(act.i)) {

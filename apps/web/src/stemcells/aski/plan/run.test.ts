@@ -64,6 +64,8 @@ function world() {
     queued: [] as string[],
     /** Those of them handed over to start at once. */
     atOnce: [] as string[],
+    /** Cells said to open no tab. */
+    tabless: [] as string[],
     /** The threads the app lists. */
     listed: new Set<string>(),
     made: [] as string[],
@@ -100,6 +102,7 @@ function world() {
     factsOf: () => ({ projectId: "p", modelName: "Fable", effort: undefined, driver: undefined }),
     tell: (outcome) => void calls.told.push(outcome),
     arrive: () => {},
+    tabless: (threadIds) => void calls.tabless.push(...threadIds),
     report: () => {},
   };
   const runner = createRunner(() => hands);
@@ -264,6 +267,8 @@ describe("a Cell the server starts", () => {
     expect(calls.queued).toEqual(["thread-1"]);
     expect(statusesOf("one")).toEqual(["started", "queued"]);
     expect(calls.told.at(-1)?.acts.map((act) => act.status)).toEqual(["started", "queued"]);
+    // Whenever the server starts it, it opens no tab: said while it is still queued.
+    expect(calls.tabless).toEqual(["thread-1"]);
     // The server started it: the app lists its thread, and the row is a Cell.
     calls.listed.add("thread-1");
     runner.sync();
