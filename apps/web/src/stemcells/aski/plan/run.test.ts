@@ -353,6 +353,13 @@ describe("a plan under its message", () => {
       "waiting",
       "started",
     ]);
+    // Another window started the other one meanwhile: a yes here doesn't start it twice.
+    calls.listed.add("thread-1");
+    runner.confirm("one", 1);
+    await settle();
+    expect(calls.started).toEqual(["thread-2"]);
+    expect(planOf("one")?.tray?.acts[1]).toMatchObject({ status: "started" });
+    expect(planOf("one")?.tray?.acts[1]?.startedAt).toBeUndefined();
     stop();
   });
 

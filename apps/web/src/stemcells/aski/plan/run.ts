@@ -136,6 +136,17 @@ export function createRunner(hands: () => RunnerHands | null) {
   const serverStartsIn = (use: RunnerHands, act: StartAct, projectKey: string) =>
     !comesAfter(act) && use.wantsWorktree(act, projectKey);
 
+  /** Act `i` is a Cell already, by another hand: it can't be called back from here. */
+  const there = (tray: Tray, i: number): Tray => {
+    const next = begun(tray, i);
+    return {
+      ...next,
+      acts: next.acts.map((one) =>
+        one.act.i === i && one.status === "starting" ? { ...one, status: "started" } : one,
+      ),
+    };
+  };
+
   const startOne = async (use: RunnerHands, planId: string, act: StartAct) => {
     use.arrive([act.threadId]);
     const project = await projectOf(use, planId, act);
@@ -196,16 +207,20 @@ export function createRunner(hands: () => RunnerHands | null) {
   const sync = () => {
     const use = hands();
     if (use === null) return;
-    // A queued Cell the app now lists was started by the server. Each change comes back here.
+    // A Cell the app already lists is one: the server started a queued one, or another window
+    // one that waited here too. It is never started twice. Each change comes back here.
     const listed = readPlans().flatMap((plan) =>
       (plan.tray?.acts ?? []).flatMap((one) =>
-        one.status === "queued" && one.act.kind === "start" && use.exists(one.act.threadId)
+        one.act.kind === "start" &&
+        (one.status === "queued" ||
+          (one.status === "starting" && !launched.has(`${plan.id}/${one.act.i}`))) &&
+        use.exists(one.act.threadId)
           ? [{ id: plan.id, i: one.act.i }]
           : [],
       ),
     );
     if (listed.length > 0) {
-      for (const one of listed) changePlan(one.id, (tray) => begun(tray, one.i));
+      for (const { id, i } of listed) changePlan(id, (tray) => there(tray, i));
       return;
     }
     const live = readPlans();
