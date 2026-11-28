@@ -144,6 +144,25 @@ function titleOf(title: string | undefined, words: string): string {
   return line.length > TITLE_MOST ? `${line.slice(0, TITLE_MOST - 1)}…` : line;
 }
 
+/**
+ * `words` with the quote `heard` cut out, and the gap closed. Left whole when the quote isn't
+ * there, or when nothing of a task would be left.
+ */
+function without(words: string, heard: string): string {
+  const at = findQuote(words, heard);
+  if (at < 0) return words;
+  const pattern = flat(heard)
+    .split(" ")
+    .map((word) => word.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&"))
+    .join("\\s+");
+  const end = at + (new RegExp(pattern, "iu").exec(words.slice(at))?.[0].length ?? 0);
+  const cut = `${words.slice(0, at).trimEnd()} ${words.slice(end).trimStart()}`
+    .replace(/\s+([,.;:!?])/gu, "$1")
+    .replace(/^[\s,;:]+/u, "")
+    .trim();
+  return cut.split(/\s+/u).length >= 2 ? cut : words;
+}
+
 /** A new project's name as a sidebar would write it: the person's words, each capitalised. */
 const projectNameOf = (heard: string) =>
   heard
@@ -358,13 +377,16 @@ export function planOf(input: PlanInput): PlanResult {
     }
     const { field, why } = placeFor(one, mine);
     const model = modelFor(one);
-    const words = wordsFor(
+    const toldWords = wordsFor(
       text,
       pieces,
       mine,
       [field?.heard, model?.heard].filter((h): h is string => typeof h === "string"),
     );
-    if (words.length === 0) continue;
+    if (toldWords.length === 0) continue;
+    // Where it works is Stemcells' to arrange: told to the Cell, it might make a worktree itself.
+    const apart = apartFor(one);
+    const words = apart === undefined ? toldWords : without(toldWords, one.apartHeard!);
     const risks: RiskMark[] = riskFindings(words)
       .filter((finding) => !finding.negated)
       .map(({ start, end, kind }) => ({ start, end, kind }));
@@ -376,7 +398,6 @@ export function planOf(input: PlanInput): PlanResult {
       ORDER.test(one.afterHeard)
         ? [...new Set(one.after ?? [])].filter((n) => n >= 0 && n < at).flatMap((n) => became[n]!)
         : [];
-    const apart = apartFor(one);
     for (let copy = 0; copy < count; copy++) {
       const start: StartAct = {
         kind: "start",

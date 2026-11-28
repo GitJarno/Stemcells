@@ -879,6 +879,39 @@ describe("where a Cell works", () => {
     expect(apart("fix the header", true)).toBeUndefined();
     expect(apart("in its own worktree", false)).toBeUndefined();
   });
+
+  it("is not told to the Cell, which might then make a worktree itself", () => {
+    const told = (text: string, heard: string, keep: boolean) =>
+      starts(
+        made(
+          plan(text, (n) => ({
+            acts: [
+              {
+                kind: "start",
+                pieces: [n("header")],
+                place: "Harbor",
+                placeHeard: "Harbor",
+                apart: keep,
+                apartHeard: heard,
+              },
+            ],
+            setup: [],
+            talk: [],
+          })),
+        ),
+      )[0]!.words;
+    expect(
+      told(
+        "In Harbor fix the header in its own worktree, then run the tests",
+        "in its own worktree",
+        true,
+      ),
+    ).toBe("In Harbor fix the header, then run the tests");
+    // Words the checks didn't take as where it works stay the Cell's own.
+    expect(told("In Harbor fix the header of the worktree page", "worktree page", false)).toBe(
+      "In Harbor fix the header of the worktree page",
+    );
+  });
 });
 
 describe("the wire", () => {
