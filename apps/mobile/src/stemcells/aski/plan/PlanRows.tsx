@@ -12,6 +12,7 @@ import {
   CALL_BACK_MS,
   callable,
   canStart,
+  comesAfter,
   confirm,
   confirmAll,
   drop,
@@ -126,6 +127,8 @@ export function PlanPanel(props: {
     if (one.act.kind !== "start") return false;
     if (one.status !== "waiting" && one.status !== "queued" && one.status !== "starting")
       return false;
+    // Start now on a Cell that came after others is the phone's own start, in the project's folder.
+    if (one.status === "starting" && comesAfter(one.act)) return false;
     const place = one.act.place;
     const projectId =
       place === null

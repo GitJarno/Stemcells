@@ -98,12 +98,12 @@ describe("a plan's card in Aski's chat", () => {
       "what flew yesterday?",
       "Otter and Finch.",
       ASKED,
-      "[Importer](t3-thread://v2/mac/thread-importer)",
-      `\`\`\`plan\n${PLAN}\n\`\`\``,
+      // One entry for both: upstream's quiet view keeps one reply of ours under a message.
+      `[Importer](t3-thread://v2/mac/thread-importer)\n\n\`\`\`plan\n${PLAN}\n\`\`\``,
       "Two Cells are on it.",
     ]);
     // Drawn again it is the same row, and with no card the feed itself.
-    expect(withPlans(feed, new Map(shown), made)[4]).toBe(fed[4]);
+    expect(withPlans(feed, new Map(shown), made)[3]).toBe(fed[3]);
     expect(withPlans(feed, new Map(), made)).toBe(feed);
   });
 

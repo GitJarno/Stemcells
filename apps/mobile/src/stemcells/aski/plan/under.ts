@@ -67,10 +67,14 @@ export function plansUnder(
   return shown;
 }
 
-/** The entries made so far, by message and plan. */
+/** The entries made so far, by message and by what they say. */
 export type Made = Map<string, MessageEntry>;
 
-/** `feed` with each card under its message, after the Cells its question found; `feed` itself with none. */
+/**
+ * `feed` with each card under its message. A message with the Cells its question found has one
+ * entry of ours for both, the pills first: upstream's quiet view keeps only the last reply
+ * without a run after a message, so two of ours would lose the first.
+ */
 export function withPlans(
   feed: ReadonlyArray<ThreadFeedEntry>,
   /** By message id. */
@@ -88,17 +92,17 @@ export function withPlans(
       continue;
     }
     next ??= feed.slice(0, index);
-    next.push(entry);
     const after = feed[index + 1];
-    if (after !== undefined && after.id === noteIdOf(entry, RECALL_NOTE)) {
-      next.push(after);
-      pills = index + 1;
-    }
-    const key = `${entry.message.id}\n${plan}`;
-    const note =
-      made.get(key) ?? noteUnder(entry, PLAN_NOTE, `\`\`\`${PLAN_FENCE}\n${plan}\n\`\`\``);
+    const found =
+      after !== undefined && after.type === "message" && after.id === noteIdOf(entry, RECALL_NOTE)
+        ? `${after.message.text}\n\n`
+        : "";
+    if (found !== "") pills = index + 1;
+    const markdown = `${found}\`\`\`${PLAN_FENCE}\n${plan}\n\`\`\``;
+    const key = `${entry.message.id}\n${markdown}`;
+    const note = made.get(key) ?? noteUnder(entry, PLAN_NOTE, markdown);
     made.set(key, note);
-    next.push(note);
+    next.push(entry, note);
   }
   return next ?? feed;
 }

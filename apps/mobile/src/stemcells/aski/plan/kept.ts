@@ -84,5 +84,3 @@ export function makeKept(trays: Trays, ask: AskMachine, onPlan: () => void) {
     },
   };
 }
-
-export type Kept = ReturnType<typeof makeKept>;

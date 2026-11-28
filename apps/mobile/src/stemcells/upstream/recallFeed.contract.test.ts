@@ -10,6 +10,7 @@ import * as DateTime from "effect/DateTime";
 import { describe, expect, it } from "vite-plus/test";
 
 import { buildThreadFeed, deriveThreadFeedPresentation } from "../../lib/threadActivity";
+import { withPlans } from "../aski/plan/under";
 import type { RecallAnswer } from "../recall/kit";
 import { withRecall } from "../recall/feed";
 import { ownWordsOf } from "./recallFeed";
@@ -130,6 +131,33 @@ describe("the Cells a question found, in upstream's feed", () => {
     // The turn's own passing reply is folded or hidden; ours never is.
     expect(texts).not.toContain("Looking.");
   });
+
+  it.each(["showAll", "zen"] as const)(
+    "stay, with the question's plan after them, in the %s view",
+    (view) => {
+      const plan = "0b5c2f8e-3d41-4a8e-9a57-6f1f1c2d3e4a";
+      const both = withPlans(fed, new Map([["message-ask", plan]]), new Map());
+      const shown = deriveThreadFeedPresentation(
+        both,
+        null,
+        new Set(),
+        new Set(),
+        null,
+        false,
+        undefined,
+        { toolCallVisibility: view, revealedMessageId: null },
+      );
+      // The quiet view keeps one reply without a run after a message: ours are one entry.
+      expect(
+        shown
+          .slice(0, 2)
+          .map((entry) => (entry.type === "message" ? entry.message.text : entry.type)),
+      ).toEqual([
+        "where was the film page chat yesterday?",
+        `${NOTE}\n\n\`\`\`plan\n${plan}\n\`\`\``,
+      ]);
+    },
+  );
 
   it("is the feed itself when no question found a Cell, and the same row when drawn again", () => {
     const made = new Map();
