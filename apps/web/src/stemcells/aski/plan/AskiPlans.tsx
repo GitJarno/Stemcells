@@ -58,7 +58,7 @@ function Planning(props: { readonly anchor: string; readonly aski: CellRef }) {
         edit: () => {
           // Unheard, the server can't hold Aski's turn for the plan: the message is the chat's alone.
           if (!heard) return null;
-          beginPlan(id, chat, Date.now());
+          beginPlan(id, chat, Date.now(), text);
           const plan = compilePlan({
             ...request,
             context: {

@@ -1,8 +1,11 @@
 /**
  * What carrying a plan out relies on upstream (`askiPlans.ts`): a project removed from the app
  * keeps its folder, as the deletion's card tells the person before their hand goes down; the
- * app's own Remove sends the command ours sends; and a new project is made from its name alone.
+ * app's own Remove sends the command ours sends; a new project is made from its name alone; and
+ * a project's own setting says whether its new Cell starts in a worktree.
  */
+import { DEFAULT_SERVER_SETTINGS, type ProjectId } from "@t3tools/contracts";
+import { resolveProjectSettings } from "@t3tools/shared/projectSettings";
 import { describe, expect, it } from "vite-plus/test";
 
 import projectCommands from "../../../../server/src/orchestration-v2/ProjectCommands.ts?raw";
@@ -28,6 +31,23 @@ describe("what a plan's hands rely on upstream", () => {
     expect(newProject).toMatch(
       /await createNew\(\{\s*environmentId: input\.environmentId,\s*input: \{ name: input\.name \},\s*\}\);/,
     );
-    expect(newProject).toMatch(/const \{ projectId, workspaceRoot, commitError \} = result\.value;/);
+    expect(newProject).toMatch(
+      /const \{ projectId, workspaceRoot, commitError \} = result\.value;/,
+    );
+  });
+
+  it("a project's own setting says where its new Cell starts, over the environment's", () => {
+    const projectId = "harbor" as ProjectId;
+    const own = {
+      ...DEFAULT_SERVER_SETTINGS,
+      defaultThreadEnvMode: "local" as const,
+      projectSettingsOverrides: { [projectId]: { defaultThreadEnvMode: "worktree" as const } },
+    };
+    expect(resolveProjectSettings(own, projectId, null).settings.defaultThreadEnvMode).toBe(
+      "worktree",
+    );
+    expect(
+      resolveProjectSettings(own, "atlas" as ProjectId, null).settings.defaultThreadEnvMode,
+    ).toBe("local");
   });
 });

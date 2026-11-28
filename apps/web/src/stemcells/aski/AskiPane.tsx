@@ -20,6 +20,7 @@ import { AskiPerch } from "./AskiPerch";
 import { AskiMoments } from "./moments/AskiMoments";
 import { PlanTray } from "./plan/PlanTray";
 import { PlanRoom } from "./plan/room";
+import { KeptPlans } from "./plan/PlanUnder";
 
 import "./room.css";
 
@@ -92,6 +93,7 @@ export function AskiPane(props: {
       data-aski-looks=""
       className="relative flex min-h-0 min-w-0 flex-1 flex-col"
     >
+      {aski ? <KeptPlans aski={aski} /> : null}
       <NeedsFrame aski={aski}>
         <div className="relative flex min-h-0 min-w-0 flex-1 flex-col [&>main]:h-full!">
           {props.target ? (
@@ -108,18 +110,18 @@ export function AskiPane(props: {
             >
               {/* Words in its composer answer the cards beside it, and start Cells as a plan. */}
               <PlanRoom value={aski}>
-              <AnswersProvider>
-                {/* A question about the past shows the Cells it found under it. */}
-                <RecallScope value>
-                  <ChatPaneView
-                    target={props.target}
-                    ownsWindowInput={ownsInput}
-                    focused={props.focused}
-                    panelHost={null}
-                    bare
-                  />
-                </RecallScope>
-              </AnswersProvider>
+                <AnswersProvider>
+                  {/* A question about the past shows the Cells it found under it. */}
+                  <RecallScope value>
+                    <ChatPaneView
+                      target={props.target}
+                      ownsWindowInput={ownsInput}
+                      focused={props.focused}
+                      panelHost={null}
+                      bare
+                    />
+                  </RecallScope>
+                </AnswersProvider>
               </PlanRoom>
             </ComposerRoofSlot>
           ) : (

@@ -7,6 +7,7 @@ import { scopeProjectRef, scopeThreadRef } from "@t3tools/client-runtime/environ
 import { squashAtomCommandFailure } from "@t3tools/client-runtime/state/runtime";
 import type { EnvironmentId, ProjectId, ProviderInstanceId, ThreadId } from "@t3tools/contracts";
 import { createModelSelection } from "@t3tools/shared/model";
+import { resolveProjectSettings } from "@t3tools/shared/projectSettings";
 
 import { resolvePrimaryEnvironmentHttpUrl } from "~/environments/primary";
 
@@ -25,10 +26,16 @@ import {
   type CompileRequest,
   EXPECT_PATH,
   type ExpectRequest,
+  type KeptPlan,
   LEARNED_PATH,
   OUTCOME_PATH,
   type OutcomeRequest,
   PLAN_PATH,
+  PLANS_PATH,
+  type PlansReply,
+  QUEUE_PATH,
+  type QueueReply,
+  type QueueRequest,
   thinkWith,
 } from "../../../../../stemcells/orchestrator/wire.ts";
 import { cellNameOf } from "../../../../../stemcells/words/cellNames.ts";
@@ -37,6 +44,7 @@ import {
   readProject,
   readThreadShell,
   readThreadShells,
+  useThreadShells,
   waitForProject,
 } from "../../state/entities";
 import { readEnvironmentProviders } from "../../state/environments";
@@ -103,6 +111,38 @@ export async function readPlan(id: string): Promise<KnownPlan | null> {
     return response.ok ? ((await response.json()) as KnownPlan) : null;
   } catch {
     return null;
+  }
+}
+
+/** The plans made in Aski's chat `threadId`, newest first; null when the server couldn't say. */
+export async function readKeptPlans(threadId: string): Promise<ReadonlyArray<KeptPlan> | null> {
+  try {
+    const url = new URL(resolvePrimaryEnvironmentHttpUrl(PLANS_PATH));
+    url.searchParams.set("thread", threadId);
+    const response = await fromPrimary(url.toString());
+    if (!response.ok) return null;
+    const plans = ((await response.json()) as Partial<PlansReply>).plans;
+    return Array.isArray(plans) ? plans : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Hands the server a Cell to start itself; a refusal comes back in its own words. Never throws. */
+async function queueCell(request: QueueRequest): Promise<QueueReply> {
+  try {
+    const response = await post(QUEUE_PATH, request);
+    const reply = (await response.json().catch(() => null)) as {
+      readonly ok?: unknown;
+      readonly error?: unknown;
+    } | null;
+    if (reply?.ok === true) return { ok: true };
+    return {
+      ok: false,
+      error: typeof reply?.error === "string" ? reply.error : "Aski's server didn't take the Cell.",
+    };
+  } catch {
+    return { ok: false, error: "Aski's server couldn't be reached." };
   }
 }
 
@@ -251,13 +291,23 @@ export interface StartFacts {
 
 /** The hands a plan is carried out with: each is the person's own command. */
 export interface PlanHands {
-  /** Starts the act's Cell as its thread, in the project `projectKey` (`environmentId:projectId`). */
+  /**
+   * Starts the act's Cell as its thread, in the folder of the project `projectKey`
+   * (`environmentId:projectId`).
+   */
   readonly start: (act: StartAct, projectKey: string) => Promise<Carried>;
+  /** Hands an act of plan `planId` to Aski's server to start itself: later, or in a worktree of its own. */
+  readonly queue: (planId: string, act: StartAct, projectKey: string) => Promise<Carried>;
+  /** Whether the act's Cell gets a worktree of its own in `projectKey`: the person's word, else the project's default. */
+  readonly wantsWorktree: (act: StartAct, projectKey: string) => boolean;
+  /** Whether the app lists the thread, on any machine. */
+  readonly exists: (threadId: string) => boolean;
   /** Makes a project on Aski's server; its key once it is listed here. */
   readonly newProject: (
     name: string,
   ) => Promise<
-    { readonly ok: true; readonly projectKey: string } | { readonly ok: false; readonly error: string }
+    | { readonly ok: true; readonly projectKey: string }
+    | { readonly ok: false; readonly error: string }
   >;
   /** Removes a project from the app, on every machine that lists it; its folder stays. */
   readonly removeProject: (placeId: string) => Promise<Carried>;
@@ -300,8 +350,7 @@ function defaultWith(
       (model) => model.instanceId === selection.instanceId && model.id === selection.model,
     ) ?? null;
   const level = effort === null || entry === null ? null : clampEffort(effort, entry.efforts);
-  if (level === null || entry?.effortOption === undefined)
-    return { selection, entry };
+  if (level === null || entry?.effortOption === undefined) return { selection, entry };
   return {
     selection: {
       instanceId: selection.instanceId,
@@ -310,6 +359,92 @@ function defaultWith(
     },
     entry,
   };
+}
+
+const serverSettingsOf = (environmentId: EnvironmentId) =>
+  appAtomRegistry.get(environmentServerConfigsAtom).get(environmentId)?.settings;
+
+/**
+ * What a plan's Cell launches with, whoever starts it: the person's own default access, as a new
+ * chat of theirs would have and never more, and the model its act names, else its project's.
+ */
+function launchOf(act: StartAct, projectKey: string) {
+  const ref = projectRefOfKey(projectKey);
+  const settings = serverSettingsOf(ref.environmentId);
+  if (!settings) return null;
+  const named: Selection | null =
+    act.selection ??
+    (act.model === null
+      ? defaultWith(ref.environmentId, projectKey, act.effort).selection
+      : {
+          instanceId: act.model.instanceId,
+          model: act.model.id,
+          ...(act.model.effort
+            ? { options: [{ id: act.model.effort.option, value: act.model.effort.level }] }
+            : {}),
+        });
+  return {
+    ref,
+    runtimeMode: settings.defaultRuntimeMode,
+    interactionMode: "default" as const,
+    selection:
+      named === null
+        ? null
+        : createModelSelection(named.instanceId as ProviderInstanceId, named.model, [
+            ...(named.options ?? []),
+          ]),
+  };
+}
+
+/**
+ * Whether a plan's Cell gets a worktree of its own (decision 17): the person's word for the
+ * message, else where a new Cell of theirs starts in that project. Only Aski's server gives one.
+ */
+function wantsWorktree(home: string, act: StartAct, projectKey: string): boolean {
+  const ref = projectRefOfKey(projectKey);
+  if (ref.environmentId !== home) return false;
+  if (act.apart !== undefined) return act.apart;
+  const settings = serverSettingsOf(ref.environmentId);
+  return (
+    settings !== undefined &&
+    resolveProjectSettings(settings, ref.projectId, readProject(ref)).settings
+      .defaultThreadEnvMode === "worktree"
+  );
+}
+
+/** A place's project where a Cell of Aski's starts: on Aski's server `home`, else its first. */
+function useProjectKeyOf(home: string): PlanHands["projectKeyOf"] {
+  const { members } = useWordsPlaces();
+  return (place) => {
+    if (place === null) return null;
+    if (place.projectId !== undefined) return `${home}:${place.projectId}`;
+    if (place.id === null) return null;
+    const ref = projectRefOf(members.get(place.id) ?? [], home);
+    return ref === null ? null : `${ref.environmentId}:${ref.projectId}`;
+  };
+}
+
+/**
+ * Whether an act's Cell will be given a worktree of its own, for its row to say before it
+ * starts. A project the plan is yet to make has no default to read: only the person's word.
+ */
+export function useOwnWorktree(aski: CellRef | null): (act: StartAct) => boolean {
+  const home = aski?.environmentId ?? "";
+  const projectKeyOf = useProjectKeyOf(home);
+  return (act) => {
+    const projectKey = projectKeyOf(act.place);
+    return projectKey === null ? act.apart === true : wantsWorktree(home, act, projectKey);
+  };
+}
+
+/**
+ * Which of `threadIds` the app lists, as one word that changes when one of them appears: the
+ * runner looks again then (a queued Cell the server started). Follows nothing for none.
+ */
+export function useListedCells(threadIds: ReadonlyArray<string>): string {
+  const shells = useThreadShells(threadIds.length > 0);
+  const listed = new Set(shells.map((shell) => shell.id as string));
+  return threadIds.filter((threadId) => listed.has(threadId)).join(" ");
 }
 
 export function usePlanHands(aski: CellRef | null): PlanHands {
@@ -324,20 +459,34 @@ export function usePlanHands(aski: CellRef | null): PlanHands {
   });
   const archive = useOrchestrationCommand(threadEnvironment.archive, { reportFailure: false });
   const home = aski?.environmentId ?? "";
-
-  const projectKeyOf: PlanHands["projectKeyOf"] = (place) => {
-    if (place === null) return null;
-    if (place.projectId !== undefined) return `${home}:${place.projectId}`;
-    if (place.id === null) return null;
-    const ref = projectRefOf(members.get(place.id) ?? [], home);
-    return ref === null ? null : `${ref.environmentId}:${ref.projectId}`;
-  };
+  const projectKeyOf = useProjectKeyOf(home);
 
   return {
     projectKeyOf,
+    exists: (threadId) => readThreadShells().some((shell) => shell.id === threadId),
+    wantsWorktree: (act, projectKey) => wantsWorktree(home, act, projectKey),
+    queue: async (planId, act, projectKey) => {
+      const launch = launchOf(act, projectKey);
+      if (launch === null) return { ok: false, error: "That project's machine isn't connected." };
+      // The server starts it on itself, where the plan is kept.
+      if (launch.ref.environmentId !== home)
+        return { ok: false, error: "Aski's server can't start a Cell on another machine." };
+      if (launch.selection === null) return { ok: false, error: "No model to start the Cell on." };
+      return queueCell({
+        id: planId,
+        i: act.i,
+        projectId: launch.ref.projectId,
+        modelSelection: launch.selection,
+        runtimeMode: launch.runtimeMode,
+        interactionMode: launch.interactionMode,
+        worktree: wantsWorktree(home, act, projectKey),
+      });
+    },
     cellOf: (threadId) => {
       const shell = readThreadShells().find((each) => each.id === threadId);
-      return shell ? { environmentId: shell.environmentId, threadId: shell.id, draftId: null } : null;
+      return shell
+        ? { environmentId: shell.environmentId, threadId: shell.id, draftId: null }
+        : null;
     },
     cellsIn: (placeId) => {
       const keys = new Set(members.get(placeId) ?? []);
@@ -358,7 +507,9 @@ export function usePlanHands(aski: CellRef | null): PlanHands {
       const slug = act.selection?.model ?? act.model?.id;
       const named =
         slug === undefined
-          ? (projectKey === null ? null : defaultWith(environmentId, projectKey, act.effort).entry)
+          ? projectKey === null
+            ? null
+            : defaultWith(environmentId, projectKey, act.effort).entry
           : (models.find((model) => model.instanceId === instanceId && model.id === slug) ?? null);
       const driver = readEnvironmentProviders(environmentId as EnvironmentId)?.find(
         (provider) => provider.instanceId === (named?.instanceId ?? instanceId),
@@ -375,43 +526,23 @@ export function usePlanHands(aski: CellRef | null): PlanHands {
       };
     },
     start: async (act, projectKey) => {
-      const ref = projectRefOfKey(projectKey);
-      const settings = appAtomRegistry
-        .get(environmentServerConfigsAtom)
-        .get(ref.environmentId)?.settings;
-      if (!settings) return { ok: false, error: "That project's machine isn't connected." };
-      // The person's own default access, as a new chat of theirs would have: never more.
+      const launch = launchOf(act, projectKey);
+      if (launch === null) return { ok: false, error: "That project's machine isn't connected." };
       const setup: DraftSetup = {
-        environmentId: ref.environmentId,
-        projectId: ref.projectId,
-        runtimeMode: settings.defaultRuntimeMode,
-        interactionMode: "default",
+        environmentId: launch.ref.environmentId,
+        projectId: launch.ref.projectId,
+        runtimeMode: launch.runtimeMode,
+        interactionMode: launch.interactionMode,
         pick: null,
         current: null,
         branch: null,
         worktree: false,
         startFromOrigin: false,
       };
-      const fallback =
-        act.selection === undefined && act.model === null
-          ? defaultWith(ref.environmentId, projectKey, act.effort).selection
-          : null;
-      const selection = act.selection ?? fallback;
       const cell: CellStart = {
         projectKey,
-        model:
-          act.model === null
-            ? null
-            : { instanceId: act.model.instanceId, model: act.model.id, effort: act.model.effort },
-        ...(selection === null || (act.selection === undefined && act.model !== null)
-          ? {}
-          : {
-              selection: createModelSelection(
-                selection.instanceId as ProviderInstanceId,
-                selection.model,
-                [...(selection.options ?? [])],
-              ),
-            }),
+        model: null,
+        ...(launch.selection === null ? {} : { selection: launch.selection }),
         text: messageOf(act),
         threadId: act.threadId,
         title: act.title,

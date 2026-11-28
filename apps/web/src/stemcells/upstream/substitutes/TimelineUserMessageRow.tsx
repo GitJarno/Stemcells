@@ -1,12 +1,13 @@
 // Replaces `components/chat/TimelineUserMessageRow.tsx` (`plugin.ts`): mail from another Cell is a
 // card (`peers/PeerCard.tsx`), a past collision notice a notice (`peers/CollisionRow.tsx`), and a
-// question put to Aski has the Cells it found under it (`recall/RecallPills.tsx`). All else is
-// upstream's row, its attachments labelled "Image 1", "Video 2" (`attachments/`).
+// message to Aski has the Cells it found (`recall/RecallPills.tsx`) and the plan it became
+// (`aski/plan/PlanUnder.tsx`) under it. All else is upstream's row, its attachments labelled.
 import { resolveUserMessagePresentation } from "@t3tools/client-runtime/user-message";
 import { type ComponentProps, use } from "react";
 
 import { UserMessageRow as UpstreamUserMessageRow } from "../../../components/chat/TimelineUserMessageRow";
 import { TimelineRowCtx } from "../../../components/chat/timelineRowContext";
+import { PlanUnder } from "../../aski/plan/PlanUnder";
 import { AttachmentLabels } from "../../attachments/AttachmentLabels";
 import { CollisionRow } from "../../peers/CollisionRow";
 import { collisionOf } from "../../peers/notice";
@@ -37,14 +38,12 @@ export function UserMessageRow(props: ComponentProps<typeof UpstreamUserMessageR
   if (collision !== null) return <CollisionRow message={message} collision={collision} />;
   const presented = resolveUserMessagePresentation(message);
   if (presented.attribution !== null) return upstream;
+  const at = Date.parse(message.createdAt);
   return (
     <>
       {upstream}
-      <RecallPills
-        messageId={message.id}
-        text={presented.text}
-        at={Date.parse(message.createdAt)}
-      />
+      <RecallPills messageId={message.id} text={presented.text} at={at} />
+      <PlanUnder messageId={message.id} text={presented.text} at={at} />
     </>
   );
 }
