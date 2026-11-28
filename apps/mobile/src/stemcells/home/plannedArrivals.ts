@@ -77,8 +77,8 @@ subscribePlannedRows(arrivals.sync);
 
 /**
  * Rows whose birth is over, in the order it ended. T3's list puts a new row in a few frames after
- * it is handed one, so a row that left here in sight would blink; it keeps its place until Awake
- * is out of sight (`releaseKept`), and T3's own row stands in for it from then.
+ * it is handed one, so a row that left here in sight would blink. In sight it is handed over
+ * under a copy of itself (`handOver`); out of sight T3's own row just stands in (`releaseKept`).
  */
 const kept = new Map<string, Planned>();
 let keptShown: readonly Planned[] = [];
@@ -104,6 +104,97 @@ const subscribe = (listener: () => void) => {
   return () => void listeners.delete(listener);
 };
 
+/** Where a row stood in Awake's list, within the layer its copy is drawn on (`PlannedRows.tsx`). */
+export interface Frame {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+/** A kept row on its way to T3's list in sight: a copy stands where it stood while T3's row comes in under it. */
+export interface Handed {
+  readonly row: Planned;
+  readonly frame: Frame;
+  /** The room it took in the list with its gap, points: held open until T3's row has taken it. */
+  readonly room: number;
+  /** T3's row is in the list, and the room is given back. */
+  readonly landed: boolean;
+}
+
+const handed = new Map<string, Handed>();
+let handedShown: readonly Handed[] = [];
+/** How long a copy stands once T3's row is in the list under it, ms: the frames the list takes to draw it. */
+const COPY_STANDS = 120;
+/** How long a copy waits for T3's row before it goes anyway, ms: the list never draws a row that left Awake, or stands far down it. */
+const COPY_WAITS = 1500;
+const leaves = new Map<string, ReturnType<typeof setTimeout>>();
+let tellHanding: (on: boolean) => void = () => undefined;
+
+/** Told as a row starts changing hands with none before it, and as the last one is done: the list's rows stand still between (`threadListAnimations.ts`). */
+export function onHanding(listener: (on: boolean) => void): void {
+  tellHanding = listener;
+}
+
+function leaveIn(threadId: string, ms: number): void {
+  clearTimeout(leaves.get(threadId));
+  leaves.set(
+    threadId,
+    setTimeout(() => handedOver(threadId), ms),
+  );
+}
+
+/**
+ * Hands a kept row to T3's list while Awake is watched: T3's own row, with its swipe and its
+ * menu, is let into the list, and a copy of ours covers the frames T3's list takes to draw it.
+ */
+export function handOver(threadId: string, frame: Frame, room: number): void {
+  const row = kept.get(threadId);
+  if (row === undefined) return;
+  if (handed.size === 0) tellHanding(true);
+  kept.delete(threadId);
+  keptShown = [...kept.values()];
+  handed.set(threadId, { row, frame, room, landed: false });
+  handedShown = [...handed.values()];
+  leaveIn(threadId, COPY_WAITS);
+  tell();
+}
+
+/** T3's row is in the list, a row lower than it will stand: the room ours left is given back in the same draw. */
+export function handedLanded(threadId: string): void {
+  const one = handed.get(threadId);
+  if (one === undefined || one.landed) return;
+  handed.set(threadId, { ...one, landed: true });
+  handedShown = [...handed.values()];
+  leaveIn(threadId, COPY_STANDS);
+  tell();
+}
+
+/** T3's row stands where the copy did: the copy goes. */
+export function handedOver(threadId: string): void {
+  clearTimeout(leaves.get(threadId));
+  leaves.delete(threadId);
+  if (!handed.delete(threadId)) return;
+  handedShown = [...handed.values()];
+  if (handed.size === 0) tellHanding(false);
+  tell();
+}
+
+/** The rows being handed to T3's list, oldest first. */
+export function useHanded(): readonly Handed[] {
+  return useSyncExternalStore(
+    subscribe,
+    () => handedShown,
+    () => handedShown,
+  );
+}
+
+/** Whether a copy still stands over this Cell's row in T3's list: the row draws nothing until it goes. */
+export function useIsHanded(threadId: string): boolean {
+  const read = () => handed.has(threadId);
+  return useSyncExternalStore(subscribe, read, read);
+}
+
 /** Awake is out of sight, or these Cells left it: T3's own rows stand in for the kept ones (all of them, unnamed). */
 export function releaseKept(threadIds?: ReadonlyArray<string>): void {
   if (kept.size === 0) return;
@@ -113,7 +204,9 @@ export function releaseKept(threadIds?: ReadonlyArray<string>): void {
   tell();
 }
 AppState.addEventListener("change", (state) => {
-  if (state !== "active") releaseKept();
+  if (state === "active") return;
+  releaseKept();
+  for (const threadId of handed.keys()) handedOver(threadId);
 });
 
 /** The planned rows standing in Awake, in the order they landed. */

@@ -26,8 +26,18 @@ vi.mock("react", async (importOriginal) => ({
   useSyncExternalStore: (_subscribe: unknown, read: () => unknown) => read(),
 }));
 
-const { cellsListed, releaseKept, useArrivals, useHeldThreads, useKept } =
-  await import("./plannedArrivals");
+const {
+  cellsListed,
+  handedLanded,
+  handOver,
+  onHanding,
+  releaseKept,
+  useArrivals,
+  useHanded,
+  useHeldThreads,
+  useIsHanded,
+  useKept,
+} = await import("./plannedArrivals");
 
 const row = (threadId: string): PlannedRow => ({
   threadId,
@@ -73,6 +83,41 @@ describe("the phone's planned rows", () => {
     releaseKept(["thread-otter"]);
     expect(useKept()).toEqual([]);
     expect(useHeldThreads().has("thread-otter")).toBe(false);
+  });
+
+  it("hands a kept row to T3's list in sight: its room is held until the list's row lands, under a copy", () => {
+    const still: boolean[] = [];
+    onHanding((on) => void still.push(on));
+    born("thread-lynx");
+    vi.advanceTimersByTime(ARRIVALS.linger + ARRIVALS.fade + ARRIVALS.fold + 100);
+    handOver("thread-lynx", { x: 8, y: 120, width: 300, height: 64 }, 72);
+    // T3's list has the Cell from here, and it can be swiped; its row stays unseen under the copy.
+    expect(useKept()).toEqual([]);
+    expect(useHeldThreads().has("thread-lynx")).toBe(false);
+    expect(useHanded().map((handed) => [handed.row.threadId, handed.room, handed.landed])).toEqual([
+      ["thread-lynx", 72, false],
+    ]);
+    expect(useIsHanded("thread-lynx")).toBe(true);
+
+    // The list's row is in: the room is given back, and the copy still covers it.
+    handedLanded("thread-lynx");
+    expect(useHanded().map((handed) => handed.landed)).toEqual([true]);
+    expect(useIsHanded("thread-lynx")).toBe(true);
+
+    // The copy goes a few frames on, and the list moves its rows on its own move again.
+    vi.advanceTimersByTime(200);
+    expect(useHanded()).toEqual([]);
+    expect(useIsHanded("thread-lynx")).toBe(false);
+    expect(still).toEqual([true, false]);
+  });
+
+  it("shows T3's row anyway when the list never draws it under the copy", () => {
+    born("thread-ibis");
+    vi.advanceTimersByTime(ARRIVALS.linger + ARRIVALS.fade + ARRIVALS.fold + 100);
+    handOver("thread-ibis", { x: 8, y: 120, width: 300, height: 64 }, 72);
+    vi.advanceTimersByTime(2_000);
+    expect(useHanded()).toEqual([]);
+    expect(useIsHanded("thread-ibis")).toBe(false);
   });
 
   it("hands every kept row to T3's list when the app leaves the screen", () => {

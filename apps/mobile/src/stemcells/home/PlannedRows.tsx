@@ -1,10 +1,10 @@
 // Aski's planned rows at the top of the home's Awake list (stemcells/tasks/aski-orchestrator.md,
-// decision 12), as the Mac's column has them (`apps/web/src/stemcells/rail/Planned.tsx`): each
-// lands where Aski's copy does, its Cell forms, and its line settles out of glyphs on the Cells'
-// beat. A row keeps its place here until its birth is over; then T3's own row stands in for it.
+// decision 12): each lands where Aski's copy does, its Cell forms, and its line settles. After
+// its birth T3's own row stands in: in a sidebar, always in sight, under a copy of ours, so its
+// swipe and menu come at once; on a page, once Awake is out of sight.
 
 import { createContext, use, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Pressable, useWindowDimensions, View, type ViewInstance } from "react-native";
+import { Pressable, StyleSheet, useWindowDimensions, View, type ViewInstance } from "react-native";
 import Animated, {
   FadeIn,
   ReduceMotion,
@@ -55,9 +55,12 @@ import { openOnPressIn } from "./opening";
 import {
   type Arrival,
   cellsListed,
+  type Handed,
+  handOver,
   releaseKept,
   slotStandsIn,
   useArrivals,
+  useHanded,
   useKept,
 } from "./plannedArrivals";
 import { Since } from "./RowCell";
@@ -112,15 +115,21 @@ const CHIP_SIZE = 11;
 /** How tall a row stands with its gap, by shape, as last laid out: what the list glides by as one lands. */
 const stood = { card: 57, sidebar: 48 };
 
+/** How long the lowest born row stands settled before it is handed to T3's list in sight, ms: past a copy's stand, so one hand-over ends before the next. */
+const HANDS_AFTER = 400;
+/** The layer the copies of handed rows stand on, over Awake's list (`HandedRows`). */
+let layer: ViewInstance | null = null;
+
 /** The planned rows of the stage this list shows: Awake's, latest on top. */
-export function PlannedRows(props: { readonly gutter?: number }) {
+export function PlannedRows() {
   const stage = use(HomeStageContext);
-  return stage === "awake" ? <Rows gutter={props.gutter ?? 0} /> : null;
+  return stage === "awake" ? <Rows /> : null;
 }
 
-function Rows(props: { readonly gutter: number }) {
+function Rows() {
   const arrivals = useArrivals();
   const kept = useKept();
+  const handed = useHanded();
   const awake = use(CellStates);
   const home = use(PlannedHome);
   const sidebar = useHomeSidebar();
@@ -155,13 +164,7 @@ function Rows(props: { readonly gutter: number }) {
   const [laid, setLaid] = useState(0);
   const pad = usePad(sidebar);
   const outer = laid > 0 ? laid : width;
-  const line =
-    outer -
-    2 * (SHAPE[shape].marginHorizontal + props.gutter) -
-    pad.left -
-    pad.right -
-    CELL.width -
-    pad.gap;
+  const line = lineIn(outer - 2 * SHAPE[shape].marginHorizontal, pad);
   return (
     <View onLayout={(event) => setLaid(event.nativeEvent.layout.width)}>
       <View
@@ -170,26 +173,98 @@ function Rows(props: { readonly gutter: number }) {
         style={{
           position: "absolute",
           top: pad.top,
-          left: SHAPE[shape].marginHorizontal + props.gutter + pad.left,
+          left: SHAPE[shape].marginHorizontal + pad.left,
           ...CELL,
         }}
       />
       {[
         ...[...arrivals].reverse().map((arrival) => ({ row: arrival.row, arrival })),
         ...[...kept].reverse().map((row) => ({ row, arrival: null })),
-      ].map(({ row, arrival }) => (
+      ].map(({ row, arrival }, index, all) => (
         <PlannedRow
           key={row.threadId}
           row={row}
           arrival={arrival}
           thread={home?.threads.get(row.threadId) ?? null}
           shape={shape}
-          gutter={props.gutter}
           pad={pad}
           line={line}
           seen={seen}
+          last={index === all.length - 1}
         />
       ))}
+      {/* The room of a row handed to T3's list, held until the list's own row has taken it. */}
+      {handed.map((each) =>
+        each.landed ? null : <View key={each.row.threadId} style={{ height: each.room }} />,
+      )}
+    </View>
+  );
+}
+
+/** The room a row's line has in a row `width` wide. */
+const lineIn = (width: number, pad: Pad) => width - pad.left - pad.right - CELL.width - pad.gap;
+
+/**
+ * Where the copies of rows being handed to T3's list stand: a layer over Awake's list, moving
+ * with it (`upstream/substitutes/HomeScreen.tsx`). A copy stands exactly where its row stood
+ * until T3's own row has come in under it, then both change in one draw.
+ */
+export function HandedRows() {
+  const handed = useHanded();
+  const home = use(PlannedHome);
+  const sidebar = useHomeSidebar();
+  const pad = usePad(sidebar);
+  const view = useRef<ViewInstance>(null);
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Tell the rows which layer their copies stand on, for as long as it is mounted.
+  useEffect(() => {
+    const own = view.current;
+    layer = own;
+    return () => {
+      if (layer === own) layer = null;
+    };
+  }, []);
+  return (
+    <View ref={view} collapsable={false} pointerEvents="none" style={StyleSheet.absoluteFill}>
+      {handed.map((each) => (
+        <Copy
+          key={each.row.threadId}
+          handed={each}
+          thread={home?.threads.get(each.row.threadId) ?? null}
+          shape={sidebar ? "sidebar" : "card"}
+          pad={pad}
+        />
+      ))}
+    </View>
+  );
+}
+
+function Copy(props: {
+  readonly handed: Handed;
+  readonly thread: EnvironmentThreadShell | null;
+  readonly shape: keyof typeof SHAPE;
+  readonly pad: Pad;
+}) {
+  const { frame, row } = props.handed;
+  return (
+    <View
+      style={{
+        position: "absolute",
+        left: frame.x,
+        top: frame.y,
+        width: frame.width,
+        height: frame.height,
+      }}
+    >
+      <PlannedRow
+        row={row}
+        arrival={null}
+        thread={props.thread}
+        shape={props.shape}
+        pad={props.pad}
+        line={lineIn(frame.width, props.pad)}
+        seen={false}
+        copy
+      />
     </View>
   );
 }
@@ -273,13 +348,42 @@ function PlannedRow(props: {
   readonly arrival: Arrival | null;
   readonly thread: EnvironmentThreadShell | null;
   readonly shape: keyof typeof SHAPE;
-  readonly gutter: number;
   readonly pad: Pad;
   /** The room its line has, points: what of its birth words fits. */
   readonly line: number;
   readonly seen: boolean;
+  /** It stands lowest of the planned rows, next to T3's list: the one that can be handed over where it stands. */
+  readonly last?: boolean;
+  /** It is a handed row's copy (`Copy`): it fills its frame, and hands nothing over itself. */
+  readonly copy?: boolean;
 }) {
   const { row, arrival, thread, shape } = props;
+  const copy = props.copy === true;
+  const self = useRef<ViewInstance>(null);
+  // A sidebar's list is never out of sight, so its born row would never get T3's swipe and menu.
+  const hands =
+    arrival === null && props.last === true && props.seen && thread !== null && shape === "sidebar";
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Hand a settled row to T3's list where it stands, measured on the copies' layer.
+  useEffect(() => {
+    if (!hands) return;
+    const timer = setTimeout(() => {
+      const over = layer;
+      const own = self.current;
+      if (own === null || over === null) return;
+      // In the window, both: the layer stands over the list, and is no ancestor to measure in.
+      over.measureInWindow((left, top) =>
+        own.measureInWindow((x, y, width, height) => {
+          if (width <= 0) return;
+          handOver(
+            row.threadId,
+            { x: x - left, y: y - top, width, height },
+            height + SHAPE[shape].marginBottom,
+          );
+        }),
+      );
+    }, HANDS_AFTER);
+    return () => clearTimeout(timer);
+  }, [hands, row.threadId, shape]);
   const home = use(PlannedHome);
   const held = use(HomeCellsHeld);
   const aski = useAskiChat(null);
@@ -406,12 +510,18 @@ function PlannedRow(props: {
   };
   return (
     <Animated.View
+      ref={self}
+      collapsable={false}
       entering={
         fades ? FadeIn.duration(ENTER.duration).reduceMotion(ReduceMotion.Never) : undefined
       }
-      onLayout={(event) => {
-        stood[shape] = event.nativeEvent.layout.height + SHAPE[shape].marginBottom;
-      }}
+      onLayout={
+        copy
+          ? undefined
+          : (event) => {
+              stood[shape] = event.nativeEvent.layout.height + SHAPE[shape].marginBottom;
+            }
+      }
       className={
         outline
           ? "border border-dashed border-border"
@@ -421,8 +531,8 @@ function PlannedRow(props: {
       }
       style={[
         {
-          marginHorizontal: SHAPE[shape].marginHorizontal + props.gutter,
-          marginBottom: SHAPE[shape].marginBottom,
+          marginHorizontal: copy ? 0 : SHAPE[shape].marginHorizontal,
+          marginBottom: copy ? 0 : SHAPE[shape].marginBottom,
           borderRadius: SHAPE[shape].borderRadius,
           borderCurve: "continuous",
           overflow: "hidden",

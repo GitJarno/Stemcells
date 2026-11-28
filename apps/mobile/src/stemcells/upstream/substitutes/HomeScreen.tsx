@@ -11,7 +11,7 @@ import { askiChatsOf } from "../../aski/chat";
 import { useAwakeGlide } from "../../home/awakeGlide";
 import { HomeFront } from "../../home/HomeFront";
 import { inEffect, NO_PICKS, type Picks } from "../../home/picks";
-import { PlannedHome } from "../../home/PlannedRows";
+import { HandedRows, PlannedHome } from "../../home/PlannedRows";
 import { useMinute } from "../../home/state";
 import { usePicks } from "../../home/usePicks";
 import { LineHome } from "../../line/LineHome";
@@ -89,7 +89,14 @@ export function HomeScreen(props: Props) {
       </FromTheTop>
     );
     // Awake's list glides as a planned row lands at its top (`home/awakeGlide.ts`).
-    return pending ? <Animated.View style={[{ flex: 1 }, glide]}>{page}</Animated.View> : page;
+    return pending ? (
+      <Animated.View style={[{ flex: 1 }, glide]}>
+        {page}
+        <HandedRows />
+      </Animated.View>
+    ) : (
+      page
+    );
   };
   const plannedHome = {
     threads: new Map(props.threads.map((thread) => [String(thread.id), thread])),
