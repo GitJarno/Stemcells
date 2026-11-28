@@ -481,9 +481,10 @@ project is minutes and gigabytes. So a worktree is never Aski's own idea.
   are in the message and say so, and they are not passed on to the Cell.
 - A Cell that gets a worktree is started by the server, the way a queued
   one is: it knows whether the folder is a repository (a plain folder
-  has no worktree to give, and the Cell starts in it) and where a new
-  worktree starts from, as a scheduled task's does. The row says "own
-  worktree" before it starts.
+  has no worktree to give, and the Cell starts in it). The worktree
+  starts from the commit the project's folder is on, so the Cell sees
+  the project as the person has it; what isn't committed stays behind.
+  The row says "own worktree" before it starts.
 - Cells that share a folder already know of each other: every Cell is
   told who else is at work in its repository (`peers/roster.ts`). Taking
   turns is decision 16.

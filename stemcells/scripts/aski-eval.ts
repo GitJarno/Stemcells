@@ -27,6 +27,10 @@ interface WantCell {
   readonly not?: string;
   /** Words that must reach it too: an instruction for all. */
   readonly also?: string;
+  /** The `says` of the Cell it must come after; left out, it must come after none. */
+  readonly after?: string;
+  /** Whether the person said where it works: a worktree of its own, or the folder. */
+  readonly apart?: boolean;
 }
 interface Case {
   readonly name: string;
@@ -225,6 +229,14 @@ function score(one: Case, plan: Plan, ms: number, tries: number): Score {
       mark(!has(act!.words, want.not), `"${want.says}" was told "${want.not}"`);
     if (want.also !== undefined)
       mark(has(act!.words, want.also), `"${want.says}" wasn't told "${want.also}"`);
+    const before = (act!.after ?? []).map((i) => starts.find((each) => each.i === i)?.words ?? "");
+    mark(
+      want.after === undefined
+        ? before.length === 0
+        : before.length === 1 && has(before[0]!, want.after),
+      `"${want.says}": after ${before.length === 0 ? "none" : before.map((w) => `"${w}"`).join(", ")} for ${want.after ?? "none"}`,
+    );
+    mark(act!.apart === want.apart, `"${want.says}": apart ${act!.apart} for ${want.apart}`);
     if (
       act!.tier === "start" &&
       (!placeRight || (want.not !== undefined && has(act!.words, want.not)))
