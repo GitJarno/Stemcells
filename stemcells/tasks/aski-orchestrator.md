@@ -548,11 +548,11 @@ Each lands on the Mac and the phone together where a person sees it.
 Slices 2 to 4 are the core and ship in that order. 5 makes it a joy. 7
 and 8 stand alone.
 
-10. [ ] **A plan under its message.** The server keeps plans; the card
+10. [x] **A plan under its message.** The server keeps plans; the card
         under the message on Mac and phone, with each Cell's standing; a
         waiting Cell starts from it after a reload; Aski's tool and note say
         how the Cells stand (decision 15).
-11. [ ] **After, and own worktrees.** `after` and `apart` in the compiler
+11. [x] **After, and own worktrees.** `after` and `apart` in the compiler
         and the checks, with corpus cases; the queue on the server and the
         start from there; queued rows, Start now and Drop on both clients
         (decisions 16 and 17).
@@ -610,6 +610,22 @@ and 8 stand alone.
   in its own worktree", "same folder, no worktree", a task about
   worktrees). The fast tier at low effort read 29 of 29 clean (353 of
   353 fields, no second call); one sample.
+- Seen on a lab home with fake providers, in the Mac app and on a phone
+  simulator against one server: a chain's card under its message ("2
+  Cells · 1 flying · 1 queued", "After" and the first Cell's name), still
+  there after a reload and a server restart; Flying, Input and Landed
+  read live; the second Cell held while the first asked, and started by
+  itself in the first one's worktree once it landed, told the person's
+  words and one line naming whom it came after; Start now and Drop from
+  either client; "in its own worktree" put one Cell of two in a worktree
+  and was cut from what the Cell was told; a plan sent from the phone
+  stood under its message on the Mac.
+- Those passes found what tests had not: a Cell the server started opened
+  a tab; the same words sent twice shared one plan; a Cell that asks was
+  counted as flying; a client's late "queued" could undo a start; and a
+  message opening "In Harbor fix …" never reached the compiler.
+- Not seen: Aski's note and report with a real model, the stalled line on
+  a queued row, a predecessor that stops short.
 
 ## Open
 
@@ -623,8 +639,6 @@ and 8 stand alone.
   rules don't depend on it (decision 7).
 - A message's attachments stay with Aski's chat: a plan's Cells get
   words only.
-- A plan that still waits is forgotten by a reload of its window: nothing
-  starts, and the person says it again.
 - Aski's own shell and file tools are still its provider's; the persona
   forbids them, and the server refuses only what starts or destroys.
 - Aski may pass on the person's words with a part left out: a run can't
@@ -638,5 +652,18 @@ and 8 stand alone.
   machine lists it, not before.
 - Aski's own text as a Check (slice 8): until then Aski's chat sends a
   Cell none of its own words at all.
+- A Cell the server starts (own worktree, or after another) skips what
+  only the client adds to a first message: the effort a model takes as
+  words in its prompt.
+- Whether a plan's Cells get worktrees reads the server's and the
+  project's settings, not a default a project keeps in a file of its own.
+- A queued Cell whose predecessor was put to sleep while the server was
+  down waits until Start now, or is dropped after a day.
+- A queued Cell for a project on another machine fails with its reason:
+  only Aski's own server holds a queue.
+- Aski's note about a plan's news has no eval of its own yet.
+- The manager choosing roles for a broad goal, an analyst whose findings
+  reach the builders, and Cells sharing one copy by area: asked for, being
+  researched, undecided.
 - A private corpus of real messages, and a harvest of corrected plans.
 - The cap of twelve is a guess until someone hits it.
