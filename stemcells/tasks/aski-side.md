@@ -43,8 +43,14 @@ can't approve its own requests.
    screens slide, and only the button's figure goes through. Reduce Motion:
    the figures and the feed fade where they stand. The Mac's turn is a view
    transition (Review).
-4. **"This" carries over.** Turning to Aski from a Cell puts that Cell's chip
-   (upstream's thread context) in Aski's composer; × drops it.
+4. **"This" carries over.** Turning to Aski from a Cell brings that Cell
+   along as what "this" means; × drops it. On the Mac its chip (upstream's
+   thread context) stands in Aski's composer. On the phone the field is too
+   narrow for a chip, which filled it and couldn't be tapped away: a small
+   pill over the composer names the Cell instead, and its chip joins the
+   message only as it is sent. The field stays the person's words alone, so
+   a message that sets Cells up is still read by the plan's compiler, and
+   the server finds a message's plan past the chip.
 5. **Long press: what's next, under one finger.** Hold, slide, let go:
    - **New Aski**: a fresh Aski chat. The one before settles, readable.
    - **New Cell**: a new Cell's draft.
