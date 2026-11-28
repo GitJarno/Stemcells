@@ -3,7 +3,6 @@ import { describe, expect, it } from "vite-plus/test";
 import type { LimitAccount, LimitWindow } from "../upstream/limitAccounts";
 import {
   boardOrder,
-  headlineOf,
   maskedEmail,
   readPlan,
   readPlans,
@@ -11,6 +10,8 @@ import {
   ringFigure,
   ringPlan,
   shortWait,
+  standingOf,
+  windowWhen,
 } from "./plans";
 
 const MINUTE = 60_000;
@@ -115,7 +116,7 @@ describe("a plan's windows", () => {
       NOW,
     );
     expect(plan.tone).toBe("short");
-    expect(headlineOf(plan, NOW, clock, duration)).toBeNull();
+    expect(standingOf(plan, NOW, clock, duration)).toMatchObject({ tone: "fine", detail: null });
     // With only families' weeks, the tightest stands in, short at worst.
     const families = readPlan(
       account("b", [
@@ -192,17 +193,19 @@ describe("the ring's plan", () => {
   });
 });
 
-describe("the headline", () => {
-  it("says when the plan limits and how long before its reset", () => {
+describe("where the plan you're on stands", () => {
+  it("says when the pace runs it out and how long before its reset", () => {
     const plan = readPlan(
       account("a", [window("s", "session", "Session", 60, 5, 2)]),
       1,
       "Claude",
       NOW,
     );
-    expect(headlineOf(plan, NOW, clock, duration)).toBe(
-      "You'll limit at 13:20, 100m before reset (15:00)",
-    );
+    expect(standingOf(plan, NOW, clock, duration)).toEqual({
+      tone: "short",
+      lead: "Runs out 13:20",
+      detail: "100m before it resets 15:00",
+    });
   });
 
   it("says until when a plan that has run out is limited: its later reset", () => {
@@ -215,17 +218,47 @@ describe("the headline", () => {
       "Claude",
       NOW,
     );
-    expect(headlineOf(plan, NOW, clock, duration)).toBe("Limited until 14:00, in 120m");
+    expect(standingOf(plan, NOW, clock, duration)).toEqual({
+      tone: "out",
+      lead: "Limited until 14:00",
+      detail: "Frees in 120m",
+    });
   });
 
-  it("says nothing while the pace holds out", () => {
-    const plan = readPlan(
+  it("says only when it resets while the pace holds out, and what is left once low", () => {
+    const fine = readPlan(
       account("a", [window("w", "weekly", "Weekly", 30, 168, 84)]),
       1,
       "Claude",
       NOW,
     );
-    expect(headlineOf(plan, NOW, clock, duration)).toBeNull();
+    expect(standingOf(fine, NOW, clock, duration)).toEqual({
+      tone: "fine",
+      lead: `Resets ${clock(NOW + 84 * HOUR)}`,
+      detail: null,
+    });
+    // Too early in the window to judge a pace, but low all the same.
+    const low = readPlan(
+      account("a", [window("s", "session", "Session", 95, 5, 0.25)]),
+      1,
+      "Claude",
+      NOW,
+    );
+    expect(standingOf(low, NOW, clock, duration)).toEqual({
+      tone: "short",
+      lead: "5% left",
+      detail: "Resets in 285m",
+    });
+  });
+});
+
+describe("a row's when", () => {
+  it("says the reset, or the run out first, and on the page both", () => {
+    const pacing = readWindow(window("s", "session", "Session", 60, 5, 2), NOW, NOW);
+    expect(windowWhen(pacing, NOW, clock, duration)).toBe("Runs out 13:20");
+    expect(windowWhen(pacing, NOW, clock, duration, true)).toBe("Runs out 13:20 · resets in 180m");
+    const week = readWindow(window("w", "weekly", "Weekly", 30, 168, 84), NOW, NOW);
+    expect(windowWhen(week, NOW, clock, duration)).toBe(`Resets ${clock(NOW + 84 * HOUR)}`);
   });
 });
 

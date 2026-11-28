@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import Svg, { Circle } from "react-native-svg";
 import { useResolveClassNames } from "uniwind";
@@ -35,7 +36,6 @@ export function PlanRing() {
   const now = useNowMinuteMs();
   const { ring } = usePlans(now);
   const inkOf = useInkOf();
-  const track = useResolveClassNames("text-foreground").color;
   const binding = ring === null ? null : bindingOf(ring);
   if (ring === null || binding === null) return null;
 
@@ -55,31 +55,7 @@ export function PlanRing() {
       accessibilityHint="Shows every plan's limits"
       className="size-9 items-center justify-center"
     >
-      <View style={{ width: SIZE, height: SIZE }} className="items-center justify-center">
-        <Svg width={SIZE} height={SIZE} viewBox="0 0 28 28" style={StyleSheet.absoluteFill}>
-          <Circle
-            cx={14}
-            cy={14}
-            r={RADIUS}
-            fill="none"
-            stroke={track}
-            strokeOpacity={0.24}
-            strokeWidth={2.25}
-          />
-          {used > 0 ? (
-            <Circle
-              cx={14}
-              cy={14}
-              r={RADIUS}
-              fill="none"
-              stroke={ink}
-              strokeWidth={2.25}
-              strokeLinecap="round"
-              strokeDasharray={`${(CIRCLE * used) / 100} ${CIRCLE}`}
-              transform="rotate(-90 14 14)"
-            />
-          ) : null}
-        </Svg>
+      <Dial size={SIZE} used={used} ink={ink}>
         <AppText
           className="font-t3-bold"
           style={[
@@ -91,7 +67,47 @@ export function PlanRing() {
         >
           {figure}
         </AppText>
-      </View>
+      </Dial>
     </Pressable>
+  );
+}
+
+/** A ring filled to `used` percent in `ink` over a faint track, `children` in its middle. */
+export function Dial(props: {
+  readonly size: number;
+  readonly used: number;
+  readonly ink: string;
+  readonly children: ReactNode;
+}) {
+  const track = useResolveClassNames("text-foreground").color;
+  const { size, used } = props;
+  return (
+    <View style={{ width: size, height: size }} className="items-center justify-center">
+      <Svg width={size} height={size} viewBox="0 0 28 28" style={StyleSheet.absoluteFill}>
+        <Circle
+          cx={14}
+          cy={14}
+          r={RADIUS}
+          fill="none"
+          stroke={track}
+          strokeOpacity={0.24}
+          strokeWidth={2.25}
+        />
+        {used > 0 ? (
+          <Circle
+            cx={14}
+            cy={14}
+            r={RADIUS}
+            fill="none"
+            stroke={props.ink}
+            strokeWidth={2.25}
+            strokeLinecap="round"
+            strokeDasharray={`${(CIRCLE * used) / 100} ${CIRCLE}`}
+            transform="rotate(-90 14 14)"
+          />
+        ) : null}
+      </Svg>
+      {props.children}
+    </View>
   );
 }

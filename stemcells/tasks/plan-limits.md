@@ -30,8 +30,16 @@ left, when it resets, and whether the pace so far runs out first.
   blocks its session too, as upstream's pool reads it.
 - **Names**: upstream's Display name (Settings › Providers), else the
   masked email (`ja…@example.com`), never the full one.
-- **One headline**, for the ring's plan only: "You'll limit at 15.40, 45m
-  before reset (16.25)", or "Limited until 16.25, in 45m".
+- **The plan you're on leads the card** (2026-11-28, a design pass after
+  the first card read cramped): the ring you tapped, grown, beside where
+  the plan stands in two lines ("Runs out Sun 15.40" over "45m before it
+  resets Tue 16.25"; "Limited until 16.25" over "Frees in 45m"; else when
+  it resets), then its windows. The other plans follow under their own
+  heading, and Usage closes the card. A window is two lines, never a
+  squeezed four-column row: its name, when, and the percent, then the bar
+  under them. On the phone each plan is a card of the app's grouped kind,
+  kept to a reading width on a wide sheet; on the Mac's card the plan
+  you're on is the one card and the rest sit under it.
 - **The page**: the same rows replace upstream's pooled limit cards (a
   substitute for `UsageLimitsPooled`); its notices, links and the reset
   credits stay upstream's.

@@ -1,46 +1,119 @@
-/* The plan board (PlanBoard.tsx): the ring's card and the Usage page. */
+/* The plan board (PlanBoard.tsx): the ring's card and the Usage page, as the phone's sheet. */
 
 [data-stemcells-plans-card] {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 14px 16px 12px;
+  gap: 12px;
+  padding: 16px 16px 14px;
   font-family: var(--sc-font-ui);
+  font-variant-numeric: tabular-nums;
 }
-
-[data-stemcells-plans-head] {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
+[data-stemcells-plans-card] > h3 {
+  margin: 0 2px;
+  font-size: 15px;
+  font-weight: 650;
 }
-[data-stemcells-plans-head] > h3 {
-  margin: 0;
-  font-size: 13px;
-  font-weight: 600;
-}
-[data-stemcells-plans-head] > button {
-  font-size: 12px;
+[data-stemcells-plans-card] > h4 {
+  margin: 6px 2px -4px;
+  font-size: 11.5px;
+  font-weight: 500;
   color: var(--sc-dim);
 }
-[data-stemcells-plans-head] > button::after {
-  content: " →";
-}
-[data-stemcells-plans-head] > button:hover {
-  color: var(--foreground);
-}
 
-[data-stemcells-plans-headline] {
+/* The plan you're on: a card of its own, its ring grown beside where it stands. */
+[data-stemcells-plans-plan][data-current] {
+  padding: 14px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--foreground) 5%, transparent);
+  font-size: 12px;
+}
+[data-stemcells-plans-current] {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+[data-stemcells-plans-current] > div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+[data-stemcells-plans-current] [data-stemcells-plans-name] {
   margin: 0;
-  font-size: 12.5px;
-  line-height: 1.4;
+  font-size: 14px;
+}
+[data-stemcells-plans-dial] {
+  position: relative;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+}
+[data-stemcells-plans-dial] > svg {
+  position: absolute;
+  inset: 0;
+}
+[data-stemcells-plans-dial] circle {
+  fill: none;
+  stroke-width: 2.25;
+  stroke-linecap: round;
+}
+[data-stemcells-plans-dial-track] {
+  stroke: color-mix(in srgb, var(--foreground) 16%, transparent);
+}
+[data-stemcells-plans-dial] > b {
+  position: relative;
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+[data-stemcells-plans-dial][data-tone="short"] > b {
   color: var(--sc-needs-you);
 }
-[data-stemcells-plans-headline][data-tone="out"] {
+[data-stemcells-plans-dial][data-tone="out"] > b {
   color: var(--sc-error);
+}
+[data-stemcells-plans-standing] {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+[data-stemcells-plans-standing][data-tone="short"] > span {
+  color: var(--sc-needs-you);
+}
+[data-stemcells-plans-standing][data-tone="out"] > span {
+  color: var(--sc-error);
+}
+[data-stemcells-plans-standing] > small {
+  font-size: 11.5px;
+  font-weight: 400;
+  color: var(--sc-dim);
+}
+
+[data-stemcells-plans-usage] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  text-align: left;
+}
+[data-stemcells-plans-usage]::after {
+  content: "›";
+  color: var(--sc-dim);
+}
+[data-stemcells-plans-usage]:hover {
+  background: var(--sc-faint);
 }
 
 [data-stemcells-plans-hint] {
-  margin: 0;
+  margin: 0 2px;
   font-size: 11.5px;
   color: var(--sc-dim);
 }
@@ -53,21 +126,30 @@
 }
 [data-stemcells-plans][data-size="page"] {
   max-width: 40rem;
+  gap: 12px;
   font-size: 13px;
 }
 
 [data-stemcells-plans-plan] {
-  padding-block: 10px 8px;
+  display: flex;
+  flex-direction: column;
+}
+[data-stemcells-plans][data-size="card"] [data-stemcells-plans-plan] {
+  padding: 12px 2px 10px;
   border-top: 1px solid var(--border);
 }
-[data-stemcells-plans-plan]:first-child {
-  padding-top: 2px;
+[data-stemcells-plans][data-size="card"] [data-stemcells-plans-plan]:first-child {
   border-top: none;
 }
 [data-stemcells-plans][data-size="page"] [data-stemcells-plans-plan] {
-  padding-block: 14px 12px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
 }
 [data-stemcells-plans-plan] > ul {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -75,9 +157,10 @@
 
 [data-stemcells-plans-name] {
   display: flex;
+  min-width: 0;
   align-items: center;
   gap: 7px;
-  margin-bottom: 6px;
+  margin-bottom: 12px;
   font-size: 13px;
   font-weight: 600;
 }
@@ -86,48 +169,54 @@
   height: auto;
   flex: none;
 }
-[data-stemcells-plans-name][data-named="false"] > span:nth-of-type(1) {
+[data-stemcells-plans-name] > span,
+[data-stemcells-plans-name] > small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+[data-stemcells-plans-name][data-named="false"] > span {
   font-weight: 500;
 }
 [data-stemcells-plans-name] > small {
   font-size: 12px;
-  font-weight: 450;
+  font-weight: 400;
   color: var(--sc-dim);
-}
-[data-stemcells-plans-chip] {
-  padding: 0 6px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  font-size: 10.5px;
-  font-weight: 450;
-  color: var(--sc-dim);
-}
-[data-stemcells-plans-chip]:first-of-type {
-  margin-left: auto;
 }
 
+/* A row: its name, when, and the percent on one line, the bar under them. */
 [data-stemcells-plans-row] {
   display: grid;
-  grid-template-columns: 4.5rem 1fr 2.6rem 5.25rem;
-  align-items: center;
-  gap: 8px;
-  padding-block: 2.5px;
-}
-[data-stemcells-plans][data-size="page"] [data-stemcells-plans-row] {
-  grid-template-columns: 6rem 1fr 3rem 12rem;
-  padding-block: 3.5px;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  column-gap: 8px;
+  row-gap: 6px;
 }
 [data-stemcells-plans-label] {
+  white-space: nowrap;
+}
+[data-stemcells-plans-when] {
   overflow: hidden;
   color: var(--sc-dim);
+  font-size: 0.92em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+[data-stemcells-plans-row][data-runs-out] [data-stemcells-plans-when] {
+  color: var(--sc-needs-you);
+}
+[data-stemcells-plans-used] {
+  font-weight: 650;
+}
+[data-stemcells-plans-row][data-tone="out"] [data-stemcells-plans-used] {
+  color: var(--sc-error);
+}
 [data-stemcells-plans-bar] {
   position: relative;
+  grid-column: 1 / -1;
   height: 5px;
   border-radius: 3px;
-  background: var(--sc-faint);
+  background: color-mix(in srgb, var(--foreground) 12%, transparent);
 }
 [data-stemcells-plans-bar] > i {
   position: absolute;
@@ -138,25 +227,16 @@
 /* Where an even pace would have the bar by now. */
 [data-stemcells-plans-bar] > u {
   position: absolute;
-  inset-block: -2px;
-  width: 1.5px;
+  inset-block: -2.5px;
+  width: 2px;
+  margin-left: -1px;
+  border-radius: 1px;
   background: var(--foreground);
-  opacity: 0.55;
+  opacity: 0.5;
 }
-[data-stemcells-plans-used] {
-  text-align: right;
-  font-weight: 600;
-}
-[data-stemcells-plans-when] {
-  overflow: hidden;
+
+[data-stemcells-plans-aside] {
+  margin: 12px 0 0;
+  font-size: 11.5px;
   color: var(--sc-dim);
-  text-align: right;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-[data-stemcells-plans-row][data-tone="short"] [data-stemcells-plans-when] {
-  color: var(--sc-needs-you);
-}
-[data-stemcells-plans-row][data-tone="out"] [data-stemcells-plans-used] {
-  color: var(--sc-error);
 }

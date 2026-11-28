@@ -4,126 +4,135 @@ import Svg, { Path } from "react-native-svg";
 
 import { ERROR, NEEDS_YOU } from "../tokens";
 import { AppText } from "../upstream/cells";
+import { SymbolView } from "../upstream/home";
 import { formatDuration, openSettings, useNowMinuteMs } from "../upstream/limits";
 import {
+  bindingOf,
   boardOrder,
-  headlineOf,
   path,
   type PlanReading,
   type PlanRow,
+  type PlanTone,
+  ringFigure,
   SIZE,
-  type WindowReading,
+  standingOf,
+  windowWhen,
 } from "./kit";
-import { useInkOf } from "./PlanRing";
+import { Dial, useInkOf } from "./PlanRing";
 import { hidePlans, usePlansShown } from "./sheet";
 import { usePlans } from "./usePlans";
 import { clockOf } from "./work";
 
-const DAY = 24 * 60 * 60_000;
 const CELL = path("awake");
-const GLYPH = 12;
 const NUMBERS = { fontVariant: ["tabular-nums" as const] };
+/** On a wide sheet (a tablet, the unfolded Duo) the card keeps a reading width. */
+const MOST_WIDE = 520;
 
 interface Clocks {
   readonly now: number;
   readonly clock: (at: number) => string;
 }
 
-/** When it resets ("2h 10m" under a day, else "Tue 20.00"), or when the pace runs it out first. */
-function whenOf(window: WindowReading, clocks: Clocks): string {
-  if (window.resetsAt === null) return "";
-  if (window.runsOutAt !== null) return `out ${clocks.clock(window.runsOutAt)}`;
-  return window.resetsAt - clocks.now < DAY
-    ? formatDuration(window.resetsAt - clocks.now)
-    : clocks.clock(window.resetsAt);
-}
+/** Amber when short, red when out, else nothing: the ink's say. */
+const toneInk = (tone: PlanTone) =>
+  tone === "out" ? { color: ERROR } : tone === "short" ? { color: NEEDS_YOU } : null;
 
+/** A window: its name, when it resets or runs out, and the percent used over its bar. */
 function Row(props: { readonly row: PlanRow; readonly ink: string; readonly clocks: Clocks }) {
-  const { reading } = props.row;
+  const { label, reading } = props.row;
+  const { now, clock } = props.clocks;
   const used = 100 - reading.left;
   const even = reading.evenLeft === null ? null : 100 - reading.evenLeft;
+  const when = windowWhen(reading, now, clock, formatDuration);
   return (
-    <View className="flex-row items-center gap-2 py-1">
-      <AppText className="w-20 text-xs text-foreground-muted" numberOfLines={1}>
-        {props.row.label}
-      </AppText>
-      <View className="h-[5px] flex-1 rounded-full bg-foreground/24">
-        <View
-          className="absolute inset-y-0 left-0 rounded-full"
-          style={{ width: `${used}%`, backgroundColor: props.ink }}
-        />
-        {even !== null ? (
+    <View
+      className="gap-2"
+      accessible
+      accessibilityLabel={`${label}: ${used}% used${when === "" ? "" : `, ${when}`}`}
+    >
+      <View className="flex-row items-baseline gap-2">
+        <AppText className="text-sm text-foreground">{label}</AppText>
+        <AppText
+          className="min-w-0 flex-1 text-xs text-foreground-muted"
+          style={[NUMBERS, reading.runsOutAt === null ? null : { color: NEEDS_YOU }]}
+          numberOfLines={1}
+        >
+          {when}
+        </AppText>
+        <AppText
+          className="text-sm font-t3-bold text-foreground"
+          style={[NUMBERS, reading.tone === "out" ? { color: ERROR } : null]}
+        >
+          {used}%
+        </AppText>
+      </View>
+      <View className="h-1.5 justify-center">
+        <View className="absolute inset-0 rounded-full bg-foreground/12" />
+        {used > 0 ? (
+          <View
+            className="absolute inset-y-0 left-0 rounded-full"
+            style={{ width: `${used}%`, backgroundColor: props.ink }}
+          />
+        ) : null}
+        {even !== null && even > 0 && even < 100 ? (
           // Where an even pace would have the bar by now.
           <View
-            className="absolute -inset-y-0.5 w-[1.5px] bg-foreground opacity-55"
-            style={{ left: `${even}%` }}
+            className="absolute -top-[3px] -bottom-[3px] w-0.5 rounded-full bg-foreground/55"
+            style={{ left: `${even}%`, marginLeft: -1 }}
           />
         ) : null}
       </View>
-      <AppText
-        className="w-12 text-right text-xs font-t3-bold"
-        style={[NUMBERS, reading.tone === "out" ? { color: ERROR } : null]}
-        numberOfLines={1}
-      >
-        {used}%
-      </AppText>
-      <AppText
-        className="w-24 text-right text-xs text-foreground-muted"
-        style={[NUMBERS, reading.tone === "short" ? { color: NEEDS_YOU } : null]}
-        numberOfLines={1}
-      >
-        {whenOf(reading, props.clocks)}
-      </AppText>
     </View>
   );
 }
 
-function Chip(props: { readonly words: string }) {
-  return (
-    <View className="rounded-full border border-border px-1.5">
-      <AppText className="text-3xs text-foreground-muted">{props.words}</AppText>
-    </View>
-  );
-}
-
-function Plan(props: {
-  readonly plan: PlanReading;
-  readonly first: boolean;
-  readonly clocks: Clocks;
-}) {
-  const { plan } = props;
+/** A plan's Cell in its provider's colour, its name, and its tier when that isn't the name. */
+function Name(props: { readonly plan: PlanReading; readonly large?: boolean }) {
+  const { plan, large = false } = props;
   const inkOf = useInkOf();
-  const driver = String(plan.account.driver);
-  const credits = plan.account.limits.resetCredits?.availableCount ?? 0;
+  const glyph = large ? 14 : 12;
   return (
-    <View className={props.first ? "pb-2" : "border-t border-border pt-3 pb-2"}>
-      <View className="mb-1.5 flex-row items-center gap-2">
-        <Svg
-          width={GLYPH}
-          height={(GLYPH * SIZE.height) / SIZE.width}
-          viewBox={`0 0 ${SIZE.width} ${SIZE.height}`}
-        >
-          <Path d={CELL} fill={inkOf(driver, "fine")} />
-        </Svg>
-        <AppText
-          className={`shrink text-sm ${plan.named ? "font-t3-bold" : "font-t3-medium"}`}
-          numberOfLines={1}
-        >
-          {plan.name}
+    <View className="min-w-0 flex-row items-center gap-2">
+      <Svg
+        width={glyph}
+        height={(glyph * SIZE.height) / SIZE.width}
+        viewBox={`0 0 ${SIZE.width} ${SIZE.height}`}
+      >
+        <Path d={CELL} fill={inkOf(String(plan.account.driver), "fine")} />
+      </Svg>
+      <AppText
+        className={`shrink ${large ? "text-base" : "text-sm"} ${plan.named ? "font-t3-bold" : "font-t3-medium"}`}
+        numberOfLines={1}
+      >
+        {plan.name}
+      </AppText>
+      {plan.account.plan && plan.account.plan !== plan.name ? (
+        <AppText className="shrink text-xs text-foreground-muted" numberOfLines={1}>
+          {plan.account.plan}
         </AppText>
-        {plan.account.plan && plan.account.plan !== plan.name ? (
-          <AppText className="shrink text-xs text-foreground-muted" numberOfLines={1}>
-            {plan.account.plan}
-          </AppText>
-        ) : null}
-        <View className="ml-auto flex-row gap-1">
-          {plan.working > 0 ? (
-            <Chip words={plan.working === 1 ? "1 Cell" : `${plan.working} Cells`} />
-          ) : null}
-          {credits > 0 ? <Chip words={credits === 1 ? "1 reset" : `${credits} resets`} /> : null}
-        </View>
-      </View>
-      {plan.rows.map((row) => (
+      ) : null}
+    </View>
+  );
+}
+
+/** What else stands on a plan: the Cells on it now, and resets it can spend. */
+function Aside(props: { readonly plan: PlanReading }) {
+  const { plan } = props;
+  const credits = plan.account.limits.resetCredits?.availableCount ?? 0;
+  const words = [
+    plan.working === 0 ? null : plan.working === 1 ? "1 Cell on it" : `${plan.working} Cells on it`,
+    credits === 0 ? null : credits === 1 ? "1 reset to spend" : `${credits} resets to spend`,
+  ].filter((each) => each !== null);
+  if (words.length === 0) return null;
+  return <AppText className="text-xs text-foreground-muted">{words.join(" · ")}</AppText>;
+}
+
+function Rows(props: { readonly plan: PlanReading; readonly clocks: Clocks }) {
+  const inkOf = useInkOf();
+  const driver = String(props.plan.account.driver);
+  return (
+    <View className="gap-4">
+      {props.plan.rows.map((row) => (
         <Row
           key={row.label}
           row={row}
@@ -135,42 +144,109 @@ function Plan(props: {
   );
 }
 
+/** The plan you're on: the ring you tapped, grown, where it stands, then its windows. */
+function Current(props: { readonly plan: PlanReading; readonly clocks: Clocks }) {
+  const { plan, clocks } = props;
+  const inkOf = useInkOf();
+  const binding = bindingOf(plan);
+  const figure = ringFigure(plan, clocks.now);
+  const standing = standingOf(plan, clocks.now, clocks.clock, formatDuration);
+  const ink = inkOf(String(plan.account.driver), plan.tone);
+  const used = plan.tone === "out" ? 100 : binding === null ? 0 : 100 - binding.left;
+  return (
+    <View className="gap-5 rounded-2xl bg-grouped-card p-5">
+      <View className="flex-row items-center gap-4">
+        <Dial size={68} used={used} ink={ink}>
+          <AppText
+            className="text-lg font-t3-bold text-foreground"
+            style={[NUMBERS, { letterSpacing: -0.4 }, toneInk(plan.tone)]}
+          >
+            {figure === null ? "–" : plan.tone === "out" ? figure : `${figure}%`}
+          </AppText>
+        </Dial>
+        <View className="min-w-0 flex-1 gap-1">
+          <Name plan={plan} large />
+          {standing === null ? null : (
+            <View>
+              <AppText
+                className="text-sm font-t3-medium text-foreground"
+                style={[NUMBERS, toneInk(standing.tone)]}
+              >
+                {standing.lead}
+              </AppText>
+              {standing.detail === null ? null : (
+                <AppText className="text-xs text-foreground-muted" style={NUMBERS}>
+                  {standing.detail}
+                </AppText>
+              )}
+            </View>
+          )}
+        </View>
+      </View>
+      <Rows plan={plan} clocks={clocks} />
+      <Aside plan={plan} />
+    </View>
+  );
+}
+
+function Other(props: { readonly plan: PlanReading; readonly clocks: Clocks }) {
+  return (
+    <View className="gap-4 rounded-2xl bg-grouped-card p-4">
+      <Name plan={props.plan} />
+      <Rows plan={props.plan} clocks={props.clocks} />
+      <Aside plan={props.plan} />
+    </View>
+  );
+}
+
 /**
- * The ring's card, as the Mac's (`apps/web/src/stemcells/limits/PlanBoard.tsx`): when the ring's
- * plan stops you, if it will before its reset, then every plan, the ring's first, and a way to
- * the Usage page.
+ * The ring's card, as the Mac's (`apps/web/src/stemcells/limits/PlanBoard.tsx`): the plan you're
+ * on, then every other plan, the most room first, then the way to the Usage page.
  */
 function PlanCard(props: { readonly onUsage: () => void }) {
   const now = useNowMinuteMs();
   const { plans, ring } = usePlans(now);
   const clocks = { now, clock: clockOf(now) };
-  const headline = ring === null ? null : headlineOf(ring, now, clocks.clock, formatDuration);
+  const [first, ...rest] = boardOrder(plans, ring);
   return (
-    <ScrollView contentContainerClassName="gap-3 px-5 pt-5 pb-10">
-      <View className="flex-row items-baseline justify-between">
-        <AppText className="text-lg font-t3-bold">Limits</AppText>
-        <Pressable onPress={props.onUsage} accessibilityRole="link" hitSlop={8}>
-          <AppText className="text-sm text-foreground-muted">Usage →</AppText>
-        </Pressable>
+    <ScrollView contentContainerClassName="items-center px-5 pt-7 pb-12">
+      <View className="w-full gap-6" style={{ maxWidth: MOST_WIDE }}>
+        <AppText className="px-1 text-2xl font-t3-bold text-foreground">Limits</AppText>
+        {first === undefined ? (
+          <AppText className="px-1 text-sm text-foreground-muted">
+            No plan has said its limits yet.
+          </AppText>
+        ) : (
+          <Current plan={first} clocks={clocks} />
+        )}
+        {rest.length > 0 ? (
+          <View className="gap-2.5">
+            <AppText className="px-1 text-xs font-t3-medium text-foreground-muted">
+              {rest.length === 1 ? "Your other plan" : "Your other plans"}
+            </AppText>
+            {rest.map((plan) => (
+              <Other key={plan.account.key} plan={plan} clocks={clocks} />
+            ))}
+          </View>
+        ) : null}
+        <View className="gap-2.5">
+          <Pressable
+            onPress={props.onUsage}
+            accessibilityRole="link"
+            className="flex-row items-center rounded-2xl bg-grouped-card px-4 py-3.5 active:opacity-70"
+          >
+            <AppText className="text-sm text-foreground">Usage</AppText>
+            <View className="ml-auto">
+              <SymbolView name="chevron.right" size={12} tintColorClassName="accent-icon-muted" />
+            </View>
+          </Pressable>
+          {plans.length > 1 && plans.some((plan) => !plan.named) ? (
+            <AppText className="px-1 text-xs text-foreground-muted">
+              Name your plans in Settings › Providers.
+            </AppText>
+          ) : null}
+        </View>
       </View>
-      {headline !== null && ring !== null ? (
-        <AppText
-          className="text-sm leading-5"
-          style={{ color: ring.tone === "out" ? ERROR : NEEDS_YOU }}
-        >
-          {headline}
-        </AppText>
-      ) : null}
-      <View>
-        {boardOrder(plans, ring).map((plan, index) => (
-          <Plan key={plan.account.key} plan={plan} first={index === 0} clocks={clocks} />
-        ))}
-      </View>
-      {plans.length > 1 && plans.some((plan) => !plan.named) ? (
-        <AppText className="text-xs text-foreground-muted">
-          Name your plans in Settings › Providers.
-        </AppText>
-      ) : null}
     </ScrollView>
   );
 }
