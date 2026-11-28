@@ -9,6 +9,7 @@ export {
 } from "@t3tools/client-runtime/state/runtime";
 export * as Dialog from "../../components/ui/Dialog";
 export { AppText } from "../../components/ui/AppText";
+export { SymbolView } from "../../components/ui/AppSymbol";
 export { useServerConfigs } from "../../state/entities";
 export { projectEnvironment } from "../../state/projects";
 export { useAtomCommand } from "../../state/use-atom-command";

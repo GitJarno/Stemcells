@@ -1,0 +1,30 @@
+/* The casual chat's button under a new chat's headline (CasualButton.tsx), as the phone's. */
+[data-stemcells-casual] {
+  display: inline-flex;
+  height: 30px;
+  align-items: center;
+  gap: 7px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--foreground) 6%, transparent);
+  color: color-mix(in srgb, var(--foreground) 78%, transparent);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 120ms ease-out,
+    color 120ms ease-out;
+}
+[data-stemcells-casual]:hover {
+  background: color-mix(in srgb, var(--foreground) 10%, transparent);
+  color: var(--foreground);
+}
+[data-stemcells-casual]:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+[data-stemcells-casual] > svg {
+  width: 14px;
+  height: 14px;
+  opacity: 0.7;
+}

@@ -10,6 +10,7 @@ line with no padding, so a new row changes no other line.
 <!-- prettier-ignore-start -->
 | File | Change | Why |
 | --- | --- | --- |
+| `apps/web/src/components/chat/DraftHeroHeadline.tsx` (casual chat) | The offer under a new chat's headline renders `CasualButton` (`stemcells/casual/CasualButton.tsx`) in place of upstream's muted `InlineButton`; its tooltip, words and action stay upstream's (an import and a line) | A casual chat (`stemcells/seams.md`): the offer is a button on every device, as the phone's. The trigger is built inside the headline, which holds the draft's state, so no substitute reaches it |
 | `apps/web/index.html` (theme) | The boot script knows Stemcells' theme: its splash colours in `BUILT_IN_THEME_PALETTES`, its id in `RESERVED_THEME_IDS`, a built-in with one mode takes that mode as its base appearance, where every built-in was light, and no stored preference reads as `"stemcells"` | Same: the splash and the window's ground wear it before the app loads, on a first launch too |
 | `apps/web/public/manifest.webmanifest` | `name` and `short_name` are "Stemcells" | The name a browser installs the web app under |
 | `apps/web/src/browser/ServerBrowserSurface.tsx` | The same touch drag as the phone's viewer: past the slop a finger waits for the probe's `drags` and then drags with the mouse or scrolls | A touch screen (an iPad, a phone's browser) drags a page's slider instead of scrolling (`stemcells/upstream/browserTouchDrag.browser.test.tsx`) |

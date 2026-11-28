@@ -40,6 +40,7 @@ import {
 } from "../ui/combobox";
 import { Tooltip, TooltipPopup, TooltipScrollDismissArea, TooltipTrigger } from "../ui/tooltip";
 import { SharedTooltipTrigger } from "../ui/shared-tooltip";
+import { CasualButton } from "../../stemcells/casual/CasualButton";
 import { InlineButton } from "../ui/button";
 import { DraftProjectName } from "./DraftProjectName";
 import { DraftHeroProjectHeading } from "./DraftHeroProjectHeading";
@@ -316,8 +317,7 @@ export function DraftHeroHeadline({
       <Tooltip>
         <TooltipTrigger
           render={
-            <InlineButton
-              tone="muted"
+            <CasualButton
               className="pointer-events-auto"
               onClick={() =>
                 void startScratch().then((started) => {

@@ -28,12 +28,12 @@ function action(value: string, title: string, searchTerms: string[]): CommandPal
 describe("a casual chat in upstream's views", () => {
   it("a new chat offers one under its headline, and one already casual is headed so", () => {
     const headline = built("chat/DraftHeroHeadline.tsx", draftHeroHeadline);
-    const offer = headline.indexOf(CASUAL_CHAT.offer);
+    const offer = headline.indexOf(CASUAL_CHAT.start);
     expect(headline.slice(offer - 1000, offer)).toMatch(
-      /const orStartWithoutProject =[\s\S]{0,600}void startScratch\(\)/,
+      /const orStartWithoutProject =[\s\S]{0,200}render=\{\s*<CasualButton[\s\S]{0,400}void startScratch\(\)/,
     );
     expect(headline.slice(offer - 3, offer)).toBe("<T>");
-    expect(headline.slice(offer + CASUAL_CHAT.offer.length)).toMatch(/^<\/T>\s*<\/TooltipTrigger>/);
+    expect(headline.slice(offer + CASUAL_CHAT.start.length)).toMatch(/^<\/T>\s*<\/TooltipTrigger>/);
     const casual = headline.indexOf(`<T>${CASUAL_CHAT.headline}</T>`);
     expect(headline.slice(casual - 60, casual)).toMatch(/\{isScratchDraft \? \(\s*$/);
     expect(headline).not.toMatch(/start without a project|What should we work on\?/);
