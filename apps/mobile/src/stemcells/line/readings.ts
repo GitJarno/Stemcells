@@ -54,7 +54,7 @@ export function readMachine(environmentId: string): Promise<Reading | null> {
 }
 
 /** Reads `environmentId` a beat from now, or once the gap since its last read has passed. */
-function readSoon(environmentId: string) {
+export function readSoon(environmentId: string) {
   if (waiting.has(environmentId)) return;
   const since = Date.now() - (lastRead.get(environmentId) ?? 0);
   const timer = setTimeout(

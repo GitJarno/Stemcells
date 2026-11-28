@@ -11,11 +11,46 @@
       { "id": "plain-project", "name": "plain-project" }
     ],
     "models": [
-      { "instanceId": "claudeAgent", "id": "claude-fable-5-1", "name": "Fable 5.1", "provider": "claude", "efforts": ["low", "medium", "high", "xhigh", "max"], "effortOption": "effort" },
-      { "instanceId": "claudeAgent", "id": "claude-opus-5-5", "name": "Opus 5.5", "provider": "claude", "efforts": ["low", "medium", "high", "xhigh", "max"], "effortOption": "effort" },
-      { "instanceId": "claudeAgent", "id": "claude-haiku-5-5", "name": "Haiku 5.5", "provider": "claude", "efforts": ["low", "medium", "high"], "effortOption": "effort" },
-      { "instanceId": "codex", "id": "gpt-6.1-sol", "name": "Sol 6.1", "provider": "codex", "efforts": ["low", "medium", "high", "xhigh", "max"], "effortOption": "reasoningEffort" },
-      { "instanceId": "antigravity", "id": "gemini-4-neon", "name": "Neon 4", "provider": "gemini", "efforts": ["low", "medium", "high", "xhigh"], "effortOption": "thought_level" }
+      {
+        "instanceId": "claudeAgent",
+        "id": "claude-fable-5-1",
+        "name": "Fable 5.1",
+        "provider": "claude",
+        "efforts": ["low", "medium", "high", "xhigh", "max"],
+        "effortOption": "effort"
+      },
+      {
+        "instanceId": "claudeAgent",
+        "id": "claude-opus-5-5",
+        "name": "Opus 5.5",
+        "provider": "claude",
+        "efforts": ["low", "medium", "high", "xhigh", "max"],
+        "effortOption": "effort"
+      },
+      {
+        "instanceId": "claudeAgent",
+        "id": "claude-haiku-5-5",
+        "name": "Haiku 5.5",
+        "provider": "claude",
+        "efforts": ["low", "medium", "high"],
+        "effortOption": "effort"
+      },
+      {
+        "instanceId": "codex",
+        "id": "gpt-6.1-sol",
+        "name": "Sol 6.1",
+        "provider": "codex",
+        "efforts": ["low", "medium", "high", "xhigh", "max"],
+        "effortOption": "reasoningEffort"
+      },
+      {
+        "instanceId": "antigravity",
+        "id": "gemini-4-neon",
+        "name": "Neon 4",
+        "provider": "gemini",
+        "efforts": ["low", "medium", "high", "xhigh"],
+        "effortOption": "thought_level"
+      }
     ],
     "cells": [
       { "threadId": "t-otter", "name": "Otter" },
@@ -28,10 +63,38 @@
       "dictated": true,
       "text": "Fable agent on high one for the product detail page gallery in Harbor the second for Kiosk's film detail page showtimes one for Atlas posting the changelog and one Neon agent for copywriting the drop ads in Lanterns",
       "cells": [
-        { "says": "gallery", "place": "Harbor", "model": "Fable 5.1", "effort": "high", "tier": "start", "not": "showtimes" },
-        { "says": "showtimes", "place": "Kiosk", "model": "Fable 5.1", "effort": "high", "tier": "start", "not": "gallery" },
-        { "says": "changelog", "place": "Atlas", "model": "Fable 5.1", "effort": "high", "tier": "start", "not": "drop ads" },
-        { "says": "drop ads", "place": "Lanterns", "model": "Neon 4", "effort": null, "tier": "start", "not": "changelog" }
+        {
+          "says": "gallery",
+          "place": "Harbor",
+          "model": "Fable 5.1",
+          "effort": "high",
+          "tier": "start",
+          "not": "showtimes"
+        },
+        {
+          "says": "showtimes",
+          "place": "Kiosk",
+          "model": "Fable 5.1",
+          "effort": "high",
+          "tier": "start",
+          "not": "gallery"
+        },
+        {
+          "says": "changelog",
+          "place": "Atlas",
+          "model": "Fable 5.1",
+          "effort": "high",
+          "tier": "start",
+          "not": "drop ads"
+        },
+        {
+          "says": "drop ads",
+          "place": "Lanterns",
+          "model": "Neon 4",
+          "effort": null,
+          "tier": "start",
+          "not": "changelog"
+        }
       ]
     },
     {
@@ -39,7 +102,13 @@
       "dictated": true,
       "text": "table agent on high one for the product detail page gallery in harbour and one soul agent for the ad copy in atlas",
       "cells": [
-        { "says": "gallery", "place": "Harbor", "model": "Fable 5.1", "effort": "high", "tier": "check" },
+        {
+          "says": "gallery",
+          "place": "Harbor",
+          "model": "Fable 5.1",
+          "effort": "high",
+          "tier": "check"
+        },
         { "says": "ad copy", "place": "Atlas", "model": "Sol 6.1", "effort": null, "tier": "start" }
       ]
     },
@@ -50,7 +119,13 @@
       "cells": [
         { "says": "sign-in", "place": "Harbor", "model": null, "effort": null, "tier": "start" },
         { "says": "docs", "place": "Atlas", "model": "Sol 6.1", "effort": null, "tier": "start" },
-        { "says": "comparison site", "place": "new:Vacuum Cleaners", "model": null, "effort": null, "tier": "check" }
+        {
+          "says": "comparison site",
+          "place": "new:Vacuum Cleaners",
+          "model": null,
+          "effort": null,
+          "tier": "check"
+        }
       ]
     },
     {
@@ -58,9 +133,21 @@
       "dictated": false,
       "text": "- Harbor: verify the booking page is complete\n- Atlas: research alternative competitors\n- a new project called Vacuum Cleaners about a comparison site",
       "cells": [
-        { "says": "booking page", "place": "Harbor", "model": null, "effort": null, "tier": "start" },
+        {
+          "says": "booking page",
+          "place": "Harbor",
+          "model": null,
+          "effort": null,
+          "tier": "start"
+        },
         { "says": "competitors", "place": "Atlas", "model": null, "effort": null, "tier": "start" },
-        { "says": "comparison site", "place": "new:Vacuum Cleaners", "model": null, "effort": null, "tier": "check" }
+        {
+          "says": "comparison site",
+          "place": "new:Vacuum Cleaners",
+          "model": null,
+          "effort": null,
+          "tier": "check"
+        }
       ]
     },
     {
@@ -68,31 +155,71 @@
       "dictated": true,
       "text": "Start three agents. First one fixes the header in Harbor with Opus at max. Second one with Fable no I meant Sol writes the docs in Atlas. Third one deletes the old staging tables in Ledger",
       "cells": [
-        { "says": "header", "place": "Harbor", "model": "Opus 5.5", "effort": "max", "tier": "start" },
+        {
+          "says": "header",
+          "place": "Harbor",
+          "model": "Opus 5.5",
+          "effort": "max",
+          "tier": "start"
+        },
         { "says": "docs", "place": "Atlas", "model": "Sol 6.1", "effort": null, "tier": "start" },
-        { "says": "staging tables", "place": "Ledger", "model": null, "effort": null, "tier": "check" }
+        {
+          "says": "staging tables",
+          "place": "Ledger",
+          "model": null,
+          "effort": null,
+          "tier": "check"
+        }
       ]
     },
     {
       "name": "one Cell from an address",
       "dictated": false,
       "text": "Harbor fix the header so it wraps on narrow screens",
-      "cells": [{ "says": "header", "place": "Harbor", "model": null, "effort": null, "tier": "start" }]
+      "cells": [
+        { "says": "header", "place": "Harbor", "model": null, "effort": null, "tier": "start" }
+      ]
     },
     {
       "name": "one long task is one Cell",
       "dictated": true,
       "text": "start an agent in Atlas to go through the docs and find every page that still mentions the old installer and then rewrite those pages so they match the new flow and also check the links and make a list of the ones that are broken",
-      "cells": [{ "says": "old installer", "place": "Atlas", "model": null, "effort": null, "tier": "start" }]
+      "cells": [
+        {
+          "says": "old installer",
+          "place": "Atlas",
+          "model": null,
+          "effort": null,
+          "tier": "start"
+        }
+      ]
     },
     {
       "name": "the same task for a count of Cells",
       "dictated": false,
       "text": "spawn 3 Sol agents in Ledger on the flaky export test",
       "cells": [
-        { "says": "flaky export", "place": "Ledger", "model": "Sol 6.1", "effort": null, "tier": "start" },
-        { "says": "flaky export", "place": "Ledger", "model": "Sol 6.1", "effort": null, "tier": "start" },
-        { "says": "flaky export", "place": "Ledger", "model": "Sol 6.1", "effort": null, "tier": "start" }
+        {
+          "says": "flaky export",
+          "place": "Ledger",
+          "model": "Sol 6.1",
+          "effort": null,
+          "tier": "start"
+        },
+        {
+          "says": "flaky export",
+          "place": "Ledger",
+          "model": "Sol 6.1",
+          "effort": null,
+          "tier": "start"
+        },
+        {
+          "says": "flaky export",
+          "place": "Ledger",
+          "model": "Sol 6.1",
+          "effort": null,
+          "tier": "start"
+        }
       ]
     },
     {
@@ -109,8 +236,20 @@
       "dictated": false,
       "text": "one agent in Harbor to make the header match the one in Atlas, and one in Ledger to add the export button",
       "cells": [
-        { "says": "match the one in Atlas", "place": "Harbor", "model": null, "effort": null, "tier": "start" },
-        { "says": "export button", "place": "Ledger", "model": null, "effort": null, "tier": "start" }
+        {
+          "says": "match the one in Atlas",
+          "place": "Harbor",
+          "model": null,
+          "effort": null,
+          "tier": "start"
+        },
+        {
+          "says": "export button",
+          "place": "Ledger",
+          "model": null,
+          "effort": null,
+          "tier": "start"
+        }
       ]
     },
     {
@@ -127,7 +266,9 @@
       "dictated": true,
       "text": "delete the Reviews project and start an agent in Harbor for the footer",
       "holds": [{ "target": "project", "place": "Reviews" }],
-      "cells": [{ "says": "footer", "place": "Harbor", "model": null, "effort": null, "tier": "check" }]
+      "cells": [
+        { "says": "footer", "place": "Harbor", "model": null, "effort": null, "tier": "check" }
+      ]
     },
     {
       "name": "archiving named Cells is held",
@@ -140,7 +281,15 @@
       "name": "a task that deletes inside its work is a Cell that waits, not a deletion",
       "dictated": false,
       "text": "start an agent in Ledger to delete the unused feature flags and drop the legacy_exports table",
-      "cells": [{ "says": "feature flags", "place": "Ledger", "model": null, "effort": null, "tier": "check" }]
+      "cells": [
+        {
+          "says": "feature flags",
+          "place": "Ledger",
+          "model": null,
+          "effort": null,
+          "tier": "check"
+        }
+      ]
     },
     {
       "name": "a question beside the Cells is talk",
@@ -157,14 +306,22 @@
       "dictated": false,
       "text": "spin up an agent in Kiosk for the seat map. Otter, rebase onto main. And turn the sounds off",
       "talk": "rebase",
-      "cells": [{ "says": "seat map", "place": "Kiosk", "model": null, "effort": null, "tier": "start" }]
+      "cells": [
+        { "says": "seat map", "place": "Kiosk", "model": null, "effort": null, "tier": "start" }
+      ]
     },
     {
       "name": "two-word project, said with a dash",
       "dictated": false,
       "text": "harbor-design: tidy the colour tokens. Atlas: fix the search box",
       "cells": [
-        { "says": "colour tokens", "place": "Harbor Design", "model": null, "effort": null, "tier": "start" },
+        {
+          "says": "colour tokens",
+          "place": "Harbor Design",
+          "model": null,
+          "effort": null,
+          "tier": "start"
+        },
         { "says": "search box", "place": "Atlas", "model": null, "effort": null, "tier": "start" }
       ]
     },
@@ -173,7 +330,13 @@
       "dictated": false,
       "text": "one agent in Harbor to fix the high contrast theme, one in Atlas to lower the max upload size",
       "cells": [
-        { "says": "high contrast", "place": "Harbor", "model": null, "effort": null, "tier": "start" },
+        {
+          "says": "high contrast",
+          "place": "Harbor",
+          "model": null,
+          "effort": null,
+          "tier": "start"
+        },
         { "says": "max upload", "place": "Atlas", "model": null, "effort": null, "tier": "start" }
       ]
     },
@@ -191,8 +354,22 @@
       "dictated": true,
       "text": "two agents one for the checkout page in Harbor and one for the cart page in Harbor and both of them should write tests first",
       "cells": [
-        { "says": "checkout", "place": "Harbor", "model": null, "effort": null, "tier": "start", "also": "tests first" },
-        { "says": "cart page", "place": "Harbor", "model": null, "effort": null, "tier": "start", "also": "tests first" }
+        {
+          "says": "checkout",
+          "place": "Harbor",
+          "model": null,
+          "effort": null,
+          "tier": "start",
+          "also": "tests first"
+        },
+        {
+          "says": "cart page",
+          "place": "Harbor",
+          "model": null,
+          "effort": null,
+          "tier": "start",
+          "also": "tests first"
+        }
       ]
     },
     {
@@ -201,7 +378,13 @@
       "text": "in Kiosk I need an agent for the seat map and another for the ticket printer then in Ledger one for the tax report",
       "cells": [
         { "says": "seat map", "place": "Kiosk", "model": null, "effort": null, "tier": "start" },
-        { "says": "ticket printer", "place": "Kiosk", "model": null, "effort": null, "tier": "start" },
+        {
+          "says": "ticket printer",
+          "place": "Kiosk",
+          "model": null,
+          "effort": null,
+          "tier": "start"
+        },
         { "says": "tax report", "place": "Ledger", "model": null, "effort": null, "tier": "start" }
       ]
     },
@@ -210,8 +393,138 @@
       "dictated": true,
       "text": "one agent in Atlas to force push the release branch and one in Harbor to update the readme",
       "cells": [
-        { "says": "release branch", "place": "Atlas", "model": null, "effort": null, "tier": "check" },
+        {
+          "says": "release branch",
+          "place": "Atlas",
+          "model": null,
+          "effort": null,
+          "tier": "check"
+        },
         { "says": "readme", "place": "Harbor", "model": null, "effort": null, "tier": "start" }
+      ]
+    },
+    {
+      "name": "a Cell said to wait for another comes after it",
+      "dictated": true,
+      "text": "in Harbor fix the flaky checkout test and once that's done write the changelog entry for it in Harbor",
+      "cells": [
+        {
+          "says": "flaky checkout",
+          "place": "Harbor",
+          "model": null,
+          "effort": null,
+          "tier": "start"
+        },
+        {
+          "says": "changelog",
+          "place": "Harbor",
+          "model": null,
+          "effort": null,
+          "tier": "start",
+          "after": "flaky checkout"
+        }
+      ]
+    },
+    {
+      "name": "a list said in order waits for nothing",
+      "dictated": true,
+      "text": "first in Atlas update the readme then in Kiosk fix the showtimes sorting and then in Lanterns rename the drop ads folder",
+      "cells": [
+        { "says": "readme", "place": "Atlas", "model": null, "effort": null, "tier": "start" },
+        { "says": "showtimes", "place": "Kiosk", "model": null, "effort": null, "tier": "start" },
+        { "says": "drop ads", "place": "Lanterns", "model": null, "effort": null, "tier": "start" }
+      ]
+    },
+    {
+      "name": "a chain across projects beside a Cell that waits for no one",
+      "dictated": false,
+      "text": "One agent in Harbor to add the export endpoint. When it lands, another in Atlas to call that endpoint from the dashboard. Separately, one in Kiosk to tidy the seat map styles.",
+      "cells": [
+        {
+          "says": "export endpoint",
+          "place": "Harbor",
+          "model": null,
+          "effort": null,
+          "tier": "start"
+        },
+        {
+          "says": "dashboard",
+          "place": "Atlas",
+          "model": null,
+          "effort": null,
+          "tier": "start",
+          "after": "export endpoint"
+        },
+        { "says": "seat map", "place": "Kiosk", "model": null, "effort": null, "tier": "start" }
+      ]
+    },
+    {
+      "name": "then inside one task is one Cell",
+      "dictated": true,
+      "text": "in Ledger run the migrations then restart the worker and check the queue drains",
+      "cells": [
+        {
+          "says": "migrations",
+          "place": "Ledger",
+          "model": null,
+          "effort": null,
+          "tier": "start",
+          "also": "restart the worker"
+        }
+      ]
+    },
+    {
+      "name": "each in its own worktree goes on every Cell, and is not their task",
+      "dictated": true,
+      "text": "two agents in Harbor each in its own worktree one to rewrite the gallery loader and one to migrate the cart tests",
+      "cells": [
+        {
+          "says": "gallery loader",
+          "place": "Harbor",
+          "model": null,
+          "effort": null,
+          "tier": "start",
+          "apart": true,
+          "not": "worktree"
+        },
+        {
+          "says": "cart tests",
+          "place": "Harbor",
+          "model": null,
+          "effort": null,
+          "tier": "start",
+          "apart": true,
+          "not": "worktree"
+        }
+      ]
+    },
+    {
+      "name": "the project's own folder, said",
+      "dictated": false,
+      "text": "Start one in Atlas for the login redirect bug. Same folder, no worktree.",
+      "cells": [
+        {
+          "says": "login redirect",
+          "place": "Atlas",
+          "model": null,
+          "effort": null,
+          "tier": "start",
+          "apart": false
+        }
+      ]
+    },
+    {
+      "name": "a task about worktrees says nothing of where its Cell works",
+      "dictated": false,
+      "text": "In Harbor Design write a page that explains how git worktrees work for new contributors",
+      "cells": [
+        {
+          "says": "git worktrees",
+          "place": "Harbor Design",
+          "model": null,
+          "effort": null,
+          "tier": "start"
+        }
       ]
     }
   ]

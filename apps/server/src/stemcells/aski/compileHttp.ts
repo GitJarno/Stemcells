@@ -1,6 +1,7 @@
 import * as Clock from "effect/Clock";
 import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
+import * as Layer from "effect/Layer";
 import * as Option from "effect/Option";
 import * as Schema from "effect/Schema";
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/http";
@@ -9,15 +10,27 @@ import { CEILING, DEFAULT_CAP } from "../../../../../stemcells/orchestrator/plan
 import { boundedText } from "../http/body.ts";
 import { appendPlan } from "../planner/history.ts";
 import * as UpstreamDisk from "../upstream/disk.ts";
+import { HandedLaunch } from "../upstream/planStart.ts";
 import * as Upstream from "../upstream/planner.ts";
 import { ModelSelection } from "../upstream/planner.ts";
-import { expectPlan, planOfId, putPlan, settlePlan, unexpectPlan } from "./book.ts";
+import {
+  expectPlan,
+  planOfId,
+  plansOf,
+  putPlan,
+  queueAct,
+  settlePlan,
+  unexpectPlan,
+} from "./book.ts";
 import { compile, FIRST_CALL, SECOND_CALL } from "./compile.ts";
+import { ASKI_INSTANCE_ID } from "./instanceId.ts";
+import * as Keeper from "./Keeper.ts";
 import { forget, learn, Learned, readLearned, withNames } from "./learned.ts";
 
 // Aski's plan routes (`stemcells/orchestrator/wire.ts` names each). A compile spends a model
-// call, so it and every write take the operate scope; reads take the read scope. The server
-// starts nothing for a plan: the client carries it out with the person's own access.
+// call, so it and every write take the operate scope; reads take the read scope. The client
+// carries a plan out with the person's own access; the server starts only a Cell the client
+// handed it through `queue` (`Keeper.ts`).
 
 export const ASKI_PATH = "/api/stemcells/aski";
 const NO_STORE = { "cache-control": "private, no-store" };
@@ -71,7 +84,15 @@ const OutcomeRequest = Schema.Struct({
   acts: Schema.Array(
     Schema.Struct({
       i: Schema.Number,
-      status: Schema.Literals(["started", "waiting", "dropped", "failed", "called-back", "done"]),
+      status: Schema.Literals([
+        "started",
+        "waiting",
+        "queued",
+        "dropped",
+        "failed",
+        "called-back",
+        "done",
+      ]),
       reason: Schema.optionalKey(Name),
     }),
   ),
@@ -82,6 +103,14 @@ const ExpectRequest = Schema.Struct({
   threadId: Name,
   text: Schema.String.check(Schema.isMaxLength(TEXT_MOST)),
 });
+const QueueRequest = Schema.Struct({
+  id: Schema.String.check(Schema.isMaxLength(64)),
+  i: Schema.Number,
+  ...HandedLaunch.fields,
+  worktree: Schema.Boolean,
+  now: Schema.optionalKey(Schema.Boolean),
+});
+const decodeQueue = Schema.decodeUnknownEffect(Schema.fromJsonString(QueueRequest));
 const decodeExpect = Schema.decodeUnknownEffect(Schema.fromJsonString(ExpectRequest));
 const decodeCompile = Schema.decodeUnknownEffect(Schema.fromJsonString(CompileRequest));
 const decodeOutcome = Schema.decodeUnknownEffect(Schema.fromJsonString(OutcomeRequest));
@@ -163,6 +192,17 @@ const planRoute = Effect.gen(function* () {
     : json({ plan: entry.plan, outcome: entry.outcome });
 });
 
+const plansRoute = Effect.gen(function* () {
+  const request = yield* HttpServerRequest.HttpServerRequest;
+  const thread = Option.match(HttpServerRequest.toURL(request), {
+    onNone: () => null,
+    onSome: (url) => url.searchParams.get("thread"),
+  });
+  return thread === null || thread.length === 0 || thread.length > NAME_MOST
+    ? json({ error: "Name the chat." }, 400)
+    : json({ plans: plansOf(thread) });
+});
+
 const outcomeRoute = Effect.gen(function* () {
   const request = yield* HttpServerRequest.HttpServerRequest;
   const text = yield* boundedText(request, OUTCOME_BODY_MOST);
@@ -178,6 +218,43 @@ const outcomeRoute = Effect.gen(function* () {
     Effect.ignore,
   );
   return json({ ok: true });
+});
+
+// The server starts this Cell itself, later or in a worktree: the client hands over what it
+// would have started it with. The Cell's words are the book's own, never the request's.
+const queueRoute = Effect.fn("AskiHttp.queue")(function* (line: Keeper.Line["Service"]) {
+  const request = yield* HttpServerRequest.HttpServerRequest;
+  const text = yield* boundedText(request, OUTCOME_BODY_MOST);
+  if (Option.isNone(text)) return json({ ok: false, error: "The request is too large." }, 413);
+  const body = yield* decodeQueue(text.value).pipe(Effect.option);
+  if (Option.isNone(body))
+    return json(
+      { ok: false, error: "A queued Cell names its plan, project, model and modes." },
+      400,
+    );
+  const { id, i, worktree, now: atOnce, ...launch } = body.value;
+  if (launch.modelSelection.instanceId === ASKI_INSTANCE_ID)
+    return json({ ok: false, error: "No Cell runs on Aski's own instance." }, 400);
+  const now = yield* Clock.currentTimeMillis;
+  const went = queueAct(id, i, {
+    ...launch,
+    worktree,
+    at: now,
+    ...(atOnce === true ? { now: true } : {}),
+  });
+  if (went === "started") return json({ ok: true });
+  if (went === "unknown") return json({ ok: false, error: "No such plan." }, 404);
+  if (went === "held")
+    return json({ ok: false, error: "A deletion of this plan still waits for your hand." }, 409);
+  // A Cell with nothing to wait for starts in this walk, and the reply says how that went.
+  yield* line.walk;
+  const came = planOfId(id)?.outcome?.find((one) => one.i === i) ?? { i, status: "queued" };
+  yield* appendPlan(yield* Upstream.historyFolder, { kind: "outcome", id, acts: [came] }, now).pipe(
+    Effect.ignore,
+  );
+  return came.status === "failed"
+    ? json({ ok: false, error: came.reason ?? "The Cell didn't start." })
+    : json({ ok: true });
 });
 
 const learnedRoute = Effect.gen(function* () {
@@ -199,13 +276,16 @@ export const makeLayer = (
   HttpRouter.use((router) =>
     Effect.gen(function* () {
       const operate = UpstreamDisk.withOperateAccess;
+      const line = yield* Keeper.Line;
       yield* router.add("POST", `${ASKI_PATH}/expect`, operate(expectRoute));
       yield* router.add("POST", `${ASKI_PATH}/compile`, operate(compileRoute(times)));
       yield* router.add("GET", `${ASKI_PATH}/plan`, UpstreamDisk.withReadAccess(planRoute));
+      yield* router.add("GET", `${ASKI_PATH}/plans`, UpstreamDisk.withReadAccess(plansRoute));
       yield* router.add("POST", `${ASKI_PATH}/outcome`, operate(outcomeRoute));
+      yield* router.add("POST", `${ASKI_PATH}/queue`, operate(queueRoute(line)));
       yield* router.add("GET", `${ASKI_PATH}/learned`, UpstreamDisk.withReadAccess(learnedRoute));
       yield* router.add("DELETE", `${ASKI_PATH}/learned`, operate(forgetRoute));
     }),
   );
 
-export const layer = makeLayer();
+export const layer = makeLayer().pipe(Layer.provide(Keeper.layer));

@@ -1,14 +1,21 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { clearPlannedRows, plannedRows } from "../../../../../../stemcells/aski/planned.ts";
-import type {
-  DestroyAct,
-  Plan,
-  StartAct,
-} from "../../../../../../stemcells/orchestrator/plan.ts";
+import type { DestroyAct, Plan, StartAct } from "../../../../../../stemcells/orchestrator/plan.ts";
 import { trayOf } from "../../../../../../stemcells/orchestrator/tray.ts";
+import type { KeptPlan } from "../../../../../../stemcells/orchestrator/wire.ts";
+import { clearKept, keptTray, planUnder, takeKept, withTold } from "./kept";
 import { createRunner, type RunnerHands } from "./run";
-import { adoptPlan, beginPlan, clearPlans, planOf, planRead, subscribePlans } from "./store";
+import {
+  adoptPlan,
+  beginPlan,
+  clearPlans,
+  leavePlan,
+  planOf,
+  planRead,
+  readPlans,
+  subscribePlans,
+} from "./store";
 import { capOf } from "./settings";
 
 const cell = (i: number, over: Partial<StartAct> = {}): StartAct => ({
@@ -53,6 +60,14 @@ const planWith = (id: string, acts: Plan["acts"]): Plan => ({
 function world() {
   const calls = {
     started: [] as string[],
+    /** Cells handed to the server to start. */
+    queued: [] as string[],
+    /** Those of them handed over to start at once. */
+    atOnce: [] as string[],
+    /** Cells said to open no tab. */
+    tabless: [] as string[],
+    /** The threads the app lists. */
+    listed: new Set<string>(),
     made: [] as string[],
     removed: [] as string[],
     told: [] as Array<{ id: string; acts: ReadonlyArray<{ i: number; status: string }> }>,
@@ -62,6 +77,16 @@ function world() {
       calls.started.push(act.threadId);
       return act.title === "Fails" ? { ok: false, error: "No model." } : { ok: true };
     },
+    onAskisServer: () => true,
+    queue: async (_planId, act, _projectKey, now) => {
+      calls.queued.push(act.threadId);
+      if (now) calls.atOnce.push(act.threadId);
+      return act.title === "Refused"
+        ? { ok: false, error: "A deletion of this plan still waits for your hand." }
+        : { ok: true };
+    },
+    wantsWorktree: (act) => act.apart === true,
+    exists: (threadId) => calls.listed.has(threadId),
     newProject: async (name) => {
       calls.made.push(name);
       return { ok: true, projectKey: `env:${name}` };
@@ -77,6 +102,7 @@ function world() {
     factsOf: () => ({ projectId: "p", modelName: "Fable", effort: undefined, driver: undefined }),
     tell: (outcome) => void calls.told.push(outcome),
     arrive: () => {},
+    tabless: (threadIds) => void calls.tabless.push(...threadIds),
     report: () => {},
   };
   const runner = createRunner(() => hands);
@@ -89,9 +115,22 @@ const settle = async () => {
   for (let turn = 0; turn < 30; turn++) await Promise.resolve();
 };
 
+/** A plan as the server keeps it, with what it says came of each act. */
+const keptPlan = (id: string, acts: Plan["acts"], outcome: KeptPlan["outcome"]): KeptPlan => ({
+  id,
+  at: 1,
+  messageId: "message-1",
+  words: "fix the importer",
+  plan: planWith(id, acts),
+  outcome,
+});
+
+const statusesOf = (id: string) => planOf(id)?.tray?.acts.map((one) => one.status);
+
 afterEach(() => {
   for (const id of ["one", "two", "three", "four"]) clearPlannedRows(id);
   clearPlans();
+  clearKept();
   vi.useRealTimers();
 });
 
@@ -99,7 +138,10 @@ describe("carrying a plan out", () => {
   it("starts each Cell of the Start tier once, however often the store changes", async () => {
     const { calls, stop } = world();
     beginPlan("one", "env/aski", 1);
-    planRead("one", planWith("one", [cell(0), cell(1), cell(2, { tier: "check", why: ["place-near"] })]));
+    planRead(
+      "one",
+      planWith("one", [cell(0), cell(1), cell(2, { tier: "check", why: ["place-near"] })]),
+    );
     await settle();
     await settle();
     expect(calls.started).toEqual(["thread-0", "thread-1"]);
@@ -209,6 +251,174 @@ describe("carrying a plan out", () => {
     beginPlan("two", "env/aski", 1);
     planRead("two", null);
     expect(planOf("two")).toBeNull();
+  });
+});
+
+describe("a Cell the server starts", () => {
+  it("hands a Cell that comes after another to the server once, and it stays queued until its thread is listed", async () => {
+    const { calls, runner, stop } = world();
+    beginPlan("one", "env/aski", 1);
+    planRead("one", planWith("one", [cell(0), cell(1, { after: [0] })]));
+    await settle();
+    runner.sync();
+    runner.sync();
+    await settle();
+    expect(calls.started).toEqual(["thread-0"]);
+    expect(calls.queued).toEqual(["thread-1"]);
+    expect(statusesOf("one")).toEqual(["started", "queued"]);
+    expect(calls.told.at(-1)?.acts.map((act) => act.status)).toEqual(["started", "queued"]);
+    // Whenever the server starts it, it opens no tab: said while it is still queued.
+    expect(calls.tabless).toEqual(["thread-1"]);
+    // The server started it: the app lists its thread, and the row is a Cell.
+    calls.listed.add("thread-1");
+    runner.sync();
+    expect(statusesOf("one")).toEqual(["started", "started"]);
+    expect(calls.started).toEqual(["thread-0"]);
+    expect(calls.told.at(-1)?.acts.map((act) => act.status)).toEqual(["started", "started"]);
+    stop();
+  });
+
+  it("says why when the server won't take a queued Cell", async () => {
+    const { stop } = world();
+    beginPlan("one", "env/aski", 1);
+    planRead("one", planWith("one", [cell(0), cell(1, { after: [0], title: "Refused" })]));
+    await settle();
+    const refused = planOf("one")?.tray?.acts[1];
+    expect([refused?.status, refused?.reason]).toEqual([
+      "failed",
+      "A deletion of this plan still waits for your hand.",
+    ]);
+    stop();
+  });
+
+  it("has the server start a waiting Cell at once on Start now, where the Cell before it works", async () => {
+    const { calls, runner, stop } = world();
+    beginPlan("two", "env/aski", 2);
+    planRead("two", planWith("two", [cell(2), cell(3, { after: [2] })]));
+    await settle();
+    runner.startNow("two", 3);
+    await settle();
+    expect(statusesOf("two")).toEqual(["started", "started"]);
+    expect(calls.atOnce).toEqual(["thread-3"]);
+    expect(calls.started).toEqual(["thread-2"]);
+    stop();
+  });
+
+  it("leaves a Cell that gets its own worktree to the server, and never tells it started before it has", async () => {
+    const { calls, stop } = world();
+    beginPlan("one", "env/aski", 1);
+    planRead("one", planWith("one", [cell(0, { apart: true }), cell(1, { apart: false })]));
+    await settle();
+    expect(calls.queued).toEqual(["thread-0"]);
+    expect(calls.started).toEqual(["thread-1"]);
+    expect(calls.told[0]?.acts.map((act) => act.status)).toEqual(["queued", "started"]);
+    expect(statusesOf("one")).toEqual(["started", "started"]);
+    stop();
+  });
+});
+
+describe("a plan under its message", () => {
+  it("a message's plan whose Cells all started leaves the composer and stands under its message", async () => {
+    vi.useFakeTimers();
+    const { stop } = world();
+    beginPlan("one", "env/aski", 1, "Fix the importer");
+    planRead("one", planWith("one", [cell(0)]));
+    await settle();
+    expect(planOf("one")?.source).toBe("message");
+    vi.advanceTimersByTime(12_000);
+    expect(planOf("one")?.source).toBe("kept");
+    expect(readPlans().filter((plan) => plan.source === "message")).toEqual([]);
+    // Its message finds it by its words before the server's list has it.
+    const said = { id: "message-9", text: "fix  the importer", at: 5 };
+    expect(planUnder([], readPlans(), "env/aski", said)).toBe("one");
+    expect(planUnder([], readPlans(), "env/other", said)).toBeNull();
+    // A plan with no Cell left to show leaves the window instead.
+    beginPlan("two", "env/aski", 2);
+    planRead("two", planWith("two", [cell(1, { tier: "check", why: ["risky"] })]));
+    world().runner.dropAll("two");
+    leavePlan("two");
+    expect(planOf("two")).toBeNull();
+    stop();
+  });
+
+  it("a plan read from the server starts nothing; its waiting Cell starts on the person's yes", async () => {
+    const { calls, runner, stop } = world();
+    // No client ever said what came of it: nothing of it is shown, so nothing can start.
+    expect(keptTray(keptPlan("three", [cell(5)], null))).toBeNull();
+    takeKept("env/aski", [
+      keptPlan(
+        "one",
+        [cell(0), cell(1), cell(2, { tier: "check", why: ["risky"] })],
+        [
+          { i: 0, status: "started" },
+          { i: 2, status: "waiting" },
+        ],
+      ),
+    ]);
+    await settle();
+    // The Cell nothing was told of waits for a tap, as the one that waited does.
+    expect(statusesOf("one")).toEqual(["started", "waiting", "waiting"]);
+    expect([calls.started, calls.told, plannedRows()]).toEqual([[], [], []]);
+    expect(runner.waitingIn("env/aski")).toBeNull();
+    runner.confirm("one", 2);
+    await settle();
+    expect(calls.started).toEqual(["thread-2"]);
+    expect(calls.told.at(-1)?.acts.map((act) => act.status)).toEqual([
+      "started",
+      "waiting",
+      "started",
+    ]);
+    // Another window started the other one meanwhile: a yes here doesn't start it twice.
+    calls.listed.add("thread-1");
+    runner.confirm("one", 1);
+    await settle();
+    expect(calls.started).toEqual(["thread-2"]);
+    expect(planOf("one")?.tray?.acts[1]).toMatchObject({ status: "started" });
+    expect(planOf("one")?.tray?.acts[1]?.startedAt).toBeUndefined();
+    stop();
+  });
+
+  it("a queued Cell the server holds is not handed over again, and a later list says what came of it", async () => {
+    const { calls, stop } = world();
+    const acts = [cell(0), cell(1, { after: [0] }), cell(2, { after: [0] })];
+    const held = [
+      { i: 0, status: "started" },
+      { i: 1, status: "queued" },
+      { i: 2, status: "queued" },
+    ] as const;
+    takeKept("env/aski", [keptPlan("one", acts, held)]);
+    await settle();
+    expect(calls.queued).toEqual([]);
+    takeKept("env/aski", [
+      keptPlan("one", acts, [
+        held[0],
+        { i: 1, status: "failed", reason: "That project isn't here any more." },
+        { i: 2, status: "started" },
+      ]),
+    ]);
+    const failed = planOf("one")?.tray?.acts[1];
+    expect([failed?.status, failed?.reason]).toEqual([
+      "failed",
+      "That project isn't here any more.",
+    ]);
+    expect(statusesOf("one")).toEqual(["started", "failed", "started"]);
+    stop();
+  });
+
+  it("the server's word never overwrites what the person is acting on here", () => {
+    const tray = trayOf(
+      planWith("one", [
+        cell(0),
+        cell(1, { tier: "check", why: ["risky"] }),
+        cell(2, { after: [0] }),
+      ]),
+    );
+    const next = withTold(tray, [
+      { i: 0, status: "dropped" },
+      { i: 1, status: "started" },
+      { i: 2, status: "queued" },
+    ]);
+    expect(next.acts.map((one) => one.status)).toEqual(["starting", "waiting", "queued"]);
   });
 });
 

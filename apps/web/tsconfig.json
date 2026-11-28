@@ -72,6 +72,7 @@
     "../../stemcells/orchestrator/names.ts",
     "../../stemcells/orchestrator/pieces.ts",
     "../../stemcells/orchestrator/plan.ts",
+    "../../stemcells/orchestrator/rows.ts",
     "../../stemcells/orchestrator/tray.ts",
     "../../stemcells/orchestrator/wire.ts",
     "../../stemcells/risk/floor.ts",

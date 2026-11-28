@@ -18,11 +18,13 @@ export const INSTRUCTIONS = `You sort one message from a person into acts for St
 - A model or an effort said for a group covers each Cell of that group until another is said: "Fable on high, one for A, a second for B, and one Sol for C" is A and B on Fable at high, and C on Sol with no effort.
 - "count": only when the person asks for several Cells on the very same task ("3 Cells on this").
 - "title": at most six words naming the task.
+- "after": only when the person says this Cell waits until other Cells of this message have finished ("once that's done", "after the importer is fixed", "when it lands, …"). Give the positions of those acts in your answer, the first act being 0, each earlier than this one. "afterHeard": the words that say so, copied exactly. Tasks only listed in an order ("first …, second …", "and then …" between unrelated tasks) wait for nothing.
+- "apart": true when the person says this Cell works in its own worktree, copy or branch; false when they say it works in the project's own folder. Leave it out when they say neither. "apartHeard": the words that say so, copied exactly. Said for all ("each in its own worktree"), it goes on every Cell.
 
 How many Cells: one for each task the person lists. "One for …, another for …, the second …" are separate Cells, and so are the items of a list. A single task is one Cell however long it is said. Never split one task, never merge two, and never add a Cell for a count the person corrected ("three agents" then two tasks is two).
 A correction replaces what it corrects: "the second one, I meant Sol" changes that Cell's model and adds no Cell.
 
-"setup": pieces that only set things up: a model, an effort, a count, "start three agents", "hey can you".
+"setup": pieces that only set things up: a model, an effort, a count, where Cells work, "start three agents", "hey can you".
 "talk": pieces that ask a question, ask to change a setting, speak to a running Cell by its name, or are chatter. They start nothing.
 Every piece number appears in an act, in "setup" or in "talk".
 
@@ -59,7 +61,11 @@ export function compilerPrompt(
     "",
     `Cells running now: ${context.cells.length > 0 ? context.cells.map((cell) => cell.name).join(", ") : "(none)"}`,
     ...(failed.length > 0
-      ? ["", "Your last answer failed these checks. Answer again, whole:", ...failed.map((f) => `- ${f}`)]
+      ? [
+          "",
+          "Your last answer failed these checks. Answer again, whole:",
+          ...failed.map((f) => `- ${f}`),
+        ]
       : []),
   ].join("\n");
 }

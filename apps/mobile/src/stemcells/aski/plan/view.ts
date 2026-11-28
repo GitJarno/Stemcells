@@ -8,13 +8,15 @@ import {
   type StartAct,
   type Why,
 } from "../../../../../../stemcells/orchestrator/plan.ts";
+import { type CellSeen, flyingOf } from "../../../../../../stemcells/orchestrator/rows.ts";
 import {
+  beforeOf,
   canStart,
   counts,
   held,
   type Tray,
 } from "../../../../../../stemcells/orchestrator/tray.ts";
-import { DEFAULT_MODEL, headline } from "../../../../../../stemcells/words/plans.ts";
+import { DEFAULT_MODEL, headline, OWN_WORKTREE } from "../../../../../../stemcells/words/plans.ts";
 import { conciseModelName } from "../../../../../../stemcells/models/names.ts";
 
 export {
@@ -30,28 +32,68 @@ export const CLOSE_PLAN = "Close the plan";
 export const HIDE_MESSAGE = "Hide the message";
 export const SHOW_MESSAGE = "Show the message";
 
-/** The model and effort a Cell starts on: "Fable 5.1 · high", or the default, dim. */
+/**
+ * The model and effort a Cell starts on: "Fable 5.1 · high", or the default, dim. `apart` adds
+ * that it gets a worktree of its own, for a row that isn't a Cell yet.
+ */
 export function modelLine(
   act: Pick<StartAct, "model" | "selection" | "effort">,
   models: ReadonlyArray<ModelEntry>,
+  apart = false,
 ): { readonly text: string; readonly dim: boolean } {
+  const where = apart ? ` · ${OWN_WORKTREE}` : "";
   if (act.selection !== undefined) {
     const { instanceId, model, options } = act.selection;
     const entry = models.find((one) => one.instanceId === instanceId && one.id === model);
     const level = options?.find((one) => one.id === entry?.effortOption)?.value;
     const name = entry?.name ?? conciseModelName(model);
-    return { text: typeof level === "string" ? `${name} · ${level}` : name, dim: false };
+    return {
+      text: `${typeof level === "string" ? `${name} · ${level}` : name}${where}`,
+      dim: false,
+    };
   }
   if (act.model !== null) {
     const level = act.model.effort?.level;
     return {
-      text: level === undefined ? act.model.name : `${act.model.name} · ${level}`,
+      text: `${level === undefined ? act.model.name : `${act.model.name} · ${level}`}${where}`,
       dim: false,
     };
   }
   return {
-    text: act.effort === null ? DEFAULT_MODEL : `${DEFAULT_MODEL} · ${act.effort}`,
+    text: `${act.effort === null ? DEFAULT_MODEL : `${DEFAULT_MODEL} · ${act.effort}`}${where}`,
     dim: true,
+  };
+}
+
+/**
+ * Whether a Cell that hasn't started gets a worktree of its own: the person's word, else its
+ * project's default (`byDefault`). One that comes after a Cell of its own project works where
+ * that one did.
+ */
+export function getsWorktree(tray: Tray, act: StartAct, byDefault: boolean): boolean {
+  if (!(act.apart ?? byDefault)) return false;
+  const key = (place: StartAct["place"]) => place?.projectId ?? place?.id ?? place?.name;
+  return !beforeOf(tray, act).some(
+    (one) => one.act.kind === "start" && key(one.act.place) === key(act.place),
+  );
+}
+
+/** How each Cell stands, from its machine's needs list; nothing for a Cell not on it. */
+export function seenIn(
+  cells:
+    | ReadonlyArray<{
+        readonly threadId: string;
+        readonly stage: CellSeen["stage"];
+        readonly line: string | null;
+        readonly landing?: { readonly verdict: string } | null;
+      }>
+    | undefined,
+): (threadId: string) => CellSeen | null {
+  return (threadId) => {
+    const cell = cells?.find((one) => one.threadId === threadId);
+    return cell === undefined
+      ? null
+      : { stage: cell.stage, line: cell.line, short: cell.landing?.verdict === "short" };
   };
 }
 
@@ -98,7 +140,11 @@ export function messageSpans(act: Pick<StartAct, "words" | "note" | "risks">): M
 }
 
 /** A plan's headline and what its header offers. */
-export function headOf(tray: Tray): {
+export function headOf(
+  tray: Tray,
+  /** Each Cell as the machine reads it, so a Cell that landed or asks no longer counts as flying. */
+  seenOf: (threadId: string) => CellSeen | null = () => null,
+): {
   /** Null for a plan with no Cell: a deletion alone says what it is. */
   readonly line: string | null;
   /** Several Cells wait and can start: one tap starts them. */
@@ -109,12 +155,13 @@ export function headOf(tray: Tray): {
   const cells = starts.filter(
     (one) => one.status !== "dropped" && one.status !== "called-back",
   ).length;
-  const { flying, waiting } = counts(tray);
+  const { waiting, queued } = counts(tray);
+  const flying = flyingOf(tray, seenOf);
   const startable = starts.filter(
     (one) => one.act.kind === "start" && one.status === "waiting" && canStart(one.act),
   ).length;
   return {
-    line: cells === 0 ? null : headline(cells, flying, waiting, false),
+    line: cells === 0 ? null : headline(cells, flying, waiting, false, queued),
     startAll: startable > 1 && !held(tray),
   };
 }

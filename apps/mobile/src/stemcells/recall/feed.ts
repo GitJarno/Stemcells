@@ -5,6 +5,9 @@
 import { pillsMarkdown, type RecallAnswer } from "./kit";
 import { noteUnder, type MessageEntry, type ThreadFeedEntry } from "../upstream/recallFeed";
 
+/** The kind of the entry the pills are, under their question (`noteUnder`). */
+export const RECALL_NOTE = "recall";
+
 /** The entries made so far, by message and by what they say. */
 export type Made = Map<string, MessageEntry>;
 
@@ -26,7 +29,7 @@ export function withRecall(
     }
     next ??= feed.slice(0, index);
     const key = `${entry.id}\n${markdown}`;
-    const note = made.get(key) ?? noteUnder(entry, "recall", markdown);
+    const note = made.get(key) ?? noteUnder(entry, RECALL_NOTE, markdown);
     made.set(key, note);
     next.push(entry, note);
   }

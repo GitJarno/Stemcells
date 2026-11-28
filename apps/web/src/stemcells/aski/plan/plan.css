@@ -28,6 +28,15 @@
 [data-aski-plan][data-source="proposed"] {
   margin-block: var(--sc-space-md);
 }
+/* Under the message it was made from (PlanUnder.tsx), it stands still: a row of the transcript
+   scrolled back into sight must not arrive again. */
+[data-aski-plan-under] {
+  padding-block: var(--sc-space-xs) var(--sc-space-sm);
+}
+[data-aski-plan][data-source="kept"],
+[data-aski-plan][data-source="kept"] [data-plan-row] {
+  animation: none;
+}
 
 [data-plan-head] {
   display: flex;
@@ -142,12 +151,22 @@
 }
 [data-plan-words],
 [data-plan-failed],
+[data-plan-said],
+[data-plan-stuck],
 [data-plan-note] {
   margin: var(--sc-space-xs) 0 0;
   color: var(--sc-quiet-ink);
 }
-[data-plan-why] {
+[data-plan-why],
+[data-plan-stuck] {
   color: var(--sc-needs-you);
+}
+/* The Cell's own line under a row that landed or asks: two lines at most. */
+[data-plan-said] {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 [data-plan-words] {
   color: var(--foreground);

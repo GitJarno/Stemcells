@@ -28,7 +28,7 @@ import { voiceInputAtom } from "../../features/voice-input/VoiceInputProvider";
 import { scopedThreadKey } from "../../lib/scopedEntities";
 import { uuidv4 } from "../../lib/uuid";
 import { appAtomRegistry } from "../../state/atom-registry";
-import { waitForProject } from "../../state/entities";
+import { useProjects, waitForProject } from "../../state/entities";
 import { environmentProjects, projectEnvironment } from "../../state/projects";
 import { environmentServerConfigsAtom } from "../../state/server";
 import { readEnvironmentScope } from "../../state/session";
@@ -43,7 +43,7 @@ export { Menu } from "../../components/ui/Menu";
 export * as Dialog from "../../components/ui/Dialog";
 export { useKeyboardState } from "react-native-keyboard-controller";
 export { useIsFocused } from "@react-navigation/native";
-export { useProjects } from "../../state/entities";
+export { useProjects };
 
 /** The option ids that hold a model's effort, in upstream's order of preference. */
 export const EFFORT_OPTIONS = REASONING_EFFORT_OPTION_IDS;
@@ -111,6 +111,8 @@ export function newCellDefaults(environmentIdText: string, projectIdText: string
   const resolved = resolveProjectSettings(settings, project?.id ?? null, project).settings;
   return {
     project,
+    /** A new Cell of the project gets a worktree of its own. */
+    apart: resolved.defaultThreadEnvMode === "worktree",
     model: scheduledTaskDefaultModel(config, project),
     runtimeMode: resolveNewThreadRuntimeMode(
       undefined,
@@ -118,6 +120,29 @@ export function newCellDefaults(environmentIdText: string, projectIdText: string
       config?.managedPolicy,
     ),
   };
+}
+
+/** Whether a project starts its new Cells in worktrees of their own, for the views. */
+export function useStartsApart(environmentIdText: string): (projectId: string) => boolean {
+  const projects = useProjects();
+  const config = useMachineConfig(environmentIdText);
+  return (projectId) => {
+    const project =
+      projects.find((one) => one.environmentId === environmentIdText && one.id === projectId) ??
+      null;
+    return (
+      resolveProjectSettings(
+        config?.settings ?? DEFAULT_SERVER_SETTINGS,
+        project?.id ?? null,
+        project,
+      ).settings.defaultThreadEnvMode === "worktree"
+    );
+  };
+}
+
+/** Runs `run` each time any machine's chats change; returns its stop. */
+export function watchCells(run: () => void): () => void {
+  return appAtomRegistry.subscribe(environmentThreadShells.threadShellsAtom, run);
 }
 
 /** Whether a chat with this id is already on the machine. */

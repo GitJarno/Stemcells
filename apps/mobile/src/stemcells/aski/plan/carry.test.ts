@@ -3,7 +3,7 @@ import { describe, expect, it } from "vite-plus/test";
 import type { DestroyAct, Plan, StartAct } from "../../../../../../stemcells/orchestrator/plan.ts";
 import { confirm, drop } from "../../../../../../stemcells/orchestrator/tray.ts";
 import type { OutcomeRequest } from "../../../../../../stemcells/orchestrator/wire.ts";
-import { carry, type Hands } from "./carry";
+import { carry, type Hands, type Went } from "./carry";
 import { makeTrays } from "./trays";
 
 const start = (i: number, over: Partial<StartAct> = {}): StartAct => ({
@@ -52,7 +52,24 @@ function world() {
   const told: OutcomeRequest[] = [];
   const timers: Array<{ at: number; run: () => void; off: boolean }> = [];
   let clock = 1_000;
+  /** The chats on the machine, and who watches them. */
+  const cells = new Set<string>();
+  const watchers = new Set<() => void>();
+  const appear = (threadId: string) => {
+    cells.add(threadId);
+    for (const run of watchers) run();
+  };
   const hands: Hands = {
+    queue: async (_environmentId, planId, act, projectId, now) => {
+      log.push(`queue ${act.threadId} of ${planId} in ${projectId}${now ? " now" : ""}`);
+      return { ok: true };
+    },
+    wantsWorktree: (_environmentId, act) => act.apart === true,
+    exists: (_environmentId, threadId) => cells.has(threadId),
+    watch: (run) => {
+      watchers.add(run);
+      return () => void watchers.delete(run);
+    },
     start: async (_environmentId, act, projectId) => {
       log.push(`start ${act.threadId} in ${projectId}`);
       return { ok: true };
@@ -101,7 +118,18 @@ function world() {
         resolve();
       });
     });
-  return { trays, hands, log, told, advance, until, statuses, carrier: carry(trays, hands) };
+  return {
+    trays,
+    hands,
+    log,
+    told,
+    advance,
+    until,
+    statuses,
+    appear,
+    watchers,
+    carrier: carry(trays, hands),
+  };
 }
 
 const statuses = (w: ReturnType<typeof world>) => w.statuses();
@@ -219,7 +247,7 @@ describe("carrying a plan out", () => {
     refusing.stop();
   });
 
-  it("calls back the one Cell asked for, and lets the plan go once it is over", async () => {
+  it("calls back the one Cell asked for, and the plan leaves the composer for its message once it is over", async () => {
     const w = world();
     w.trays.reading("plan-1", "mac", "aski-chat");
     w.trays.arrived("plan-1", planOf([start(0), start(1)]));
@@ -229,7 +257,9 @@ describe("carrying a plan out", () => {
     expect(w.log.at(-1)).toBe("call back thread-1");
     expect(statuses(w)).toEqual(["started", "called-back"]);
     w.advance(10_000);
-    expect(w.trays.read().has("plan-1")).toBe(false);
+    // A Cell is left to show: the same plan stands under its message.
+    expect(w.trays.read().get("plan-1")).toMatchObject({ door: "fence" });
+    expect(statuses(w)).toEqual(["started", "called-back"]);
   });
 
   it("keeps a plan with a Cell that didn't start until the person closes it", async () => {
@@ -245,6 +275,140 @@ describe("carrying a plan out", () => {
     w.advance(60_000);
     expect(w.trays.read().has("plan-1")).toBe(true);
     failing.stop();
+  });
+
+  it("hands a Cell that comes after another to the server once, and it stays queued", async () => {
+    const w = world();
+    w.trays.reading("plan-1", "mac", "aski-chat");
+    w.trays.arrived("plan-1", planOf([start(0), start(1, { after: [0] })]));
+    w.trays.refuse("plan-1", 9, "unrelated");
+    await w.until("started", "queued");
+    expect(w.log).toEqual(["start thread-0 in p-harbor", "queue thread-1 of plan-1 in p-harbor"]);
+    // The queued Cell is the server's to report: word of it from here could undo its start.
+    w.advance(200);
+    expect(w.told).toEqual([{ id: "plan-1", acts: [{ i: 0, status: "started" }] }]);
+    // The Cell before it started, so the plan leaves the composer for its message.
+    w.advance(12_000);
+    expect(w.trays.read().get("plan-1")).toMatchObject({ door: "fence" });
+    expect(statuses(w)).toEqual(["started", "queued"]);
+    expect(w.log).toHaveLength(2);
+  });
+
+  it("says why a queued Cell couldn't be handed over", async () => {
+    const w = world();
+    w.carrier.stop();
+    const refusing = carry(w.trays, {
+      ...w.hands,
+      queue: async () => ({ ok: false, reason: "A deletion of this plan still waits." }),
+    });
+    w.trays.reading("plan-1", "mac", "aski-chat");
+    w.trays.arrived("plan-1", planOf([start(0), start(1, { after: [0] })]));
+    await w.until("started", "failed");
+    expect(w.trays.read().get("plan-1")?.tray?.acts[1]).toMatchObject({
+      status: "failed",
+      reason: "A deletion of this plan still waits.",
+    });
+    w.advance(200);
+    expect(w.told.at(-1)?.acts[1]).toMatchObject({ i: 1, status: "failed" });
+    refusing.stop();
+  });
+
+  it("has the server start a Cell that gets a worktree of its own, and never starts it here", async () => {
+    const w = world();
+    w.carrier.stop();
+    let land = (_went: Went) => {};
+    const slow = carry(w.trays, {
+      ...w.hands,
+      queue: (_environmentId, planId, act, projectId) => {
+        w.log.push(`queue ${act.threadId} of ${planId} in ${projectId}`);
+        return new Promise((resolve) => {
+          land = resolve;
+        });
+      },
+    });
+    w.trays.reading("plan-1", "mac", "aski-chat");
+    w.trays.arrived("plan-1", planOf([start(0, { apart: true }), start(1)]));
+    await w.until("starting", "started");
+    expect(w.log).toEqual(["queue thread-0 of plan-1 in p-harbor", "start thread-1 in p-harbor"]);
+    // Told while the server is at it: nothing of the Cell in its hands.
+    w.advance(200);
+    expect(w.told).toEqual([{ id: "plan-1", acts: [{ i: 1, status: "started" }] }]);
+    land({ ok: true });
+    await w.until("started", "started");
+    w.advance(200);
+    expect(w.told.at(-1)?.acts).toEqual([
+      { i: 0, status: "started" },
+      { i: 1, status: "started" },
+    ]);
+    slow.stop();
+  });
+
+  it("has the server start a queued Cell at once when the person won't wait, where the Cell before it works", async () => {
+    const w = world();
+    w.trays.reading("plan-1", "mac", "aski-chat");
+    w.trays.arrived("plan-1", planOf([start(0), start(1, { after: [0] })]));
+    await w.until("started", "queued");
+    w.carrier.startNow("plan-1", 1);
+    await w.until("started", "started");
+    // The phone starts nothing itself: the server knows the worktree of the Cell before it.
+    expect(w.log.filter((line) => line.startsWith("start"))).toEqual([
+      "start thread-0 in p-harbor",
+    ]);
+    expect(w.log.at(-1)).toBe("queue thread-1 of plan-1 in p-harbor now");
+    w.advance(200);
+    expect(w.told.at(-1)?.acts).toEqual([
+      { i: 0, status: "started" },
+      { i: 1, status: "started" },
+    ]);
+  });
+
+  it("takes a queued Cell the machine lists as started, and stops watching once none is queued", async () => {
+    const w = world();
+    w.trays.reading("plan-1", "mac", "aski-chat");
+    w.trays.arrived("plan-1", planOf([start(0), start(1, { after: [0] })]));
+    await w.until("started", "queued");
+    expect(w.watchers.size).toBe(1);
+    w.appear("thread-9");
+    expect(statuses(w)).toEqual(["started", "queued"]);
+    w.appear("thread-1");
+    expect(statuses(w)).toEqual(["started", "started"]);
+    expect(w.watchers.size).toBe(0);
+    w.advance(200);
+    expect(w.told.at(-1)?.acts).toEqual([
+      { i: 0, status: "started" },
+      { i: 1, status: "started" },
+    ]);
+  });
+
+  it("carries a plan read from the server on from where it stands: its queued Cell is not handed over again, and a waiting one starts by a tap", async () => {
+    const w = world();
+    const plan = planOf([
+      start(0),
+      start(1, { after: [0] }),
+      start(2, { tier: "check", why: ["risky"] }),
+    ]);
+    w.trays.opened(
+      "plan-1",
+      "mac",
+      plan,
+      [
+        { i: 0, status: "started" },
+        { i: 1, status: "queued" },
+        { i: 2, status: "waiting" },
+      ],
+      "aski-chat",
+    );
+    w.advance(200);
+    expect(w.log).toEqual([]);
+    expect(w.told).toEqual([]);
+    w.trays.change("plan-1", (tray) => confirm(tray, 2));
+    await w.until("started", "queued", "started");
+    expect(w.log).toEqual(["start thread-2 in p-harbor"]);
+    w.advance(200);
+    expect(w.told.at(-1)?.acts).toEqual([
+      { i: 0, status: "started" },
+      { i: 2, status: "started" },
+    ]);
   });
 
   it("lets a message Aski couldn't read as Cells stand briefly, then go", () => {

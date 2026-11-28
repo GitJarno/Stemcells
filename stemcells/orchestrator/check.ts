@@ -38,6 +38,10 @@ export interface AnswerAct {
   readonly title?: string | undefined;
   readonly target?: "project" | "cells" | undefined;
   readonly cells?: readonly string[] | undefined;
+  readonly after?: readonly number[] | undefined;
+  readonly afterHeard?: string | undefined;
+  readonly apart?: boolean | undefined;
+  readonly apartHeard?: string | undefined;
 }
 
 export interface Answer {
@@ -52,6 +56,14 @@ const TITLE_MOST = 60;
 const TITLE_WORDS = 6;
 /** The most words a model is read from: "the Fable 5 model", not a sentence that holds its name. */
 const MODEL_WORDS = 4;
+/** Words that say one thing waits for another: an `after` the person never said is dropped. */
+const ORDER =
+  /\b(?:after|afterwards|once|when|then|until|finish(?:es|ed)?|done|lands?|landed|completed?|ready)\b/iu;
+/** Words that say a Cell works in a worktree of its own, and words that say it does not. */
+const APART =
+  /\bwork\s?trees?\b|\b(?:own|separate|different)\s+(?:copy|copies|branch|branches|checkout|clone)\b|\bisolat\w+/iu;
+const TOGETHER =
+  /\b(?:same|shared|main|project'?s?(?:\s+own)?)\s+(?:folder|checkout|directory)\b|\b(?:no|without(?:\s+an?y?)?)\s+work\s?trees?\b/iu;
 /** How near a word before "agent" must be to a model's name: "soul agent" is Sol, "table agent" Fable. */
 const MODEL_NEAR = 0.6;
 
@@ -84,6 +96,10 @@ export function readAnswer(value: unknown): Answer | null {
       cells: Array.isArray(one.cells)
         ? one.cells.filter((c): c is string => typeof c === "string")
         : undefined,
+      after: Array.isArray(one.after) ? numbersOf(one.after) : undefined,
+      afterHeard: textOf(one.afterHeard),
+      apart: typeof one.apart === "boolean" ? one.apart : undefined,
+      apartHeard: textOf(one.apartHeard),
     });
   }
   return { acts, setup: numbersOf(value.setup), talk: numbersOf(value.talk) };
@@ -115,7 +131,8 @@ function mentionsOf(
   }
   // "harbor-design" names Harbor Design, not Harbor: a name inside a longer one doesn't count.
   const whole = out.filter(
-    (m) => !out.some((o) => o !== m && o.at <= m.at && o.end >= m.end && o.end - o.at > m.end - m.at),
+    (m) =>
+      !out.some((o) => o !== m && o.at <= m.at && o.end >= m.end && o.end - o.at > m.end - m.at),
   );
   return whole.sort((a, b) => a.at - b.at);
 }
@@ -125,6 +142,25 @@ const firstWords = (text: string, most: number) => text.split(/\s+/u).slice(0, m
 function titleOf(title: string | undefined, words: string): string {
   const line = (title ?? firstWords(words, TITLE_WORDS)).replace(/\s+/gu, " ").trim();
   return line.length > TITLE_MOST ? `${line.slice(0, TITLE_MOST - 1)}…` : line;
+}
+
+/**
+ * `words` with the quote `heard` cut out, and the gap closed. Left whole when the quote isn't
+ * there, or when nothing of a task would be left.
+ */
+function without(words: string, heard: string): string {
+  const at = findQuote(words, heard);
+  if (at < 0) return words;
+  const pattern = flat(heard)
+    .split(" ")
+    .map((word) => word.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&"))
+    .join("\\s+");
+  const end = at + (new RegExp(pattern, "iu").exec(words.slice(at))?.[0].length ?? 0);
+  const cut = `${words.slice(0, at).trimEnd()} ${words.slice(end).trimStart()}`
+    .replace(/\s+([,.;:!?])/gu, "$1")
+    .replace(/^[\s,;:]+/u, "")
+    .trim();
+  return cut.split(/\s+/u).length >= 2 ? cut : words;
 }
 
 /** A new project's name as a sidebar would write it: the person's words, each capitalised. */
@@ -195,9 +231,15 @@ export function planOf(input: PlanInput): PlanResult {
     }
     // "A new project called Harbor" when Harbor exists: the person decides which they meant.
     if (act.kind === "new")
-      return { field: { id: entry.id, name: entry.name, heard, how: "picked" }, why: ["place-picked"] };
+      return {
+        field: { id: entry.id, name: entry.name, heard, how: "picked" },
+        why: ["place-picked"],
+      };
     if (heard === null)
-      return { field: { id: entry.id, name: entry.name, heard, how: "picked" }, why: ["place-picked"] };
+      return {
+        field: { id: entry.id, name: entry.name, heard, how: "picked" },
+        why: ["place-picked"],
+      };
     if (!saysExactly(heard, entry.name, entry.aliases))
       return { field: { id: entry.id, name: entry.name, heard, how: "near" }, why: ["place-near"] };
     // Said exactly: this Cell's when its own words name it first, or it was the last place said
@@ -211,7 +253,11 @@ export function planOf(input: PlanInput): PlanResult {
       const goesOn = next !== undefined && mine.includes(piece!.n) && mine.includes(next.n);
       if (piece === undefined || next === undefined || m.end !== piece.end || goesOn) return false;
       // "then in Atlas" alone is no item's end: the name opens what follows.
-      const lead = text.slice(piece.start, m.at).toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? [];
+      const lead =
+        text
+          .slice(piece.start, m.at)
+          .toLowerCase()
+          .match(/[\p{L}\p{N}]+/gu) ?? [];
       if (!lead.some((word) => !OPENING.has(word))) return false;
       // When what follows names a place of its own, this one ends its own item.
       return !mentions.some((o) => o.at >= next.start && o.at < next.end && o.id !== m.id);
@@ -236,7 +282,9 @@ export function planOf(input: PlanInput): PlanResult {
       .join("\\s+");
     if (words.length === 0) return false;
     const spot = `(?<![\\p{L}\\p{N}])${words}(?![\\p{L}\\p{N}])`;
-    return new RegExp(`${spot}\\s+(?:agents?|models?|cells?)\\b|\\bmodel\\s+${spot}`, "iu").test(text);
+    return new RegExp(`${spot}\\s+(?:agents?|models?|cells?)\\b|\\bmodel\\s+${spot}`, "iu").test(
+      text,
+    );
   };
 
   const modelFor = (act: AnswerAct): ModelField | null => {
@@ -266,7 +314,9 @@ export function planOf(input: PlanInput): PlanResult {
       asModel(act.modelHeard);
     if (nameWords(act.modelHeard).length > MODEL_WORDS || (!exact && !heardNear)) return null;
     const level =
-      act.effort !== undefined && effortSaid(act.effort) ? clampEffort(act.effort, entry.efforts) : null;
+      act.effort !== undefined && effortSaid(act.effort)
+        ? clampEffort(act.effort, entry.efforts)
+        : null;
     return {
       instanceId: entry.instanceId,
       id: entry.id,
@@ -286,9 +336,21 @@ export function planOf(input: PlanInput): PlanResult {
     (said(effort) === "xhigh" && /\b(?:extra|x|very)[\s-]*high\b/iu.test(text)) ||
     (said(effort) === "max" && /\b(?:max|maximum|highest)\b/iu.test(text));
 
+  /** Where a Cell works is the person's word too: said in the message, in words that say so. */
+  const apartFor = (act: AnswerAct): boolean | undefined => {
+    if (act.apart === undefined || act.apartHeard === undefined) return undefined;
+    if (findQuote(text, act.apartHeard) < 0) return undefined;
+    const together = TOGETHER.test(act.apartHeard);
+    if (act.apart) return APART.test(act.apartHeard) && !together ? true : undefined;
+    return together ? false : undefined;
+  };
+
   const acts: Act[] = [];
   const starts: StartAct[] = [];
-  for (const one of answer.acts) {
+  /** The Cells each act of the answer became, by the answer's own numbering. */
+  const became: number[][] = [];
+  for (const [at, one] of answer.acts.entries()) {
+    became[at] = [];
     const mine = valid(one.pieces);
     if (mine.length === 0) {
       if (!final) failed.push("An act names no piece of the message.");
@@ -315,17 +377,27 @@ export function planOf(input: PlanInput): PlanResult {
     }
     const { field, why } = placeFor(one, mine);
     const model = modelFor(one);
-    const words = wordsFor(
+    const toldWords = wordsFor(
       text,
       pieces,
       mine,
       [field?.heard, model?.heard].filter((h): h is string => typeof h === "string"),
     );
-    if (words.length === 0) continue;
+    if (toldWords.length === 0) continue;
+    // Where it works is Stemcells' to arrange: told to the Cell, it might make a worktree itself.
+    const apart = apartFor(one);
+    const words = apart === undefined ? toldWords : without(toldWords, one.apartHeard!);
     const risks: RiskMark[] = riskFindings(words)
       .filter((finding) => !finding.negated)
       .map(({ start, end, kind }) => ({ start, end, kind }));
     const count = Math.min(Math.max(one.count ?? 1, 1), CEILING);
+    // Only toward earlier Cells, so nothing waits in a ring; only in the person's own words.
+    const after =
+      one.afterHeard !== undefined &&
+      findQuote(text, one.afterHeard) >= 0 &&
+      ORDER.test(one.afterHeard)
+        ? [...new Set(one.after ?? [])].filter((n) => n >= 0 && n < at).flatMap((n) => became[n]!)
+        : [];
     for (let copy = 0; copy < count; copy++) {
       const start: StartAct = {
         kind: "start",
@@ -341,7 +413,10 @@ export function planOf(input: PlanInput): PlanResult {
         risks,
         tier: "start",
         why: [...why, ...(risks.length > 0 ? (["risky"] as const) : [])],
+        ...(after.length > 0 ? { after, afterHeard: one.afterHeard! } : {}),
+        ...(apart === undefined ? {} : { apart }),
       };
+      became[at]!.push(start.i);
       acts.push(start);
       starts.push(start);
     }
@@ -352,8 +427,12 @@ export function planOf(input: PlanInput): PlanResult {
   const holds = acts.some((act) => act.kind === "destroy");
   const overCap = starts.length > context.cap;
   const kept = acts.filter((act) => act.kind === "destroy" || starts.indexOf(act) < CEILING);
+  // An act past the ceiling is gone, and with it the wait for it.
+  const moved = new Map(kept.map((act, i) => [act.i, i]));
   const tiered = kept.map((act, i): Act => {
     if (act.kind === "destroy") return { ...act, i };
+    const { after: before, afterHeard, ...rest } = act;
+    const after = (before ?? []).flatMap((n) => moved.get(n) ?? []);
     const why: Why[] = [
       ...act.why,
       ...(overCap ? (["over-cap"] as const) : []),
@@ -361,7 +440,13 @@ export function planOf(input: PlanInput): PlanResult {
       ...(holds ? (["after-hold"] as const) : []),
       ...(context.always ? (["always"] as const) : []),
     ];
-    return { ...act, i, why, tier: why.length > 0 ? "check" : "start" };
+    return {
+      ...rest,
+      i,
+      why,
+      tier: why.length > 0 ? "check" : "start",
+      ...(after.length > 0 && afterHeard !== undefined ? { after, afterHeard } : {}),
+    };
   });
 
   return {

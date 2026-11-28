@@ -4,19 +4,26 @@ import { planOf, proposedPlan, type Answer } from "./check.ts";
 import { wantsCompiler } from "./gate.ts";
 import { clampEffort, saysExactly } from "./names.ts";
 import { piecesOf } from "./pieces.ts";
+import { flyingOf, rowSays, showsUnder } from "./rows.ts";
 import { DICTATED_NOTE, type CompileContext, type Plan, type StartAct } from "./plan.ts";
 import {
+  begun,
   callable,
+  calledBack,
   confirm,
   confirmAll,
+  counts,
   done,
   drop,
+  failed,
   learnedOf,
   outcomeOf,
   setPlace,
   settled,
   started,
+  startNow,
   trayOf,
+  trayWith,
 } from "./tray.ts";
 import { planIdOfFence, thinkWith } from "./wire.ts";
 import { withoutLead } from "./words.ts";
@@ -69,7 +76,8 @@ function plan(
   );
   const n = (word: string) => {
     const piece = pieces.find((p) => p.text.includes(word));
-    if (!piece) throw new Error(`no piece holds "${word}": ${pieces.map((p) => p.text).join(" | ")}`);
+    if (!piece)
+      throw new Error(`no piece holds "${word}": ${pieces.map((p) => p.text).join(" | ")}`);
     return piece.n;
   };
   let minted = 0;
@@ -135,6 +143,7 @@ describe("which part of Aski reads a message", () => {
     "delete the Harbor project",
     "archive all the cells in Atlas",
     "Harbor fix the header",
+    "In Harbor fix the importer, and once that's done write its changelog",
     "hey Harbor Design: tidy the tokens",
     "can you spin up two agents for the migration?",
     "spawn 3 Sol",
@@ -143,6 +152,7 @@ describe("which part of Aski reads a message", () => {
   it.each([
     "how many cells are flying?",
     "what happened in Harbor yesterday",
+    "in the morning I'll look at it",
     "where was that chat about the film page two days ago",
     "turn the sounds off",
     "Otter, rebase onto main",
@@ -189,7 +199,12 @@ describe("the tier of a Cell", () => {
       plan(two, (n) => ({
         acts: [
           { kind: "start", pieces: [n("header")], place: "Harbor", placeHeard: "Harbor" },
-          { kind: "start", pieces: [n("docs")], place: "Harbor Design", placeHeard: "harbour design" },
+          {
+            kind: "start",
+            pieces: [n("docs")],
+            place: "Harbor Design",
+            placeHeard: "harbour design",
+          },
         ],
         setup: [],
         talk: [],
@@ -221,7 +236,8 @@ describe("the tier of a Cell", () => {
   });
 
   it("carries a place forward, and never backward past another", () => {
-    const text = "In Harbor fix the header. Then update the footer. In Atlas write the docs. Also the readme";
+    const text =
+      "In Harbor fix the header. Then update the footer. In Atlas write the docs. Also the readme";
     const p = made(
       plan(text, (n) => ({
         acts: [
@@ -281,7 +297,8 @@ describe("the tier of a Cell", () => {
   });
 
   it("takes the first project a Cell's own words name, not one its task mentions", () => {
-    const text = "one agent in Harbor to make the header match the one in Atlas. Another for the footer";
+    const text =
+      "one agent in Harbor to make the header match the one in Atlas. Another for the footer";
     const tierWith = (place: string) =>
       starts(
         made(
@@ -318,9 +335,32 @@ describe("the tier of a Cell", () => {
     const p = made(
       plan(text, (n) => ({
         acts: [
-          { kind: "start", pieces: [n("gallery")], place: "Harbor", placeHeard: "Harbor", model: "Fable 5.1", modelHeard: "Fable", effort: "high" },
-          { kind: "start", pieces: [n("showtimes")], place: "Atlas", placeHeard: "Atlas", model: "Fable 5.1", modelHeard: "Fable", effort: "high" },
-          { kind: "start", pieces: [n("ad copy")], place: "Harbor", placeHeard: "Harbor", model: "Fable 5.1", modelHeard: "table" },
+          {
+            kind: "start",
+            pieces: [n("gallery")],
+            place: "Harbor",
+            placeHeard: "Harbor",
+            model: "Fable 5.1",
+            modelHeard: "Fable",
+            effort: "high",
+          },
+          {
+            kind: "start",
+            pieces: [n("showtimes")],
+            place: "Atlas",
+            placeHeard: "Atlas",
+            model: "Fable 5.1",
+            modelHeard: "Fable",
+            effort: "high",
+          },
+          {
+            kind: "start",
+            pieces: [n("ad copy")],
+            place: "Harbor",
+            placeHeard: "Harbor",
+            model: "Fable 5.1",
+            modelHeard: "table",
+          },
         ],
         setup: [n("on high")],
         talk: [],
@@ -338,7 +378,15 @@ describe("the tier of a Cell", () => {
     const p = made(
       plan("Harbor: fix the header", (n) => ({
         acts: [
-          { kind: "start", pieces: [n("header")], place: "Harbor", placeHeard: "Harbor", model: "Sol 6.1", modelHeard: "Sol", effort: "max" },
+          {
+            kind: "start",
+            pieces: [n("header")],
+            place: "Harbor",
+            placeHeard: "Harbor",
+            model: "Sol 6.1",
+            modelHeard: "Sol",
+            effort: "max",
+          },
         ],
         setup: [],
         talk: [],
@@ -348,11 +396,18 @@ describe("the tier of a Cell", () => {
     expect(starts(p)[0]!.words).toBe("fix the header");
   });
 
-  it("reads a short model's name misheard before \"agent\"", () => {
+  it('reads a short model\'s name misheard before "agent"', () => {
     const p = made(
       plan("one soul agent for the ad copy in Atlas", (n) => ({
         acts: [
-          { kind: "start", pieces: [n("ad copy")], place: "Atlas", placeHeard: "Atlas", model: "Sol 6.1", modelHeard: "soul" },
+          {
+            kind: "start",
+            pieces: [n("ad copy")],
+            place: "Atlas",
+            placeHeard: "Atlas",
+            model: "Sol 6.1",
+            modelHeard: "soul",
+          },
         ],
         setup: [],
         talk: [],
@@ -365,7 +420,14 @@ describe("the tier of a Cell", () => {
     const p = made(
       plan("Harbor: fix the users table", (n) => ({
         acts: [
-          { kind: "start", pieces: [n("users")], place: "Harbor", placeHeard: "Harbor", model: "Fable 5.1", modelHeard: "table" },
+          {
+            kind: "start",
+            pieces: [n("users")],
+            place: "Harbor",
+            placeHeard: "Harbor",
+            model: "Fable 5.1",
+            modelHeard: "table",
+          },
         ],
         setup: [],
         talk: [],
@@ -378,7 +440,14 @@ describe("the tier of a Cell", () => {
     const p = made(
       plan("Harbor: fix the header", (n) => ({
         acts: [
-          { kind: "start", pieces: [n("header")], place: "Harbor", placeHeard: "Harbor", model: "Fable 5.1", modelHeard: "header" },
+          {
+            kind: "start",
+            pieces: [n("header")],
+            place: "Harbor",
+            placeHeard: "Harbor",
+            model: "Fable 5.1",
+            modelHeard: "header",
+          },
         ],
         setup: [],
         talk: [],
@@ -410,7 +479,13 @@ describe("the tier of a Cell", () => {
     const p = made(
       plan("delete the Harbor project. In Atlas write the docs", (n) => ({
         acts: [
-          { kind: "destroy", target: "project", pieces: [n("delete")], place: "Harbor", placeHeard: "Harbor" },
+          {
+            kind: "destroy",
+            target: "project",
+            pieces: [n("delete")],
+            place: "Harbor",
+            placeHeard: "Harbor",
+          },
           { kind: "start", pieces: [n("docs")], place: "Atlas", placeHeard: "Atlas" },
         ],
         setup: [],
@@ -426,12 +501,17 @@ describe("the tier of a Cell", () => {
   it("names the Cells a deletion means only from those awake", () => {
     const p = made(
       plan("archive Otter and Wren", (n) => ({
-        acts: [{ kind: "destroy", target: "cells", pieces: [n("archive")], cells: ["otter", "Wren"] }],
+        acts: [
+          { kind: "destroy", target: "cells", pieces: [n("archive")], cells: ["otter", "Wren"] },
+        ],
         setup: [],
         talk: [],
       })),
     );
-    expect(p.acts[0]).toMatchObject({ kind: "destroy", cells: [{ threadId: "t-otter", name: "Otter" }] });
+    expect(p.acts[0]).toMatchObject({
+      kind: "destroy",
+      cells: [{ threadId: "t-otter", name: "Otter" }],
+    });
   });
 
   it("makes a new project a check, named as the person said it", () => {
@@ -461,7 +541,15 @@ describe("the tier of a Cell", () => {
       plan(
         "3 agents in Harbor on the flaky test",
         (n) => ({
-          acts: [{ kind: "start", pieces: [n("flaky")], place: "Harbor", placeHeard: "Harbor", count: 3 }],
+          acts: [
+            {
+              kind: "start",
+              pieces: [n("flaky")],
+              place: "Harbor",
+              placeHeard: "Harbor",
+              count: 3,
+            },
+          ],
           setup: [],
           talk: [],
         }),
@@ -479,7 +567,11 @@ describe("the tier of a Cell", () => {
     const p = made(
       plan(
         "Harbor fix the header",
-        (n) => ({ acts: [{ kind: "start", pieces: [n("header")], place: "Harbor", placeHeard: "Harbor" }], setup: [], talk: [] }),
+        (n) => ({
+          acts: [{ kind: "start", pieces: [n("header")], place: "Harbor", placeHeard: "Harbor" }],
+          setup: [],
+          talk: [],
+        }),
         { dictated: true, always: true },
       ),
     );
@@ -500,7 +592,10 @@ describe("an answer that fails", () => {
 
   it("names a project that isn't one, for the second try", () => {
     const result = plan(text, answer);
-    expect(result).toEqual({ ok: false, failed: [expect.stringContaining('"Lantern" is not in Projects')] });
+    expect(result).toEqual({
+      ok: false,
+      failed: [expect.stringContaining('"Lantern" is not in Projects')],
+    });
   });
 
   it("leaves that project open on the last try, so nothing starts in a guess", () => {
@@ -556,7 +651,12 @@ describe("a plan as a client carries it out", () => {
         plan("In Harbor fix the header. In harbour design tidy the tokens", (n) => ({
           acts: [
             { kind: "start", pieces: [n("header")], place: "Harbor", placeHeard: "Harbor" },
-            { kind: "start", pieces: [n("tokens")], place: "Harbor Design", placeHeard: "harbour design" },
+            {
+              kind: "start",
+              pieces: [n("tokens")],
+              place: "Harbor Design",
+              placeHeard: "harbour design",
+            },
           ],
           setup: [],
           talk: [],
@@ -605,7 +705,13 @@ describe("a plan as a client carries it out", () => {
       made(
         plan("delete the Harbor project. In Atlas write the docs. Also the readme", (n) => ({
           acts: [
-            { kind: "destroy", target: "project", pieces: [n("delete")], place: "Harbor", placeHeard: "Harbor" },
+            {
+              kind: "destroy",
+              target: "project",
+              pieces: [n("delete")],
+              place: "Harbor",
+              placeHeard: "Harbor",
+            },
             { kind: "start", pieces: [n("docs")], place: "Atlas", placeHeard: "Atlas" },
             { kind: "start", pieces: [n("readme")] },
           ],
@@ -614,9 +720,197 @@ describe("a plan as a client carries it out", () => {
         })),
       ),
     );
-    expect(confirmAll(tray).acts.map((one) => one.status)).toEqual(["waiting", "waiting", "waiting"]);
+    expect(confirmAll(tray).acts.map((one) => one.status)).toEqual([
+      "waiting",
+      "waiting",
+      "waiting",
+    ]);
     const after = confirmAll(done(tray, 0));
     expect(after.acts.map((one) => one.status)).toEqual(["done", "starting", "waiting"]);
+  });
+});
+
+describe("a Cell that comes after another", () => {
+  const text = "In Harbor fix the importer. Once that's done write its changelog in Harbor";
+  const chain = (over: Record<string, unknown> = {}) =>
+    made(
+      plan(text, (n) => ({
+        acts: [
+          { kind: "start", pieces: [n("importer")], place: "Harbor", placeHeard: "Harbor" },
+          {
+            kind: "start",
+            pieces: [n("changelog")],
+            place: "Harbor",
+            placeHeard: "Harbor",
+            after: [0],
+            afterHeard: "Once that's done",
+            ...over,
+          },
+        ],
+        setup: [],
+        talk: [],
+      })),
+    );
+
+  it("waits for it only in the person's own words for an order, and only for an earlier Cell", () => {
+    expect(starts(chain()).map((act) => act.after)).toEqual([undefined, [0]]);
+    // Words that aren't in the message, or say no order, are the compiler's own idea.
+    expect(starts(chain({ afterHeard: "after the importer" }))[1]!.after).toBeUndefined();
+    expect(starts(chain({ afterHeard: "write its changelog" }))[1]!.after).toBeUndefined();
+    // Itself, a later act, an act that isn't there: nothing can wait in a ring.
+    expect(starts(chain({ after: [1, 2, 7, -1] }))[1]!.after).toBeUndefined();
+  });
+
+  it("waits for every Cell of a count", () => {
+    const counted = made(
+      plan(text, (n) => ({
+        acts: [
+          {
+            kind: "start",
+            pieces: [n("importer")],
+            place: "Harbor",
+            placeHeard: "Harbor",
+            count: 2,
+          },
+          {
+            kind: "start",
+            pieces: [n("changelog")],
+            place: "Harbor",
+            placeHeard: "Harbor",
+            after: [0],
+            afterHeard: "Once that's done",
+          },
+        ],
+        setup: [],
+        talk: [],
+      })),
+    );
+    expect(starts(counted).map((act) => act.after)).toEqual([undefined, undefined, [0, 1]]);
+  });
+
+  it("is queued, not started, and the person can start or drop it", () => {
+    const tray = trayOf(chain());
+    expect(tray.acts.map((one) => one.status)).toEqual(["starting", "queued"]);
+    // Nothing of it waits on the person: the plan's card over the composer can leave.
+    expect(settled(started(tray, 0, 1_000))).toBe(true);
+    expect(counts(tray)).toEqual({ flying: 1, waiting: 0, queued: 1 });
+    expect(outcomeOf(tray)[1]).toEqual({ i: 1, status: "queued" });
+    expect(startNow(tray, 1).acts[1]!.status).toBe("starting");
+    expect(drop(tray, 1).acts[1]!.status).toBe("dropped");
+    expect(begun(tray, 1).acts[1]!.status).toBe("started");
+  });
+
+  it("is queued by the person's yes when it had to be checked first", () => {
+    const risky = trayOf({
+      ...chain(),
+      acts: chain().acts.map((act) => (act.i === 1 ? { ...act, tier: "check" as const } : act)),
+    });
+    expect(risky.acts[1]!.status).toBe("waiting");
+    expect(confirm(risky, 1).acts[1]!.status).toBe("queued");
+  });
+
+  it("says on its row whom it waits for, and why it won't start by itself", () => {
+    const tray = started(trayOf(chain()), 0, 1_000);
+    const queued = tray.acts[1]!;
+    const first = starts(tray.plan)[0]!.threadId;
+    const seen =
+      (stage: "working" | "done", short = false) =>
+      (threadId: string) =>
+        threadId === first ? { stage, line: "Importer fixed.", short } : null;
+    expect(rowSays(tray, queued, seen("working"))).toMatchObject({ stuck: null });
+    expect(rowSays(tray, queued, seen("working")).word).toMatch(/^After \S+$/);
+    expect(rowSays(tray, queued, seen("done", true)).stuck).toMatch(/stopped short$/);
+    expect(rowSays(failed(trayOf(chain()), 0, "no model"), queued, () => null).stuck).toMatch(
+      /never started$/,
+    );
+    expect(rowSays(tray, tray.acts[0]!, seen("done"))).toEqual({
+      word: "Landed",
+      line: "Importer fixed.",
+      stuck: null,
+    });
+    // A Cell that asks or landed no longer flies, whatever the tray last heard of it.
+    expect([flyingOf(tray, seen("working")), flyingOf(tray, seen("done"))]).toEqual([1, 0]);
+    expect(showsUnder(tray)).toBe(true);
+    // Called back and dropped: nothing of the plan is left to stand under its message.
+    expect(showsUnder(drop(calledBack(tray, 0), 1))).toBe(false);
+  });
+
+  it("stands as the server last knew it after a reload", () => {
+    const tray = trayWith(chain(), [
+      { i: 0, status: "started" },
+      { i: 1, status: "queued" },
+    ]);
+    expect(tray.acts.map((one) => [one.status, one.startedAt])).toEqual([
+      ["started", undefined],
+      ["queued", undefined],
+    ]);
+  });
+});
+
+describe("where a Cell works", () => {
+  const apart = (heard: string, said: boolean, text = `In Harbor fix the header ${heard}`) =>
+    starts(
+      made(
+        plan(text, (n) => ({
+          acts: [
+            {
+              kind: "start",
+              pieces: [n("header")],
+              place: "Harbor",
+              placeHeard: "Harbor",
+              apart: said,
+              apartHeard: heard,
+            },
+          ],
+          setup: [],
+          talk: [],
+        })),
+      ),
+    )[0]!.apart;
+
+  it("is a worktree of its own, or the project's folder, only when the person said so", () => {
+    expect(apart("in its own worktree", true)).toBe(true);
+    expect(apart("on a separate branch", true)).toBe(true);
+    expect(apart("in the same folder", false)).toBe(false);
+    expect(apart("with no worktrees", false)).toBe(false);
+    // The compiler's own idea, words that say the opposite, and words that say nothing of it.
+    expect(apart("in its own worktree", true, "In Harbor fix the header")).toBeUndefined();
+    expect(apart("with no worktrees", true)).toBeUndefined();
+    expect(apart("fix the header", true)).toBeUndefined();
+    expect(apart("in its own worktree", false)).toBeUndefined();
+  });
+
+  it("is not told to the Cell, which might then make a worktree itself", () => {
+    const told = (text: string, heard: string, keep: boolean) =>
+      starts(
+        made(
+          plan(text, (n) => ({
+            acts: [
+              {
+                kind: "start",
+                pieces: [n("header")],
+                place: "Harbor",
+                placeHeard: "Harbor",
+                apart: keep,
+                apartHeard: heard,
+              },
+            ],
+            setup: [],
+            talk: [],
+          })),
+        ),
+      )[0]!.words;
+    expect(
+      told(
+        "In Harbor fix the header in its own worktree, then run the tests",
+        "in its own worktree",
+        true,
+      ),
+    ).toBe("In Harbor fix the header, then run the tests");
+    // Words the checks didn't take as where it works stay the Cell's own.
+    expect(told("In Harbor fix the header of the worktree page", "worktree page", false)).toBe(
+      "In Harbor fix the header of the worktree page",
+    );
   });
 });
 
@@ -633,15 +927,35 @@ describe("the wire", () => {
 
   it("thinks with the fast model first and a stronger one second", () => {
     const models = [
-      { instanceId: "claudeAgent", id: "claude-opus-5-5", efforts: ["low", "high"], effortOption: "effort" },
-      { instanceId: "claudeAgent", id: "claude-haiku-5-5", efforts: ["low", "high"], effortOption: "effort" },
+      {
+        instanceId: "claudeAgent",
+        id: "claude-opus-5-5",
+        efforts: ["low", "high"],
+        effortOption: "effort",
+      },
+      {
+        instanceId: "claudeAgent",
+        id: "claude-haiku-5-5",
+        efforts: ["low", "high"],
+        effortOption: "effort",
+      },
       { instanceId: "codex", id: "gpt-6.1-sol", efforts: [] },
     ];
     expect(thinkWith(models, "claudeAgent")).toEqual({
-      fast: { instanceId: "claudeAgent", model: "claude-haiku-5-5", options: [{ id: "effort", value: "low" }] },
-      strong: { instanceId: "claudeAgent", model: "claude-opus-5-5", options: [{ id: "effort", value: "low" }] },
+      fast: {
+        instanceId: "claudeAgent",
+        model: "claude-haiku-5-5",
+        options: [{ id: "effort", value: "low" }],
+      },
+      strong: {
+        instanceId: "claudeAgent",
+        model: "claude-opus-5-5",
+        options: [{ id: "effort", value: "low" }],
+      },
     });
-    expect(thinkWith(models, "codex")).toEqual({ fast: { instanceId: "codex", model: "gpt-6.1-sol" } });
+    expect(thinkWith(models, "codex")).toEqual({
+      fast: { instanceId: "codex", model: "gpt-6.1-sol" },
+    });
     expect(thinkWith(models, "cursor")).toBeNull();
   });
 });

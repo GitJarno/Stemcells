@@ -10,6 +10,9 @@ import {
   EXPECT_PATH,
   type ExpectRequest,
   OUTCOME_PATH,
+  planWords,
+  QUEUE_PATH,
+  type QueueReply,
   thinkWith,
 } from "../../../../../../stemcells/orchestrator/wire.ts";
 import { cellNameOf } from "../../../../../../stemcells/words/cellNames.ts";
@@ -33,13 +36,15 @@ import {
   startCell,
   stopCell,
   uuidv4,
+  watchCells,
 } from "../../upstream/plans";
 import { DEFAULT_PROVIDER_INTERACTION_MODE } from "../../upstream/planLaunch";
 import { askiChatsOf } from "../chat";
 import { type Carrier, carry, type Hands, type Went } from "./carry";
 import { wasDictated } from "./dictated";
 import { fenceReader } from "./fence";
-import { launchOf } from "./launch";
+import { makeKept } from "./kept";
+import { launchOf, queueOf, worksApart } from "./launch";
 import type { PlanDoor } from "./send";
 import { makeTrays } from "./trays";
 import { placeOfKey, type World, worldOf } from "./world";
@@ -135,28 +140,59 @@ async function destroy(environmentId: string, act: DestroyAct): Promise<Went> {
   return { ok: true };
 }
 
+/** What a Cell in `projectId` starts with, by the person's defaults; null for a project that is gone. */
+function setupOf(environmentId: string, projectId: string) {
+  const defaults = newCellDefaults(environmentId, projectId);
+  if (defaults.project === null) return null;
+  return {
+    projectId,
+    projectName: defaults.project.title,
+    projectCwd: defaults.project.workspaceRoot,
+    defaultModel: defaults.model,
+    runtimeMode: defaults.runtimeMode,
+    interactionMode: DEFAULT_PROVIDER_INTERACTION_MODE,
+    models: machineWorld(environmentId).models,
+    ready: (instanceId: string) => providerReady(environmentId, instanceId),
+    apart: defaults.apart,
+  };
+}
+
+const GONE: Went = { ok: false, reason: "That project isn’t here any more." };
+
 const hands: Hands = {
   start: async (environmentId, act, projectId) => {
     // Started already, here or on another device: the plan's thread is that Cell.
     if (cellExists(environmentId, act.threadId)) return { ok: true };
-    const defaults = newCellDefaults(environmentId, projectId);
-    if (defaults.project === null)
-      return { ok: false, reason: "That project isn’t here any more." };
+    const setup = setupOf(environmentId, projectId);
+    if (setup === null) return GONE;
     const launch = launchOf(act, {
-      projectId,
-      projectName: defaults.project.title,
-      projectCwd: defaults.project.workspaceRoot,
-      defaultModel: defaults.model,
-      runtimeMode: defaults.runtimeMode,
-      interactionMode: DEFAULT_PROVIDER_INTERACTION_MODE,
-      models: machineWorld(environmentId).models,
-      ready: (instanceId) => providerReady(environmentId, instanceId),
+      ...setup,
       commandId: uuidv4(),
       messageId: uuidv4(),
       createdAt: new Date().toISOString(),
     });
     return launch.ok ? startCell(environmentId, launch.input) : launch;
   },
+  queue: async (environmentId, planId, act, projectId, now) => {
+    if (cellExists(environmentId, act.threadId)) return { ok: true };
+    const setup = setupOf(environmentId, projectId);
+    if (setup === null) return GONE;
+    const handed = queueOf(planId, act, setup);
+    if (!handed.ok) return handed;
+    const answer = await post(
+      environmentId,
+      QUEUE_PATH,
+      now ? { ...handed.request, now: true } : handed.request,
+    );
+    if (answer === null) return { ok: false, reason: "That machine can’t be reached from here." };
+    const reply = (await answer.json().catch(() => null)) as QueueReply | null;
+    if (reply?.ok === true) return { ok: true };
+    return { ok: false, reason: reply?.error ?? "The machine didn’t take the Cell." };
+  },
+  wantsWorktree: (environmentId, act, projectId) =>
+    worksApart(act, newCellDefaults(environmentId, projectId).apart),
+  exists: cellExists,
+  watch: watchCells,
   create: createProject,
   destroy,
   callBack: async (environmentId, threadId) => {
@@ -200,6 +236,15 @@ export function planCarrier(): Carrier {
   carrier ??= carry(trays, hands);
   return carrier;
 }
+
+/** The plans made in each of Aski's chats, for the cards under their messages. */
+export const kept = makeKept(
+  trays,
+  (environmentId, path) => askMachine(environmentId, path),
+  () => {
+    planCarrier();
+  },
+);
 
 /** Reads a fence's plan into the store, once; what it found. */
 export const openPlan = fenceReader(
@@ -264,7 +309,19 @@ export function planDoor(chat: {
     },
     settled: (id, plan) => {
       if (plan === null) trays.leave(id);
-      else trays.arrived(id, plan);
+      else {
+        trays.arrived(id, plan);
+        // Its card stands under this message once it leaves the composer.
+        if (plan.from === "read" && plan.acts.length > 0)
+          kept.made(environmentId, threadId, {
+            id,
+            at: Date.now(),
+            messageId: null,
+            words: planWords(draft.text),
+            plan,
+            outcome: null,
+          });
+      }
     },
     // A compile the server can't read tells whatever waits for the plan that none is coming.
     forget: (id) => void post(environmentId, COMPILE_PATH, { id }).catch(() => undefined),

@@ -10,6 +10,7 @@ export const HOLD_MS = 1200;
 export const PLAN_STATUS_WORDS = {
   starting: "Starting",
   started: "Flying",
+  queued: "Queued",
   dropped: "Dropped",
   failed: "Didn’t start",
   "called-back": "Called back",
@@ -51,8 +52,7 @@ export function whyLine(act: StartAct, why: Why): string | null {
 export function holdLine(act: DestroyAct): string {
   if (act.target === "project")
     return act.place === null ? "Delete a project" : `Delete the project ${act.place.name}`;
-  if (act.cells.length > 0)
-    return `Archive ${act.cells.map((cell) => cell.name).join(", ")}`;
+  if (act.cells.length > 0) return `Archive ${act.cells.map((cell) => cell.name).join(", ")}`;
   return act.place === null ? "Archive Cells" : `Archive every Cell in ${act.place.name}`;
 }
 
@@ -69,15 +69,31 @@ export const HOLD_PRESS = "Press and hold to confirm";
 export const HOLD_UNKNOWN = "Aski couldn’t tell which. Nothing is deleted.";
 
 /** The plan's headline: "4 Cells · 3 flying · 1 waiting on you". */
-export function headline(cells: number, flying: number, waiting: number, reading: boolean): string {
+export function headline(
+  cells: number,
+  flying: number,
+  waiting: number,
+  reading: boolean,
+  queued = 0,
+): string {
   if (reading) return "Aski is reading…";
   // A message that only deletes: its card says the rest.
   if (cells === 0) return "Deletion";
   const parts = [`${cells} ${cells === 1 ? "Cell" : "Cells"}`];
-  if (flying > 0 && waiting > 0) parts.push(`${flying} flying`);
+  if (flying > 0 && waiting + queued > 0) parts.push(`${flying} flying`);
+  if (queued > 0) parts.push(`${queued} queued`);
   if (waiting > 0) parts.push(`${waiting} waiting on you`);
   return parts.join(" · ");
 }
+
+/** Whom a queued Cell comes after, by their Cells' names: "After Otter and Finch". */
+export const afterLine = (names: readonly string[]): string =>
+  names.length === 0
+    ? "Queued"
+    : `After ${names.length === 1 ? names[0] : `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`}`;
+export const START_NOW = "Start now";
+/** A row's mark for a Cell the person asked to work in a worktree of its own. */
+export const OWN_WORKTREE = "own worktree";
 
 export const FLOOR_LINE = "Aski couldn’t read that as Cells to start. It went to Aski’s chat.";
 export const LEFT_OVER = (words: string): string => `Given to no Cell: “${words}”`;

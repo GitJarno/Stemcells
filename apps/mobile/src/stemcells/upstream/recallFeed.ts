@@ -20,12 +20,16 @@ export function ownWordsOf(entry: ThreadFeedEntry): string | null {
   return presented.attribution === null ? presented.text : null;
 }
 
+/** The id of the entry of ours of one `kind` under `under`. */
+export const noteIdOf = (under: MessageEntry, kind: string): string =>
+  `${kind}:${under.message.id}`;
+
 /**
  * An entry of ours for the feed to draw under `under`, as a reply with no run: it belongs to
  * no turn, so no fold hides it and it carries no reply's actions.
  */
 export function noteUnder(under: MessageEntry, kind: string, markdown: string): MessageEntry {
-  const id = MessageId.make(`${kind}:${under.message.id}`);
+  const id = MessageId.make(noteIdOf(under, kind));
   return {
     type: "message",
     id,

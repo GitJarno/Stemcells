@@ -20,8 +20,8 @@ import * as Effect from "effect/Effect";
 import type { ProjectionStoreV2Shape } from "../../orchestration-v2/ProjectionStore.ts";
 import type { ProjectService } from "../../project/ProjectService.ts";
 import { elsewhereNow } from "../peers/elsewhere.ts";
-import { planForMessage } from "../aski/book.ts";
-import { planNote } from "../aski/note.ts";
+import { newsFor, planForMessage, tieMessage } from "../aski/book.ts";
+import { newsNote, planNote } from "../aski/note.ts";
 import { cellsOnTheWire } from "../peers/onTheWire.ts";
 import { providerTextOf, type ThreadFacts } from "../peers/frame.ts";
 import { mailOf } from "../peers/link.ts";
@@ -216,6 +216,13 @@ export const text = Effect.fn("Stemcells.peers.text")(function* (
     message.senderThreadId === undefined
       ? yield* Effect.promise(() => planForMessage(threadId, message.text, now))
       : null;
-  const notes = [note, plan === null ? null : planNote(plan.plan)].filter((one) => one !== null);
+  if (plan !== null && message.id !== undefined) tieMessage(plan.plan.id, message.id);
+  // What the Cells this chat started came to since: told once, with no turn of Aski's spent.
+  const news = message.senderThreadId === undefined ? newsFor(threadId, now) : [];
+  const notes = [
+    note,
+    plan === null ? null : planNote(plan.plan),
+    news.length === 0 ? null : newsNote(news),
+  ].filter((one) => one !== null);
   return notes.length === 0 ? words : `${notes.join("\n")}\n\nUser message:\n${words}`;
 });

@@ -1,15 +1,27 @@
 import { beforeEach, describe, expect, it } from "vite-plus/test";
 
 import { proposedPlan } from "../../../../../stemcells/orchestrator/check.ts";
+import { planOfMessage } from "../../../../../stemcells/orchestrator/wire.ts";
 import {
   clearBook,
   expectPlan,
+  hydrateBook,
+  keptBook,
+  markTold,
+  newsFor,
   outcomeOf,
   planForMessage,
+  planOfId,
+  plansOf,
   putPlan,
+  setStandings,
   settlePlan,
+  standingOf,
+  tieMessage,
   unexpectPlan,
 } from "./book.ts";
+import { entriesOf } from "./Keeper.ts";
+import { planReport } from "./note.ts";
 
 const plan = (id: string, cells = 1) =>
   proposedPlan({
@@ -76,5 +88,76 @@ describe("what came of a plan", () => {
     putPlan({ plan: plan("p6"), text: "x", threadId: "aski", at: 1_000 });
     expect(await outcomeOf("p6", 10)).toBeNull();
     expect(await outcomeOf("nope", 10)).toBeNull();
+  });
+});
+
+describe("a plan that is kept", () => {
+  it("outlives a restart with what came of it, read back from what was written", () => {
+    putPlan({ plan: plan("p7"), text: "Fix the header", threadId: "aski", at: 1_000 });
+    settlePlan("p7", [{ i: 0, status: "started" }]);
+    tieMessage("p7", "m1");
+    const written: unknown = JSON.parse(JSON.stringify(keptBook()));
+    clearBook();
+    hydrateBook(entriesOf([...(written as unknown[]), { plan: "not a plan" }, null]), 2_000);
+    expect(planOfId("p7")?.outcome).toEqual([{ i: 0, status: "started" }]);
+    expect(plansOf("aski").map((kept) => [kept.id, kept.messageId])).toEqual([["p7", "m1"]]);
+    expect(plansOf("other")).toEqual([]);
+  });
+
+  it("is found under its message by the message's id, or by its words and time until it has one", () => {
+    putPlan({ plan: plan("p8"), text: "Fix the header", threadId: "aski", at: 10_000 });
+    putPlan({ plan: plan("p9"), text: "Fix the header", threadId: "aski", at: 40_000 });
+    const message = { id: "m2", text: "fix  the header", at: 9_000 };
+    // Said twice within the minute, untied: each message keeps the first plan made after it.
+    expect(planOfMessage(plansOf("aski"), message)?.id).toBe("p8");
+    expect(planOfMessage(plansOf("aski"), { ...message, id: "m3", at: 38_000 })?.id).toBe("p9");
+    expect(
+      planOfMessage(plansOf("aski"), { ...message, id: "m0", at: 9_000 - 600_000 }),
+    ).toBeNull();
+    // Said again later: each message keeps its own plan.
+    tieMessage("p8", "m2");
+    tieMessage("p9", "m3");
+    expect(planOfMessage(plansOf("aski"), message)?.id).toBe("p8");
+    expect(planOfMessage(plansOf("aski"), { ...message, id: "m3" })?.id).toBe("p9");
+    expect(planOfMessage(plansOf("aski"), { ...message, id: "m4" })).toBeNull();
+  });
+});
+
+describe("how a plan's Cells stand", () => {
+  const landed = {
+    threadId: "thread-1",
+    stage: "done" as const,
+    line: "Header fixed, tests pass.",
+    landing: { verdict: "shown" as const, proof: "checks-clean" },
+  };
+
+  it("is news to Aski's chat once, when a Cell it started lands or asks", () => {
+    putPlan({ plan: plan("p10"), text: "x", threadId: "aski", at: 1_000 });
+    settlePlan("p10", [{ i: 0, status: "started" }]);
+    setStandings([{ ...landed, stage: "working", line: null, landing: null }]);
+    expect(newsFor("aski", 2_000)).toEqual([]);
+    setStandings([landed]);
+    expect(newsFor("other", 2_000)).toEqual([]);
+    expect(newsFor("aski", 2_000).map((one) => one.standing.stage)).toEqual(["done"]);
+    expect(newsFor("aski", 3_000)).toEqual([]);
+    setStandings([{ ...landed, stage: "needs-you", landing: null }]);
+    expect(newsFor("aski", 4_000).map((one) => one.standing.stage)).toEqual(["needs-you"]);
+  });
+
+  it("is no news once Aski read the plan, nor for a Cell that never started", () => {
+    putPlan({ plan: plan("p11"), text: "x", threadId: "aski", at: 1_000 });
+    setStandings([landed]);
+    expect(newsFor("aski", 2_000)).toEqual([]);
+    settlePlan("p11", [{ i: 0, status: "started" }]);
+    markTold(planOfId("p11")!);
+    expect(newsFor("aski", 2_000)).toEqual([]);
+  });
+
+  it("stands in Aski's report beside what started, the Cell's own word quoted as its own", () => {
+    putPlan({ plan: plan("p12"), text: "x", threadId: "aski", at: 1_000 });
+    setStandings([landed]);
+    const report = planReport(planOfId("p12")!.plan, [{ i: 0, status: "started" }], standingOf);
+    expect(report).toContain("Now: landed, and a check or its pull request shows it");
+    expect(report).toContain("It says: “Header fixed, tests pass.”");
   });
 });

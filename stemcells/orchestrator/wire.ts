@@ -1,6 +1,7 @@
 // What a client and the server say to each other about plans
 // (`apps/server/src/stemcells/aski/compileHttp.ts`). Both clients speak it the same way.
 
+import { flat } from "./names.ts";
 import type { CompileContext, Plan, Selection } from "./plan.ts";
 
 export const ASKI_PATH = "/api/stemcells/aski";
@@ -10,6 +11,10 @@ export const EXPECT_PATH = `${ASKI_PATH}/expect`;
 export const COMPILE_PATH = `${ASKI_PATH}/compile`;
 /** GET ?id=: a plan and what came of it (a plan Aski's chat proposed is read this way). */
 export const PLAN_PATH = `${ASKI_PATH}/plan`;
+/** GET ?thread=: the plans made in one of Aski's chats, newest first, each with what came of it. */
+export const PLANS_PATH = `${ASKI_PATH}/plans`;
+/** POST: a Cell the server is to start itself: one that comes after others, or gets a worktree. */
+export const QUEUE_PATH = `${ASKI_PATH}/queue`;
 /** POST: what came of a plan's acts, and the names the person confirmed. */
 export const OUTCOME_PATH = `${ASKI_PATH}/outcome`;
 /** GET, DELETE: the names Aski has learned. */
@@ -37,7 +42,14 @@ export interface OutcomeRequest {
   readonly id: string;
   readonly acts: ReadonlyArray<{
     readonly i: number;
-    readonly status: "started" | "waiting" | "dropped" | "failed" | "called-back" | "done";
+    readonly status:
+      | "started"
+      | "waiting"
+      | "queued"
+      | "dropped"
+      | "failed"
+      | "called-back"
+      | "done";
     readonly reason?: string;
   }>;
   readonly learned?: {
@@ -63,7 +75,12 @@ export function planIdOfFence(body: string): string | null {
  * told by their family; another provider's default serves for both.
  */
 export function thinkWith(
-  models: ReadonlyArray<{ readonly instanceId: string; readonly id: string; readonly effortOption?: string; readonly efforts: readonly string[] }>,
+  models: ReadonlyArray<{
+    readonly instanceId: string;
+    readonly id: string;
+    readonly effortOption?: string;
+    readonly efforts: readonly string[];
+  }>,
   instanceId: string,
 ): { fast: Selection; strong?: Selection } | null {
   const own = models.filter((model) => model.instanceId === instanceId);
@@ -83,3 +100,79 @@ export function thinkWith(
     ...(strong !== undefined && strong !== fast ? { strong: selectionOf(strong) } : {}),
   };
 }
+
+/** A plan as the server keeps it, for the card under the message it was made from. */
+export interface KeptPlan {
+  readonly id: string;
+  /** When it was made, in epoch milliseconds. */
+  readonly at: number;
+  /** The message it was made from, once that message's turn began; null until then. */
+  readonly messageId: string | null;
+  /** That message's words, as `planWords` reads them. */
+  readonly words: string;
+  readonly plan: Plan;
+  readonly outcome: ReadonlyArray<{
+    readonly i: number;
+    readonly status: OutcomeRequest["acts"][number]["status"];
+    readonly reason?: string | undefined;
+  }> | null;
+}
+
+export interface PlansReply {
+  readonly plans: ReadonlyArray<KeptPlan>;
+}
+
+// A Cell's chip in a message (upstream's thread context link) says what Aski should look at;
+// it is no part of the words a plan was made from. The server's `askiPlans.contract.test.ts`
+// pins its form.
+const CHIP = /\[[^[\]\n]*\]\(t3-context:\/\/v1\/thread\/[^\s)]+\)/gu;
+
+/** A message's words as a plan is matched to it: no chip, one case, single spaces. */
+export const planWords = (text: string): string => flat(text.replace(CHIP, " "));
+
+/** How long after a plan a message with its words still counts as that plan's message. */
+export const PLAN_NOTE_MS = 2 * 60_000;
+
+/** How far a message's clock may run ahead of the server's, when a plan is matched by time. */
+const SKEW_MS = 5_000;
+
+/**
+ * The plan a message in Aski's chat was made into: the one the server tied to it, else the
+ * first untied one made from the same words after it, within `PLAN_NOTE_MS`. The first, so
+ * the same words said twice keep a plan each.
+ */
+export function planOfMessage(
+  plans: ReadonlyArray<KeptPlan>,
+  message: { readonly id: string; readonly text: string; readonly at: number },
+): KeptPlan | null {
+  const tied = plans.find((plan) => plan.messageId === message.id);
+  if (tied !== undefined) return tied;
+  const words = planWords(message.text);
+  let found: KeptPlan | null = null;
+  for (const plan of plans) {
+    if (plan.messageId !== null || plan.words !== words) continue;
+    if (plan.at < message.at - SKEW_MS || plan.at > message.at + PLAN_NOTE_MS) continue;
+    if (found === null || plan.at < found.at) found = plan;
+  }
+  return found;
+}
+
+/**
+ * A Cell handed to the server to start (decisions 16 and 17), with what the client would have
+ * started it with. Its words are the server's own copy of the plan's.
+ */
+export interface QueueRequest {
+  readonly id: string;
+  readonly i: number;
+  readonly projectId: string;
+  /** The model as a launch takes it. */
+  readonly modelSelection: Selection;
+  readonly runtimeMode: string;
+  readonly interactionMode: string;
+  /** In a worktree of its own, when the project's folder is a repository. */
+  readonly worktree: boolean;
+  /** The person won't wait for the Cells it comes after: it starts at once, where they work. */
+  readonly now?: boolean;
+}
+
+export type QueueReply = { readonly ok: true } | { readonly ok: false; readonly error: string };

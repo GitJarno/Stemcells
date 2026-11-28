@@ -46,6 +46,7 @@ import * as ServerSettings from "../../serverSettings.ts";
 import * as TerminalManager from "../../terminal/Manager.ts";
 import * as TextGeneration from "../../textGeneration/TextGeneration.ts";
 import { DEFAULT_INSTANCES } from "./askiInstance.ts";
+import * as PlanStart from "./planStart.ts";
 import * as ProviderTurnStartTestkit from "../../orchestration-v2/ProviderTurnStartService.testkit.ts";
 
 const projectId = ProjectId.make("project:aski-instance");
@@ -193,6 +194,37 @@ it.effect("a Cell launched on Aski's instance is refused, naming the instances i
     assert.equal(refused.message, refusal);
     // Aski gets it as a plain tool error, as t3_thread_launch and the others hand it back.
     assert.deepInclude(dispatchFailure(refused), { code: "invalid_request", message: refusal });
+  }).pipe(Effect.provide(launches)),
+);
+
+it.effect("a queued Cell the server starts on Aski's instance is refused the same way", () =>
+  Effect.gen(function* () {
+    const started = yield* PlanStart.start({
+      commandId: "stemcells-plan:p1:0",
+      threadId: "thread:aski-instance:queued",
+      title: "Fix the build",
+      text: "Fix it",
+      launch: {
+        projectId,
+        modelSelection: { instanceId: askis, model: "m" },
+        runtimeMode: "full-access",
+        interactionMode: "default",
+      },
+      worktree: false,
+      beside: null,
+    });
+    assert.deepEqual(started, { ok: false, reason: refusal.slice(0, 200) });
+    // What a client handed over is checked again before it starts anything.
+    const unread = yield* PlanStart.start({
+      commandId: "stemcells-plan:p1:1",
+      threadId: "thread:aski-instance:unread",
+      title: "Fix the build",
+      text: "Fix it",
+      launch: { projectId, runtimeMode: "anything" },
+      worktree: false,
+      beside: null,
+    });
+    assert.equal(unread.ok, false);
   }).pipe(Effect.provide(launches)),
 );
 
