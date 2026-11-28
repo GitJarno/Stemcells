@@ -297,7 +297,15 @@ export interface PlanHands {
    */
   readonly start: (act: StartAct, projectKey: string) => Promise<Carried>;
   /** Hands an act of plan `planId` to Aski's server to start itself: later, or in a worktree of its own. */
-  readonly queue: (planId: string, act: StartAct, projectKey: string) => Promise<Carried>;
+  readonly queue: (
+    planId: string,
+    act: StartAct,
+    projectKey: string,
+    /** Start it at once, though the Cells it comes after haven't landed. */
+    now: boolean,
+  ) => Promise<Carried>;
+  /** Whether the project is on Aski's own server, which is the one that can start a Cell. */
+  readonly onAskisServer: (projectKey: string) => boolean;
   /** Whether the act's Cell gets a worktree of its own in `projectKey`: the person's word, else the project's default. */
   readonly wantsWorktree: (act: StartAct, projectKey: string) => boolean;
   /** Whether the app lists the thread, on any machine. */
@@ -465,7 +473,8 @@ export function usePlanHands(aski: CellRef | null): PlanHands {
     projectKeyOf,
     exists: (threadId) => readThreadShells().some((shell) => shell.id === threadId),
     wantsWorktree: (act, projectKey) => wantsWorktree(home, act, projectKey),
-    queue: async (planId, act, projectKey) => {
+    onAskisServer: (projectKey) => projectRefOfKey(projectKey).environmentId === home,
+    queue: async (planId, act, projectKey, now) => {
       const launch = launchOf(act, projectKey);
       if (launch === null) return { ok: false, error: "That project's machine isn't connected." };
       // The server starts it on itself, where the plan is kept.
@@ -480,6 +489,7 @@ export function usePlanHands(aski: CellRef | null): PlanHands {
         runtimeMode: launch.runtimeMode,
         interactionMode: launch.interactionMode,
         worktree: wantsWorktree(home, act, projectKey),
+        ...(now ? { now: true } : {}),
       });
     },
     cellOf: (threadId) => {

@@ -100,8 +100,25 @@ describe("a queued Cell", () => {
     expect(due(1_000 + QUEUED_MOST_MS + 1)).toEqual(["expire"]);
   });
 
+  it("starts before the Cell before it lands when the person won't wait", () => {
+    queueAct("p1", 1, { ...launch(1_000), now: true });
+    stands("thread-0", { stage: "working", line: null, landing: null });
+    expect(dueOf(keptBook(), standingOf, 2_000)).toMatchObject([{ kind: "start", waited: false }]);
+  });
+
+  it("is not put back in the line by a client that hasn't heard it started or failed", () => {
+    queueAct("p1", 1, launch(1_000));
+    settlePlan("p1", [{ i: 1, status: "failed", reason: "No model." }]);
+    settlePlan("p1", [{ i: 1, status: "queued" }]);
+    expect(planOfId("p1")?.outcome?.[1]).toEqual({ i: 1, status: "failed", reason: "No model." });
+    settlePlan("p1", [{ i: 0, status: "queued" }]);
+    expect(planOfId("p1")?.outcome?.[0]?.status).toBe("started");
+    expect(queueAct("p1", 0, launch(1_000))).toBe("started");
+  });
+
   it("with nothing to wait for starts at once: a Cell handed over for its worktree", () => {
-    queueAct("p1", 0, launch(1_000, true));
+    putPlan({ plan: plan("p3", [act(0)]), text: "z", threadId: "aski", at: 1_000 });
+    queueAct("p3", 0, launch(1_000, true));
     expect(due()).toEqual(["start"]);
   });
 

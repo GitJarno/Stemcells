@@ -15,8 +15,10 @@ export type Due =
       readonly id: string;
       readonly act: StartAct;
       readonly launch: Launch;
-      /** The Cells it came after, in the plan's order. */
+      /** The Cells it comes after, in the plan's order. */
       readonly before: ReadonlyArray<StartAct>;
+      /** It waited for them to land; false when the person started it before they had. */
+      readonly waited: boolean;
     }
   | { readonly kind: "expire"; readonly id: string; readonly i: number };
 
@@ -42,20 +44,21 @@ export function dueOf(
         continue;
       }
       const before = (act.after ?? []).map((n) => entry.plan.acts.find((one) => one.i === n));
-      const ready = before.every(
+      const landed = before.every(
         (one) =>
           one !== undefined &&
           one.kind === "start" &&
           statusOf(one.i) === "started" &&
           landedWell(standingOf(one.threadId)),
       );
-      if (ready)
+      if (landed || launch.now === true)
         due.push({
           kind: "start",
           id: entry.plan.id,
           act,
           launch,
           before: before.filter((one): one is StartAct => one?.kind === "start"),
+          waited: landed,
         });
     }
   }

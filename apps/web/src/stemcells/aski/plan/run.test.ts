@@ -62,6 +62,8 @@ function world() {
     started: [] as string[],
     /** Cells handed to the server to start. */
     queued: [] as string[],
+    /** Those of them handed over to start at once. */
+    atOnce: [] as string[],
     /** The threads the app lists. */
     listed: new Set<string>(),
     made: [] as string[],
@@ -73,8 +75,10 @@ function world() {
       calls.started.push(act.threadId);
       return act.title === "Fails" ? { ok: false, error: "No model." } : { ok: true };
     },
-    queue: async (_planId, act) => {
+    onAskisServer: () => true,
+    queue: async (_planId, act, _projectKey, now) => {
       calls.queued.push(act.threadId);
+      if (now) calls.atOnce.push(act.threadId);
       return act.title === "Refused"
         ? { ok: false, error: "A deletion of this plan still waits for your hand." }
         : { ok: true };
@@ -270,7 +274,7 @@ describe("a Cell the server starts", () => {
   });
 
   it("says why when the server won't take a queued Cell", async () => {
-    const { runner, stop } = world();
+    const { stop } = world();
     beginPlan("one", "env/aski", 1);
     planRead("one", planWith("one", [cell(0), cell(1, { after: [0], title: "Refused" })]));
     await settle();
@@ -279,13 +283,19 @@ describe("a Cell the server starts", () => {
       "failed",
       "A deletion of this plan still waits for your hand.",
     ]);
-    // "Start now" on a Cell that still waits its turn starts it here.
+    stop();
+  });
+
+  it("has the server start a waiting Cell at once on Start now, where the Cell before it works", async () => {
+    const { calls, runner, stop } = world();
     beginPlan("two", "env/aski", 2);
     planRead("two", planWith("two", [cell(2), cell(3, { after: [2] })]));
     await settle();
     runner.startNow("two", 3);
     await settle();
     expect(statusesOf("two")).toEqual(["started", "started"]);
+    expect(calls.atOnce).toEqual(["thread-3"]);
+    expect(calls.started).toEqual(["thread-2"]);
     stop();
   });
 

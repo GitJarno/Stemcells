@@ -108,6 +108,7 @@ const QueueRequest = Schema.Struct({
   i: Schema.Number,
   ...HandedLaunch.fields,
   worktree: Schema.Boolean,
+  now: Schema.optionalKey(Schema.Boolean),
 });
 const decodeQueue = Schema.decodeUnknownEffect(Schema.fromJsonString(QueueRequest));
 const decodeExpect = Schema.decodeUnknownEffect(Schema.fromJsonString(ExpectRequest));
@@ -231,11 +232,17 @@ const queueRoute = Effect.fn("AskiHttp.queue")(function* (line: Keeper.Line["Ser
       { ok: false, error: "A queued Cell names its plan, project, model and modes." },
       400,
     );
-  const { id, i, worktree, ...launch } = body.value;
+  const { id, i, worktree, now: atOnce, ...launch } = body.value;
   if (launch.modelSelection.instanceId === ASKI_INSTANCE_ID)
     return json({ ok: false, error: "No Cell runs on Aski's own instance." }, 400);
   const now = yield* Clock.currentTimeMillis;
-  const went = queueAct(id, i, { ...launch, worktree, at: now });
+  const went = queueAct(id, i, {
+    ...launch,
+    worktree,
+    at: now,
+    ...(atOnce === true ? { now: true } : {}),
+  });
+  if (went === "started") return json({ ok: true });
   if (went === "unknown") return json({ ok: false, error: "No such plan." }, 404);
   if (went === "held")
     return json({ ok: false, error: "A deletion of this plan still waits for your hand." }, 409);

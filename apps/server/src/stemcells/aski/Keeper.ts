@@ -103,8 +103,9 @@ export const layer = Layer.effect(
         commandId: `stemcells-plan:${due.id}:${act.i}`,
         threadId: act.threadId,
         title: act.title,
+        // Started before they landed, it is told nothing of them: there is nothing to build on yet.
         text:
-          before.length === 0
+          before.length === 0 || !due.waited
             ? messageOf(act)
             : `${messageOf(act)}\n\n${afterNote(before, sameFolder)}`,
         launch,

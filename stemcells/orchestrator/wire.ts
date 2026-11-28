@@ -167,6 +167,8 @@ export interface QueueRequest {
   readonly interactionMode: string;
   /** In a worktree of its own, when the project's folder is a repository. */
   readonly worktree: boolean;
+  /** The person won't wait for the Cells it comes after: it starts at once, where they work. */
+  readonly now?: boolean;
 }
 
 export type QueueReply = { readonly ok: true } | { readonly ok: false; readonly error: string };

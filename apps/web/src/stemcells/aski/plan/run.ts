@@ -48,7 +48,15 @@ type Carried = { readonly ok: true } | { readonly ok: false; readonly error: str
 export interface RunnerHands {
   readonly start: (act: StartAct, projectKey: string) => Promise<Carried>;
   /** Hands the server a Cell to start itself: at once, or once the Cells it comes after land. */
-  readonly queue: (planId: string, act: StartAct, projectKey: string) => Promise<Carried>;
+  readonly queue: (
+    planId: string,
+    act: StartAct,
+    projectKey: string,
+    /** Start it at once, though the Cells it comes after haven't landed. */
+    now: boolean,
+  ) => Promise<Carried>;
+  /** Whether the project is on Aski's own server, which is the one that can start a Cell. */
+  readonly onAskisServer: (projectKey: string) => boolean;
   /** Whether a Cell starting in `projectKey` gets a worktree of its own, which the server gives. */
   readonly wantsWorktree: (act: StartAct, projectKey: string) => boolean;
   /** Whether the app lists a Cell's thread: one the server was handed has started. */
@@ -130,11 +138,11 @@ export function createRunner(hands: () => RunnerHands | null) {
   };
 
   /**
-   * A worktree is the server's to give, so it starts that Cell. One that came after others it
-   * would hold until they land: the person's "Start now" starts that one here, in the folder.
+   * A worktree is the server's to give, and so is the worktree of the Cell this one comes
+   * after: the server starts both kinds, the second at once on the person's "Start now".
    */
   const serverStartsIn = (use: RunnerHands, act: StartAct, projectKey: string) =>
-    !comesAfter(act) && use.wantsWorktree(act, projectKey);
+    use.wantsWorktree(act, projectKey) || (comesAfter(act) && use.onAskisServer(projectKey));
 
   /** Act `i` is a Cell already, by another hand: it can't be called back from here. */
   const there = (tray: Tray, i: number): Tray => {
@@ -156,7 +164,7 @@ export function createRunner(hands: () => RunnerHands | null) {
     const apart = serverStartsIn(use, act, project.projectKey);
     if (apart) serverStarts.add(key);
     const result = await (apart
-      ? use.queue(planId, act, project.projectKey)
+      ? use.queue(planId, act, project.projectKey, comesAfter(act))
       : use.start(act, project.projectKey));
     changePlan(planId, (tray) =>
       result.ok ? started(tray, act.i, Date.now()) : failed(tray, act.i, result.error),
@@ -165,7 +173,7 @@ export function createRunner(hands: () => RunnerHands | null) {
 
   const queueOne = async (use: RunnerHands, planId: string, act: StartAct) => {
     const project = await projectOf(use, planId, act);
-    const result = project.ok ? await use.queue(planId, act, project.projectKey) : project;
+    const result = project.ok ? await use.queue(planId, act, project.projectKey, false) : project;
     if (!result.ok) changePlan(planId, (tray) => unqueued(tray, act.i, result.error));
   };
 

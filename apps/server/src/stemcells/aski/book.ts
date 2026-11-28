@@ -45,6 +45,8 @@ export interface Launch {
   readonly worktree: boolean;
   /** When it was handed over, in epoch milliseconds. */
   readonly at: number;
+  /** The person won't wait for the Cells it comes after: it starts at once. */
+  readonly now?: boolean;
 }
 
 /** How a Cell stands, as the needs list has it (`needs/stage.ts`). */
@@ -144,11 +146,17 @@ const heldOf = (entry: BookEntry): boolean =>
  * A client hands the server a Cell to start itself (decision 16). Refused for a plan or a Cell
  * the book doesn't have, and while a deletion of the plan is held.
  */
-export function queueAct(id: string, i: number, launch: Launch): "queued" | "unknown" | "held" {
+export function queueAct(
+  id: string,
+  i: number,
+  launch: Launch,
+): "queued" | "started" | "unknown" | "held" {
   const entry = entries.get(id);
   const act = entry?.plan.acts.find((one) => one.i === i);
   if (entry === undefined || act === undefined || act.kind !== "start") return "unknown";
   if (heldOf(entry)) return "held";
+  // Handed over twice, by a second window or a retry: the Cell is one already.
+  if (entry.outcome?.find((one) => one.i === i)?.status === "started") return "started";
   const outcome = [
     ...(entry.outcome ?? []).filter((one) => one.i !== i),
     { i, status: "queued" as const },
@@ -261,7 +269,14 @@ export function settlePlan(id: string, acts: ReadonlyArray<ActOutcome>): boolean
   if (entry === undefined) return false;
   const known = new Set(entry.plan.acts.map((act) => act.i));
   const merged = new Map((entry.outcome ?? []).map((act) => [act.i, act]));
-  for (const act of acts) if (known.has(act.i)) merged.set(act.i, act);
+  for (const act of acts) {
+    if (!known.has(act.i)) continue;
+    // A client's "queued" is its own view: it never undoes what the server already did with the act.
+    const now = merged.get(act.i)?.status;
+    if (act.status === "queued" && now !== undefined && now !== "waiting" && now !== "queued")
+      continue;
+    merged.set(act.i, act);
+  }
   const outcome = [...merged.values()].sort((a, b) => a.i - b.i);
   // An act told as anything but queued is no longer the server's to start.
   const launches = Object.fromEntries(
