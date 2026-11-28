@@ -605,6 +605,12 @@ and 8 stand alone.
   still starts, and its launcher reads it; issue, pull request and worktree
   tools take a thread id and aren't asked, since they read no chat.
 
+- Slices 10 and 11 on the corpus: seven cases more (a chain, a chain
+  across projects, a list said in order, "then" inside one task, "each
+  in its own worktree", "same folder, no worktree", a task about
+  worktrees). The fast tier at low effort read 29 of 29 clean (353 of
+  353 fields, no second call); one sample.
+
 ## Open
 
 - The wait: a provider's SDK session with reasoning off, and Codex's

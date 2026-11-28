@@ -1,38 +1,14 @@
 {
   "context": {
     "places": [
-      {
-        "id": "harbor",
-        "name": "Harbor"
-      },
-      {
-        "id": "atlas",
-        "name": "Atlas"
-      },
-      {
-        "id": "harbor-design",
-        "name": "Harbor Design"
-      },
-      {
-        "id": "ledger",
-        "name": "Ledger"
-      },
-      {
-        "id": "lanterns",
-        "name": "Lanterns"
-      },
-      {
-        "id": "reviews",
-        "name": "Reviews"
-      },
-      {
-        "id": "kiosk",
-        "name": "Kiosk"
-      },
-      {
-        "id": "plain-project",
-        "name": "plain-project"
-      }
+      { "id": "harbor", "name": "Harbor" },
+      { "id": "atlas", "name": "Atlas" },
+      { "id": "harbor-design", "name": "Harbor Design" },
+      { "id": "ledger", "name": "Ledger" },
+      { "id": "lanterns", "name": "Lanterns" },
+      { "id": "reviews", "name": "Reviews" },
+      { "id": "kiosk", "name": "Kiosk" },
+      { "id": "plain-project", "name": "plain-project" }
     ],
     "models": [
       {
@@ -77,14 +53,8 @@
       }
     ],
     "cells": [
-      {
-        "threadId": "t-otter",
-        "name": "Otter"
-      },
-      {
-        "threadId": "t-badger",
-        "name": "Badger"
-      }
+      { "threadId": "t-otter", "name": "Otter" },
+      { "threadId": "t-badger", "name": "Badger" }
     ]
   },
   "cases": [
@@ -139,13 +109,7 @@
           "effort": "high",
           "tier": "check"
         },
-        {
-          "says": "ad copy",
-          "place": "Atlas",
-          "model": "Sol 6.1",
-          "effort": null,
-          "tier": "start"
-        }
+        { "says": "ad copy", "place": "Atlas", "model": "Sol 6.1", "effort": null, "tier": "start" }
       ]
     },
     {
@@ -153,20 +117,8 @@
       "dictated": false,
       "text": "Hey can you do one agent for the Harbor sign-in page and another agent for the Atlas docs. The Atlas one should use Sol. Also a new project called vacuum cleaners that will be a comparison site for vacuum cleaners in Finland",
       "cells": [
-        {
-          "says": "sign-in",
-          "place": "Harbor",
-          "model": null,
-          "effort": null,
-          "tier": "start"
-        },
-        {
-          "says": "docs",
-          "place": "Atlas",
-          "model": "Sol 6.1",
-          "effort": null,
-          "tier": "start"
-        },
+        { "says": "sign-in", "place": "Harbor", "model": null, "effort": null, "tier": "start" },
+        { "says": "docs", "place": "Atlas", "model": "Sol 6.1", "effort": null, "tier": "start" },
         {
           "says": "comparison site",
           "place": "new:Vacuum Cleaners",
@@ -188,13 +140,7 @@
           "effort": null,
           "tier": "start"
         },
-        {
-          "says": "competitors",
-          "place": "Atlas",
-          "model": null,
-          "effort": null,
-          "tier": "start"
-        },
+        { "says": "competitors", "place": "Atlas", "model": null, "effort": null, "tier": "start" },
         {
           "says": "comparison site",
           "place": "new:Vacuum Cleaners",
@@ -216,13 +162,7 @@
           "effort": "max",
           "tier": "start"
         },
-        {
-          "says": "docs",
-          "place": "Atlas",
-          "model": "Sol 6.1",
-          "effort": null,
-          "tier": "start"
-        },
+        { "says": "docs", "place": "Atlas", "model": "Sol 6.1", "effort": null, "tier": "start" },
         {
           "says": "staging tables",
           "place": "Ledger",
@@ -237,13 +177,7 @@
       "dictated": false,
       "text": "Harbor fix the header so it wraps on narrow screens",
       "cells": [
-        {
-          "says": "header",
-          "place": "Harbor",
-          "model": null,
-          "effort": null,
-          "tier": "start"
-        }
+        { "says": "header", "place": "Harbor", "model": null, "effort": null, "tier": "start" }
       ]
     },
     {
@@ -293,20 +227,8 @@
       "dictated": true,
       "text": "one agent for the passkey sign-in endpoints and another one for the release notes",
       "cells": [
-        {
-          "says": "passkey",
-          "place": "*",
-          "model": null,
-          "effort": null,
-          "tier": "check"
-        },
-        {
-          "says": "release notes",
-          "place": "*",
-          "model": null,
-          "effort": null,
-          "tier": "check"
-        }
+        { "says": "passkey", "place": "*", "model": null, "effort": null, "tier": "check" },
+        { "says": "release notes", "place": "*", "model": null, "effort": null, "tier": "check" }
       ]
     },
     {
@@ -335,52 +257,24 @@
       "dictated": false,
       "text": "one agent in Atlas to write an essay in plain prose about the reviews we got, another in Harbor to tidy the footer",
       "cells": [
-        {
-          "says": "plain prose",
-          "place": "Atlas",
-          "model": null,
-          "effort": null,
-          "tier": "*"
-        },
-        {
-          "says": "footer",
-          "place": "Harbor",
-          "model": null,
-          "effort": null,
-          "tier": "*"
-        }
+        { "says": "plain prose", "place": "Atlas", "model": null, "effort": null, "tier": "*" },
+        { "says": "footer", "place": "Harbor", "model": null, "effort": null, "tier": "*" }
       ]
     },
     {
       "name": "deleting a project is held, and nothing else starts first",
       "dictated": true,
       "text": "delete the Reviews project and start an agent in Harbor for the footer",
-      "holds": [
-        {
-          "target": "project",
-          "place": "Reviews"
-        }
-      ],
+      "holds": [{ "target": "project", "place": "Reviews" }],
       "cells": [
-        {
-          "says": "footer",
-          "place": "Harbor",
-          "model": null,
-          "effort": null,
-          "tier": "check"
-        }
+        { "says": "footer", "place": "Harbor", "model": null, "effort": null, "tier": "check" }
       ]
     },
     {
       "name": "archiving named Cells is held",
       "dictated": false,
       "text": "archive Otter and Badger",
-      "holds": [
-        {
-          "target": "cells",
-          "cells": ["Otter", "Badger"]
-        }
-      ],
+      "holds": [{ "target": "cells", "cells": ["Otter", "Badger"] }],
       "cells": []
     },
     {
@@ -403,20 +297,8 @@
       "text": "start an agent in Harbor for the footer and one in Atlas for the sitemap. Also what happened in Ledger yesterday?",
       "talk": "what happened",
       "cells": [
-        {
-          "says": "footer",
-          "place": "Harbor",
-          "model": null,
-          "effort": null,
-          "tier": "start"
-        },
-        {
-          "says": "sitemap",
-          "place": "Atlas",
-          "model": null,
-          "effort": null,
-          "tier": "start"
-        }
+        { "says": "footer", "place": "Harbor", "model": null, "effort": null, "tier": "start" },
+        { "says": "sitemap", "place": "Atlas", "model": null, "effort": null, "tier": "start" }
       ]
     },
     {
@@ -425,13 +307,7 @@
       "text": "spin up an agent in Kiosk for the seat map. Otter, rebase onto main. And turn the sounds off",
       "talk": "rebase",
       "cells": [
-        {
-          "says": "seat map",
-          "place": "Kiosk",
-          "model": null,
-          "effort": null,
-          "tier": "start"
-        }
+        { "says": "seat map", "place": "Kiosk", "model": null, "effort": null, "tier": "start" }
       ]
     },
     {
@@ -446,13 +322,7 @@
           "effort": null,
           "tier": "start"
         },
-        {
-          "says": "search box",
-          "place": "Atlas",
-          "model": null,
-          "effort": null,
-          "tier": "start"
-        }
+        { "says": "search box", "place": "Atlas", "model": null, "effort": null, "tier": "start" }
       ]
     },
     {
@@ -467,13 +337,7 @@
           "effort": null,
           "tier": "start"
         },
-        {
-          "says": "max upload",
-          "place": "Atlas",
-          "model": null,
-          "effort": null,
-          "tier": "start"
-        }
+        { "says": "max upload", "place": "Atlas", "model": null, "effort": null, "tier": "start" }
       ]
     },
     {
@@ -481,20 +345,8 @@
       "dictated": false,
       "text": "start an agent in Lanterns to write a haiku for the launch page and one in Atlas to explain the sol command in the docs",
       "cells": [
-        {
-          "says": "haiku",
-          "place": "Lanterns",
-          "model": null,
-          "effort": null,
-          "tier": "start"
-        },
-        {
-          "says": "sol command",
-          "place": "Atlas",
-          "model": null,
-          "effort": null,
-          "tier": "start"
-        }
+        { "says": "haiku", "place": "Lanterns", "model": null, "effort": null, "tier": "start" },
+        { "says": "sol command", "place": "Atlas", "model": null, "effort": null, "tier": "start" }
       ]
     },
     {
@@ -525,13 +377,7 @@
       "dictated": true,
       "text": "in Kiosk I need an agent for the seat map and another for the ticket printer then in Ledger one for the tax report",
       "cells": [
-        {
-          "says": "seat map",
-          "place": "Kiosk",
-          "model": null,
-          "effort": null,
-          "tier": "start"
-        },
+        { "says": "seat map", "place": "Kiosk", "model": null, "effort": null, "tier": "start" },
         {
           "says": "ticket printer",
           "place": "Kiosk",
@@ -539,13 +385,7 @@
           "effort": null,
           "tier": "start"
         },
-        {
-          "says": "tax report",
-          "place": "Ledger",
-          "model": null,
-          "effort": null,
-          "tier": "start"
-        }
+        { "says": "tax report", "place": "Ledger", "model": null, "effort": null, "tier": "start" }
       ]
     },
     {
@@ -560,13 +400,7 @@
           "effort": null,
           "tier": "check"
         },
-        {
-          "says": "readme",
-          "place": "Harbor",
-          "model": null,
-          "effort": null,
-          "tier": "start"
-        }
+        { "says": "readme", "place": "Harbor", "model": null, "effort": null, "tier": "start" }
       ]
     },
     {
@@ -596,27 +430,9 @@
       "dictated": true,
       "text": "first in Atlas update the readme then in Kiosk fix the showtimes sorting and then in Lanterns rename the drop ads folder",
       "cells": [
-        {
-          "says": "readme",
-          "place": "Atlas",
-          "model": null,
-          "effort": null,
-          "tier": "start"
-        },
-        {
-          "says": "showtimes",
-          "place": "Kiosk",
-          "model": null,
-          "effort": null,
-          "tier": "start"
-        },
-        {
-          "says": "drop ads",
-          "place": "Lanterns",
-          "model": null,
-          "effort": null,
-          "tier": "start"
-        }
+        { "says": "readme", "place": "Atlas", "model": null, "effort": null, "tier": "start" },
+        { "says": "showtimes", "place": "Kiosk", "model": null, "effort": null, "tier": "start" },
+        { "says": "drop ads", "place": "Lanterns", "model": null, "effort": null, "tier": "start" }
       ]
     },
     {
@@ -639,13 +455,7 @@
           "tier": "start",
           "after": "export endpoint"
         },
-        {
-          "says": "seat map",
-          "place": "Kiosk",
-          "model": null,
-          "effort": null,
-          "tier": "start"
-        }
+        { "says": "seat map", "place": "Kiosk", "model": null, "effort": null, "tier": "start" }
       ]
     },
     {
