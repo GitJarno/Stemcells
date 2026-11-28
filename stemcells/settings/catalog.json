@@ -1486,16 +1486,6 @@
       "page": "/settings/aski"
     },
     {
-      "id": "aski-plan-check",
-      "title": "Check every plan",
-      "page": "/settings/aski"
-    },
-    {
-      "id": "aski-plan-cap",
-      "title": "Most Cells one message starts",
-      "page": "/settings/aski"
-    },
-    {
       "id": "aski-plan-learned",
       "title": "Names Aski learned",
       "page": "/settings/aski"

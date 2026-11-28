@@ -104,12 +104,18 @@ describe("a queued Cell", () => {
     expect(planOfId("p1")?.launches).toEqual({});
   });
 
-  it("waits while the Cell before it never started, and is dropped after a day", () => {
-    settlePlan("p1", [{ i: 0, status: "dropped" }]);
+  it("waits while the Cell before it failed to start, and is dropped after a day", () => {
+    settlePlan("p1", [{ i: 0, status: "failed", reason: "No model." }]);
     queueAct("p1", 1, launch(1_000));
     stands("thread-0", landed);
     expect(due()).toEqual([]);
     expect(due(1_000 + QUEUED_MOST_MS + 1)).toEqual(["expire"]);
+  });
+
+  it("waits for no one the person switched off or dropped", () => {
+    settlePlan("p1", [{ i: 0, status: "dropped" }]);
+    queueAct("p1", 1, launch(1_000));
+    expect(dueOf(keptBook(), standingOf, 2_000)).toMatchObject([{ kind: "start", before: [] }]);
   });
 
   it("starts before the Cell before it lands when the person won't wait", () => {

@@ -3,11 +3,9 @@ import { PhoneSettings } from "../push/PhoneSettings";
 import { SettingsPageContainer, SettingsRow, SettingsSection, Switch } from "../upstream/settings";
 import { useEffect, useState } from "react";
 
-import { CEILING } from "../../../../../stemcells/orchestrator/plan.ts";
 import { forgetLearned, type LearnedNames, readLearned } from "../upstream/askiPlans";
 import { Button } from "../upstream/ui";
 import { AsksMeasure } from "./AsksMeasure";
-import { setCheckAlways, setPlanCap, useCheckAlways, usePlanCap } from "./plan/settings";
 import { setAskiPlans, useAskiPlans } from "./planning";
 import { setAskiTabOn, useAskiTabOn } from "./tabSwitch";
 import { ASKI_SWITCHES } from "./settingLinks";
@@ -41,8 +39,6 @@ const TAKES_HOW =
 export function AskiSettingsPanel() {
   const askiTab = useAskiTabOn();
   const plans = useAskiPlans();
-  const always = useCheckAlways();
-  const cap = usePlanCap();
   const autonomy = useAutonomy();
   return (
     <SettingsPageContainer>
@@ -64,44 +60,13 @@ export function AskiSettingsPanel() {
         <SettingsRow
           id="aski-plans"
           title={ASKI_SWITCHES["aski-plans"].title}
-          description="One short call reads which Cells a message asks for, to Aski or in a new chat, and code checks it before any starts. Off, Aski only answers, and a new chat waits for your words."
+          description="One short call reads which Cells a message asks for, to Aski or in a new chat, and shows them as a plan. Nothing starts before you send it. Off, Aski only answers, and a new chat waits for your words."
           control={
             <Switch
               checked={plans}
               aria-label={ASKI_SWITCHES["aski-plans"].title}
               onCheckedChange={(checked) => setAskiPlans(checked)}
             />
-          }
-        />
-        <SettingsRow
-          id="aski-plan-check"
-          title="Check every plan"
-          description="Off, a Cell starts at once when you named its project and its words ask nothing final. On, every Cell waits for your tap. A deletion always waits for your held press."
-          control={
-            <Switch
-              checked={always}
-              aria-label="Check every plan"
-              onCheckedChange={(checked) => setCheckAlways(checked)}
-            />
-          }
-        />
-        <SettingsRow
-          id="aski-plan-cap"
-          title="Most Cells one message starts"
-          description="A message that asks for more waits for your tap before any of them starts."
-          control={
-            <select
-              aria-label="Most Cells one message starts"
-              className="rounded-md border border-input bg-transparent px-2 py-1 text-sm"
-              value={cap}
-              onChange={(event) => setPlanCap(Number(event.target.value))}
-            >
-              {Array.from({ length: CEILING }, (_, index) => index + 1).map((count) => (
-                <option key={count} value={count}>
-                  {count}
-                </option>
-              ))}
-            </select>
           }
         />
         <LearnedRow />

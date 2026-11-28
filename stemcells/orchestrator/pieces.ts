@@ -130,18 +130,20 @@ export function piecesOf(text: string, places: readonly string[] = []): Piece[] 
         ...matchesIn(text, span, OPENERS),
         ...matchesIn(text, span, ONE_IN),
         ...(moves ? matchesIn(text, span, moves) : []),
-      ].sort(
-        (a, b) => a - b,
-      ),
+      ].sort((a, b) => a - b),
     ),
   );
   spans = spans.flatMap((span) =>
     wordsIn(text.slice(span.start, span.end)) <= LONG
       ? [span]
-      : cutAt(text, span, [
-          ...matchesIn(text, span, /,\s/gu).map((at) => at + 1),
-          ...matchesIn(text, span, JOINS),
-        ].sort((a, b) => a - b)),
+      : cutAt(
+          text,
+          span,
+          [
+            ...matchesIn(text, span, /,\s/gu).map((at) => at + 1),
+            ...matchesIn(text, span, JOINS),
+          ].sort((a, b) => a - b),
+        ),
   );
   return spans.map((span, i) => ({ n: i + 1, text: text.slice(span.start, span.end), ...span }));
 }

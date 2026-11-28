@@ -1,10 +1,9 @@
-// What a plan's row says of its Cell once the plan stands under its message
-// (stemcells/tasks/aski-orchestrator.md, decisions 15 and 16): the Cell's own standing for one
-// that started, and whom a queued one waits for. The same words on the Mac and the phone.
+// What a plan's row says of its Cell (stemcells/tasks/aski-orchestrator.md, decisions 15, 16
+// and 18): what a Cell comes after, before and after the plan is sent, and the Cell's own
+// standing once it started. The same words on the Mac and the phone. A row names no Cell: the
+// Cell has its name and its creature in the Awake list, once it exists.
 
-import { cellNameOf } from "../words/cellNames.ts";
 import { afterLine, PLAN_STATUS_WORDS } from "../words/plans.ts";
-import type { StartAct } from "./plan.ts";
 import { beforeOf, type Tray, type TrayAct } from "./tray.ts";
 
 /** A Cell as its client sees it in the needs list; null for one with no standing there. */
@@ -33,7 +32,7 @@ export function rowSays(
   one: TrayAct,
   seenOf: (threadId: string) => CellSeen | null,
 ): RowSays {
-  if (one.act.kind !== "start" || one.status === "waiting") return NOTHING;
+  if (one.act.kind !== "start" || one.off === true) return NOTHING;
   if (one.status === "started") {
     const seen = seenOf(one.act.threadId);
     // Asleep, archived or not yet running: the row says no more than that it started.
@@ -45,18 +44,25 @@ export function rowSays(
       stuck: null,
     };
   }
-  if (one.status !== "queued") return { ...NOTHING, word: PLAN_STATUS_WORDS[one.status] };
+  if (one.status !== "queued" && one.status !== "waiting")
+    return { ...NOTHING, word: PLAN_STATUS_WORDS[one.status] };
   const before = beforeOf(tray, one.act);
-  const names = before.map((each) => cellNameOf((each.act as StartAct).threadId));
+  if (before.length === 0) return NOTHING;
+  const titles = before.map((each) => (each.act.kind === "start" ? each.act.title : ""));
+  // The row right above, among the rows still in the plan.
+  const shown = tray.acts.filter(
+    (each) => each.act.kind === "start" && each.status !== "dropped" && !each.off,
+  );
+  const above = before.length === 1 && shown[shown.indexOf(one) - 1] === before[0];
   const stuck = before.flatMap((each, at) => {
-    if (each.status === "dropped" || each.status === "failed" || each.status === "called-back")
-      return [`${names[at]} never started`];
+    if (each.status === "failed" || each.status === "called-back")
+      return [`“${titles[at]}” never started`];
     const seen = each.act.kind === "start" ? seenOf(each.act.threadId) : null;
     return seen !== null && seen.stage === "done" && seen.short
-      ? [`${names[at]} stopped short`]
+      ? [`“${titles[at]}” stopped short`]
       : [];
   });
-  return { word: afterLine(names), line: null, stuck: stuck[0] ?? null };
+  return { word: afterLine(titles, above), line: null, stuck: stuck[0] ?? null };
 }
 
 /** Whether a plan has anything to show under its message: a Cell that wasn't dropped or called back. */

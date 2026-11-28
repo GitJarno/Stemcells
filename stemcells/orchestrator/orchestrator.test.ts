@@ -10,20 +10,22 @@ import {
   begun,
   callable,
   calledBack,
-  confirm,
-  confirmAll,
   counts,
   done,
   drop,
   failed,
   learnedOf,
+  onOf,
   outcomeOf,
+  send,
   setPlace,
   settled,
   started,
   startNow,
+  toggle,
   trayOf,
   trayWith,
+  unsendable,
 } from "./tray.ts";
 import { planIdOfFence, thinkWith } from "./wire.ts";
 import { withoutLead } from "./words.ts";
@@ -56,8 +58,6 @@ const context = (over: Partial<CompileContext> = {}): CompileContext => ({
     { threadId: "t-otter", name: "Otter" },
     { threadId: "t-badger", name: "Badger" },
   ],
-  cap: 6,
-  always: false,
   dictated: false,
   ...over,
 });
@@ -536,34 +536,30 @@ describe("the tier of a Cell", () => {
     });
   });
 
-  it("checks every Cell past the cap, and makes a count of Cells", () => {
+  it("makes a count of Cells", () => {
     const p = made(
-      plan(
-        "3 agents in Harbor on the flaky test",
-        (n) => ({
-          acts: [
-            {
-              kind: "start",
-              pieces: [n("flaky")],
-              place: "Harbor",
-              placeHeard: "Harbor",
-              count: 3,
-            },
-          ],
-          setup: [],
-          talk: [],
-        }),
-        { cap: 2 },
-      ),
+      plan("3 agents in Harbor on the flaky test", (n) => ({
+        acts: [
+          {
+            kind: "start",
+            pieces: [n("flaky")],
+            place: "Harbor",
+            placeHeard: "Harbor",
+            count: 3,
+          },
+        ],
+        setup: [],
+        talk: [],
+      })),
     );
     expect(starts(p).map((a) => [a.threadId, a.tier, a.why])).toEqual([
-      ["thread-1", "check", ["over-cap"]],
-      ["thread-2", "check", ["over-cap"]],
-      ["thread-3", "check", ["over-cap"]],
+      ["thread-1", "start", []],
+      ["thread-2", "start", []],
+      ["thread-3", "start", []],
     ]);
   });
 
-  it("says a dictated message is one, and checks all when the person checks every plan", () => {
+  it("says a dictated message is one", () => {
     const p = made(
       plan(
         "Harbor fix the header",
@@ -572,10 +568,10 @@ describe("the tier of a Cell", () => {
           setup: [],
           talk: [],
         }),
-        { dictated: true, always: true },
+        { dictated: true },
       ),
     );
-    expect(starts(p)[0]).toMatchObject({ note: DICTATED_NOTE, tier: "check", why: ["always"] });
+    expect(starts(p)[0]).toMatchObject({ note: DICTATED_NOTE, tier: "start", why: [] });
   });
 });
 
@@ -664,16 +660,32 @@ describe("a plan as a client carries it out", () => {
       ),
     );
 
-  it("starts what may start, and waits on the rest", () => {
-    expect(two().acts.map((one) => one.status)).toEqual(["starting", "waiting"]);
+  it("starts nothing by itself: every Cell waits for the person's Send", () => {
+    const tray = two();
+    expect(tray.acts.map((one) => one.status)).toEqual(["waiting", "waiting"]);
+    expect([unsendable(tray), onOf(tray).length]).toEqual([null, 2]);
+    expect(send(tray).acts.map((one) => one.status)).toEqual(["starting", "starting"]);
   });
 
-  it("learns a name heard near only from the person's own yes", () => {
+  it("leaves out a Cell the person switched off, and takes it back when they switch it on", () => {
+    const off = toggle(two(), 1);
+    expect(onOf(off).map((one) => one.act.i)).toEqual([0]);
+    expect(send(off).acts.map((one) => one.status)).toEqual(["starting", "dropped"]);
+    expect(send(toggle(off, 1)).acts.map((one) => one.status)).toEqual(["starting", "starting"]);
+    // With every Cell off there is nothing to send; a Cell that already started can't be switched off.
+    expect(unsendable(toggle(off, 0))).toBe("nothing");
+    const sent = send(off);
+    expect(toggle(sent, 0)).toEqual(sent);
+  });
+
+  it("learns a name heard near only from the person's own Send", () => {
     const tray = two();
     expect(learnedOf(tray)).toEqual({ places: [], models: [] });
-    expect(learnedOf(confirm(tray, 1)).places).toEqual([
+    expect(learnedOf(send(tray)).places).toEqual([
       { heard: "harbour design", name: "Harbor Design" },
     ]);
+    // Switched off, its near name was never agreed to.
+    expect(learnedOf(send(toggle(tray, 1))).places).toEqual([]);
     // A word that only stood in the message teaches nothing: "fix" would then mean that project.
     const odd = {
       ...tray,
@@ -683,15 +695,17 @@ describe("a plan as a client carries it out", () => {
           : one,
       ),
     };
-    expect(learnedOf(confirm(odd, 1)).places).toEqual([]);
+    expect(learnedOf(send(odd)).places).toEqual([]);
     // A place they picked instead teaches nothing: the word wasn't that project.
-    const picked = confirm(setPlace(tray, 1, { id: "p-atlas", name: "Atlas" }), 1);
+    const picked = send(setPlace(tray, 1, { id: "p-atlas", name: "Atlas" }));
     expect(learnedOf(picked)).toEqual({ places: [], models: [] });
     expect(picked.acts[1]!.act).toMatchObject({ place: { name: "Atlas", how: "exact" }, why: [] });
   });
 
   it("tells the server what came of each act, and knows when it is over", () => {
-    const tray = started(drop(two(), 1), 0, 1_000);
+    // Before Send the server hears only that both wait: a switch is the person's own until then.
+    expect(outcomeOf(toggle(two(), 1)).map((one) => one.status)).toEqual(["waiting", "waiting"]);
+    const tray = started(send(toggle(two(), 1)), 0, 1_000);
     expect(outcomeOf(tray)).toEqual([
       { i: 0, status: "started" },
       { i: 1, status: "dropped" },
@@ -700,7 +714,7 @@ describe("a plan as a client carries it out", () => {
     expect([callable(tray, 5_000).length, callable(tray, 20_000).length]).toEqual([1, 0]);
   });
 
-  it("starts nothing while a deletion is held, and a Cell with no project never starts", () => {
+  it("sends nothing while a deletion is held, or while a Cell left on has no project", () => {
     const tray = trayOf(
       made(
         plan("delete the Harbor project. In Atlas write the docs. Also the readme", (n) => ({
@@ -720,13 +734,24 @@ describe("a plan as a client carries it out", () => {
         })),
       ),
     );
-    expect(confirmAll(tray).acts.map((one) => one.status)).toEqual([
-      "waiting",
-      "waiting",
-      "waiting",
+    expect(unsendable(tray)).toBe("held");
+    expect(send(tray)).toEqual(tray);
+    // Dropped from its own card, the deletion holds nothing; a waiting Cell isn't dropped that way.
+    expect(drop(tray, 0).acts[0]!.status).toBe("dropped");
+    expect(drop(tray, 1)).toEqual(tray);
+    // The deletion done, the Cell with no project still holds the whole Send: all or nothing.
+    const after = done(tray, 0);
+    expect(unsendable(after)).toEqual({ place: 2 });
+    expect(send(after)).toEqual(after);
+    // Switched off, or given a project, it no longer does.
+    expect(send(toggle(after, 2)).acts.map((one) => one.status)).toEqual([
+      "done",
+      "starting",
+      "dropped",
     ]);
-    const after = confirmAll(done(tray, 0));
-    expect(after.acts.map((one) => one.status)).toEqual(["done", "starting", "waiting"]);
+    expect(
+      send(setPlace(after, 2, { id: "p-atlas", name: "Atlas" })).acts.map((one) => one.status),
+    ).toEqual(["done", "starting", "starting"]);
   });
 });
 
@@ -788,8 +813,8 @@ describe("a Cell that comes after another", () => {
     expect(starts(counted).map((act) => act.after)).toEqual([undefined, undefined, [0, 1]]);
   });
 
-  it("is queued, not started, and the person can start or drop it", () => {
-    const tray = trayOf(chain());
+  it("is queued by Send, and the person can start or drop it", () => {
+    const tray = send(trayOf(chain()));
     expect(tray.acts.map((one) => one.status)).toEqual(["starting", "queued"]);
     // Nothing of it waits on the person: the plan's card over the composer can leave.
     expect(settled(started(tray, 0, 1_000))).toBe(true);
@@ -800,17 +825,20 @@ describe("a Cell that comes after another", () => {
     expect(begun(tray, 1).acts[1]!.status).toBe("started");
   });
 
-  it("is queued by the person's yes when it had to be checked first", () => {
-    const risky = trayOf({
-      ...chain(),
-      acts: chain().acts.map((act) => (act.i === 1 ? { ...act, tier: "check" as const } : act)),
-    });
-    expect(risky.acts[1]!.status).toBe("waiting");
-    expect(confirm(risky, 1).acts[1]!.status).toBe("queued");
+  it("waits for no one when the Cell before it was switched off", () => {
+    const alone = send(toggle(trayOf(chain()), 0));
+    expect(alone.acts.map((one) => one.status)).toEqual(["dropped", "starting"]);
+    // It is sent as a Cell of its own: no client asks the server to hold it.
+    expect(starts(alone.plan)[1]!.after).toEqual([0]);
+    expect(alone.acts[1]!.act).not.toHaveProperty("after");
+    expect(rowSays(toggle(trayOf(chain()), 0), trayOf(chain()).acts[1]!, () => null).word).toBe("");
   });
 
-  it("says on its row whom it waits for, and why it won't start by itself", () => {
-    const tray = started(trayOf(chain()), 0, 1_000);
+  it("says on its row what it comes after, and why it won't start by itself", () => {
+    // Before it is sent the row already says so: "Then", for the row right above it.
+    const fresh = trayOf(chain());
+    expect(rowSays(fresh, fresh.acts[1]!, () => null).word).toBe("Then");
+    const tray = started(send(fresh), 0, 1_000);
     const queued = tray.acts[1]!;
     const first = starts(tray.plan)[0]!.threadId;
     const seen =
@@ -818,9 +846,9 @@ describe("a Cell that comes after another", () => {
       (threadId: string) =>
         threadId === first ? { stage, line: "Importer fixed.", short } : null;
     expect(rowSays(tray, queued, seen("working"))).toMatchObject({ stuck: null });
-    expect(rowSays(tray, queued, seen("working")).word).toMatch(/^After \S+$/);
+    expect(rowSays(tray, queued, seen("working")).word).toBe("Then");
     expect(rowSays(tray, queued, seen("done", true)).stuck).toMatch(/stopped short$/);
-    expect(rowSays(failed(trayOf(chain()), 0, "no model"), queued, () => null).stuck).toMatch(
+    expect(rowSays(failed(send(trayOf(chain())), 0, "no model"), queued, () => null).stuck).toMatch(
       /never started$/,
     );
     expect(rowSays(tray, tray.acts[0]!, seen("done"))).toEqual({

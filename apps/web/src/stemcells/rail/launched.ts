@@ -29,7 +29,7 @@ export function useLaunchesArrive(environmentId: string | null): void {
         const facts = cell.environmentId === environmentId ? launchFactsOf(cell) : null;
         if (facts === null) continue;
         const planId = launchPlanOf(cell.threadId);
-        setPlannedRows(planId, [{ ...facts, threadId: cell.threadId, tier: "start" }]);
+        setPlannedRows(planId, [{ ...facts, threadId: cell.threadId }]);
         const timer = setTimeout(() => {
           ending.delete(timer);
           clearPlannedRows(planId);

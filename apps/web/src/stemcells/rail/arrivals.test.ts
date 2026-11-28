@@ -11,7 +11,6 @@ import {
 import {
   awakeWithPlanned,
   clearPlannedRows,
-  confirmPlannedRow,
   dropPlannedRow,
   type PlannedRow,
   plannedRows,
@@ -26,7 +25,6 @@ const row = (threadId: string, over: Partial<PlannedRow> = {}): PlannedRow => ({
   title: `Task of ${threadId}`,
   modelName: "Fable 5.2",
   effort: "high",
-  tier: "start",
   born: 0,
   ...over,
 });
@@ -51,12 +49,8 @@ describe("the planned rows", () => {
     expect(later.map((entry) => entry.threadId)).toEqual(["pin", "old", "otter"]);
   });
 
-  it("a confirmed check fills in and stays started when its plan sends it again; a dropped row leaves", () => {
-    setPlannedRows("plan", [row("otter", { tier: "check", unsure: "place" }), row("puma")]);
-    confirmPlannedRow("plan", "otter");
-    expect(plannedRows()[0]).toMatchObject({ tier: "start", unsure: undefined });
-    setPlannedRows("plan", [row("otter", { tier: "check", unsure: "place" }), row("puma")]);
-    expect(plannedRows()[0]).toMatchObject({ threadId: "otter", tier: "start" });
+  it("a row whose Cell was called back leaves, and a plan that is over takes its rows", () => {
+    setPlannedRows("plan", [row("otter"), row("puma")]);
     dropPlannedRow("plan", "otter");
     expect(plannedRows().map((planned) => planned.threadId)).toEqual(["puma"]);
     clearPlannedRows("plan");
@@ -139,7 +133,7 @@ describe("the arrivals", () => {
   afterEach(() => void vi.useRealTimers());
 
   const stage = (reduced: boolean, aski = true) => {
-    const played = { forms: [] as string[], fills: [] as string[], throws: [] as string[] };
+    const played = { forms: [] as string[], throws: [] as string[] };
     const arrivals = createArrivals<string, string>(plannedRows, {
       now: () => vi.getMockedSystemTime()?.getTime() ?? 0,
       reduced: () => reduced,
@@ -149,7 +143,6 @@ describe("the arrivals", () => {
       ready: () => undefined,
       playThrow: (from, to) => void played.throws.push(`${from}>${to}`),
       forms: (threadId) => void played.forms.push(threadId),
-      fills: (threadId) => void played.fills.push(threadId),
     });
     return { arrivals, played, here: () => arrivals.read().map((each) => each.row.threadId) };
   };
@@ -164,7 +157,7 @@ describe("the arrivals", () => {
     expect(here()).toEqual(["a", "b", "c", "d", "e", "f"]);
     expect(arrivals.read().every((arrival) => !arrival.forms)).toBe(true);
     vi.advanceTimersByTime(5000);
-    expect(played).toEqual({ forms: [], fills: [], throws: [] });
+    expect(played).toEqual({ forms: [], throws: [] });
   });
 
   it("land as Aski's copy does, a stagger apart, the copy leaving a flight ahead", () => {
@@ -182,19 +175,13 @@ describe("the arrivals", () => {
     expect(played.throws).toHaveLength(2);
   });
 
-  it("without Aski in sight land with no flight; a check waits as an outline and fills in when confirmed", () => {
+  it("without Aski in sight land with no flight", () => {
     const { arrivals, played, here } = stage(false, false);
-    setPlannedRows("plan", [row("a", { tier: "check", unsure: "model" })]);
+    setPlannedRows("plan", [row("a")]);
     arrivals.sync();
     vi.advanceTimersByTime(ARRIVAL_BEAT_MS + 1);
     expect(here()).toEqual(["a"]);
     expect(played.throws).toEqual([]);
-    vi.advanceTimersByTime(ARRIVALS.giveUp * 2);
-    expect(arrivals.read()[0]).toMatchObject({ state: "here", row: { tier: "check" } });
-    confirmPlannedRow("plan", "a");
-    arrivals.sync();
-    expect(played.fills).toEqual(["a"]);
-    expect(arrivals.read()[0]).toMatchObject({ row: { tier: "start" } });
   });
 
   it("keep a listed row's birth words a while, then they fade; a dropped row folds away", () => {

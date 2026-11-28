@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import type { Plan, StartAct } from "../../../../../../stemcells/orchestrator/plan.ts";
-import { dropAll, started } from "../../../../../../stemcells/orchestrator/tray.ts";
+import { dropAll, send, started, toggle } from "../../../../../../stemcells/orchestrator/tray.ts";
 import { makeTrays, overComposer, toldOver } from "./trays";
 
 const start = (i: number, over: Partial<StartAct> = {}): StartAct => ({
@@ -20,6 +20,9 @@ const start = (i: number, over: Partial<StartAct> = {}): StartAct => ({
   risks: [],
   ...over,
 });
+
+/** A Cell the person said comes after the first. */
+const AFTER = { after: [0], afterHeard: "once that's done" } as const;
 
 const planOf = (acts: Plan["acts"]): Plan => ({
   id: "plan-1",
@@ -42,8 +45,7 @@ describe("the phone's plans", () => {
     const trays = makeTrays();
     trays.reading("plan-1", "mac", "aski-chat");
     trays.arrived("plan-1", planOf([start(0), start(1, { tier: "check", why: ["risky"] })]));
-    trays.change("plan-1", (tray) => started(tray, 0, 5));
-    trays.change("plan-1", dropAll);
+    trays.change("plan-1", (tray) => started(send(toggle(tray, 1)), 0, 5));
     trays.leave("plan-1");
     expect(trays.read().get("plan-1")).toMatchObject({ door: "fence", chatId: "aski-chat" });
     expect(statuses(trays)).toEqual(["started", "dropped"]);
@@ -62,6 +64,13 @@ describe("the phone's plans", () => {
     expect(trays.read().has("plan-1")).toBe(false);
   });
 
+  it("makes every Cell of a plan wait as it arrives, whatever its tier", () => {
+    const trays = makeTrays();
+    trays.reading("plan-1", "mac", "aski-chat");
+    trays.arrived("plan-1", planOf([start(0), start(1, { tier: "check", why: ["risky"] })]));
+    expect(statuses(trays)).toEqual(["waiting", "waiting"]);
+  });
+
   it("starts nothing by reading a plan: a Cell the server wasn't told of waits", () => {
     const trays = makeTrays();
     trays.opened("plan-1", "mac", planOf([start(0), start(1)]), [{ i: 1, status: "started" }]);
@@ -71,16 +80,8 @@ describe("the phone's plans", () => {
   it("takes the server's word only for the Cells it holds queued", () => {
     const trays = makeTrays();
     trays.reading("plan-1", "mac", "aski-chat");
-    trays.arrived(
-      "plan-1",
-      planOf([
-        start(0),
-        start(1, { after: [0] }),
-        start(2, { after: [0] }),
-        start(3, { after: [0] }),
-        start(4, { tier: "check", why: ["risky"] }),
-      ]),
-    );
+    trays.arrived("plan-1", planOf([start(0), start(1, AFTER), start(2, AFTER), start(3, AFTER)]));
+    trays.change("plan-1", send);
     const before = trays.read().get("plan-1")!.tray!;
     const after = toldOver(before, [
       // On its way here: the server's "started" is this phone's own word come back.
@@ -88,14 +89,12 @@ describe("the phone's plans", () => {
       { i: 1, status: "started" },
       { i: 2, status: "failed", reason: "Harbor is no repository." },
       { i: 3, status: "queued" },
-      { i: 4, status: "dropped" },
     ]);
     expect(after.acts.map((one) => one.status)).toEqual([
       "starting",
       "started",
       "failed",
       "queued",
-      "waiting",
     ]);
     expect(after.acts[2]?.reason).toBe("Harbor is no repository.");
     // Nothing new is the same tray: no view draws and no one is told.

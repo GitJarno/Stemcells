@@ -103,9 +103,25 @@ export function providerReady(environmentIdText: string, instanceId: string): bo
   );
 }
 
+type Machine = ReturnType<typeof readMachine>;
+
 /** What a new Cell in a project runs on when nothing names it: the project's own, else the app's. */
 export function newCellDefaults(environmentIdText: string, projectIdText: string) {
   const { projects, config } = readMachine(environmentIdText);
+  return defaultsIn(projects, config, projectIdText);
+}
+
+/** The same, for a view: it draws again when the machine's projects or settings change. */
+export function useNewCellDefaults(environmentIdText: string, projectIdText: string | null) {
+  const projects = useProjects().filter((one) => one.environmentId === environmentIdText);
+  return defaultsIn(projects, useMachineConfig(environmentIdText), projectIdText ?? "");
+}
+
+function defaultsIn(
+  projects: Machine["projects"],
+  config: Machine["config"],
+  projectIdText: string,
+) {
   const project = projects.find((one) => one.id === projectIdText) ?? null;
   const settings = config?.settings ?? DEFAULT_SERVER_SETTINGS;
   const resolved = resolveProjectSettings(settings, project?.id ?? null, project).settings;

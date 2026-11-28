@@ -1,6 +1,8 @@
 /* Aski's plan (aski/plan/PlanCard.tsx; stemcells/tasks/aski-orchestrator.md,
-   decisions 4 and 7): the Cells one message starts, each a row. Every value
-   is a token, but the hold's time, which its button sets. */
+   decisions 4, 7 and 18): the Cells one message starts, each a row, and the
+   Send they wait for. A row is the Awake list's own (rail/cells.css draws its
+   pieces); what is here is the card around it and what a task adds. Every
+   value is a token, but the hold's time, which its button sets. */
 
 /* Over the composer the plans stand between Aski's perch and the box, in
    the composer's flow, so the transcript keeps its foot clear of them. */
@@ -19,10 +21,13 @@
   border: 1px solid var(--sc-hairline);
   border-radius: var(--sc-radius-card);
   background: var(--background);
-  padding: var(--sc-space-sm) var(--sc-space-md);
+  padding: var(--sc-space-sm);
   font-size: var(--sc-body);
   color: var(--foreground);
-  animation: aski-plan-in var(--sc-motion-settle-duration) var(--sc-motion-settle-easing) both;
+  container: aski-plan / inline-size;
+  /* It unfolds from the composer it stands on. */
+  transform-origin: 50% 100%;
+  animation: aski-plan-unfold var(--sc-motion-settle-duration) var(--sc-motion-settle-easing) both;
 }
 /* In Aski's reply, where a proposed plan's fence is, it keeps the reply's rhythm. */
 [data-aski-plan][data-source="proposed"] {
@@ -43,6 +48,7 @@
   align-items: center;
   gap: var(--sc-space-sm);
   min-block-size: 1.75rem;
+  padding-inline: var(--sc-space-md);
   font-weight: 600;
 }
 [data-aski-plan][data-reading] [data-plan-head] {
@@ -71,35 +77,237 @@
 }
 /* Each row comes a beat after the one above it: Aski gives them life in order. */
 [data-plan-row] {
-  padding-block: var(--sc-space-xs);
-  border-block-start: 1px solid var(--sc-hairline);
   animation: aski-plan-in var(--sc-motion-settle-duration) var(--sc-motion-settle-easing) both;
   animation-delay: calc(var(--plan-row, 0) * var(--sc-timing-spawn-stagger));
 }
+/* The row's line is the Awake row's plate. A task's title gives way with the
+   words beside it, where the list's title takes all the room there is. */
 [data-plan-line] {
+  min-inline-size: 0;
+}
+[data-plan-line] > [data-cells-row-title] {
+  flex: 1 1 auto;
+}
+/* A task's words are in full ink, as an awake Cell's: only a row asleep reads quieter. */
+[data-plan-row] > [data-plan-line]:not([data-light]) > [data-cells-row-title] {
+  color: inherit;
+}
+[data-plan-own] {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  min-inline-size: 0;
+}
+/* Its project: the mark and the name, a menu while the task waits. */
+[data-plan-place],
+[data-plan-pick] {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--sc-space-xs);
+  max-inline-size: 11rem;
+  color: var(--sc-dim);
+}
+[data-plan-place-name] {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* In a narrow pane the project's mark says where, and the title keeps the room. */
+@container aski-plan (max-width: 30rem) {
+  [data-plan-place-name],
+  [data-plan-line] > [data-plan-meta] {
+    display: none;
+  }
+}
+[data-plan-pick] {
+  margin-inline: calc(-1 * var(--sc-space-xs));
+  padding: 0 var(--sc-space-xs);
+  border-radius: var(--sc-radius-control);
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+[data-plan-pick]:hover,
+[data-plan-pick][data-popup-open] {
+  color: var(--sc-text);
+}
+[data-plan-pick] > svg {
+  flex: none;
+  inline-size: 0.75rem;
+  block-size: 0.75rem;
+}
+input[data-plan-pick] {
+  box-shadow: inset 0 0 0 1px var(--sc-hairline);
+  color: inherit;
+  cursor: text;
+}
+/* What Aski isn't sure of is what the person checks: its field is marked, not the row. */
+[data-plan-pick][data-unsure],
+[data-plan-model][data-unsure] {
+  border-radius: var(--sc-radius-control);
+  box-shadow: inset 0 0 0 1px var(--sc-needs-you);
+}
+[data-plan-model] {
+  display: inline-flex;
+}
+/* Why to look twice, beside the title: in full where the row's words open. */
+[data-plan-why] {
+  flex: 0 1 auto;
+  min-inline-size: 0;
+  overflow: hidden;
+  color: var(--sc-needs-you);
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+[data-plan-meta] {
+  flex: none;
+  color: var(--sc-dim);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+/* What it comes after, in the row's end, where a Cell's time stands. */
+[data-plan-line] [data-cells-row-time] {
+  display: inline-block;
+  max-inline-size: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+}
+[data-plan-switch] {
+  font-size: 0.75rem;
+}
+[data-plan-chevron] {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  border-radius: var(--sc-radius-chip);
+  color: var(--sc-faint);
+  cursor: pointer;
+}
+[data-plan-chevron]:hover,
+[data-plan-chevron]:focus-visible {
+  color: var(--sc-text);
+}
+[data-plan-chevron] > svg {
+  inline-size: 0.875rem;
+  block-size: 0.875rem;
+  transition: transform var(--sc-motion-flick-duration) var(--sc-motion-flick-easing);
+}
+[data-plan-chevron][aria-expanded="true"] > svg {
+  transform: rotate(180deg);
+}
+/* Switched off, a task is struck through and dim: Send leaves it out. */
+[data-plan-line]
+  > :is(
+    [data-plan-own],
+    [data-plan-place],
+    [data-cells-row-title],
+    [data-plan-why],
+    [data-plan-meta]
+  ) {
+  transition: opacity var(--sc-motion-flick-duration) var(--sc-motion-flick-easing);
+}
+[data-plan-row][data-off]
+  [data-plan-line]
+  > :is([data-plan-own], [data-cells-row-title], [data-plan-why], [data-plan-meta]) {
+  opacity: 0.45;
+}
+[data-plan-row][data-off] [data-cells-row-title],
+[data-plan-row][data-status="dropped"] [data-cells-row-title],
+[data-plan-row][data-status="called-back"] [data-cells-row-title] {
+  text-decoration: line-through;
+}
+[data-plan-row][data-status="dropped"] [data-plan-line],
+[data-plan-row][data-status="called-back"] [data-plan-line] {
+  color: var(--sc-quiet-ink);
+}
+
+/* Under a row, in line with its words: a queued Cell's two choices, the Cell's own line, why it
+   is stuck or didn't start, and what it is told. */
+[data-plan-queued],
+[data-plan-said],
+[data-plan-stuck],
+[data-plan-failed],
+[data-plan-told],
+[data-plan-note] {
+  margin: 0;
+  padding: 0 var(--sc-space-md) var(--sc-space-xs);
+  color: var(--sc-quiet-ink);
+}
+[data-plan-queued] {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sc-space-xs);
+}
+[data-plan-stuck] {
+  color: var(--sc-needs-you);
+}
+/* The Cell's own line under a row that landed or asks: two lines at most. */
+[data-plan-said] {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+[data-plan-failed] {
+  color: var(--destructive);
+}
+[data-plan-told] {
+  animation: aski-plan-fade var(--sc-motion-fade-duration) var(--sc-motion-fade-easing) both;
+}
+[data-plan-told-head] {
+  margin: 0;
+  font-size: 0.75rem;
+}
+[data-plan-words] {
+  margin: var(--sc-space-xs) 0 0;
+  color: var(--foreground);
+  white-space: pre-wrap;
+}
+[data-plan-risk] {
+  border-radius: var(--sc-radius-chip);
+  background: color-mix(in srgb, var(--sc-warning) 24%, transparent);
+  color: inherit;
+}
+
+/* The foot: Cancel, and Send at the right with why it waits beside it. Sent, it folds away. */
+[data-plan-foot] {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sc-space-sm);
+  padding: var(--sc-space-xs) var(--sc-space-md) 0;
+  transform-origin: 50% 0;
+}
+[data-plan-foot][data-leaving] {
+  animation: aski-plan-fold var(--sc-motion-leave-duration) var(--sc-motion-leave-easing) both;
+}
+[data-plan-foot-why] {
+  margin-inline-end: auto;
+  color: var(--sc-needs-you);
+}
+[data-plan-key] {
+  font: inherit;
+  opacity: 0.7;
+}
+
+/* A deletion's own card: what goes, and the hold that carries it out. */
+[data-plan-hold] {
+  padding: var(--sc-space-xs) var(--sc-space-md);
+}
+[data-plan-hold] > [data-plan-note] {
+  padding-inline: 0;
+}
+[data-plan-hold-line] {
   display: flex;
   align-items: center;
   gap: var(--sc-space-sm);
   min-inline-size: 0;
-}
-[data-plan-cell] {
-  flex: none;
-  font-weight: 600;
-}
-[data-plan-cell]:not(:disabled):hover {
-  text-decoration: underline;
-}
-[data-plan-meta] {
-  flex: none;
-  color: var(--sc-quiet-ink);
-}
-[data-plan-title] {
-  flex: 1 1 0;
-  min-inline-size: 0;
-  overflow: hidden;
-  text-align: start;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 [data-plan-actions] {
   display: inline-flex;
@@ -111,74 +319,11 @@
 [data-plan-status] {
   color: var(--sc-quiet-ink);
 }
-[data-plan-row][data-status="dropped"] [data-plan-title],
-[data-plan-row][data-status="called-back"] [data-plan-title] {
-  color: var(--sc-quiet-ink);
-  text-decoration: line-through;
-}
-
-[data-plan-pickers] {
-  display: inline-flex;
-  flex: none;
-  align-items: center;
-  gap: var(--sc-space-xs);
-}
-[data-plan-pick] {
-  max-inline-size: 11rem;
-  padding: 0 var(--sc-space-xs);
-  border: 1px solid var(--sc-hairline);
-  border-radius: var(--sc-radius-control);
-  background: transparent;
-  color: inherit;
-  font: inherit;
-}
-/* What Aski isn't sure of is what the person checks: its field is marked, not the row. */
-[data-plan-pick][data-unsure] {
-  border-color: var(--sc-needs-you);
-}
-
-/* What a waiting Cell asks, with the fields the person can still change, under its line. */
-[data-plan-check] {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--sc-space-sm);
-  margin-block-start: var(--sc-space-xs);
-}
 [data-plan-actions] button,
-[data-plan-head-actions] button {
+[data-plan-head-actions] button,
+[data-plan-queued] button,
+[data-plan-foot] button {
   font-size: inherit;
-}
-[data-plan-words],
-[data-plan-failed],
-[data-plan-said],
-[data-plan-stuck],
-[data-plan-note] {
-  margin: var(--sc-space-xs) 0 0;
-  color: var(--sc-quiet-ink);
-}
-[data-plan-why],
-[data-plan-stuck] {
-  color: var(--sc-needs-you);
-}
-/* The Cell's own line under a row that landed or asks: two lines at most. */
-[data-plan-said] {
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-[data-plan-words] {
-  color: var(--foreground);
-  white-space: pre-wrap;
-}
-[data-plan-failed] {
-  color: var(--destructive);
-}
-[data-plan-risk] {
-  border-radius: var(--sc-radius-chip);
-  background: color-mix(in srgb, var(--sc-warning) 24%, transparent);
-  color: inherit;
 }
 
 /* A deletion: its button fills while a hand is down, and empties at once when it lifts. */
@@ -206,15 +351,38 @@
   transition: transform var(--plan-hold) linear;
 }
 
+@keyframes aski-plan-unfold {
+  from {
+    opacity: 0;
+    transform: translateY(var(--sc-space-sm)) scaleY(0.94);
+  }
+}
 @keyframes aski-plan-in {
   from {
     opacity: 0;
     transform: translateY(var(--sc-space-sm));
   }
 }
+@keyframes aski-plan-fold {
+  to {
+    opacity: 0;
+    transform: scaleY(0.6);
+  }
+}
+@keyframes aski-plan-fade {
+  from {
+    opacity: 0;
+  }
+}
+/* With less motion everything of the card cross-fades where it stands. */
 @media (prefers-reduced-motion: reduce) {
   [data-aski-plan],
   [data-plan-row] {
-    animation: none;
+    animation-name: aski-plan-fade;
+    animation-delay: 0s;
+  }
+  [data-plan-foot][data-leaving] {
+    animation-name: aski-plan-fade;
+    animation-direction: reverse;
   }
 }

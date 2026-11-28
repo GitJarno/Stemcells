@@ -9,8 +9,9 @@ import { View } from "react-native";
 import { headline } from "../../../../../../stemcells/words/plans.ts";
 import { useChatInView } from "../../chat/inView";
 import { AppText } from "../../upstream/plans";
-import { PlanPanel, usePlans } from "./PlanRows";
+import { PlanPanel } from "./PlanRows";
 import { openPlan } from "./run";
+import { usePlans } from "./usePlans";
 import { usePlanWorld } from "./usePlanWorld";
 import { PLAN_GONE, PLAN_UNREACHABLE } from "./view";
 

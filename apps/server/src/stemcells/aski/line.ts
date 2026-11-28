@@ -43,7 +43,10 @@ export function dueOf(
         due.push({ kind: "expire", id: entry.plan.id, i });
         continue;
       }
-      const before = (act.after ?? []).map((n) => entry.plan.acts.find((one) => one.i === n));
+      // A Cell the person switched off or dropped is waited for by no one.
+      const before = (act.after ?? [])
+        .filter((n) => statusOf(n) !== "dropped")
+        .map((n) => entry.plan.acts.find((one) => one.i === n));
       const landed = before.every(
         (one) =>
           one !== undefined &&

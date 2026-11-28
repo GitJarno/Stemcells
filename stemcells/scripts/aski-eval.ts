@@ -144,8 +144,6 @@ function ask(prompt: string, on: string): Promise<{ answer: unknown; ms: number 
 async function compile(one: Case): Promise<{ plan: Plan; ms: number; tries: number }> {
   const context: CompileContext = {
     ...corpus.context,
-    cap: 6,
-    always: false,
     dictated: one.dictated,
   };
   const pieces = piecesOf(

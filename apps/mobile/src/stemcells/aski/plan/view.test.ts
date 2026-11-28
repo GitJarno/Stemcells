@@ -5,7 +5,7 @@ import {
   type DestroyAct,
   type StartAct,
 } from "../../../../../../stemcells/orchestrator/plan.ts";
-import { confirm, done, held, trayOf } from "../../../../../../stemcells/orchestrator/tray.ts";
+import { done, held, send, toggle, trayOf } from "../../../../../../stemcells/orchestrator/tray.ts";
 import { proposed } from "./proposed.fixture";
 import { getsWorktree, headOf, messageSpans, modelLine, whyLines } from "./view";
 
@@ -61,7 +61,7 @@ describe("what a plan's rows say", () => {
     ).toEqual({ text: "Fable 5.1 · high", dim: false });
   });
 
-  it("offers Start all only while several Cells wait", () => {
+  it("counts what is switched off before the plan is sent, and leaves it out after", () => {
     const plan = proposed(
       "plan-12345678",
       ["a", "b"].map((word) => ({
@@ -72,14 +72,12 @@ describe("what a plan's rows say", () => {
       })),
     );
     const tray = trayOf(plan);
-    expect(headOf(tray)).toEqual({ line: "2 Cells · 2 waiting on you", startAll: true });
-    expect(headOf(confirm(tray, 0))).toEqual({
-      line: "2 Cells · 1 flying · 1 waiting on you",
-      startAll: false,
-    });
+    expect(headOf(tray)).toEqual({ line: "2 Cells" });
+    expect(headOf(toggle(tray, 1))).toEqual({ line: "2 Cells · 1 off" });
+    expect(headOf(send(toggle(tray, 1)))).toEqual({ line: "1 Cell" });
   });
 
-  it("counts Cells alone beside a deletion, and nothing waits after one that is done", () => {
+  it("counts Cells alone beside a deletion, which is dropped alone, and nothing waits after one that is done", () => {
     const plan = proposed("plan-12345678", [
       { projectId: "p-harbor", projectName: "Harbor", title: "a", words: "do a" },
     ]);
@@ -100,7 +98,7 @@ describe("what a plan's rows say", () => {
       words: "delete the Atlas project",
     };
     const tray = trayOf({ ...plan, acts: [cell, deletion] });
-    expect(headOf(tray).line).toBe("1 Cell · 1 waiting on you");
+    expect(headOf(tray).line).toBe("1 Cell");
     expect(whyLines(cell, held(tray))).toHaveLength(1);
     expect(whyLines(cell, held(done(tray, 1)))).toEqual([]);
   });
@@ -116,10 +114,13 @@ describe("what a plan's rows say", () => {
       tier: "start",
       why: [],
     }));
-    const tray = trayOf({
-      ...plan,
-      acts: [first!, { ...second!, after: [0] }, { ...third!, after: [0], apart: true }],
-    });
+    const after = { after: [0], afterHeard: "once that's done" };
+    const tray = send(
+      trayOf({
+        ...plan,
+        acts: [first!, { ...second!, ...after }, { ...third!, ...after, apart: true }],
+      }),
+    );
     expect(headOf(tray).line).toBe("3 Cells · 1 flying · 2 queued");
     // The project's default gives the first a worktree; the person's word can take it away.
     expect(getsWorktree(tray, first!, true)).toBe(true);

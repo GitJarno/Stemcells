@@ -585,34 +585,6 @@
 [data-cells-birth-chip]:has(> [data-settling=""]:first-child) {
   visibility: hidden;
 }
-/* A check row waits for the person's tap in Aski's chat: an outline, dim, the field it is
-   unsure of marked, no light. Confirmed, it fills in. */
-[data-cells-row][data-born] :is([data-cells-row-project], [data-cells-row-title]) {
-  transition: opacity var(--sc-motion-flick-duration) var(--sc-motion-flick-easing);
-}
-[data-cells-row][data-outline] [data-cells-open] {
-  outline: 1px dashed var(--sc-faint);
-  outline-offset: -1px;
-}
-[data-cells-row][data-outline]
-  :is([data-cells-row-project], [data-cells-birth], [data-cells-row-title]) {
-  opacity: 0.55;
-}
-/* Unsure of its words, the mark stands at the title's end, not the row's. */
-[data-cells-row-title]:has(+ [data-cells-unsure]) {
-  flex: 0 1 auto;
-}
-[data-settling-line] [data-cells-unsure] {
-  visibility: hidden;
-}
-[data-cells-unsure] {
-  flex-shrink: 0;
-  margin-inline-start: -0.1875rem;
-  color: var(--sc-accent-ink);
-  font-family: var(--sc-font-mono);
-  font-size: 0.6875rem;
-  font-weight: 600;
-}
 [data-cells-more] {
   padding: var(--sc-space-sm) var(--sc-space-md);
   color: var(--sc-faint);

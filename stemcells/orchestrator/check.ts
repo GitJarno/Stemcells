@@ -425,7 +425,6 @@ export function planOf(input: PlanInput): PlanResult {
 
   // The tiers. A message that deletes is dealt with first; past the ceiling nothing more starts.
   const holds = acts.some((act) => act.kind === "destroy");
-  const overCap = starts.length > context.cap;
   const kept = acts.filter((act) => act.kind === "destroy" || starts.indexOf(act) < CEILING);
   // An act past the ceiling is gone, and with it the wait for it.
   const moved = new Map(kept.map((act, i) => [act.i, i]));
@@ -435,10 +434,8 @@ export function planOf(input: PlanInput): PlanResult {
     const after = (before ?? []).flatMap((n) => moved.get(n) ?? []);
     const why: Why[] = [
       ...act.why,
-      ...(overCap ? (["over-cap"] as const) : []),
       ...(leftOver.length > 0 ? (["left-over"] as const) : []),
       ...(holds ? (["after-hold"] as const) : []),
-      ...(context.always ? (["always"] as const) : []),
     ];
     return {
       ...rest,

@@ -1,6 +1,6 @@
 // A plan as a client holds it while it is carried out (stemcells/tasks/aski-orchestrator.md,
-// decisions 4, 5 and 7): which acts are starting, which wait for the person, what they changed,
-// and what came of each. Plain data and plain functions, shared by the Mac and the phone, so
+// decisions 4, 5, 7 and 18): every act waits for the person's Send, which they may switch off
+// or change first; then which are starting, and what came of each. Plain data and plain functions, shared by the Mac and the phone, so
 // both carry a plan out the same way. The client does the starting, with the person's access.
 
 import { mishearingOf, modelSaid, said } from "./names.ts";
@@ -30,6 +30,8 @@ export interface TrayAct {
   readonly startedAt?: number;
   /** The person said yes to a name Aski only heard near. */
   readonly learned?: boolean;
+  /** The person switched a waiting Cell off: Send leaves it out. They can switch it back on. */
+  readonly off?: boolean;
 }
 
 export interface Tray {
@@ -44,11 +46,10 @@ export const CALL_BACK_MS = 10_000;
 export const comesAfter = (act: Act): boolean =>
   act.kind === "start" && (act.after?.length ?? 0) > 0;
 
-const goes = (act: Act): Status => (comesAfter(act) ? "queued" : "starting");
-
+/** A plan as it arrives: nothing starts before the person sends it (decision 18). */
 export const trayOf = (plan: Plan): Tray => ({
   plan,
-  acts: plan.acts.map((act) => ({ act, status: act.tier === "start" ? goes(act) : "waiting" })),
+  acts: plan.acts.map((act) => ({ act, status: "waiting" })),
 });
 
 /** What the server says came of an act (`GET …/plan`, `…/plans`). */
@@ -97,29 +98,64 @@ export const canDestroy = (act: DestroyAct): boolean =>
     ? act.place !== null && act.place.id !== null
     : act.cells.length > 0 || act.place !== null;
 
-/** The person's yes to one waiting Cell. Nothing changes while a deletion is held, or with no place. */
-export function confirm(tray: Tray, i: number): Tray {
-  if (held(tray)) return tray;
-  return at(tray, i, (one) =>
-    one.act.kind === "start" && one.status === "waiting" && canStart(one.act)
-      ? {
-          ...one,
-          status: goes(one.act),
-          // Their yes to a name heard near teaches it.
-          learned: one.act.place?.how === "near" || one.act.model?.how === "near",
-        }
-      : one,
-  );
+/** The person switches a waiting Cell off, or back on. */
+export const toggle = (tray: Tray, i: number): Tray =>
+  at(tray, i, (one) => {
+    if (one.act.kind !== "start" || one.status !== "waiting") return one;
+    const { off: was, ...rest } = one;
+    return was === true ? rest : { ...rest, off: true };
+  });
+
+/** The waiting Cells the person left on: what Send starts. */
+export const onOf = (tray: Tray): TrayAct[] =>
+  tray.acts.filter((one) => one.act.kind === "start" && one.status === "waiting" && !one.off);
+
+/** Why Send can't go yet; null when it can. */
+export function unsendable(tray: Tray): "held" | "nothing" | { readonly place: number } | null {
+  if (held(tray)) return "held";
+  const on = onOf(tray);
+  if (on.length === 0) return "nothing";
+  const open = on.find((one) => one.act.kind === "start" && !canStart(one.act));
+  return open === undefined ? null : { place: open.act.i };
 }
 
-/** Enter: every waiting Cell that can start, starts. */
-export function confirmAll(tray: Tray): Tray {
-  return tray.acts.reduce((next, one) => confirm(next, one.act.i), tray);
+/**
+ * Send: every Cell left on starts, or is queued behind the Cells it comes after that were also
+ * sent. One switched off is dropped, and nothing waits for it. All or nothing: while a deletion
+ * is held or a Cell left on has no project, nothing changes.
+ */
+export function send(tray: Tray): Tray {
+  if (unsendable(tray) !== null) return tray;
+  const sent = new Set(onOf(tray).map((one) => one.act.i));
+  return {
+    ...tray,
+    acts: tray.acts.map((one) => {
+      if (one.act.kind !== "start" || one.status !== "waiting") return one;
+      const { off, ...rest } = one;
+      if (off === true) return { ...rest, status: "dropped" };
+      // It comes after the Cells that were sent with it, and no others.
+      const { after: before, afterHeard, ...act } = one.act;
+      const after = (before ?? []).filter((i) => sent.has(i));
+      return {
+        ...rest,
+        act:
+          after.length === 0
+            ? act
+            : { ...act, after, ...(afterHeard === undefined ? {} : { afterHeard }) },
+        status: after.length > 0 ? "queued" : "starting",
+        // Their yes to a name heard near teaches it.
+        learned: one.act.place?.how === "near" || one.act.model?.how === "near",
+      };
+    }),
+  };
 }
 
+/** A queued Cell the person no longer wants, or a deletion they drop from its own card. */
 export const drop = (tray: Tray, i: number): Tray =>
   at(tray, i, (one) =>
-    one.status === "waiting" || one.status === "queued" ? { ...one, status: "dropped" } : one,
+    one.status === "queued" || (one.act.kind === "destroy" && one.status === "waiting")
+      ? { ...one, status: "dropped" }
+      : one,
   );
 
 /** The person won't wait: a queued Cell starts now. Not while a deletion is held. */
@@ -140,9 +176,11 @@ export const begun = (tray: Tray, i: number): Tray =>
 export const unqueued = (tray: Tray, i: number, reason: string): Tray =>
   at(tray, i, (one) => (one.status === "queued" ? { ...one, status: "failed", reason } : one));
 
-/** The acts a queued Cell still comes after, as the tray has them. */
+/** The acts a Cell comes after, as the tray has them: one switched off or dropped is waited for by no one. */
 export const beforeOf = (tray: Tray, act: StartAct): TrayAct[] =>
-  tray.acts.filter((one) => (act.after ?? []).includes(one.act.i));
+  tray.acts.filter(
+    (one) => (act.after ?? []).includes(one.act.i) && one.status !== "dropped" && !one.off,
+  );
 
 /** Esc: everything still waiting goes. */
 export const dropAll = (tray: Tray): Tray => ({
@@ -291,11 +329,3 @@ export const counts = (tray: Tray) => {
     queued: cells.filter((one) => one.status === "queued").length,
   };
 };
-
-/** The field of a waiting Cell its row in Awake marks as unsure. */
-export const unsureField = (act: StartAct): "place" | "model" | "words" =>
-  act.why.some((one) => one.startsWith("place-") || one === "new-project")
-    ? "place"
-    : act.model?.how === "near"
-      ? "model"
-      : "words";

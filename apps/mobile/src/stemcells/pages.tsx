@@ -4,20 +4,25 @@ import type { ComponentProps } from "react";
 
 import { COLLECTION } from "../../../../stemcells/words/feats.ts";
 import { AskiButton } from "./aski/AskiButton";
+import { PLAN_PICK } from "./aski/plan/pick";
+import { PlanPickScreen } from "./aski/plan/PlanPickScreen";
 import { railFocusFrom } from "./aski/rail";
 import { useScreenFocused } from "./aski/railFocus";
 import { CollectionScreen } from "./collection/CollectionScreen";
 import { COLLECTION_ICON, RailTrophy } from "./collection/trophy";
 import { DiskScreen } from "./disk/DiskScreen";
 import { PlanSheet } from "./limits/PlanSheet";
+import { pickSheet } from "./models/pickSheet";
 import { QuietWorkOnce } from "./work/QuietWork";
 import { allowPushes, usePushState } from "./push/PushCoordinator";
 import { openSettings, type SettingsRow } from "./upstream/disk";
+import { sheetRoute } from "./upstream/planPick";
 import { useSavedRemoteConnections } from "./upstream/push";
 
-// Our settings pages on the phone. Upstream's Settings routes spread these with its own page
-// options (`Stack.tsx`), and its index lists these rows at the end of Server settings, where
-// its search finds them (`SettingsRouteScreen.tsx`): a line in each (seams.md).
+// Our pages on the phone. Upstream's Settings routes spread these with its own page options
+// (`Stack.tsx`), and its index lists these rows at the end of Server settings, where its search
+// finds them (`SettingsRouteScreen.tsx`): a line in each (seams.md). The sheet a plan's Cell
+// picks its model in rides along: the root stack takes every route spread there.
 
 export const stemcellsSettingsScreens = <Options extends object>(
   settingsPage: (title: string) => Options,
@@ -31,6 +36,13 @@ export const stemcellsSettingsScreens = <Options extends object>(
     screen: DiskScreen,
     linking: "settings/disk",
     options: settingsPage("Disk"),
+  }),
+  [PLAN_PICK]: createNativeStackScreen({
+    screen: PlanPickScreen,
+    // The sheet the composer's model control opens (`Stack.tsx`, `THREAD_SETTINGS_ROUTE`).
+    options: pickSheet(
+      sheetRoute({ detent: "full", header: "none", android: "card", spansRail: true }),
+    ),
   }),
 });
 

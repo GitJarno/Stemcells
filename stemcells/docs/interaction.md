@@ -108,10 +108,9 @@ says when each lands (`stemcells/aski/arrivals.ts`).
 - **A text step** swaps what is drawn over the words, which keep their room
   from the first frame: nothing is laid out again, and a settled letter never
   moves (`decodeAt`).
-- **A Cell that waits for the person's check** is an outline: a dashed row,
-  dim, its Cell's first blocks held, a `?` at the field Aski is unsure of,
-  no light. A tap on it leads to Aski's chat. Confirmed, it fills in and
-  forms on; dropped, it leaves as any row does.
+- **A Cell of a plan not yet sent** has no row: a plan's rows are tasks
+  until the person's Send, and each Cell forms here as it is sent
+  (`tasks/aski-orchestrator.md`, decision 18).
 - **The machine's own row** takes a planned row over in place: on the Mac
   the same row goes on with its light; on the phone the born row keeps its
   place until Awake is out of sight, and T3's row stands there after.

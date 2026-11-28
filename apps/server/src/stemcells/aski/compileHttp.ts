@@ -6,7 +6,6 @@ import * as Option from "effect/Option";
 import * as Schema from "effect/Schema";
 import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/http";
 
-import { CEILING, DEFAULT_CAP } from "../../../../../stemcells/orchestrator/plan.ts";
 import { boundedText } from "../http/body.ts";
 import { appendPlan } from "../planner/history.ts";
 import * as UpstreamDisk from "../upstream/disk.ts";
@@ -68,8 +67,6 @@ const Context = Schema.Struct({
   cells: Schema.Array(Schema.Struct({ threadId: Name, name: Name })).check(
     Schema.isMaxLength(CELLS_MOST),
   ),
-  cap: Schema.optionalKey(Schema.Number),
-  always: Schema.optionalKey(Schema.Boolean),
   dictated: Schema.optionalKey(Schema.Boolean),
 });
 const CompileRequest = Schema.Struct({
@@ -145,8 +142,6 @@ const compileRoute = Effect.fn("AskiHttp.compile")(function* (times: {
       places: asked.context.places,
       models: asked.context.models,
       cells: asked.context.cells,
-      cap: Math.min(Math.max(Math.trunc(asked.context.cap ?? DEFAULT_CAP), 1), CEILING),
-      always: asked.context.always ?? false,
       dictated: asked.context.dictated ?? false,
     },
     learned,

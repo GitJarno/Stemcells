@@ -9,7 +9,7 @@ import type { ActOutcome, Standing } from "./book.ts";
 
 /** The note beside a message that a plan was made from. */
 export const planNote = (plan: Plan): string =>
-  `Stemcells, telling you, not the person: Stemcells is already carrying out what this message starts, creates or deletes (plan ${plan.id}). Start, create and delete nothing yourself. Call stemcells_plan with that id, then reply in one line that names each Cell it started as its link and says what waits for the person. Answer anything else in the message as you would.`;
+  `Stemcells, telling you, not the person: Stemcells put what this message starts, creates or deletes on a card under it (plan ${plan.id}). Nothing on it starts until the person presses Send there. Start, create and delete nothing yourself. Call stemcells_plan with that id, then reply in one line: that the plan waits for their Send, or, for Cells already started, each one as its link. Answer anything else in the message as you would.`;
 
 const link = (title: string, threadId: string) =>
   `[${title.replace(/[[\]]/g, "")}](t3-thread://v1/${threadId})`;
@@ -21,10 +21,8 @@ const WHY: Readonly<Record<string, string>> = {
   "place-apart": "the project may be meant for another Cell",
   "new-project": "it makes a new project",
   risky: "its words ask for something that can't be taken back",
-  "over-cap": "it is more Cells than they start at once",
   "left-over": "some of the message was given to no Cell",
   "after-hold": "the message also deletes something",
-  always: "they check every plan",
   proposed: "the words are yours",
 };
 
@@ -66,7 +64,8 @@ export const newsNote = (
   ].join("\n");
 
 function lineOf(act: Act, outcome: ActOutcome | undefined, standing: Standing | null): string {
-  const status = outcome?.status ?? (act.tier === "start" ? "starting" : "waiting");
+  // Nothing starts before the person sends the plan from its card (decision 18).
+  const status = outcome?.status ?? "waiting";
   if (act.kind === "destroy") {
     const what =
       act.target === "project"
@@ -84,7 +83,6 @@ function lineOf(act: Act, outcome: ActOutcome | undefined, standing: Standing | 
   const cell = `${link(`${name}: ${act.title}`, act.threadId)} in ${where}${on}`;
   switch (status) {
     case "started":
-    case "starting":
       return `- Started: ${cell}.${standing === null ? "" : ` Now: ${standingWords(standing)}.`}`;
     case "queued":
       return `- Queued: ${name}, "${act.title}" in ${where}${on}. Stemcells starts it itself once the Cells it comes after have landed; the person can start or drop it on the plan's card.`;
@@ -95,7 +93,7 @@ function lineOf(act: Act, outcome: ActOutcome | undefined, standing: Standing | 
     case "called-back":
       return `- Called back by the person: "${act.title}" in ${where}.`;
     default:
-      return `- Waiting for the person's tap: "${act.title}" in ${where}${on}, because ${act.why.map((why) => WHY[why] ?? why).join(" and ")}.`;
+      return `- Not started yet: "${act.title}" in ${where}${on}. It starts when the person presses Send on the plan's card, where they can change it or switch it off first.${act.why.length > 0 ? ` Its row asks them to look twice, because ${act.why.map((why) => WHY[why] ?? why).join(" and ")}.` : ""}`;
   }
 }
 
