@@ -4,7 +4,7 @@
 // swipes left because a swipe right is the chat's way back. Sent, it reads as its Cell stands.
 
 import { StackActions, useNavigation } from "@react-navigation/native";
-import { type ReactNode, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { Keyboard, Pressable, View } from "react-native";
 import Animated, {
   FadeIn,
@@ -84,6 +84,8 @@ const GAP = 8;
 const OFF = { opacity: 0.45 } as const;
 /** A row seen this long after its Cell began to form stands as it is, seconds. */
 const LATE = 0.25;
+/** How long a Cell reads the Cells' clock from its first glyph, seconds: its forming, then it stands still. */
+const FORMS_FOR = 3;
 
 const SWITCH = "switch";
 
@@ -477,6 +479,16 @@ function Sent(props: RowProps) {
   const now = clockSeconds();
   // It plays only as it is sent in sight: seen later, or again, it stands.
   const plays = cell && forms !== undefined && now - forms < LATE;
+  const forming = cell && forms !== undefined && now < forms + FORMS_FOR;
+  const [, formed] = useState(0);
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Its forming over, the Cell is held still: one timer, so no card in a chat keeps drawing on the Cells' clock.
+  useEffect(() => {
+    if (!forming || forms === undefined) return;
+    const left = (forms + FORMS_FOR - clockSeconds()) * 1000;
+    const timer = setTimeout(() => formed((count) => count + 1), Math.max(0, left) + 50);
+    return () => clearTimeout(timer);
+  }, [forming, forms]);
+  const live = cell || one.status === "queued";
   const enters = !plays
     ? undefined
     : reduced
@@ -509,13 +521,19 @@ function Sent(props: RowProps) {
                   threadId={act.threadId}
                   thread={thread}
                   formingFrom={reduced ? undefined : forms}
+                  held={!forming}
                 />
               </Animated.View>
             ) : null
           }
           trailing={<Trailing word={word} danger={one.status === "failed"} open={open} />}
         >
-          <Animated.View entering={enters} className="flex-row items-center">
+          {/* Mounted anew as its Cell arrives, so the room it makes is one move from where it stood. */}
+          <Animated.View
+            key={cell ? "cell" : "task"}
+            entering={enters}
+            className="flex-row items-center"
+          >
             {project === null ? null : <RowMark project={project} />}
             <AppText
               className={`${ROW_TITLE} shrink ${cell ? "text-foreground" : "text-foreground-muted"}`}
@@ -527,11 +545,13 @@ function Sent(props: RowProps) {
         </RowShell>
       </Pressable>
       {/* Its Cell's own line once it has one; until then where and on what it flies. */}
-      <AppText className="text-xs text-foreground-muted" numberOfLines={2}>
-        {line !== ""
-          ? line
-          : `${placeLabel(act)} · ${modelLine(act, props.models, props.apart).text}`}
-      </AppText>
+      {line !== "" || live ? (
+        <AppText className="text-xs text-foreground-muted" numberOfLines={2}>
+          {line !== ""
+            ? line
+            : `${placeLabel(act)} · ${modelLine(act, props.models, props.apart).text}`}
+        </AppText>
+      ) : null}
       {one.status === "failed" && one.reason !== undefined ? (
         <AppText className="text-xs text-danger-foreground">{one.reason}</AppText>
       ) : null}

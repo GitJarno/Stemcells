@@ -13,14 +13,15 @@ const TAPS = 3;
 const KEPT = 60;
 
 /**
- * When each sent Cell forms in its row, ms after the Send, by its act. Where Awake stands beside
- * the chat the rows keep Awake's own stagger, so its row forms a beat after the card's; on a
- * narrow screen they come a beat apart.
+ * Between two rows of a card, ms. Where Awake stands beside the chat the rows keep Awake's own
+ * stagger, so its row forms a beat after the card's; on a narrow screen they come a beat apart.
  */
-export function beatsOf(sent: ReadonlyArray<number>, narrow: boolean): Map<number, number> {
-  const stagger = narrow ? ARRIVAL_BEAT_MS : ARRIVALS.stagger;
-  return new Map(sent.map((i, place) => [i, Math.round(place * stagger)]));
-}
+export const staggerOf = (narrow: boolean): number =>
+  Math.round(narrow ? ARRIVAL_BEAT_MS : ARRIVALS.stagger);
+
+/** When each sent Cell forms in its row, ms after the Send, by its act. */
+export const beatsOf = (sent: ReadonlyArray<number>, narrow: boolean): Map<number, number> =>
+  new Map(sent.map((i, place) => [i, place * staggerOf(narrow)]));
 
 /** When the light taps come, ms after the Send: as a Cell's glyphs have condensed into it. */
 export const tapsOf = (beats: ReadonlyMap<number, number>): number[] =>
@@ -28,7 +29,7 @@ export const tapsOf = (beats: ReadonlyMap<number, number>): number[] =>
 
 const moments = new Map<string, { readonly at: number; readonly beats: Map<number, number> }>();
 
-/** The person sent plan `planId`'s Cells `sent` (their acts, in the rows' order), now. */
+/** The person sent plan `planId`: its Cells `sent` (their acts, in the rows' order) start now. */
 export function sentNow(planId: string, sent: ReadonlyArray<number>, narrow: boolean): void {
   const at = clockSeconds();
   for (const [id, moment] of moments) if (moment.at < at - KEPT) moments.delete(id);

@@ -45,7 +45,7 @@ import { HoldCard } from "./HoldCard";
 import { projectIdOf } from "./pick";
 import { type CellAct, PlanRow } from "./PlanRow";
 import { planCarrier, trays } from "./run";
-import { beatsOf, sentNow } from "./sent";
+import { sentNow, staggerOf } from "./sent";
 import type { PlanEntry } from "./trays";
 import { CLOSE_PLAN, dropHold, getsWorktree, headOf, seenIn } from "./view";
 
@@ -149,17 +149,19 @@ export function PlanPanel(props: {
   const back = new Set(callable(tray, now).map((one) => one.act.i));
   const blocked = held(tray);
   const waits = counts(tray).waiting > 0;
-  const stagger = arrives ? beatsOf([0, 1], narrow).get(1)! : 0;
   const leftOver = tray.plan.leftOver
     .map((n) => tray.plan.pieces.find((piece) => piece.n === n)?.text ?? "")
     .filter((text) => text.length > 0)
     .join(" ");
   const sendIt = () => {
-    const on = onOf(tray).map((one) => one.act.i);
     if (unsendable(tray) !== null) return;
+    // A Cell that is queued forms when its turn comes, as its chat begins.
+    const starts = send(tray)
+      .acts.filter((one) => one.status === "starting")
+      .map((one) => one.act.i);
     // The moment first: each row asks when its Cell forms as the tray changes.
-    sentNow(entry.id, on, narrow);
-    setFolding(on.length);
+    sentNow(entry.id, starts, narrow);
+    setFolding(onOf(tray).length);
     foot.set(
       withTiming(0, LEAVE, (finished) => {
         if (finished) runOnJS(setFolding)(null);
@@ -211,7 +213,7 @@ export function PlanPanel(props: {
             arrives
               ? FadeIn.duration(ENTER.duration)
                   .easing(ENTER.easing)
-                  .delay(index * stagger)
+                  .delay(index * staggerOf(narrow))
               : undefined
           }
           className={index > 0 || head.line !== null ? "border-t border-border-subtle" : undefined}
