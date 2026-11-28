@@ -33,6 +33,7 @@ import {
   type ThreadSettingsSessionValue,
 } from "../upstream/modelPick";
 import { ACCESS_WORDS, levelLabel, lineup, type LineupEntry, selectedIn } from "./kit";
+import { PickOffersAccess } from "./pickScope";
 import { useSheetFit } from "./pickSheet";
 
 type Select = Extract<ProviderOptionDescriptor, { type: "select" }>;
@@ -446,10 +447,11 @@ function AccessSection(props: {
 }) {
   const messages = useMessages();
   const { session } = props;
+  const offered = use(PickOffersAccess);
   const choices = session.runtimeModeChoices.filter(
     (choice) => choice.disabledReason === undefined || choice.mode === session.runtimeMode,
   );
-  if (choices.length < 2) return null;
+  if (!offered || choices.length < 2) return null;
   return (
     <Section title="Access" inset={props.inset}>
       <View style={{ paddingLeft: props.inset ? INSET : 0 }}>

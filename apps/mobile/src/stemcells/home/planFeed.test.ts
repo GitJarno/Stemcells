@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from "vite-plus/test";
 
 import { clearPlannedRows, plannedRows } from "../../../../../stemcells/aski/planned.ts";
 import type { Plan, StartAct } from "../../../../../stemcells/orchestrator/plan.ts";
-import { calledBack, dropAll, started } from "../../../../../stemcells/orchestrator/tray.ts";
+import { calledBack, send, started, toggle } from "../../../../../stemcells/orchestrator/tray.ts";
 import { makeTrays } from "../aski/plan/trays";
 import { plannedRowsFeed } from "./planFeed";
 
@@ -36,7 +36,7 @@ const plan = (acts: Plan["acts"]): Plan => ({
 afterEach(() => clearPlannedRows("plan-1"));
 
 describe("the phone's plans in its Awake list", () => {
-  it("plans a row per Cell on its way or waiting, and Aski throws to each starting one once", () => {
+  it("plans no row for a Cell that waits for Send or was switched off, and Aski throws to each sent one once", () => {
     const trays = makeTrays();
     const thrown: string[][] = [];
     const later: Array<() => void> = [];
@@ -49,33 +49,27 @@ describe("the phone's plans in its Awake list", () => {
     trays.reading("plan-1", "mac", "aski-chat");
     trays.arrived(
       "plan-1",
-      plan([
-        cell(0),
-        cell(1, { tier: "check", why: ["place-near"] }),
-        // No project yet: it waits in the plan, not in a project's list.
-        cell(2, { tier: "check", why: ["place-open"], place: null }),
-      ]),
+      plan([cell(0), cell(1, { tier: "check", why: ["place-near"] }), cell(2)]),
     );
     feed([...trays.read().values()]);
-    expect(plannedRows().map((row) => [row.threadId, row.projectId, row.tier, row.unsure])).toEqual(
-      [
-        ["thread-0", "p-harbor", "start", undefined],
-        ["thread-1", "p-harbor", "check", "place"],
-      ],
-    );
-    trays.change("plan-1", (tray) => started(tray, 0, 9));
+    // A Cell has no row in Awake before it is sent, whatever its tier.
+    expect(plannedRows()).toEqual([]);
+    expect(thrown).toEqual([]);
+    trays.change("plan-1", (tray) => send(toggle(tray, 2)));
     feed([...trays.read().values()]);
-    expect(thrown).toEqual([["thread-0"]]);
-    // The plan left for its message: a Cell that waits on its card there has no outline in Awake.
-    trays.leave("plan-1");
+    expect(plannedRows().map((row) => [row.threadId, row.projectId, row.tier])).toEqual([
+      ["thread-0", "p-harbor", "start"],
+      ["thread-1", "p-harbor", "start"],
+    ]);
+    trays.change("plan-1", (tray) => started(started(tray, 0, 9), 1, 9));
     feed([...trays.read().values()]);
-    expect(plannedRows().map((row) => row.threadId)).toEqual(["thread-0"]);
+    expect(thrown).toEqual([["thread-0", "thread-1"]]);
     // Nothing of it is left to show: its rows stay until the list's own have long taken over.
-    trays.change("plan-1", (tray) => dropAll(calledBack(tray, 0)));
+    trays.change("plan-1", (tray) => calledBack(calledBack(tray, 0), 1));
     trays.leave("plan-1");
     expect(trays.read().has("plan-1")).toBe(false);
     feed([...trays.read().values()]);
-    expect(plannedRows()).toHaveLength(1);
+    expect(plannedRows()).toHaveLength(2);
     for (const run of later) run();
     expect(plannedRows()).toEqual([]);
   });
@@ -89,7 +83,11 @@ describe("the phone's plans in its Awake list", () => {
       later: () => {},
     });
     trays.reading("plan-1", "mac", "aski-chat");
-    trays.arrived("plan-1", plan([cell(0), cell(1, { after: [0] })]));
+    trays.arrived(
+      "plan-1",
+      plan([cell(0), cell(1, { after: [0], afterHeard: "once that's done" })]),
+    );
+    trays.change("plan-1", send);
     feed([...trays.read().values()]);
     expect(plannedRows().map((row) => row.threadId)).toEqual(["thread-0"]);
   });

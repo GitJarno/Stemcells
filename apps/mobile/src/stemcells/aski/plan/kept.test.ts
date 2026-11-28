@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import type { Plan, StartAct } from "../../../../../../stemcells/orchestrator/plan.ts";
+import { send } from "../../../../../../stemcells/orchestrator/tray.ts";
 import {
   type KeptPlan,
   PLANS_PATH,
@@ -73,7 +74,10 @@ describe("a chat's plans, read from its machine", () => {
 
   it("knows a plan made here before any list has it, and takes the server's word for its queued Cell", async () => {
     const trays = makeTrays();
-    const made = keptPlan("plan-here", [start(0), start(1, { after: [0] })]);
+    const made = keptPlan("plan-here", [
+      start(0),
+      start(1, { after: [0], afterHeard: "once that's done" }),
+    ]);
     let plans: KeptPlan[] = [];
     const kept = makeKept(
       trays,
@@ -82,6 +86,7 @@ describe("a chat's plans, read from its machine", () => {
     );
     trays.reading("plan-here", "mac", "aski-chat");
     trays.arrived("plan-here", made.plan);
+    trays.change("plan-here", send);
     kept.made("mac", "aski-chat", made);
     await kept.read("mac", "aski-chat");
     const first = kept.of("mac", "aski-chat");

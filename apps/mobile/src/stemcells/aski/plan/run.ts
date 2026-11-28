@@ -3,7 +3,6 @@
 // server, and the hands that carry it out, each the person's own command.
 
 import type { DestroyAct, Plan } from "../../../../../../stemcells/orchestrator/plan.ts";
-import { DEFAULT_CAP } from "../../../../../../stemcells/orchestrator/plan.ts";
 import {
   COMPILE_PATH,
   type CompileRequest,
@@ -294,7 +293,6 @@ export function planDoor(chat: {
           places: world.places,
           models: world.models,
           cells: world.cells,
-          cap: DEFAULT_CAP,
           dictated,
         },
         think,

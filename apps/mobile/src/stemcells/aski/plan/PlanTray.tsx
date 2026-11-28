@@ -10,9 +10,10 @@ import Animated from "react-native-reanimated";
 import { FLOOR_LINE, headline } from "../../../../../../stemcells/words/plans.ts";
 import { entering, exiting } from "../../home/listMotion";
 import { AppText, useIsFocused, useKeyboardState } from "../../upstream/plans";
-import { PlanPanel, usePlans } from "./PlanRows";
+import { PlanPanel } from "./PlanRows";
 import { standing } from "./standing";
 import { overComposer, type PlanEntry } from "./trays";
+import { usePlans } from "./usePlans";
 import { usePlanWorld } from "./usePlanWorld";
 
 export function PlanTray(props: {
