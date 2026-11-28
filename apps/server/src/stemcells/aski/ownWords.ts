@@ -12,8 +12,25 @@ const wordsOf = (text: string): string[] =>
 
 /** Words that turn a sentence round: a run that starts just after one left it out. */
 const TURNS = new Set([
-  "not", "never", "no", "don't", "dont", "doesn't", "didn't", "won't", "can't", "cannot",
-  "shouldn't", "mustn't", "isn't", "aren't", "without", "stop", "unless", "except", "nor",
+  "not",
+  "never",
+  "no",
+  "don't",
+  "dont",
+  "doesn't",
+  "didn't",
+  "won't",
+  "can't",
+  "cannot",
+  "shouldn't",
+  "mustn't",
+  "isn't",
+  "aren't",
+  "without",
+  "stop",
+  "unless",
+  "except",
+  "nor",
 ]);
 
 /** The most runs a sent message may be cut into: a target's name left out, twice. */

@@ -178,46 +178,39 @@ Code checks the answer (`orchestrator/check.ts`):
   Sol; "the users table" and "header" name no model.
 - A name is real: in the person's projects, the catalog or the model's
   own ladder.
-- No more Cells than the cap (decision 5).
 
 An answer that fails is asked for once more, on a stronger model, with
 what failed; then code weakens what it can't prove, or nothing starts.
 
-Then each act gets a tier:
+Then each act gets a tier. Nothing starts by its tier: every Cell waits
+for the person's Send (decision 18). The tier says how its row reads.
 
-- **Start**: begins at once. A Cell's place is its exact name, said in
-  its own pieces, carried forward from the place said before them, or
-  the message's one place. Its words hold nothing risky.
-- **Check**: waits for one tap, or Enter on an empty composer (a plan
-  Aski proposed starts by its card's tap alone: its words are Aski's).
-  Any of:
-  the place was heard near, not exact ("harbour"); Aski picked it; none
-  was named; it was said, but as code reads the sentence it may be
-  another Cell's; a new project; a risky sentence (decision 7); past the
-  cap; words left over; a deletion in the same message; anything
-  `stemcells_propose` made.
+- **Start**: nothing to look at twice. A Cell's place is its exact name,
+  said in its own pieces, carried forward from the place said before
+  them, or the message's one place. Its words hold nothing risky.
+- **Check**: its row says why to look twice, and a risky one shows its
+  words opened. Any of: the place was heard near, not exact ("harbour");
+  Aski picked it; none was named; it was said, but as code reads the
+  sentence it may be another Cell's; a new project; a risky sentence
+  (decision 7); words left over; a deletion in the same message;
+  anything `stemcells_propose` made.
 - **Hold**: a `destroy`. Decision 7.
 
-A model or effort read from a group never forces a Check: it shows on the
-row and costs a click to change. A place always must be exact to start.
-
-**Settings › Aski › Check every plan**: off (the default), a Cell Aski is
-sure of starts at once; on, every Cell waits. There is no Never: a Hold
-can't be switched off.
+A place must be exact, or picked by the person, before its Cell can be
+sent.
 
 ### 5. Starting, calling back, and caps
 
-- The client starts the Start tier at once, side by side, as a
+- On Send the client starts the Cells left on, side by side, as a
   multi-Cell send starts its threads, each in the person's default
   access mode. The plan mints each Cell's thread id, so its name and its
-  row are known before it exists.
+  creature are known the moment it is sent.
 - **Cells Aski starts open no tab.** They form in the Awake list, at the
-  top, and the person stays with Aski. A click opens one.
+  top, once sent, and the person stays with Aski. A click opens one.
 - **Call back** stands on a Cell's row for ten seconds: it stops the
   Cell and archives it. A provider's session takes seconds to come up,
   so a Cell called back has done nothing.
-- Six Cells a message start freely (Settings › Aski). More is a Check.
-  Twelve is the ceiling.
+- Twelve Cells a message is the ceiling.
 - When the call fails or times out, nothing starts: the plan says Aski
   couldn't read it, and the message is the chat's.
 - A Cell with no model named runs on its project's default, with the
@@ -369,22 +362,19 @@ The choices, with what was measured:
 One timeline on the Mac and the phone, built from what exists
 (`interaction.md`, The spawn; `cell/forming.ts`).
 
-1. **Send.** The message goes to Aski's chat, and the plan's card stands
-   on the composer under Aski: "Aski is reading…".
-2. **Each Cell arrives.** Aski pulses and throws a copy of itself to the
-   top of the Awake list. There the Cell forms through `. : + # @` into
-   its creature, and its line settles out of the same glyphs, left to
-   right: the project's mark, the Cell's name, model and effort, then the
-   title. Rows below glide down.
-3. **A Check forms as an outline**: dim, with the unsure field marked,
-   and stays that way until tapped; a click on it brings Aski's chat
-   forward. A Cell with no project yet waits in the plan only. A Hold
-   forms no row. It is a row of the plan's card.
-4. **The plan's card** has a row per act: the Cell's name, project,
-   model, effort and title; a waiting row says why, shows the words the
-   Cell will be told, and lets the person pick the project and the model.
-   It leaves once every Cell flies and can no longer be called back;
-   Aski's reply is the line that stays, each Cell a link. A plan Aski's
+1. **The message goes** to Aski's chat, and the plan's card stands on
+   the composer under Aski: "Aski is reading…".
+2. **The plan arrives** as rows of tasks, not yet Cells (decision 18).
+   Nothing forms in the Awake list: a Cell has no row there before it is
+   sent.
+3. **Send.** Each Cell left on arrives, a stagger apart: Aski pulses and
+   throws a copy of itself to the top of the Awake list. There the Cell
+   forms through `. : + # @` into its creature, and its line settles out
+   of the same glyphs, left to right: the project's mark, the Cell's
+   name, model and effort, then the title. Rows below glide down. In the
+   card its row gains the same creature the same way. A Hold forms no
+   row. It is a row of the plan's card.
+4. **The card stays** under the message (decision 15). A plan Aski's
    chat proposed stands in the reply itself, where its `plan` fence is.
 
 Every motion is one-shot and moves only `transform` and `opacity`. Under
@@ -499,6 +489,48 @@ project is minutes and gigabytes. So a worktree is never Aski's own idea.
   told who else is at work in its repository (`peers/roster.ts`). Taking
   turns is decision 16.
 
+### 18. A plan waits for Send
+
+A plan used to start what it was sure of the moment it was read. The
+person could then only call a Cell back, never see its words first,
+switch one off or change its model. And "sure" was a threshold of ours.
+Now nothing starts before the person's Send, and the card is where they
+look, change and send. One yes, with Enter on the Mac.
+
+**The row** is a task, in one line, built from the Awake row's own
+pieces so a change there carries here: the project's mark and name, the
+title, the model and effort, what it comes after ("Then" for the row
+above it), and a chevron. It carries no Cell name and no creature: a
+Cell gets both when it is sent.
+
+- The project is a picker on the row; a project heard near or picked by
+  Aski is marked, and one that is missing holds Send until picked.
+- The model and effort are the composer's own control, the same
+  component, on the row.
+- The chevron opens the exact words the Cell is sent, the line code adds
+  included. A risky row is open from the start.
+- A row switches off and back on: a swipe on the phone, a control in the
+  row's end on the Mac (hover), where a sideways swipe is the column's.
+  Off, it is struck through and dim; Send leaves it out, and a Cell that
+  came after it waits for no one.
+- The foot: Cancel, and **Send N** at the right, with why it waits when
+  it does (a deletion comes first; a project to pick). All or nothing.
+- A deletion keeps its own card and its held press (decision 7).
+
+**Send** is the moment the tasks become Cells, and it should feel like
+one. In the card, a stagger apart, each row makes room at its start and
+its creature forms there through the same glyphs as in the Awake list;
+the foot folds away and the headline counts what flies and what is
+queued. Where the Awake list is in sight (the Mac, the Duo unfolded),
+each Cell forms there a beat after its row, so the eye reads it as
+thrown across. On a phone, one firm haptic at Send and a light one per
+Cell, three at most. On a narrow screen the stagger is shorter and the
+rows do no more than that. Every motion is one-shot, moves only
+`transform` and `opacity`, uses the motion tokens, and under Reduce
+Motion is a cross-fade.
+
+The cap of six and "Check every plan" are gone with what they decided.
+
 ## What changes in what's built
 
 - **The reader** (`words/`) and its planner stay the new chat's
@@ -566,6 +598,11 @@ and 8 stand alone.
         and the checks, with corpus cases; the queue on the server and the
         start from there; queued rows, Start now and Drop on both clients
         (decisions 16 and 17).
+12. [ ] **A plan waits for Send.** Every act waits; rows of tasks with
+        the project, model and effort on the row, the exact words behind
+        a chevron, off and on, Send at the foot; the Send moment's motion
+        on the Mac, a phone and the Duo; the cap and "Check every plan"
+        removed (decision 18).
 
 ## Review
 

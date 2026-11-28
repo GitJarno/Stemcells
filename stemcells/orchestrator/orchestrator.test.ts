@@ -538,22 +538,19 @@ describe("the tier of a Cell", () => {
 
   it("makes a count of Cells", () => {
     const p = made(
-      plan(
-        "3 agents in Harbor on the flaky test",
-        (n) => ({
-          acts: [
-            {
-              kind: "start",
-              pieces: [n("flaky")],
-              place: "Harbor",
-              placeHeard: "Harbor",
-              count: 3,
-            },
-          ],
-          setup: [],
-          talk: [],
-        }),
-      ),
+      plan("3 agents in Harbor on the flaky test", (n) => ({
+        acts: [
+          {
+            kind: "start",
+            pieces: [n("flaky")],
+            place: "Harbor",
+            placeHeard: "Harbor",
+            count: 3,
+          },
+        ],
+        setup: [],
+        talk: [],
+      })),
     );
     expect(starts(p).map((a) => [a.threadId, a.tier, a.why])).toEqual([
       ["thread-1", "start", []],
