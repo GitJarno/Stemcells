@@ -233,9 +233,11 @@ The rest holds everywhere:
 - **Night and ink.** Night `#0B0B0C`, ink `#EDE9E0`, a raised surface
   `#151514`. On paper: `#F4F1EA` and `#141414`.
 - **Two voices of type.** What a person reads is set in the app's own type,
-  the system's sans, tight and plain. One monospace is for the mark
-  (`stemcells` with a block cursor), small labels, code, and anything made of
-  characters.
+  the system's sans, tight and plain. One monospace is for small labels,
+  code, and anything made of characters.
+- **The marks are type.** The wordmark `stemcells` and the icon SC are
+  Outfit SemiBold, outlined from the font and never drawn ([README.md](README.md)).
+  Nothing is added to them: no sparkle, no cursor, no box.
 - **Colour means something.** Each Cell wears its own. A state wears the dot
   the app gives it: Input amber `#FDBE48`, Awake and Asleep as the app's
   list shows them. Amber means a Cell asks you something and nothing else. Aski, the brand

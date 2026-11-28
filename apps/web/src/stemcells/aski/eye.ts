@@ -1,4 +1,4 @@
-// The eye is a block cursor, the █ of SC█: an upright box with squared ends, a terminal cell
+// The eye is a block cursor, █: an upright box with squared ends, a terminal cell
 // across and a line down. It is drawn as Aski's own outline, not taken from a typeface, so it
 // is identical on every machine; the phone and the Watch wear it as drawn here.
 

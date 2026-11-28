@@ -31,7 +31,7 @@ describe("the DMG's background", () => {
       const svg = NodeFS.readFileSync(NodePath.join(REPO_ROOT, OURS_DIR, file), "utf8");
       expect(svg, file).toContain(`Drag ${APP_NAME} into Applications.`);
       expect(unexplainedNames(svg, []), file).toEqual([]);
-      // Upstream's mark is a nested drawing; ours is the name in type.
+      // Upstream's mark is a nested drawing; ours is the wordmark's one path.
       expect(svg.match(/<svg\b/g), file).toHaveLength(1);
     }
   });
