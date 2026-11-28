@@ -143,6 +143,7 @@ describe("which part of Aski reads a message", () => {
     "delete the Harbor project",
     "archive all the cells in Atlas",
     "Harbor fix the header",
+    "In Harbor fix the importer, and once that's done write its changelog",
     "hey Harbor Design: tidy the tokens",
     "can you spin up two agents for the migration?",
     "spawn 3 Sol",
@@ -151,6 +152,7 @@ describe("which part of Aski reads a message", () => {
   it.each([
     "how many cells are flying?",
     "what happened in Harbor yesterday",
+    "in the morning I'll look at it",
     "where was that chat about the film page two days ago",
     "turn the sounds off",
     "Otter, rebase onto main",
