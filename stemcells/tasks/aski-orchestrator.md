@@ -88,6 +88,16 @@ as Cells forming.
    without a person's hand on the named thing.
 7. **Evidence first, prose after.** A question about the past shows the
    Cells it found at once; Aski's sentence follows.
+8. **The person splits; Aski carries it out.** Aski starts the Cells the
+   person named, in the order and the places the person said. It never
+   divides a goal into Cells or roles of its own. A Cell is a whole agent
+   that already starts helpers for itself, inside its own context, where
+   a wrong split costs little; a second layer above it that guesses when
+   to split would need thresholds tuned to this year's models, and no
+   study we found measures how well a manager divides work. The person's
+   split carries what Aski lacks: what matters, and what is worth an
+   agent. Asked "how would you split this?", Aski may answer in words;
+   the plan is still the person's next message.
 
 ## Decisions
 
@@ -662,8 +672,9 @@ and 8 stand alone.
 - A queued Cell for a project on another machine fails with its reason:
   only Aski's own server holds a queue.
 - Aski's note about a plan's news has no eval of its own yet.
-- The manager choosing roles for a broad goal, an analyst whose findings
-  reach the builders, and Cells sharing one copy by area: asked for, being
-  researched, undecided.
+- Two Cells writing in one copy at the same time, each in its own area of
+  the files: not built. Cells in one copy take turns (decision 16); what
+  we read reports overwritten edits and conflicting choices from writers
+  side by side, and measures none of it for one laptop.
 - A private corpus of real messages, and a harvest of corrected plans.
 - The cap of twelve is a guess until someone hits it.
