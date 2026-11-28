@@ -43,18 +43,12 @@ export interface CompileContext {
   readonly places: readonly PlaceEntry[];
   readonly models: readonly ModelEntry[];
   readonly cells: readonly LiveCell[];
-  /** The most Cells one message starts without a check. */
-  readonly cap: number;
-  /** Settings › Aski › Check Aski's plan: Always. */
-  readonly always: boolean;
   /** Speech put some of the message there. */
   readonly dictated: boolean;
 }
 
-/** The most Cells one message ever starts, whatever the cap. */
+/** The most Cells one message ever starts. */
 export const CEILING = 12;
-/** The cap until the person sets one. */
-export const DEFAULT_CAP = 6;
 
 /**
  * How a field was read. `exact`: said as it is written. `near`: read from a word that isn't its
@@ -90,7 +84,10 @@ export interface Selection {
   readonly options?: ReadonlyArray<{ readonly id: string; readonly value: string | boolean }>;
 }
 
-/** `start` begins at once; `check` waits for one tap; `hold` needs a hand on the named thing. */
+/**
+ * Every Cell waits for the person's Send (decision 18). `check` marks one whose row says why to
+ * look twice; `start` has nothing to say; `hold` needs a hand on the named thing.
+ */
 export type Tier = "start" | "check" | "hold";
 
 /** Why an act waits. */
@@ -106,14 +103,10 @@ export type Why =
   | "new-project"
   /** Its words ask for something that can't be taken back. */
   | "risky"
-  /** More Cells than the person's cap. */
-  | "over-cap"
   /** Some of the message was given to no one. */
   | "left-over"
   /** The message also deletes something: that is dealt with first. */
   | "after-hold"
-  /** The person checks every plan. */
-  | "always"
   /** Aski's chat proposed it; the words are Aski's. */
   | "proposed";
 

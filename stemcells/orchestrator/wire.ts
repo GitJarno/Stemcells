@@ -28,7 +28,7 @@ export interface ExpectRequest {
 
 export interface CompileRequest extends ExpectRequest {
   readonly context: Pick<CompileContext, "places" | "models" | "cells"> &
-    Partial<Pick<CompileContext, "cap" | "always" | "dictated">>;
+    Partial<Pick<CompileContext, "dictated">>;
   /** The model the compiler's first call runs on, and its second (the first's when absent). */
   readonly think: { readonly fast: Selection; readonly strong?: Selection };
 }

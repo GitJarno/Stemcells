@@ -18,7 +18,7 @@ export const PLAN_STATUS_WORDS = {
 } as const;
 
 /** Why a Cell waits, as its row says it; null when the reason needs no words. */
-export function whyLine(act: StartAct, why: Why): string | null {
+export function whyLine(act: StartAct, why: Why): string {
   const place = act.place;
   switch (why) {
     case "place-open":
@@ -35,16 +35,12 @@ export function whyLine(act: StartAct, why: Why): string | null {
       return "A new project";
     case "risky":
       return "Is this what you meant?";
-    case "over-cap":
-      return "More than you start at once";
     case "left-over":
       return "Some words went to no Cell";
     case "after-hold":
       return "After the deletion";
     case "proposed":
       return "Aski’s words";
-    case "always":
-      return null;
   }
 }
 
@@ -68,11 +64,11 @@ export const HOLD_HEARD = (heard: string): string =>
 export const HOLD_PRESS = "Press and hold to confirm";
 export const HOLD_UNKNOWN = "Aski couldn’t tell which. Nothing is deleted.";
 
-/** The plan's headline: "4 Cells · 3 flying · 1 waiting on you". */
+/** The plan's headline: "3 Cells · 1 off" before it is sent, "3 Cells · 1 flying · 2 queued" after. */
 export function headline(
   cells: number,
   flying: number,
-  waiting: number,
+  off: number,
   reading: boolean,
   queued = 0,
 ): string {
@@ -80,25 +76,37 @@ export function headline(
   // A message that only deletes: its card says the rest.
   if (cells === 0) return "Deletion";
   const parts = [`${cells} ${cells === 1 ? "Cell" : "Cells"}`];
-  if (flying > 0 && waiting + queued > 0) parts.push(`${flying} flying`);
+  if (off > 0) parts.push(`${off} off`);
+  if (flying > 0 && queued > 0) parts.push(`${flying} flying`);
   if (queued > 0) parts.push(`${queued} queued`);
-  if (waiting > 0) parts.push(`${waiting} waiting on you`);
   return parts.join(" · ");
 }
 
-/** Whom a queued Cell comes after, by their Cells' names: "After Otter and Finch". */
-export const afterLine = (names: readonly string[]): string =>
-  names.length === 0
+/**
+ * What a Cell comes after, by the tasks' titles: a plan's rows carry no Cell names. "Then" for
+ * the row right above it.
+ */
+export const afterLine = (titles: readonly string[], above: boolean): string =>
+  titles.length === 0
     ? "Queued"
-    : `After ${names.length === 1 ? names[0] : `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`}`;
+    : above
+      ? "Then"
+      : `After ${titles.length === 1 ? titles[0] : `${titles.slice(0, -1).join(", ")} and ${titles.at(-1)}`}`;
 export const START_NOW = "Start now";
+/** The plan's one yes: "Send 3". */
+export const SEND = (cells: number): string => `Send ${cells}`;
+export const CANCEL = "Cancel";
+/** Why Send waits, said beside it. */
+export const SEND_WAITS = { held: "The deletion comes first", place: "Pick a project" } as const;
+export const SWITCH_OFF = "Off";
+export const SWITCH_ON = "On";
+/** Over the exact words a Cell is sent. */
+export const TOLD = "What it's told";
 /** A row's mark for a Cell the person asked to work in a worktree of its own. */
 export const OWN_WORKTREE = "own worktree";
 
 export const FLOOR_LINE = "Aski couldn’t read that as Cells to start. It went to Aski’s chat.";
 export const LEFT_OVER = (words: string): string => `Given to no Cell: “${words}”`;
-export const START = "Start";
-export const START_ALL = "Start all";
 export const DROP = "Drop";
 export const CALL_BACK = "Call back";
 export const DEFAULT_MODEL = "Default model";
@@ -113,10 +121,9 @@ export const placeLabel = (act: Act): string =>
  * dropped, nothing is "after" it.
  */
 export function whyLines(act: StartAct, held: boolean): string[] {
-  const lines = act.why.flatMap((why) => {
-    const line = why === "after-hold" && !held ? null : whyLine(act, why);
-    return line === null ? [] : [line];
-  });
+  const lines = act.why.flatMap((why) =>
+    why === "after-hold" && !held ? [] : [whyLine(act, why)],
+  );
   if (act.model?.how === "near") lines.push(`Heard “${act.model.heard}”. ${act.model.name}?`);
   return [...new Set(lines)];
 }
