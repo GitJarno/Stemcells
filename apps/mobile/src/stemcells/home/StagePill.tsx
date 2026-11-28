@@ -1,4 +1,4 @@
-// The stages, never scrolling away: under the header on an upright phone, else at the home's foot
+// The stages, never scrolling away: under the header on a candybar phone, else at the home's foot
 // (`pillPlace.ts`, stemcells/tasks/awake-asleep.md). A woken Cell's count takes it with a bump
 // (`hops.ts`); a slept one's leap is caught: the pill gives under it and rebounds, like a hammock.
 
@@ -18,7 +18,7 @@ import { bumpNow, pillStandsIn, useBump } from "./hops";
 import { CATCH_GIVE, CATCH_RETURN, LIST_MOTION } from "./listMotion";
 import { useOverKeyboard } from "./overKeyboard";
 import { head } from "./head";
-import { usePillOnTop, usePillStays, useStageRoom } from "./pillPlace";
+import { usePillOnTop, useStageRoom } from "./pillPlace";
 import {
   HomeInFront,
   HomeStageContext,
@@ -41,13 +41,11 @@ const GIVE = 3;
 const GIVE_WIDER = 0.02;
 const GIVE_FLATTER = 0.05;
 
-/** The stages, under the header's bar at `top` on an upright phone, else over the home's search. */
+/** The stages, under the header's bar at `top` on a candybar phone, else at the home's foot. */
 export function StagePill(props: { readonly top: number }) {
   const home = use(HomeTabsContext);
   const inFront = use(HomeInFront);
   const onTop = usePillOnTop();
-  const stays = usePillStays();
-  const goesUp = onTop && !stays;
   const { place, style } = useOverKeyboard();
   const lift = place.pill + PILL_ROOM - place.notice;
   // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Tell T3's undo notice, drawn outside the home, to stand over the stages at the foot.
@@ -80,7 +78,7 @@ export function StagePill(props: { readonly top: number }) {
     const grow = 1 + BUMP * bump.get();
     const give = caught.get();
     // On a candybar phone it goes up with the title, fading as it passes under the bar.
-    const lift = goesUp ? head.lift.get() : 0;
+    const lift = onTop ? head.lift.get() : 0;
     const shown = Math.min(1, Math.max(0, 1 - (lift - STAGE_ROOM) / PILL_HEIGHT));
     return {
       opacity: shown,

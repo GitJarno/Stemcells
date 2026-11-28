@@ -29,11 +29,8 @@ import {
   HomeCellsHeld,
   HomeInFront,
   HomeStageContext,
-  PILL_HEIGHT,
-  STAGE_ROOM,
   StagePageContext,
 } from "./state";
-import { usePillStays } from "./pillPlace";
 import { Sky } from "./Sky";
 import { StagePill } from "./StagePill";
 import { turnSky } from "./useSky";
@@ -124,7 +121,6 @@ export function StagePages<Stage extends string>(props: {
   const { home, tab } = props;
   const sidebar = useHomeSidebar();
   const barBottom = useDuoBarBottom();
-  const pillStays = usePillStays();
   const inFront = use(HomeInFront);
   const held = use(HomeCellsHeld);
   // Where a list rests: under the inset T3's list rests under, at the native header's foot.
@@ -182,11 +178,7 @@ export function StagePages<Stage extends string>(props: {
         );
       })}
       {/* One top edge in every posture; the sidebar's foot is the split's own. */}
-      <ScreenVeils
-        bottom={!sidebar}
-        barBottom={barBottom}
-        chromeBottom={pillStays ? inset + STAGE_ROOM + PILL_HEIGHT : undefined}
-      />
+      <ScreenVeils bottom={!sidebar} barBottom={barBottom} />
       <Sky night={skyAtStage(tab) === SKY_AT.night} />
       <StagePill top={inset} />
       <CopyLayer shown={inFront} />
