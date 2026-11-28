@@ -64,3 +64,12 @@ export const showsUnder = (tray: Tray): boolean =>
   tray.acts.some(
     (one) => one.act.kind === "start" && one.status !== "dropped" && one.status !== "called-back",
   );
+
+/** How many of a plan's Cells fly now: on their way, or started and neither landed nor asking. */
+export const flyingOf = (tray: Tray, seenOf: (threadId: string) => CellSeen | null): number =>
+  tray.acts.filter((one) => {
+    if (one.act.kind !== "start") return false;
+    if (one.status === "starting") return true;
+    const stage = one.status === "started" ? seenOf(one.act.threadId)?.stage : "done";
+    return stage === undefined || stage === "working";
+  }).length;

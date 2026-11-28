@@ -11,7 +11,7 @@ import type {
   RiskMark,
   StartAct,
 } from "../../../../../../stemcells/orchestrator/plan.ts";
-import { type CellSeen, rowSays } from "../../../../../../stemcells/orchestrator/rows.ts";
+import { type CellSeen, flyingOf, rowSays } from "../../../../../../stemcells/orchestrator/rows.ts";
 import {
   CALL_BACK_MS,
   canDestroy,
@@ -73,7 +73,7 @@ export function PlanCard(props: { live: LivePlan }) {
 function Plan(props: { live: LivePlan; tray: Tray }) {
   const { live, tray } = props;
   const { plan } = tray;
-  const { flying, waiting, queued } = counts(tray);
+  const { waiting, queued } = counts(tray);
   // Each Cell as the needs list has it, which Awake reads too: a row says what its Cell's row says.
   const { cells: standings } = useNeeds();
   const seenOf = (threadId: string): CellSeen | null => {
@@ -86,6 +86,7 @@ function Plan(props: { live: LivePlan; tray: Tray }) {
           short: standing.landing?.verdict === "short",
         };
   };
+  const flying = flyingOf(tray, seenOf);
   const ownWorktree = useOwnWorktree(use(PlanRoom));
   const cells = tray.acts.filter(
     (one) => one.act.kind === "start" && one.status !== "dropped" && one.status !== "called-back",
@@ -238,27 +239,12 @@ function CellRow(props: {
                 {DROP}
               </Button>
             </>
-          ) : one.status === "queued" ? (
-            <>
-              <Button
-                size="compact"
-                disabled={props.holding}
-                onClick={() => runner.startNow(planId, act.i)}
-              >
-                {START_NOW}
-              </Button>
-              <Button
-                size="compact"
-                variant="ghost-muted"
-                onClick={() => runner.drop(planId, act.i)}
-              >
-                {DROP}
-              </Button>
-            </>
           ) : one.status === "started" && one.startedAt !== undefined ? (
             <CallBack planId={planId} i={act.i} startedAt={one.startedAt} />
           ) : null}
-          {says.word === "" ? null : <span data-plan-status="">{says.word}</span>}
+          {says.word === "" || one.status === "queued" ? null : (
+            <span data-plan-status="">{says.word}</span>
+          )}
         </span>
       </div>
       {waiting ? (
@@ -266,6 +252,26 @@ function CellRow(props: {
           {why.length > 0 ? <span data-plan-why="">{why.join(" · ")}</span> : null}
           <Pickers planId={planId} act={act} />
           {props.apart ? <span data-plan-meta="">{OWN_WORKTREE}</span> : null}
+        </div>
+      ) : null}
+      {one.status === "queued" ? (
+        // A line of its own, so the title keeps its room. Waiting its turn is the plan as said:
+        // starting now is the quieter choice.
+        <div data-plan-check="">
+          <span data-plan-status="">{says.word}</span>
+          <span data-plan-actions="">
+            <Button
+              size="compact"
+              variant="outline"
+              disabled={props.holding}
+              onClick={() => runner.startNow(planId, act.i)}
+            >
+              {START_NOW}
+            </Button>
+            <Button size="compact" variant="ghost-muted" onClick={() => runner.drop(planId, act.i)}>
+              {DROP}
+            </Button>
+          </span>
         </div>
       ) : null}
       {says.line === null ? null : <p data-plan-said="">{says.line}</p>}

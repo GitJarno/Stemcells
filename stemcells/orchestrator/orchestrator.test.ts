@@ -4,7 +4,7 @@ import { planOf, proposedPlan, type Answer } from "./check.ts";
 import { wantsCompiler } from "./gate.ts";
 import { clampEffort, saysExactly } from "./names.ts";
 import { piecesOf } from "./pieces.ts";
-import { rowSays, showsUnder } from "./rows.ts";
+import { flyingOf, rowSays, showsUnder } from "./rows.ts";
 import { DICTATED_NOTE, type CompileContext, type Plan, type StartAct } from "./plan.ts";
 import {
   begun,
@@ -828,6 +828,8 @@ describe("a Cell that comes after another", () => {
       line: "Importer fixed.",
       stuck: null,
     });
+    // A Cell that asks or landed no longer flies, whatever the tray last heard of it.
+    expect([flyingOf(tray, seen("working")), flyingOf(tray, seen("done"))]).toEqual([1, 0]);
     expect(showsUnder(tray)).toBe(true);
     // Called back and dropped: nothing of the plan is left to stand under its message.
     expect(showsUnder(drop(calledBack(tray, 0), 1))).toBe(false);
