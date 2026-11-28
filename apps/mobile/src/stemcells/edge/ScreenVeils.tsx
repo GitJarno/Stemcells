@@ -28,8 +28,6 @@ export function ScreenVeils(props: {
    * taller than the phone's, under no status bar.
    */
   readonly barBottom?: number;
-  /** Where chrome under the bar ends, the stages' pill on an upright phone: the veil reaches past it. */
-  readonly chromeBottom?: number;
 }) {
   const sidebar = useHomeSidebar();
   const insets = useSafeAreaInsets();
@@ -39,10 +37,8 @@ export function ScreenVeils(props: {
   const [held, setHeld] = useState<Resting | null>(null);
   const resting = props.barBottom === undefined ? null : restingBar(held, window, props.barBottom);
   if (resting !== null && resting !== held) setHeld(resting);
-  const headerFade = Math.max(
-    resting === null ? HEADER_FADE : Math.max(0, resting.bar + PAST_THE_BAR - insets.top),
-    props.chromeBottom === undefined ? 0 : props.chromeBottom + PAST_THE_BAR - insets.top,
-  );
+  const headerFade =
+    resting === null ? HEADER_FADE : Math.max(0, resting.bar + PAST_THE_BAR - insets.top);
   return (
     <>
       <Veil

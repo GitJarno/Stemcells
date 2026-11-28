@@ -59,13 +59,14 @@ questions; the agent's state shows inside the row.
 7. **The Mac's Pinned stage goes**: pins lead Awake, as on the phone.
    A remembered stage maps working, landed and pinned to Awake, settled to
    Asleep.
-8. **On an upright phone the stages stand under the header** (2026-11-27,
+8. **On a candybar phone the stages stand under the header** (2026-11-27,
    the person's call): the pill sits under the title with the sky behind it,
-   where the eye starts (`home/pillPlace.ts`). On a candybar phone it goes
-   up with the title as the list scrolls, fading under the bar, and comes
-   back at the list's top; on the folded Duo it stays, and rows blur under
-   it as they pass. Elsewhere (a sidebar, the iPad, a phone on its side) it
-   stays at the foot over the search, riding the keyboard. A slept Cell
+   where the eye starts (`home/pillPlace.ts`), goes up with the title as the
+   list scrolls, fading under the bar, and comes back at the list's top.
+   Everywhere else it stands at the foot: on the folded Duo level with the
+   rail's lowest group (2026-11-28, the person's call, so a slept Cell
+   leaps down into it as on the open Duo), and in a sidebar, on the iPad or
+   a phone on its side over the search, riding the keyboard. A slept Cell
    leaps into it wherever it stands.
 
 ## Moments
