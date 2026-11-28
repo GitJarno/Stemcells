@@ -393,30 +393,81 @@ export function ringPlan(
   return plans.find((plan) => plan.account.key === lastWritten?.key) ?? plans[0] ?? null;
 }
 
+/** Where the plan you're on stands, said in two lines: the one to read, and what follows from it. */
+export interface Standing {
+  readonly tone: PlanTone;
+  readonly lead: string;
+  readonly detail: string | null;
+}
+
+const DAY = 24 * 60 * MINUTE;
+
+/** When `at` comes: "in 2h 10m" under a day, else its clock ("Tue 20.00"). */
+function whenAt(
+  at: number,
+  now: number,
+  clock: (at: number) => string,
+  duration: (ms: number) => string,
+): string {
+  return at - now < DAY ? `in ${duration(at - now)}` : clock(at);
+}
+
 /**
- * The one line over the plans, for the ring's plan: when it stops you.
- * Nothing while the pace holds out to the reset.
+ * The ring's plan, said at the card's top: limited until when; else when the pace runs it out
+ * and how long before its reset; else, low on room, what is left; else when it resets.
  */
-export function headlineOf(
+export function standingOf(
   plan: PlanReading,
   now: number,
   clock: (at: number) => string,
   duration: (ms: number) => string,
-): string | null {
-  // A model's own window stops that model only, never the plan.
-  const windows = [plan.session, plan.long].flatMap((window) =>
-    window === null || window.scoped ? [] : [window],
-  );
-  // Out of both, the later reset is the one that frees it.
+): Standing | null {
   const until = freedAt(plan);
-  if (until !== null) return `Limited until ${clock(until)}, in ${duration(until - now)}`;
-  const next = windows
+  if (until !== null) {
+    return {
+      tone: "out",
+      lead: `Limited until ${clock(until)}`,
+      detail: `Frees ${whenAt(until, now, clock, duration)}`,
+    };
+  }
+  // A model's own window stops that model only, never the plan.
+  const next = [plan.session, plan.long]
     .flatMap((window) =>
-      window.runsOutAt !== null && window.resetsAt !== null
+      window !== null && !window.scoped && window.runsOutAt !== null && window.resetsAt !== null
         ? [{ at: window.runsOutAt, resetsAt: window.resetsAt }]
         : [],
     )
     .sort((left, right) => left.at - right.at)[0];
-  if (next === undefined) return null;
-  return `You'll limit at ${clock(next.at)}, ${duration(next.resetsAt - next.at)} before reset (${clock(next.resetsAt)})`;
+  if (next !== undefined) {
+    return {
+      tone: "short",
+      lead: `Runs out ${clock(next.at)}`,
+      detail: `${duration(next.resetsAt - next.at)} before it resets ${clock(next.resetsAt)}`,
+    };
+  }
+  const binding = bindingOf(plan);
+  if (binding === null || binding.resetsAt === null) return null;
+  const resets = `Resets ${whenAt(binding.resetsAt, now, clock, duration)}`;
+  // Short only for a model's own window, the plan itself has room: its row says so.
+  return binding.left > 10
+    ? { tone: "fine", lead: resets, detail: null }
+    : { tone: "short", lead: `${binding.left}% left`, detail: resets };
+}
+
+/**
+ * A row's when: when the pace runs the window out, if it does before the reset, else when it
+ * resets. `both` says the reset after a run out too, where there is room.
+ */
+export function windowWhen(
+  window: WindowReading,
+  now: number,
+  clock: (at: number) => string,
+  duration: (ms: number) => string,
+  both = false,
+): string {
+  if (window.resetsAt === null) return "";
+  const resets = whenAt(window.resetsAt, now, clock, duration);
+  if (window.runsOutAt === null) return `Resets ${resets}`;
+  const out = `Runs out ${clock(window.runsOutAt)}`;
+  return both ? `${out} · resets ${resets}` : out;
 }

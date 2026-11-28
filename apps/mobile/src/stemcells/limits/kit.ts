@@ -5,13 +5,14 @@
 export {
   bindingOf,
   boardOrder,
-  headlineOf,
   type PlanReading,
   type PlanRow,
   type PlanTone,
   readPlans,
   ringFigure,
   ringPlan,
+  standingOf,
+  windowWhen,
   type WindowReading,
 } from "../../../../web/src/stemcells/limits/plans.ts";
 export { path, SIZE } from "../../../../web/src/stemcells/cell/look.ts";
