@@ -31,8 +31,6 @@ function formedOf(look: CellLook) {
   return { before: empty(first), blocks, hop };
 }
 
-const OUTLINE = { part: "blocks", step: 0 } as const;
-
 /**
  * A Cell's character in its mood. It wears `look` (dealt over the crew in view, `looks.ts`)
  * when given, else the look its name is dealt alone on the day it was first drawn, kept while
@@ -60,8 +58,6 @@ export function CellFigure(props: {
   readonly landedAt?: number | null | undefined;
   /** Its forming as it starts (`forming.ts`): its box empty until the hand-off, then its blocks and its hop. */
   readonly forming?: Forming | undefined;
-  /** Not started yet (a planned row that waits for the person, `rail/Planned.tsx`): it stands as its outline, its first block, and forms on from there once it starts. */
-  readonly outline?: boolean | undefined;
   /** At rest it watches the person's pointer while it is near (`clock.ts`): the Cell over a composer. */
   readonly watches?: boolean | undefined;
 }) {
@@ -71,7 +67,6 @@ export function CellFigure(props: {
   const removed = props.diff?.removed ?? false;
   const landedAt = props.landedAt ?? null;
   const formsAt = props.forming?.at;
-  const outline = props.outline ?? false;
   const watches = props.watches ?? false;
   const [day] = useState(() => dayOf(new Date()));
   useSyncExternalStore(onChosen, chosenVersion);
@@ -96,7 +91,7 @@ export function CellFigure(props: {
     if (landing !== null && rising.current?.landing !== landing)
       rising.current = { landing, from: clockSeconds() };
     const from = landing === null ? undefined : rising.current?.from;
-    const formed = formsAt === undefined && !outline ? undefined : formedOf(look);
+    const formed = formsAt === undefined ? undefined : formedOf(look);
     const stance: Stance = { mood, working: activity !== undefined };
     stand(name, mood, stance.working);
     const before = stood.current?.name === name ? stood.current : undefined;
@@ -115,10 +110,8 @@ export function CellFigure(props: {
         formed === undefined || formsAt === undefined || seconds === undefined
           ? undefined
           : formingPart(Math.floor((seconds - formsAt) * BEAT), formed.hop.length);
-      // An outline holds its first block: before it, its box is the copy's and the glyphs'.
-      const part = !outline ? forms : forms?.part === "empty" ? forms : OUTLINE;
       const played =
-        part === undefined || formed === undefined
+        forms === undefined || formed === undefined
           ? frameFor(
               look,
               {
@@ -131,13 +124,13 @@ export function CellFigure(props: {
               },
               seconds,
             )
-          : part.part === "empty"
+          : forms.part === "empty"
             ? formed.before
-            : part.part === "blocks"
-              ? formed.blocks[part.step]!
-              : formed.hop[part.step]!;
+            : forms.part === "blocks"
+              ? formed.blocks[forms.step]!
+              : formed.hop[forms.step]!;
       const frame =
-        from === undefined || part !== undefined
+        from === undefined || forms !== undefined
           ? played
           : withMarks(
               played,
@@ -157,7 +150,6 @@ export function CellFigure(props: {
     removed,
     landedAt,
     formsAt,
-    outline,
     mood,
     activity,
     name,

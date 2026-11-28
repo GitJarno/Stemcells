@@ -92,7 +92,9 @@ describe("the persona", () => {
   });
 
   it("starts Cells away from Aski's instance, on the driver's own when nothing else is set", () => {
-    expect(persona).toContain(`No Cell ever runs on your own provider instance, ${ASKI_INSTANCE_ID}:`);
+    expect(persona).toContain(
+      `No Cell ever runs on your own provider instance, ${ASKI_INSTANCE_ID}:`,
+    );
     expect(personaFor("codex")).toContain("instanceId codex, with your own model");
     expect(personaFor("claudeAgent")).toContain("instanceId claudeAgent, with your own model");
     expect(personaFor("claudeAgent")).not.toContain("{");

@@ -36,10 +36,11 @@ export function CellMark(props: {
   cell: CellRef | null;
   points?: number;
   stage?: boolean;
-  /** A row's Cell that forms where it stands (`rail/Planned.tsx`), as a stage's does. */
-  forms?: boolean;
-  /** Not started yet: it stands as its outline (`CellFigure`). */
-  outline?: boolean;
+  /**
+   * A row's Cell that forms where it stands (`rail/Planned.tsx`), as a stage's does. A word is
+   * the forming's own key (`cell/forming.ts`): a plan's card forms the same Cell on its own beat.
+   */
+  forms?: boolean | string;
   /** Its provider's driver while its chat isn't known here yet. */
   driver?: string | null | undefined;
 }) {
@@ -58,7 +59,13 @@ export function CellMark(props: {
   const wakesAt = useCellWakesAt(props.cell);
   const { strength, flexes, diff } = useCellLanding(props.cell);
   const look = useRosterLook(props.cell?.threadId);
-  const forming = useForming(props.stage || props.forms ? props.cell?.threadId : undefined);
+  const forming = useForming(
+    typeof props.forms === "string"
+      ? props.forms
+      : props.stage || props.forms
+        ? props.cell?.threadId
+        : undefined,
+  );
   const modelled = useCellModelOn() && props.stage === true;
   const [now, setNow] = useState(Date.now);
   const turnsAt = moodTurnsAt(status, landedAt, now, wakesAt);
@@ -103,7 +110,6 @@ export function CellMark(props: {
           diff={diff}
           landedAt={landedAt}
           forming={forming}
-          outline={props.outline}
           watches={props.stage}
         />
       )}

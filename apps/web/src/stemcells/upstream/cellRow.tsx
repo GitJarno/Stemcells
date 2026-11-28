@@ -17,7 +17,7 @@ import type { ReactElement, ReactNode } from "react";
 import { ThreadHoverCard, ThreadHoverCardPopup } from "../../components/ThreadHoverCard";
 import { ThreadPullRequestsMiniList } from "../../components/ThreadStatusIndicators";
 import { MiddleTruncate } from "../../components/ui/middle-truncate";
-import { Tooltip, TooltipPopup, TooltipTrigger } from "../../components/ui/tooltip";
+import { Tooltip, TooltipTrigger } from "../../components/ui/tooltip";
 import { useNowMinute } from "../../hooks/useNowMinute";
 import { useSupportsMultiplePullRequests } from "../../hooks/useSupportsMultiplePullRequests";
 import { useProject, useQuietThreadShell } from "../../state/entities";
@@ -117,8 +117,6 @@ export function CellProjectMarkOf(props: {
 export function CellCard(props: {
   shell: CellShell | null;
   line: string | null;
-  /** What a row without a chat says when pointed at: a planned row that waits for the person. */
-  note?: string | null;
   trigger: ReactElement;
   children: ReactNode;
 }) {
@@ -126,13 +124,7 @@ export function CellCard(props: {
   return (
     <Tooltip>
       <TooltipTrigger render={props.trigger}>{props.children}</TooltipTrigger>
-      {shell !== null ? (
-        <CellCardPopup shell={shell} line={props.line} />
-      ) : props.note ? (
-        <TooltipPopup side="right" align="start" sideOffset={4}>
-          {props.note}
-        </TooltipPopup>
-      ) : null}
+      {shell === null ? null : <CellCardPopup shell={shell} line={props.line} />}
     </Tooltip>
   );
 }

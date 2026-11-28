@@ -66,7 +66,7 @@ export function beginPlan(id: string, chat: string, at: number, text = ""): void
   ]);
 }
 
-/** The plan came: its Start tier is on its way, the rest waits. A plan of only talk leaves. */
+/** The plan came: every Cell of it waits for the person's Send. A plan of only talk leaves. */
 export function planRead(id: string, plan: Plan | null): void {
   const live = planOf(id);
   if (live === null || !live.reading) return;

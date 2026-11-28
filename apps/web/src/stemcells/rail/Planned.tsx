@@ -12,23 +12,11 @@ import {
   DECODE_STEPS,
   decodeAt,
 } from "../../../../../stemcells/aski/arrivals.ts";
-import type { Planned } from "../../../../../stemcells/aski/planned.ts";
-import { UNSURE_WORDS } from "../../../../../stemcells/words/planned.ts";
 import { cellNameOf } from "../cell/name";
 import { cssEasing, LIST_MOTION } from "../motion/listMotion";
 import { reducedMotion } from "../tokens/motion";
 import { glyphsIn } from "../words/spawn/play";
 import type { Arrival } from "./arrivals";
-
-/** The mark of the field a check row is unsure of. */
-export function Unsure(props: { row: Planned; field: NonNullable<Planned["unsure"]> }) {
-  if (props.row.tier !== "check" || props.row.unsure !== props.field) return null;
-  return (
-    <span data-cells-unsure="" role="img" aria-label={UNSURE_WORDS[props.field]}>
-      ?
-    </span>
-  );
-}
 
 /** A planned row's name and its model, between its project's mark and its title. */
 export function BirthWords(props: { arrival: Arrival }) {
@@ -48,7 +36,6 @@ export function BirthWords(props: { arrival: Arrival }) {
               {effort}
             </span>
           )}
-          <Unsure row={row} field="model" />
         </span>
       )}
     </span>

@@ -1,34 +1,25 @@
 /**
- * One plan, as the person reads it (stemcells/tasks/aski-orchestrator.md, decisions 4, 7, 15 and
- * 16): a row per Cell with its name, project, model and words. A row that waits says why and takes
- * one tap; one that started reads its Cell as Awake does; a queued one says whom it comes after.
- * A deletion takes a hand held on its own button, and nothing else does it.
+ * One plan, as the person reads it (stemcells/tasks/aski-orchestrator.md, decisions 4, 7, 15, 16
+ * and 18): a row per Cell (`PlanRow.tsx`), which is a task until the plan is sent. Nothing of it
+ * starts before the person's Send, at the card's foot: there they look, change and switch off
+ * first. A deletion takes a hand held on its own button, and nothing else does it.
  */
-import { type CSSProperties, type ReactNode, use, useEffect, useRef, useState } from "react";
+import { type CSSProperties, use, useEffect, useRef, useState } from "react";
 
-import type {
-  DestroyAct,
-  RiskMark,
-  StartAct,
-} from "../../../../../../stemcells/orchestrator/plan.ts";
+import type { DestroyAct } from "../../../../../../stemcells/orchestrator/plan.ts";
 import { type CellSeen, flyingOf, rowSays } from "../../../../../../stemcells/orchestrator/rows.ts";
 import {
-  CALL_BACK_MS,
   canDestroy,
-  canStart,
   comesAfter,
   counts,
   held,
-  setModel,
-  setNewName,
-  setPlace,
+  onOf,
   type Tray,
   type TrayAct,
+  unsendable,
 } from "../../../../../../stemcells/orchestrator/tray.ts";
-import { cellNameOf } from "../../../../../../stemcells/words/cellNames.ts";
 import {
-  CALL_BACK,
-  DEFAULT_MODEL,
+  CANCEL,
   DICTATED,
   DROP,
   FLOOR_LINE,
@@ -40,22 +31,19 @@ import {
   holdLine,
   holdStays,
   LEFT_OVER,
-  OWN_WORKTREE,
-  placeLabel,
-  START,
-  START_ALL,
-  START_NOW,
-  whyLines,
+  SEND,
+  SEND_WAITS,
 } from "../../../../../../stemcells/words/plans.ts";
 import { useNeeds } from "../../needs/stream";
-import { useOpenFromNeeds } from "../../upstream/needs";
+import { useOwnWorktree, usePlanRows } from "../../upstream/askiPlans";
+import { useNowMinuteMs } from "../../upstream/needs";
 import { Button } from "../../upstream/ui";
-import { useOwnWorktree, usePlanPlaces } from "../../upstream/askiPlans";
-import { useWordsCatalog } from "../../upstream/words";
+import { PlanRow } from "./PlanRow";
 import { runner } from "./PlanRunner";
 import { PlanRoom } from "./room";
-import { changePlan, leavePlan, type LivePlan } from "./store";
+import { leavePlan, type LivePlan } from "./store";
 
+import "../../rail/cells.css";
 import "./plan.css";
 
 export function PlanCard(props: { live: LivePlan }) {
@@ -76,9 +64,11 @@ function Plan(props: { live: LivePlan; tray: Tray }) {
   const { waiting, queued } = counts(tray);
   // Each Cell as the needs list has it, which Awake reads too: a row says what its Cell's row says.
   const { cells: standings } = useNeeds();
+  const standingOf = (threadId: string) =>
+    standings?.find((cell) => cell.threadId === threadId) ?? null;
   const seenOf = (threadId: string): CellSeen | null => {
-    const standing = standings?.find((cell) => cell.threadId === threadId);
-    return standing === undefined
+    const standing = standingOf(threadId);
+    return standing === null
       ? null
       : {
           stage: standing.stage,
@@ -87,53 +77,51 @@ function Plan(props: { live: LivePlan; tray: Tray }) {
         };
   };
   const flying = flyingOf(tray, seenOf);
-  const ownWorktree = useOwnWorktree(use(PlanRoom));
+  const aski = use(PlanRoom);
+  const ownWorktree = useOwnWorktree(aski);
+  const rows = usePlanRows(aski);
+  const now = useNowMinuteMs();
   const cells = tray.acts.filter(
     (one) => one.act.kind === "start" && one.status !== "dropped" && one.status !== "called-back",
   ).length;
+  const off = tray.acts.filter((one) => one.off === true).length;
   const holding = held(tray);
-  const startable = tray.acts.filter(
-    (one) => one.status === "waiting" && one.act.kind === "start" && canStart(one.act),
-  ).length;
   const leftOver = plan.leftOver
     .map((n) => plan.pieces.find((piece) => piece.n === n)?.text ?? "")
     .filter((text) => text.length > 0);
+  // The foot stands while a Cell waits for Send. Sent, it folds away as it read at that moment.
+  const [foot, setFoot] = useState(waiting > 0 ? tray : null);
+  if (waiting > 0 && foot !== tray) setFoot(tray);
   return (
     <section data-aski-plan="" data-source={live.source} aria-label="Aski's plan">
       <header data-plan-head="">
         <span data-plan-headline="" aria-live="polite">
-          {plan.from === "floor" ? FLOOR_LINE : headline(cells, flying, waiting, false, queued)}
+          {plan.from === "floor" ? FLOOR_LINE : headline(cells, flying, off, false, queued)}
         </span>
         {plan.dictated ? <span data-plan-chip="">{DICTATED}</span> : null}
-        <span data-plan-head-actions="">
-          {startable > 1 && !holding ? (
-            <Button size="compact" onClick={() => runner.confirmAll(live.id)}>
-              {START_ALL}
-            </Button>
-          ) : null}
-          {live.source === "message" ? (
+        {/* With nothing left to send, a card that stays over the composer (a Cell didn't start) can still be put away. */}
+        {live.source === "message" && foot === null ? (
+          <span data-plan-head-actions="">
             <Button
               size="compact"
               variant="ghost-muted"
               aria-label="Close the plan"
-              onClick={() => {
-                runner.dropAll(live.id);
-                leavePlan(live.id);
-              }}
+              onClick={() => leavePlan(live.id)}
             >
               ×
             </Button>
-          ) : null}
-        </span>
+          </span>
+        ) : null}
       </header>
       <ol data-plan-rows="">
         {tray.acts.map((one, index) =>
           one.act.kind === "destroy" ? (
             <HoldRow key={one.act.i} planId={live.id} one={one} act={one.act} />
           ) : (
-            <CellRow
+            <PlanRow
               key={one.act.i}
               planId={live.id}
+              environmentId={aski?.environmentId ?? ""}
               one={one}
               act={one.act}
               index={index}
@@ -147,255 +135,77 @@ function Plan(props: { live: LivePlan; tray: Tray }) {
                 !comesAfter(one.act) &&
                 ownWorktree(one.act)
               }
+              standing={one.status === "started" ? standingOf(one.act.threadId) : null}
+              now={now}
+              rows={rows}
             />
           ),
         )}
       </ol>
       {leftOver.length > 0 ? <p data-plan-note="">{LEFT_OVER(leftOver.join(" … "))}</p> : null}
+      {foot === null ? null : (
+        <Foot live={live} tray={foot} leaving={waiting === 0} onGone={() => setFoot(null)} />
+      )}
     </section>
   );
 }
 
-/** A Cell's words, with what can't be taken back marked. */
-function Words(props: { words: string; risks: readonly RiskMark[] }) {
-  const parts: ReactNode[] = [];
-  let from = 0;
-  for (const risk of props.risks.toSorted((a, b) => a.start - b.start)) {
-    if (risk.start < from) continue;
-    parts.push(props.words.slice(from, risk.start));
-    parts.push(
-      <mark key={risk.start} data-plan-risk="">
-        {props.words.slice(risk.start, risk.end)}
-      </mark>,
-    );
-    from = risk.end;
-  }
-  parts.push(props.words.slice(from));
-  return <p data-plan-words="">{parts}</p>;
-}
-
-function CellRow(props: {
-  planId: string;
-  one: TrayAct;
-  act: StartAct;
-  index: number;
-  holding: boolean;
-  says: ReturnType<typeof rowSays>;
-  /** Not yet a Cell, and it will be given a worktree of its own. */
-  apart: boolean;
-}) {
-  const { planId, one, act, says } = props;
-  const open = useOpenFromNeeds();
-  const waiting = one.status === "waiting";
-  const [whole, setWhole] = useState(false);
-  const why = whyLines(act, props.holding);
-  const model = act.model;
-  const effort = model?.effort?.level ?? act.effort;
+/**
+ * The plan's one yes: Cancel, and Send with how many Cells it starts, at the right. All or
+ * nothing: while it can't go, it says why beside it. Enter in the empty composer is the same
+ * Send for a message's own plan (`AskiPlans.tsx`); a plan Aski proposed is sent only from here.
+ */
+function Foot(props: { live: LivePlan; tray: Tray; leaving: boolean; onGone: () => void }) {
+  const { live, tray, leaving } = props;
+  const waits = unsendable(tray);
+  const why =
+    waits === "held"
+      ? SEND_WAITS.held
+      : waits === null || waits === "nothing"
+        ? null
+        : SEND_WAITS.place;
   return (
-    <li
-      data-plan-row=""
-      data-status={one.status}
-      style={{ "--plan-row": props.index } as CSSProperties}
+    <footer
+      data-plan-foot=""
+      data-leaving={leaving ? "" : undefined}
+      inert={leaving}
+      onAnimationEnd={(event) => {
+        if (leaving && event.target === event.currentTarget) props.onGone();
+      }}
     >
-      <div data-plan-line="">
-        <button
-          type="button"
-          data-plan-cell=""
-          disabled={one.status !== "started"}
-          onClick={() => open.chat(act.threadId)}
-        >
-          {cellNameOf(act.threadId)}
-        </button>
-        {waiting ? null : (
-          <span data-plan-meta="">
-            {[placeLabel(act), model?.name, effort, props.apart ? OWN_WORKTREE : null]
-              .filter(Boolean)
-              .join(" · ")}
-          </span>
-        )}
-        <button
-          type="button"
-          data-plan-title=""
-          aria-expanded={whole || waiting}
-          onClick={() => setWhole(!whole)}
-        >
-          {act.title}
-        </button>
-        <span data-plan-actions="">
-          {waiting ? (
-            <>
-              <Button
-                size="compact"
-                disabled={props.holding || !canStart(act)}
-                onClick={() => runner.confirm(planId, act.i)}
-              >
-                {START}
-              </Button>
-              <Button
-                size="compact"
-                variant="ghost-muted"
-                onClick={() => runner.drop(planId, act.i)}
-              >
-                {DROP}
-              </Button>
-            </>
-          ) : one.status === "started" && one.startedAt !== undefined ? (
-            <CallBack planId={planId} i={act.i} startedAt={one.startedAt} />
-          ) : null}
-          {says.word === "" || one.status === "queued" ? null : (
-            <span data-plan-status="">{says.word}</span>
-          )}
+      {why === null ? null : (
+        <span data-plan-foot-why="" role="status">
+          {why}
         </span>
-      </div>
-      {waiting ? (
-        <div data-plan-check="">
-          {why.length > 0 ? <span data-plan-why="">{why.join(" · ")}</span> : null}
-          <Pickers planId={planId} act={act} />
-          {props.apart ? <span data-plan-meta="">{OWN_WORKTREE}</span> : null}
-        </div>
-      ) : null}
-      {one.status === "queued" ? (
-        // A line of its own, so the title keeps its room. Waiting its turn is the plan as said:
-        // starting now is the quieter choice.
-        <div data-plan-check="">
-          <span data-plan-status="">{says.word}</span>
-          <span data-plan-actions="">
-            <Button
-              size="compact"
-              variant="outline"
-              disabled={props.holding}
-              onClick={() => runner.startNow(planId, act.i)}
-            >
-              {START_NOW}
-            </Button>
-            <Button size="compact" variant="ghost-muted" onClick={() => runner.drop(planId, act.i)}>
-              {DROP}
-            </Button>
-          </span>
-        </div>
-      ) : null}
-      {says.line === null ? null : <p data-plan-said="">{says.line}</p>}
-      {says.stuck === null ? null : <p data-plan-stuck="">{says.stuck}</p>}
-      {one.status === "failed" ? (
-        <p data-plan-failed="">{one.reason ?? "It didn't start."}</p>
-      ) : null}
-      {waiting || whole ? <Words words={act.words} risks={act.risks} /> : null}
-    </li>
-  );
-}
-
-/** A waiting Cell's project and model, as the person can still change them. */
-function Pickers(props: { planId: string; act: StartAct }) {
-  const { planId, act } = props;
-  const aski = use(PlanRoom);
-  const { places } = usePlanPlaces();
-  const { catalog, ready } = useWordsCatalog(aski?.environmentId ?? null);
-  const place = act.place;
-  // A plan Aski's chat proposed names its project and model itself: they stand as they are.
-  if (act.selection !== undefined || place?.projectId !== undefined)
-    return (
-      <span data-plan-meta="">
-        {[placeLabel(act), act.selection?.model].filter(Boolean).join(" · ")}
-      </span>
-    );
-  const models = catalog.providers
-    .filter((provider) => ready.has(provider.id))
-    .flatMap((provider) => provider.models.map((model) => ({ provider, model })));
-  const modelKey = act.model === null ? "" : `${act.model.instanceId}\u0000${act.model.id}`;
-  return (
-    <span data-plan-pickers="">
-      {place?.how === "new" ? (
-        <input
-          data-plan-pick=""
-          aria-label="The new project's name"
-          defaultValue={place.name}
-          onChange={(event) =>
-            changePlan(planId, (tray) => setNewName(tray, act.i, event.target.value))
-          }
-        />
-      ) : (
-        <select
-          data-plan-pick=""
-          data-unsure={place === null || place.how !== "exact" ? "" : undefined}
-          aria-label="Project"
-          value={place?.id ?? ""}
-          onChange={(event) => {
-            const picked = places.find((each) => each.id === event.target.value);
-            if (picked) changePlan(planId, (tray) => setPlace(tray, act.i, picked));
+      )}
+      {/* A plan Aski proposed stands in its reply: there is nothing of it to put away. */}
+      {live.source === "proposed" ? null : (
+        <Button
+          size="compact"
+          variant="ghost-muted"
+          onClick={() => {
+            runner.dropAll(live.id);
+            leavePlan(live.id);
           }}
         >
-          {place === null ? <option value="">Which project?</option> : null}
-          {places.map((each) => (
-            <option key={each.id} value={each.id}>
-              {each.name}
-            </option>
-          ))}
-        </select>
+          {CANCEL}
+        </Button>
       )}
-      <select
-        data-plan-pick=""
-        data-unsure={act.model?.how === "near" ? "" : undefined}
-        aria-label="Model"
-        value={modelKey}
-        onChange={(event) => {
-          const picked = models.find(
-            ({ provider, model }) => `${provider.id}\u0000${model.id}` === event.target.value,
-          );
-          changePlan(planId, (tray) =>
-            setModel(
-              tray,
-              act.i,
-              picked === undefined
-                ? null
-                : {
-                    instanceId: picked.provider.id,
-                    id: picked.model.id,
-                    name: picked.model.name,
-                    effort: null,
-                  },
-            ),
-          );
-        }}
-      >
-        <option value="">{DEFAULT_MODEL}</option>
-        {models.map(({ provider, model }) => (
-          <option key={`${provider.id}\u0000${model.id}`} value={`${provider.id}\u0000${model.id}`}>
-            {model.name}
-          </option>
-        ))}
-      </select>
-      {act.model?.effort || act.effort ? (
-        <span data-plan-meta="">{act.model?.effort?.level ?? act.effort}</span>
-      ) : null}
-    </span>
-  );
-}
-
-/** For ten seconds after a Cell starts, one tap stops and archives it. */
-function CallBack(props: { planId: string; i: number; startedAt: number }) {
-  const left = () => props.startedAt + CALL_BACK_MS - Date.now();
-  const [open, setOpen] = useState(() => left() > 0);
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Take the button away when the Cell's call-back time ends, and clear the timer on unmount.
-  useEffect(() => {
-    if (!open) return;
-    const timer = setTimeout(() => setOpen(false), Math.max(0, left()));
-    return () => clearTimeout(timer);
-  });
-  if (!open) return null;
-  return (
-    <Button
-      size="compact"
-      variant="ghost-muted"
-      onClick={() => void runner.callBack(props.planId, props.i)}
-    >
-      {CALL_BACK}
-    </Button>
+      <Button size="compact" disabled={waits !== null} onClick={() => runner.send(live.id)}>
+        {SEND(onOf(tray).length)}
+        {live.source === "message" ? (
+          <kbd data-plan-key="" aria-hidden>
+            ⏎
+          </kbd>
+        ) : null}
+      </Button>
+    </footer>
   );
 }
 
 /**
  * A deletion. It names the thing as the app writes it, says what stays, and is carried out only
- * by a pointer or a key held on its button for `HOLD_MS`: no Enter, no "Start all", no message.
+ * by a pointer or a key held on its button for `HOLD_MS`: no Enter, no Send, no message.
  */
 function HoldRow(props: { planId: string; one: TrayAct; act: DestroyAct }) {
   const { planId, one, act } = props;
@@ -420,7 +230,7 @@ function HoldRow(props: { planId: string; one: TrayAct; act: DestroyAct }) {
   const waiting = one.status === "waiting";
   return (
     <li data-plan-row="" data-plan-hold="" data-status={one.status}>
-      <div data-plan-line="">
+      <div data-plan-hold-line="">
         <strong data-plan-hold-what="">{holdLine(act)}</strong>
         <span data-plan-actions="">
           {waiting && known ? (
