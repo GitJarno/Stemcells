@@ -41,6 +41,8 @@ export interface Hands {
     planId: string,
     act: StartAct,
     projectId: string,
+    /** Start it at once, though the Cells it comes after haven't landed. */
+    now: boolean,
   ) => Promise<Went>;
   /** Whether `act`'s Cell works in a worktree of its own: the person's word, else the project's default. */
   readonly wantsWorktree: (environmentId: string, act: StartAct, projectId: string) => boolean;
@@ -137,8 +139,9 @@ export function carry(trays: Trays, hands: Hands): Carrier {
     const fail = (reason: string) => trays.change(id, (tray) => failed(tray, act.i, reason));
     const project = await projectOf(entry, act);
     if (!project.ok) return fail(project.reason);
-    // The server starts nothing queued behind others at once: Start now is the phone's own start.
-    const apart = !comesAfter(act) && hands.wantsWorktree(environmentId, act, project.projectId);
+    // A worktree is the server's to give, and so is the worktree of the Cell this one comes
+    // after: the server starts both kinds, the second at once on the person's "Start now".
+    const apart = comesAfter(act) || hands.wantsWorktree(environmentId, act, project.projectId);
     if (!apart) {
       // The phone's own to start, and so to tell of.
       serverStarts.delete(key);
@@ -147,7 +150,7 @@ export function carry(trays: Trays, hands: Hands): Carrier {
     }
     const went = await (
       apart
-        ? hands.queue(environmentId, id, act, project.projectId)
+        ? hands.queue(environmentId, id, act, project.projectId, comesAfter(act))
         : hands.start(environmentId, act, project.projectId)
     ).catch((): Went => ({ ok: false, reason: "The Cell didn’t start." }));
     serverStarts.delete(key);
@@ -161,7 +164,7 @@ export function carry(trays: Trays, hands: Hands): Carrier {
     const project = await projectOf(entry, act);
     if (!project.ok) return fail(project.reason);
     const went = await hands
-      .queue(environmentId, id, act, project.projectId)
+      .queue(environmentId, id, act, project.projectId, false)
       .catch((): Went => ({ ok: false, reason: "The Cell couldn’t be queued." }));
     if (!went.ok) fail(went.reason);
   };

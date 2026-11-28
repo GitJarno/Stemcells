@@ -8,7 +8,7 @@ import {
   type StartAct,
   type Why,
 } from "../../../../../../stemcells/orchestrator/plan.ts";
-import type { CellSeen } from "../../../../../../stemcells/orchestrator/rows.ts";
+import { type CellSeen, flyingOf } from "../../../../../../stemcells/orchestrator/rows.ts";
 import {
   beforeOf,
   canStart,
@@ -140,7 +140,11 @@ export function messageSpans(act: Pick<StartAct, "words" | "note" | "risks">): M
 }
 
 /** A plan's headline and what its header offers. */
-export function headOf(tray: Tray): {
+export function headOf(
+  tray: Tray,
+  /** Each Cell as the machine reads it, so a Cell that landed or asks no longer counts as flying. */
+  seenOf: (threadId: string) => CellSeen | null = () => null,
+): {
   /** Null for a plan with no Cell: a deletion alone says what it is. */
   readonly line: string | null;
   /** Several Cells wait and can start: one tap starts them. */
@@ -151,7 +155,8 @@ export function headOf(tray: Tray): {
   const cells = starts.filter(
     (one) => one.status !== "dropped" && one.status !== "called-back",
   ).length;
-  const { flying, waiting, queued } = counts(tray);
+  const { waiting, queued } = counts(tray);
+  const flying = flyingOf(tray, seenOf);
   const startable = starts.filter(
     (one) => one.act.kind === "start" && one.status === "waiting" && canStart(one.act),
   ).length;

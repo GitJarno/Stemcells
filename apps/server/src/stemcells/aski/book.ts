@@ -263,8 +263,11 @@ export function unexpectPlan(id: string): void {
 
 export const planOfId = (id: string): BookEntry | null => entries.get(id) ?? null;
 
-/** What came of a plan, as its client tells it; later tellings replace earlier ones, act by act. */
-export function settlePlan(id: string, acts: ReadonlyArray<ActOutcome>): boolean {
+/**
+ * What came of a plan, as its client tells it; later tellings replace earlier ones, act by act.
+ * `byLine` is the server's own word for a Cell it started or couldn't, which nothing overrules.
+ */
+export function settlePlan(id: string, acts: ReadonlyArray<ActOutcome>, byLine = false): boolean {
   const entry = entries.get(id);
   if (entry === undefined) return false;
   const known = new Set(entry.plan.acts.map((act) => act.i));
@@ -273,8 +276,16 @@ export function settlePlan(id: string, acts: ReadonlyArray<ActOutcome>): boolean
     if (!known.has(act.i)) continue;
     // A client's "queued" is its own view: it never undoes what the server already did with the act.
     const now = merged.get(act.i)?.status;
-    if (act.status === "queued" && now !== undefined && now !== "waiting" && now !== "queued")
+    if (
+      !byLine &&
+      act.status === "queued" &&
+      now !== undefined &&
+      now !== "waiting" &&
+      now !== "queued"
+    )
       continue;
+    // Nor does its "started" take a Cell out of the server's hands before the server started it.
+    if (!byLine && act.status === "started" && entry.launches?.[act.i] !== undefined) continue;
     merged.set(act.i, act);
   }
   const outcome = [...merged.values()].sort((a, b) => a.i - b.i);

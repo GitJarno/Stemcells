@@ -136,7 +136,7 @@ export function PlanPanel(props: {
         : (place.projectId ?? (place.id === null ? null : placeOfKey(place.id)?.projectId));
     return getsWorktree(tray, one.act, projectId == null ? false : startsApart(projectId));
   };
-  const head = headOf(tray);
+  const head = headOf(tray, seenOf);
   const back = new Set(callable(tray, now).map((one) => one.act.i));
   const blocked = held(tray);
   const leftOver = tray.plan.leftOver

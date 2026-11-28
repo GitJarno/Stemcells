@@ -84,10 +84,22 @@ describe("a queued Cell", () => {
     expect(due()).toEqual(["start"]);
   });
 
-  it("starts once: told as started, it is no longer the server's", () => {
+  it("stays the server's to start until the server says it started, whatever a client tells", () => {
     queueAct("p1", 1, launch(1_000));
     stands("thread-0", landed);
+    // A client that thinks it started (its tell crossing the hand-over) takes nothing away.
     settlePlan("p1", [{ i: 1, status: "started" }]);
+    expect(due()).toEqual(["start"]);
+    settlePlan("p1", [{ i: 1, status: "started" }], true);
+    expect(due()).toEqual([]);
+    queueAct("p1", 1, launch(1_000));
+    expect(planOfId("p1")?.launches).toEqual({});
+  });
+
+  it("leaves the line when the person drops it", () => {
+    queueAct("p1", 1, launch(1_000));
+    stands("thread-0", landed);
+    settlePlan("p1", [{ i: 1, status: "dropped" }]);
     expect(due()).toEqual([]);
     expect(planOfId("p1")?.launches).toEqual({});
   });

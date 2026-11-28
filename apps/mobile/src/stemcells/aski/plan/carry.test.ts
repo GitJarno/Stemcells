@@ -60,8 +60,8 @@ function world() {
     for (const run of watchers) run();
   };
   const hands: Hands = {
-    queue: async (_environmentId, planId, act, projectId) => {
-      log.push(`queue ${act.threadId} of ${planId} in ${projectId}`);
+    queue: async (_environmentId, planId, act, projectId, now) => {
+      log.push(`queue ${act.threadId} of ${planId} in ${projectId}${now ? " now" : ""}`);
       return { ok: true };
     },
     wantsWorktree: (_environmentId, act) => act.apart === true,
@@ -343,16 +343,18 @@ describe("carrying a plan out", () => {
     slow.stop();
   });
 
-  it("starts a queued Cell here when the person won't wait, worktree or not", async () => {
+  it("has the server start a queued Cell at once when the person won't wait, where the Cell before it works", async () => {
     const w = world();
     w.trays.reading("plan-1", "mac", "aski-chat");
-    w.trays.arrived("plan-1", planOf([start(0), start(1, { after: [0], apart: true })]));
+    w.trays.arrived("plan-1", planOf([start(0), start(1, { after: [0] })]));
     await w.until("started", "queued");
     w.carrier.startNow("plan-1", 1);
     await w.until("started", "started");
-    // The server starts nothing queued behind others at once: its queue isn't asked again.
-    expect(w.log.filter((line) => line.startsWith("queue"))).toHaveLength(1);
-    expect(w.log.at(-1)).toBe("start thread-1 in p-harbor");
+    // The phone starts nothing itself: the server knows the worktree of the Cell before it.
+    expect(w.log.filter((line) => line.startsWith("start"))).toEqual([
+      "start thread-0 in p-harbor",
+    ]);
+    expect(w.log.at(-1)).toBe("queue thread-1 of plan-1 in p-harbor now");
     w.advance(200);
     expect(w.told.at(-1)?.acts).toEqual([
       { i: 0, status: "started" },

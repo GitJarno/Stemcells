@@ -99,6 +99,8 @@ export const layer = Layer.effect(
           ? { worktreePath: where.worktreePath, branch: where.branch }
           : null;
       const sameFolder = where !== null && where.projectId === launch.projectId;
+      // In that Cell's project it follows that Cell: a worktree of its own only on the person's word.
+      const worktree = sameFolder ? act.apart === true : launch.worktree;
       const started = yield* PlanStart.start({
         commandId: `stemcells-plan:${due.id}:${act.i}`,
         threadId: act.threadId,
@@ -109,21 +111,25 @@ export const layer = Layer.effect(
             ? messageOf(act)
             : `${messageOf(act)}\n\n${afterNote(before, sameFolder)}`,
         launch,
-        worktree: launch.worktree,
+        worktree,
         beside,
       });
-      settlePlan(due.id, [
-        started.ok
-          ? { i: act.i, status: "started" }
-          : { i: act.i, status: "failed", reason: started.reason },
-      ]);
+      settlePlan(
+        due.id,
+        [
+          started.ok
+            ? { i: act.i, status: "started" }
+            : { i: act.i, status: "failed", reason: started.reason },
+        ],
+        true,
+      );
     });
     const walking = yield* Semaphore.make(1);
     // One walk at a time: a Cell told as started is no longer due in the next.
     const walk = Effect.gen(function* () {
       for (const due of dueOf(keptBook(), standingOf, yield* Clock.currentTimeMillis)) {
         if (due.kind === "expire")
-          settlePlan(due.id, [{ i: due.i, status: "dropped", reason: "It waited a day." }]);
+          settlePlan(due.id, [{ i: due.i, status: "dropped", reason: "It waited a day." }], true);
         else yield* startDue(due);
       }
     }).pipe(

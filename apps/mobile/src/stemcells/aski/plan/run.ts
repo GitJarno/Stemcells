@@ -173,13 +173,17 @@ const hands: Hands = {
     });
     return launch.ok ? startCell(environmentId, launch.input) : launch;
   },
-  queue: async (environmentId, planId, act, projectId) => {
+  queue: async (environmentId, planId, act, projectId, now) => {
     if (cellExists(environmentId, act.threadId)) return { ok: true };
     const setup = setupOf(environmentId, projectId);
     if (setup === null) return GONE;
     const handed = queueOf(planId, act, setup);
     if (!handed.ok) return handed;
-    const answer = await post(environmentId, QUEUE_PATH, handed.request);
+    const answer = await post(
+      environmentId,
+      QUEUE_PATH,
+      now ? { ...handed.request, now: true } : handed.request,
+    );
     if (answer === null) return { ok: false, reason: "That machine can’t be reached from here." };
     const reply = (await answer.json().catch(() => null)) as QueueReply | null;
     if (reply?.ok === true) return { ok: true };
