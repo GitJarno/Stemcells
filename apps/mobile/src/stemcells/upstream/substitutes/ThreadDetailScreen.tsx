@@ -1,7 +1,7 @@
 // Replaces `features/threads/ThreadDetailScreen.tsx` (`substitutes.cjs`): keeps the chats just
 // left mounted behind the one in front (`chat/warm.ts`), tells each to its words, its feed's end
 // and its pictures' viewer, closes on return to a Cell settled elsewhere, and in Aski's chat puts
-// the Cells a question found under it (`recall/recall.ts`).
+// under a message the Cells it found (`recall/recall.ts`) and its plan (`aski/plan/usePlanFeed.ts`).
 import { Activity, memo, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { View } from "react-native";
 
@@ -9,6 +9,7 @@ import {
   ThreadDetailScreen as UpstreamThreadDetailScreen,
   type ThreadDetailScreenProps,
 } from "../../../features/threads/ThreadDetailScreen";
+import { usePlanFeed } from "../../aski/plan/usePlanFeed";
 import { arrivesNow } from "../../aski/turning";
 import { useIsAskiChat } from "../../aski/useAskiChat";
 import { ChatGallery } from "../../chat/ChatGallery";
@@ -92,10 +93,12 @@ const Chat = memo(function Chat(props: ThreadDetailScreenProps) {
     threadId: props.selectedThread.id,
   };
   useClosesOnReturn(chat);
-  const feed = useRecallFeed(
-    props.selectedThreadFeed,
+  const aski = useIsAskiChat(chat.threadId);
+  const feed = usePlanFeed(
+    useRecallFeed(props.selectedThreadFeed, chat.environmentId, aski),
     chat.environmentId,
-    useIsAskiChat(chat.threadId),
+    chat.threadId,
+    aski,
   );
   return (
     <ChatInView value={chat}>

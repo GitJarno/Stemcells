@@ -7,7 +7,7 @@ import {
 } from "../../../../../../stemcells/orchestrator/plan.ts";
 import { confirm, done, held, trayOf } from "../../../../../../stemcells/orchestrator/tray.ts";
 import { proposed } from "./proposed.fixture";
-import { headOf, messageSpans, modelLine, whyLines } from "./view";
+import { getsWorktree, headOf, messageSpans, modelLine, whyLines } from "./view";
 
 describe("what a plan's rows say", () => {
   it("shows every word of a Cell's message, the risky phrase apart and the note plain", () => {
@@ -103,5 +103,30 @@ describe("what a plan's rows say", () => {
     expect(headOf(tray).line).toBe("1 Cell · 1 waiting on you");
     expect(whyLines(cell, held(tray))).toHaveLength(1);
     expect(whyLines(cell, held(done(tray, 1)))).toEqual([]);
+  });
+
+  it("counts a queued Cell in the headline, and marks a worktree of its own only where it gets one", () => {
+    const plan = proposed("plan-12345678", [
+      { projectId: "p-harbor", projectName: "Harbor", title: "a", words: "do a" },
+      { projectId: "p-harbor", projectName: "Harbor", title: "b", words: "do b" },
+      { projectId: "p-atlas", projectName: "Atlas", title: "c", words: "do c" },
+    ]);
+    const [first, second, third] = (plan.acts as StartAct[]).map((act): StartAct => ({
+      ...act,
+      tier: "start",
+      why: [],
+    }));
+    const tray = trayOf({
+      ...plan,
+      acts: [first!, { ...second!, after: [0] }, { ...third!, after: [0], apart: true }],
+    });
+    expect(headOf(tray).line).toBe("3 Cells · 1 flying · 2 queued");
+    // The project's default gives the first a worktree; the person's word can take it away.
+    expect(getsWorktree(tray, first!, true)).toBe(true);
+    expect(getsWorktree(tray, { ...first!, apart: false }, true)).toBe(false);
+    // After a Cell of its own project it works where that one did; in another, apart.
+    expect(getsWorktree(tray, tray.acts[1]!.act as StartAct, true)).toBe(false);
+    expect(getsWorktree(tray, tray.acts[2]!.act as StartAct, false)).toBe(true);
+    expect(modelLine(first!, [], true).text).toBe("Default model · own worktree");
   });
 });

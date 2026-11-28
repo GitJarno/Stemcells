@@ -1,12 +1,13 @@
-// A plan's rows (stemcells/tasks/aski-orchestrator.md, decisions 4, 5 and 12), the same over
-// Aski's composer and in a ```plan fence. A Cell's row says its name, model, project and title;
-// one that waits says why, marks the field Aski was unsure of, and opens to every word the Cell
-// will be told. A deletion is a card of its own (`HoldCard.tsx`).
+// A plan's rows (stemcells/tasks/aski-orchestrator.md, decisions 4, 5, 12, 15, 16), the same over
+// Aski's composer and in a ```plan fence. A Cell that waits says why and marks the field Aski
+// was unsure of; one that started reads as its Cell stands; a queued one says whom it comes
+// after. Each opens to the words its Cell is told. A deletion is a card of its own (`HoldCard.tsx`).
 
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { Pressable, View } from "react-native";
 
 import type { ModelEntry, PlaceEntry } from "../../../../../../stemcells/orchestrator/plan.ts";
+import { type RowSays, rowSays } from "../../../../../../stemcells/orchestrator/rows.ts";
 import {
   CALL_BACK_MS,
   callable,
@@ -28,28 +29,34 @@ import {
   DICTATED,
   DROP,
   LEFT_OVER,
+  OWN_WORKTREE,
   placeLabel,
   START,
   START_ALL,
+  START_NOW,
 } from "../../../../../../stemcells/words/plans.ts";
 import { Pill } from "../../line/Ask";
+import { readSoon, useReadings } from "../../line/readings";
 import { useThreadShellsSelected } from "../../upstream/cells";
-import { AppText, Dialog, Menu, SymbolView } from "../../upstream/plans";
+import { AppText, Dialog, Menu, SymbolView, useStartsApart } from "../../upstream/plans";
 import { HoldCard } from "./HoldCard";
 import { planCarrier, trays } from "./run";
 import type { PlanEntry } from "./trays";
 import {
   CLOSE_PLAN,
+  getsWorktree,
   headOf,
   HIDE_MESSAGE,
   messageSpans,
   modelLine,
   NEW_PROJECT_NAME,
+  seenIn,
   SHOW_MESSAGE,
   STATUS_WORDS,
   unsureOf,
   whyLines,
 } from "./view";
+import { placeOfKey } from "./world";
 
 /** The plans the phone holds; a view draws again when any of them changes. */
 export function usePlans(): ReadonlyMap<string, PlanEntry> {
@@ -98,8 +105,34 @@ export function PlanPanel(props: {
       )
       .join(","),
   );
+  const reading = useReadings().get(entry.environmentId);
+  const startsApart = useStartsApart(entry.environmentId);
+  const flying = (tray?.acts ?? []).filter((one) => one.status === "started").length;
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- A Cell that just started isn't in its machine's last reading: the machine is read again.
+  useEffect(() => {
+    if (flying > 0) readSoon(entry.environmentId);
+  }, [flying, entry.environmentId]);
   if (tray === null) return null;
   const exists = new Set(here === "" ? [] : here.split(",").map(Number));
+  const seenOf = seenIn(
+    reading === undefined || reading.state === "none" ? undefined : reading.list?.cells,
+  );
+  /** A row as it reads: one whose Cell is in the app started, whoever started it. */
+  const shownOf = (one: TrayAct): TrayAct =>
+    exists.has(one.act.i) && (one.status === "waiting" || one.status === "queued")
+      ? { ...one, status: "started" }
+      : one;
+  const apartOf = (one: TrayAct): boolean => {
+    if (one.act.kind !== "start") return false;
+    if (one.status !== "waiting" && one.status !== "queued" && one.status !== "starting")
+      return false;
+    const place = one.act.place;
+    const projectId =
+      place === null
+        ? null
+        : (place.projectId ?? (place.id === null ? null : placeOfKey(place.id)?.projectId));
+    return getsWorktree(tray, one.act, projectId == null ? false : startsApart(projectId));
+  };
   const head = headOf(tray);
   const back = new Set(callable(tray, now).map((one) => one.act.i));
   const blocked = held(tray);
@@ -160,8 +193,9 @@ export function PlanPanel(props: {
           ) : (
             <CellRow
               id={entry.id}
-              one={one}
-              started={exists.has(one.act.i)}
+              one={shownOf(one)}
+              says={rowSays(tray, shownOf(one), seenOf)}
+              apart={apartOf(shownOf(one))}
               blocked={blocked}
               back={back.has(one.act.i)}
               places={props.places}
@@ -187,9 +221,12 @@ const modelKey = (model: { readonly instanceId: string; readonly id: string }) =
 
 function CellRow(props: {
   readonly id: string;
+  /** The act as it reads: started once its Cell is in the app. */
   readonly one: TrayAct;
-  /** Its Cell is already in the app. */
-  readonly started: boolean;
+  /** Its Cell's standing, or whom it comes after. */
+  readonly says: RowSays;
+  /** It isn't a Cell yet, and will work in a worktree of its own. */
+  readonly apart: boolean;
   /** A deletion is held: nothing starts before it. */
   readonly blocked: boolean;
   /** It started within the last ten seconds: one tap stops and archives it. */
@@ -203,8 +240,15 @@ function CellRow(props: {
   const risky = act.kind === "start" && act.risks.length > 0;
   const [open, setOpen] = useState(props.open || risky);
   if (act.kind !== "start") return null;
-  const waiting = one.status === "waiting" && !props.started;
-  const status = props.started && one.status === "waiting" ? "started" : one.status;
+  const waiting = one.status === "waiting";
+  const queued = one.status === "queued";
+  // A Cell just started here is flying before its machine's next reading says so.
+  const word =
+    props.says.word !== ""
+      ? props.says.word
+      : one.status === "started" && props.back
+        ? STATUS_WORDS.started
+        : "";
   const model = modelLine(act, props.models);
   const unsure = waiting ? unsureOf(act) : { place: false, model: false };
   const place = placeLabel(act);
@@ -212,7 +256,10 @@ function CellRow(props: {
   const chosen =
     picked == null
       ? DEFAULT_KEY
-      : modelKey({ instanceId: picked.instanceId, id: "model" in picked ? picked.model : picked.id });
+      : modelKey({
+          instanceId: picked.instanceId,
+          id: "model" in picked ? picked.model : picked.id,
+        });
   const renames = waiting && act.place?.how === "new";
   const rename = () =>
     Dialog.prompt({
@@ -255,17 +302,21 @@ function CellRow(props: {
             }
             numberOfLines={1}
           >
-            {waiting ? "" : model.text}
+            {waiting
+              ? props.apart
+                ? OWN_WORKTREE
+                : ""
+              : modelLine(act, props.models, props.apart).text}
           </AppText>
-          {waiting ? null : (
+          {waiting || word === "" ? null : (
             <AppText
               className={
-                status === "failed"
+                one.status === "failed"
                   ? "text-xs text-danger-foreground"
                   : "text-xs text-foreground-muted"
               }
             >
-              {STATUS_WORDS[status as keyof typeof STATUS_WORDS]}
+              {word}
             </AppText>
           )}
           <SymbolView
@@ -283,6 +334,11 @@ function CellRow(props: {
         >
           {act.title}
         </AppText>
+        {props.says.line !== null && props.says.line !== "" ? (
+          <AppText className="text-xs text-foreground-muted" numberOfLines={2}>
+            {props.says.line}
+          </AppText>
+        ) : null}
       </Pressable>
       <View className="flex-row items-center gap-1.5">
         <AppText className="text-xs text-foreground-muted">in</AppText>
@@ -339,7 +395,11 @@ function CellRow(props: {
             <Menu
               title="Model"
               actions={[
-                { id: DEFAULT_KEY, title: DEFAULT_MODEL, state: chosen === DEFAULT_KEY ? "on" : "off" },
+                {
+                  id: DEFAULT_KEY,
+                  title: DEFAULT_MODEL,
+                  state: chosen === DEFAULT_KEY ? "on" : "off",
+                },
                 ...props.models.map((each) => ({
                   id: modelKey(each),
                   title: each.name,
@@ -395,6 +455,9 @@ function CellRow(props: {
       {one.status === "failed" && one.reason !== undefined ? (
         <AppText className="text-xs text-danger-foreground">{one.reason}</AppText>
       ) : null}
+      {props.says.stuck !== null ? (
+        <AppText className="text-xs text-warning-foreground">{props.says.stuck}</AppText>
+      ) : null}
       {open ? (
         <View className="mt-1 rounded-xl bg-subtle px-3 py-2">
           <AppText className="text-sm text-foreground-secondary" selectable>
@@ -430,6 +493,21 @@ function CellRow(props: {
             enabled={canStart(act) && !props.blocked}
             onPress={() => trays.change(id, (tray) => confirm(tray, act.i))}
           />
+        </View>
+      ) : queued ? (
+        <View className="flex-row justify-end gap-2 pt-1">
+          <Pill
+            filled={false}
+            title={DROP}
+            onPress={() => trays.change(id, (tray) => drop(tray, act.i))}
+          />
+          {props.blocked ? null : (
+            <Pill
+              filled={false}
+              title={START_NOW}
+              onPress={() => planCarrier().startNow(id, act.i)}
+            />
+          )}
         </View>
       ) : props.back ? (
         // Where Start was: the hand that started it is still there to take it back.

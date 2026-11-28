@@ -1,7 +1,7 @@
-// A plan's Cell as the phone starts it (stemcells/tasks/aski-orchestrator.md, decisions 5 and
-// 6): the thread the plan minted, in the act's project at its root, told the person's own words
-// (`messageOf`), on the model the act names or else the project's own, in the person's default
-// modes. Never a worktree, and never more access than the person's default gives.
+// A plan's Cell as the phone starts it (stemcells/tasks/aski-orchestrator.md, decisions 5, 6,
+// 16, 17): the plan's thread, at the project's root, told the person's own words, on the act's
+// model or the project's own, in the person's default modes and with no more access. A Cell in
+// a worktree, or after others, is the server's to start, handed the same model and modes.
 
 import { clampEffort } from "../../../../../../stemcells/orchestrator/names.ts";
 import {
@@ -9,6 +9,7 @@ import {
   type ModelEntry,
   type StartAct,
 } from "../../../../../../stemcells/orchestrator/plan.ts";
+import type { QueueRequest } from "../../../../../../stemcells/orchestrator/wire.ts";
 import {
   buildProjectThreadStartTurnInput,
   createModelSelection,
@@ -79,8 +80,13 @@ export function selectionOf(
   ]);
 }
 
-/** What starts `act`'s Cell, or why it can't start. */
-export function launchOf(act: StartAct, setup: LaunchSetup): Launch {
+/** The model `act`'s Cell runs on, when it can start a Cell now; else why not. */
+function chosenOf(
+  act: StartAct,
+  setup: Pick<LaunchSetup, "projectName" | "defaultModel" | "models" | "ready">,
+):
+  | { readonly ok: true; readonly selection: ModelSelection }
+  | { readonly ok: false; readonly reason: string } {
   const selection = selectionOf(act, setup);
   if (selection === null)
     return { ok: false, reason: `No model to start a Cell in ${setup.projectName} on.` };
@@ -91,6 +97,13 @@ export function launchOf(act: StartAct, setup: LaunchSetup): Launch {
       )?.name ?? selection.model;
     return { ok: false, reason: `${name} can’t start now.` };
   }
+  return { ok: true, selection };
+}
+
+/** What starts `act`'s Cell, or why it can't start. */
+export function launchOf(act: StartAct, setup: LaunchSetup): Launch {
+  const chosen = chosenOf(act, setup);
+  if (!chosen.ok) return chosen;
   return {
     ok: true,
     input: buildProjectThreadStartTurnInput({
@@ -103,7 +116,7 @@ export function launchOf(act: StartAct, setup: LaunchSetup): Launch {
       text: messageOf(act),
       titleText: act.title,
       uploadedAttachments: [],
-      modelSelection: selection,
+      modelSelection: chosen.selection,
       runtimeMode: setup.runtimeMode,
       interactionMode: setup.interactionMode,
       workspaceMode: "local",
@@ -112,5 +125,45 @@ export function launchOf(act: StartAct, setup: LaunchSetup): Launch {
       startFromOrigin: false,
       worktreeBranchName: "",
     }),
+  };
+}
+
+/** Whether `act`'s Cell works in a worktree of its own: the person's word, else the project's default. */
+export const worksApart = (act: Pick<StartAct, "apart">, byDefault: boolean): boolean =>
+  act.apart ?? byDefault;
+
+/** What hands `act`'s Cell to the server to start, with what a start here would use. */
+export function queueOf(
+  planId: string,
+  act: StartAct,
+  setup: Pick<
+    LaunchSetup,
+    | "projectId"
+    | "projectName"
+    | "defaultModel"
+    | "models"
+    | "ready"
+    | "runtimeMode"
+    | "interactionMode"
+  > & {
+    /** The project starts its Cells in worktrees of their own. */
+    readonly apart: boolean;
+  },
+):
+  | { readonly ok: true; readonly request: QueueRequest }
+  | { readonly ok: false; readonly reason: string } {
+  const chosen = chosenOf(act, setup);
+  if (!chosen.ok) return chosen;
+  return {
+    ok: true,
+    request: {
+      id: planId,
+      i: act.i,
+      projectId: setup.projectId,
+      modelSelection: chosen.selection,
+      runtimeMode: setup.runtimeMode,
+      interactionMode: setup.interactionMode,
+      worktree: worksApart(act, setup.apart),
+    },
   };
 }

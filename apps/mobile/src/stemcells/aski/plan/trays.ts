@@ -1,9 +1,10 @@
-// The plans the phone holds, by plan id, from a message's send until its plan is settled
-// (stemcells/tasks/aski-orchestrator.md, decisions 4, 5 and 12). One store, so the tray, a
-// ```plan fence and the home's rows read the same plan and each act is carried out once
-// (`carry.ts`). It holds state alone: no timer and no request starts here.
+// The plans the phone holds, by plan id, from a message's send on
+// (stemcells/tasks/aski-orchestrator.md, decisions 4, 5, 12 and 15). One store, so the tray, a
+// ```plan fence, the card under a message and the home's rows read the same plan and each act
+// is carried out once (`carry.ts`). It holds state alone: no timer and no request starts here.
 
 import type { Plan } from "../../../../../../stemcells/orchestrator/plan.ts";
+import { showsUnder } from "../../../../../../stemcells/orchestrator/rows.ts";
 import {
   type ToldOutcome,
   type Tray,
@@ -13,14 +14,17 @@ import {
 
 export { type ToldOutcome, trayWith };
 
-/** Where a plan stands on the phone: over Aski's composer, or in the reply that proposed it. */
+/**
+ * Where a plan stands on the phone: over Aski's composer, or in the chat's feed (the reply
+ * that proposed it, or under the message it was made from).
+ */
 export type Door = "composer" | "fence";
 
 export interface PlanEntry {
   readonly id: string;
   /** The machine the plan was made on, where its Cells start. */
   readonly environmentId: string;
-  /** Aski's chat the plan's message went to; null for a plan read from a fence. */
+  /** Aski's chat the plan was made in; null for a plan read by its id alone. */
   readonly chatId: string | null;
   readonly door: Door;
   /**
@@ -48,6 +52,7 @@ export interface Trays {
     environmentId: string,
     plan: Plan,
     outcome: ReadonlyArray<ToldOutcome> | null,
+    chatId?: string | null,
   ) => void;
   /** A fence's plan the server no longer has. */
   readonly gone: (id: string, environmentId: string) => void;
@@ -55,8 +60,42 @@ export interface Trays {
   readonly change: (id: string, step: (tray: Tray) => Tray) => void;
   /** A deletion that didn't go, or null once it is tried again. */
   readonly refuse: (id: string, i: number, reason: string | null) => void;
+  /**
+   * A plan leaves the composer. One with a Cell to show stays, as the card under its message
+   * (decision 15); any other is forgotten.
+   */
   readonly leave: (id: string) => void;
 }
+
+/**
+ * A tray with what the server says came of its queued Cells, which are the server's to start:
+ * started, failed or dropped. Nothing the phone is acting on changes.
+ */
+export function toldOver(tray: Tray, outcome: ReadonlyArray<ToldOutcome> | null): Tray {
+  if (outcome === null) return tray;
+  const told = new Map(outcome.map((one) => [one.i, one]));
+  let changed = false;
+  const acts = tray.acts.map((one) => {
+    const known = told.get(one.act.i);
+    if (one.status !== "queued" || known === undefined) return one;
+    if (known.status !== "started" && known.status !== "failed" && known.status !== "dropped")
+      return one;
+    changed = true;
+    return {
+      act: one.act,
+      status: known.status,
+      ...(known.reason === undefined ? {} : { reason: known.reason }),
+    };
+  });
+  return changed ? { ...tray, acts } : tray;
+}
+
+const unstarted = (tray: Tray): Tray => ({
+  ...tray,
+  acts: tray.acts.map((one) =>
+    one.status === "starting" ? { ...one, status: "waiting" as const } : one,
+  ),
+});
 
 export function makeTrays(): Trays {
   let entries: ReadonlyMap<string, PlanEntry> = new Map();
@@ -92,16 +131,17 @@ export function makeTrays(): Trays {
       else if (plan.acts.length === 0) put(id, null);
       else put(id, { ...held, state: "tray", tray: trayOf(plan) });
     },
-    opened: (id, environmentId, plan, outcome) => {
+    opened: (id, environmentId, plan, outcome, chatId = null) => {
       const held = entries.get(id);
       if (held !== undefined && held.state !== "gone") return;
       put(id, {
         id,
         environmentId,
-        chatId: null,
+        chatId,
         door: "fence",
         state: "tray",
-        tray: trayWith(plan, outcome),
+        // Reading a plan starts nothing: a Cell the server wasn't told of waits for a hand.
+        tray: unstarted(trayWith(plan, outcome)),
         refused: NONE,
       });
     },
@@ -132,7 +172,11 @@ export function makeTrays(): Trays {
       put(id, { ...held, refused });
     },
     leave: (id) => {
-      if (entries.has(id)) put(id, null);
+      const held = entries.get(id);
+      if (held === undefined) return;
+      const stays = held.state === "tray" && held.tray !== null && showsUnder(held.tray);
+      if (!stays) put(id, null);
+      else if (held.door !== "fence") put(id, { ...held, door: "fence" });
     },
   };
 }
