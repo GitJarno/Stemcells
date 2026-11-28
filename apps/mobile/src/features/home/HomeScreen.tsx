@@ -617,6 +617,9 @@ export function HomeScreen(props: HomeScreenProps) {
     selectedThreadKey,
     threadSearchMatchByKey,
     workingShelfEnabled,
+    // The list redraws a row only when its item or this changes: a fold or a turn changes both.
+    sidebarSurface,
+    fullSwipeWidth,
   };
 
   const hasAnyThreads =
