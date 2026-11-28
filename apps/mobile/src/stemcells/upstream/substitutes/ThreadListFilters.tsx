@@ -17,7 +17,7 @@ export function ThreadListFilters(props: Parameters<typeof Upstream.ThreadListFi
   return (
     <>
       <StageTop />
-      <PlannedRows gutter={props.gutter} />
+      <PlannedRows />
       {inHeader ? null : <Upstream.ThreadListFilters {...props} />}
     </>
   );

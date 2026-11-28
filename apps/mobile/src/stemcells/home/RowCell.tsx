@@ -3,7 +3,7 @@
 // On Awake a card is one line, as Asleep's rows are, its light behind it (`awake-asleep.md`).
 // T3's row hands control here (`features/threads/thread-list-v2-items.tsx`).
 
-import { type ReactNode, use, useEffect } from "react";
+import { type ReactNode, use, useEffect, useLayoutEffect } from "react";
 import { Pressable, useWindowDimensions, View, type ViewStyle } from "react-native";
 import { useAnimatedRef, useReducedMotion } from "react-native-reanimated";
 import { useResolveClassNames } from "uniwind";
@@ -38,6 +38,7 @@ import {
 import { relativeTime } from "../upstream/needs";
 import { Arrival } from "./Arrival";
 import { sendCopy } from "./copies";
+import { handedLanded, useIsHanded } from "./plannedArrivals";
 import { useLifted } from "./hops";
 import {
   awakeRows,
@@ -209,8 +210,17 @@ function AwakeRow(props: {
   const rowState = rowStateOf(state?.stage, threadHasUnseenCompletion(thread));
   const status = rowStatusOf(rowState, thread.hasPendingApprovals);
   const field = useHomeSidebar() ? SIDEBAR_FIELD : AWAKE_FILL;
+  // Its born row's copy still stands over it (`PlannedRows.tsx`): it comes in under that, unseen.
+  const covered = useIsHanded(thread.id);
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Tell the header its born row's room is taken, in the draw this row comes in on.
+  useLayoutEffect(() => {
+    if (covered) handedLanded(thread.id);
+  }, [covered, thread.id]);
   return (
-    <View className="flex-row items-center gap-2" style={{ minHeight: ROW_HEIGHT - PADDED.card }}>
+    <View
+      className="flex-row items-center gap-2"
+      style={{ minHeight: ROW_HEIGHT - PADDED.card, opacity: covered ? 0 : 1 }}
+    >
       {rowState === "flying" ? <RowLight key={key} thread={thread} band fill={field} /> : null}
       <Figure thread={thread} points={2} />
       <View className="min-w-0 flex-1">{props.children}</View>

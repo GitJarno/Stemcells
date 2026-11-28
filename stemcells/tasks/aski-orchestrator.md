@@ -442,8 +442,13 @@ Each lands on the Mac and the phone together where a person sees it.
        forming at most, and its line settles in five beats; forming six
        while two chats stream dropped no frame in the built app (ten runs).
        The phone holds a born row out of T3's list until Awake is out of
-       sight, as the list's own insert blinked; the Duo's column wasn't
-       seen on a simulator (no disk for one).
+       sight, as the list's own insert blinked. A side column (the open
+       Duo, an iPad) is never out of sight, so a born row there had no
+       swipe and no menu: once its birth is over it is handed to T3's list
+       where it stands, the lowest row first, under a copy of ours, with
+       the list's rows taking their slots at once and the header giving the
+       room back as the list's row lands. Seen on an iPad mini simulator,
+       which draws the same column; the Duo simulator couldn't unfold.
 6. [x] **New projects and heard names.** A new project as a Check, near
        names as Checks, names learned from confirms.
 7. [x] **Recall.** Cards, the search, the pills under a question,

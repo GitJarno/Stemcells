@@ -1,6 +1,6 @@
 // The motion system's move, enter and leave as Reanimated runs them, on the Mac's own numbers
 // (`apps/web/src/stemcells/motion/listMotion.ts`).
-import { Easing, FadeIn, FadeOut } from "react-native-reanimated";
+import { Easing, FadeIn, FadeOut, makeMutable } from "react-native-reanimated";
 
 import { type Bezier, LIST_MOTION } from "../line/kit";
 
@@ -37,3 +37,9 @@ export const CATCH_RETURN = {
 export const entering = () => FadeIn.duration(ENTER.duration).easing(ENTER.easing);
 /** Something fading out where it stood, as a Reanimated exit. */
 export const exiting = () => FadeOut.duration(LEAVE.duration).easing(LEAVE.easing);
+
+/**
+ * While a planned row is handed to T3's list where it stands (`PlannedRows.tsx`), the list's rows
+ * take their new slots at once: the header gives the same room back in that draw, so nothing moves.
+ */
+export const rowsStandStill = makeMutable(false);
