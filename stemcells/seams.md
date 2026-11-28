@@ -362,7 +362,7 @@ sidebar or a window's title.
   `stemcells/brand/releaseNames.test.ts` fails when either says T3's name.
   The DMG's window is ours (`stemcells/brand/dmg/`, staged over upstream's
   before the build renders it): "Drag Stemcells into Applications." with
-  the name in type where upstream draws T3's mark;
+  our wordmark where upstream draws T3's mark;
   `stemcells/brand/dmgBackground.test.ts` fails when upstream ships one ours
   doesn't replace, or when ours says T3's name.
 - **Already Stemcells, no seam:** the desktop's window title, app menu
@@ -371,8 +371,8 @@ sidebar or a window's title.
   (in a browser, upstream's fallback, which the build renames): the
   browser's title, auth and pairing, the not-found page, the error report. Notifications name no app: their titles are a
   thread's state, and macOS shows the bundle's name.
-- **The name in type, no logo,** in the size and weight upstream gives the
-  T3 logo and "Code" (`brand/Wordmark.tsx`).
+- **The sidebar's wordmark** where upstream draws the T3 logo and "Code"
+  (`brand/Wordmark.tsx`).
 
 What keeps T3's name, on purpose:
 
@@ -438,9 +438,10 @@ text (`stemcells/docs/fork.md`, "The name transform").
 
 ### Stemcells' mark
 
-No T3 mark ships as Stemcells'. The mark is SC█, the Swift app's icon,
-copied into `stemcells/brand/app-icon.icon`; every other brand file there is
-rendered from it by Apple's tools (`stemcells/brand/README.md`).
+No T3 mark ships as Stemcells'. Its marks are the icon SC and the wordmark
+`stemcells`, Outfit's outlines (`stemcells/brand/README.md`); the icon's
+source is `stemcells/brand/app-icon.icon`, and every other icon file there is
+rendered from it by Apple's tools.
 
 - **Every build's brand files.** Upstream's builds read their icons from
   `BRAND_ASSET_PATHS`, which now names ours: the desktop app's icon (the
@@ -456,13 +457,12 @@ rendered from it by Apple's tools (`stemcells/brand/README.md`).
   `assets/` stay as they are, so its icon updates never conflict, and `vp
   run icons:check` calls the web's public copies stale, on purpose.
 - **In the chat.** `T3Wordmark` has a substitute, on the web and the phone,
-  that draws SC█ in the same box and colour: the work log's rows for T3's
+  that draws SC in the same box and colour: the work log's rows for T3's
   own tools, and (on the web) a thread one of them started. Both draw the
   paths in `stemcells/brand/mark.ts`.
-- **The phone.** Its header sets "Stemcells" in type where upstream draws
-  the T3 logo beside "Code", as the web's sidebar does
-  (`CompactBrandTitle`), and the loading screen shows our icon and name
-  (`BrandMark`, `brandAssets`): substitutes, copies of upstream's views
+- **The phone.** Its header draws the wordmark where upstream draws the T3
+  logo beside "Code", as the web's sidebar does (`CompactBrandTitle`), and
+  the loading screen shows our icon and wordmark (`BrandMark`, `brandAssets`): substitutes, copies of upstream's views
   with only that changed. Android's art and the Live Activity's logo come
   from `stemcells/brand` through the two seams above;
   `stemcells/scripts/render-phone-art` renders them from the icon's layers.

@@ -1,34 +1,47 @@
-// @effect-diagnostics nodeBuiltinImport:off - reads the app icon's layers.
+// @effect-diagnostics nodeBuiltinImport:off - reads the brand's SVG files.
 import * as NodeFS from "node:fs";
 import * as NodePath from "node:path";
 import * as NodeURL from "node:url";
 
 import { describe, expect, it } from "vite-plus/test";
 
-import { MARK_CURSOR, MARK_LETTERS, MARK_VIEW_BOX } from "../../../../../stemcells/brand/mark.ts";
+import {
+  MARK_LETTERS,
+  MARK_VIEW_BOX,
+  WORDMARK,
+  WORDMARK_VIEW_BOX,
+} from "../../../../../stemcells/brand/mark.ts";
 
 const here = NodePath.dirname(NodeURL.fileURLToPath(import.meta.url));
-const layers = NodePath.resolve(here, "../../../../../stemcells/brand/app-icon.icon/Assets");
-const pathOf = (layer: string) =>
-  /\sd="([^"]+)"/.exec(NodeFS.readFileSync(NodePath.join(layers, layer), "utf8"))?.[1];
+const brand = NodePath.resolve(here, "../../../../../stemcells/brand");
+const read = (file: string) => NodeFS.readFileSync(NodePath.join(brand, file), "utf8");
+const pathOf = (file: string) => /\sd="([^"]+)"/.exec(read(file))?.[1];
 
-describe("Stemcells' mark", () => {
-  it("is the app icon's own paths, never redrawn", () => {
-    expect(MARK_LETTERS).toBe(pathOf("letters.svg"));
-    expect(MARK_CURSOR).toBe(pathOf("cursor.svg"));
+const tightBox = (path: string) => {
+  const pairs = [...path.matchAll(/(-?[\d.]+) (-?[\d.]+)/g)].map((m) => [
+    Number(m[1]),
+    Number(m[2]),
+  ]);
+  const xs = pairs.map(([x]) => x as number);
+  const ys = pairs.map(([, y]) => y as number);
+  const round = (n: number) => Number(n.toFixed(3));
+  return [
+    round(Math.min(...xs)),
+    round(Math.min(...ys)),
+    round(Math.max(...xs) - Math.min(...xs)),
+    round(Math.max(...ys) - Math.min(...ys)),
+  ].join(" ");
+};
+
+describe("Stemcells' marks", () => {
+  it("are the brand files' own paths, never redrawn", () => {
+    expect(MARK_LETTERS).toBe(pathOf("app-icon.icon/Assets/letters.svg"));
+    expect(WORDMARK).toBe(pathOf("wordmark.svg"));
+    expect(read("wordmark.svg")).toContain(`viewBox="${WORDMARK_VIEW_BOX}"`);
   });
 
-  it("boxes the lockup: from the S's left edge to the cursor's right, cap to baseline", () => {
-    const xs = [...`${MARK_LETTERS} ${MARK_CURSOR}`.matchAll(/(-?[\d.]+) (-?[\d.]+)/g)];
-    const [left, top, width, height] = MARK_VIEW_BOX.split(" ").map(Number) as [
-      number,
-      number,
-      number,
-      number,
-    ];
-    expect(Math.min(...xs.map((m) => Number(m[1])))).toBe(left);
-    expect(Math.max(...xs.map((m) => Number(m[1])))).toBe(left + width);
-    expect(Math.min(...xs.map((m) => Number(m[2])))).toBe(top);
-    expect(Math.max(...xs.map((m) => Number(m[2])))).toBe(top + height);
+  it("box each mark with no air around it", () => {
+    expect(MARK_VIEW_BOX).toBe(tightBox(MARK_LETTERS));
+    expect(WORDMARK_VIEW_BOX).toBe(tightBox(WORDMARK));
   });
 });

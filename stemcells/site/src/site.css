@@ -60,16 +60,6 @@ code {
   clip-path: inset(50%);
   white-space: nowrap;
 }
-.cursor {
-  display: inline-block;
-  margin-left: 0.08em;
-  animation: blink 1.06s steps(1) infinite;
-}
-@keyframes blink {
-  50% {
-    opacity: 0;
-  }
-}
 
 /* ── Top ──────────────────────────────────────────────────────────────────── */
 .top {
@@ -89,11 +79,12 @@ code {
   pointer-events: auto;
 }
 .mark {
-  font-family: var(--mono);
-  font-size: 15px;
-  font-weight: 700;
-  text-decoration: none;
-  letter-spacing: -0.01em;
+  display: flex;
+}
+.mark svg {
+  display: block;
+  height: 17px;
+  width: auto;
 }
 .top nav {
   display: flex;
@@ -897,9 +888,6 @@ h2 {
 
 /* ── Reduce Motion: each scene is its still, at its own height. ───────────── */
 @media (prefers-reduced-motion: reduce) {
-  .cursor {
-    animation: none;
-  }
   html {
     scroll-behavior: auto;
   }

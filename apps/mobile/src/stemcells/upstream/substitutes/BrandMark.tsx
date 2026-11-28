@@ -1,11 +1,12 @@
 // Replaces `components/BrandMark.tsx` (`substitutes.cjs`): upstream's lockup
-// on the loading screen, with Stemcells' icon (`brandAssets.ts` here) and the
-// app's name where upstream shows T3's icon and its name, and no release-stage badge.
+// on the loading screen, with Stemcells' icon (`brandAssets.ts` here) and its
+// wordmark where upstream shows T3's icon and its name, and no release-stage badge.
 import { Image } from "expo-image";
 import { View } from "react-native";
 
 import { AppText as Text } from "../../../components/ui/AppText";
 import { APP_NAME } from "../../brand/name";
+import { Wordmark } from "../../brand/Wordmark";
 import { T3_CODE_BRAND_MARK_SOURCE } from "./brandAssets";
 
 export function BrandMark(props: { readonly compact?: boolean; readonly stageLabel?: string }) {
@@ -23,8 +24,10 @@ export function BrandMark(props: { readonly compact?: boolean; readonly stageLab
           borderRadius: compact ? 10 : 14,
         }}
       />
-      <View className="gap-1">
-        <Text className="text-lg font-t3-bold tracking-[-0.4px] text-foreground">{APP_NAME}</Text>
+      <View className="gap-1.5">
+        <View accessible accessibilityLabel={APP_NAME}>
+          <Wordmark height={compact ? 14 : 17} />
+        </View>
         {!compact ? (
           <Text className="text-xs font-medium text-foreground-muted">
             Mobile control surface for your live coding environments

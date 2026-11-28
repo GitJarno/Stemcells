@@ -1,5 +1,5 @@
 /**
- * Stemcells' mark, SC█, in each file upstream ships a T3 mark in: upstream's list in
+ * Stemcells' icon, SC, in each file upstream ships a T3 mark in: upstream's list in
  * `scripts/lib/brand-assets.ts` runs through `withStemcellsBrand` (one seam), so every build
  * that reads it takes ours, the same file for each channel. All are rendered from
  * `app-icon.icon` by Apple's tools, never drawn by hand (`stemcells/brand/README.md`).

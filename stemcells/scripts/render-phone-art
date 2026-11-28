@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# Renders the phone's own art from the app icon's layers (the S and C, and
-# the cursor): the Live Activity's vector mark and Android's launcher,
-# notification and splash images. Each frames the same two paths and lets
+# Renders the phone's own art from the app icon's one layer (the S and C):
+# the Live Activity's vector mark and Android's launcher, notification and
+# splash images. Each frames the same path and lets
 # macOS's SVG renderer (sips) draw them; nothing is drawn by hand.
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
 brand=stemcells/brand
-layers=$(grep -h '<path' "$brand/app-icon.icon/Assets/letters.svg" "$brand/app-icon.icon/Assets/cursor.svg")
+layers=$(grep -h '<path' "$brand/app-icon.icon/Assets/letters.svg")
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
 
@@ -37,7 +37,7 @@ render android-notification "-64 -64 1152 1152" 96
 # the vector keeps upstream's 111 × 74 box with the mark as wide in it as
 # T3's was (94.39 of 111), centred on the mark (512, 512).
 read -r width height x y < <(awk 'BEGIN {
-  w = 768 * 111 / 94.3941; h = w * 74 / 111
+  w = 671.54 * 111 / 94.3941; h = w * 74 / 111
   printf "%.2f %.2f %.2f %.2f\n", w, h, 512 - w / 2, 512 - h / 2 }')
 printf '<svg xmlns="http://www.w3.org/2000/svg" viewBox="%s %s %s %s" width="%s" height="%s">\n%s\n</svg>\n' \
   "$x" "$y" "$width" "$height" "$width" "$height" "$layers" >"$brand/phone-widget-mark.svg"

@@ -1,16 +1,14 @@
-// Replaces `components/CompactBrandTitle.tsx` (`substitutes.cjs`): the app's name set in type
-// where upstream draws the T3 logo beside "Code", as the web's sidebar does (`brand/Wordmark.tsx`
-// there), and no release-stage badge beside it. The offset is upstream's.
+// Replaces `components/CompactBrandTitle.tsx` (`substitutes.cjs`): Stemcells' wordmark where
+// upstream draws the T3 logo beside "Code", as the web's sidebar does (`brand/Wordmark.tsx`
+// there), and no release-stage badge beside it. The offset and the logo's height are upstream's.
 import { useState } from "react";
 import { Platform, View } from "react-native";
 
 import { brandTitleOffset } from "../../../components/CompactBrandTitle";
-import { AppText as Text } from "../../../components/ui/AppText";
 import { useAndroidControlSizing } from "../../../components/ui/useAndroidControlSizing";
 import { BatteryMarks } from "../../battery/BatteryMarks";
 import { APP_NAME } from "../../brand/name";
-
-const BRAND_MAX_FONT_SCALE = 1.4;
+import { Wordmark } from "../../brand/Wordmark";
 
 export { brandTitleOffset };
 
@@ -41,14 +39,7 @@ export function CompactBrandTitle(
         props.fit && { flexShrink: 0 },
       ]}
     >
-      <Text
-        allowFontScaling={props.allowFontScaling}
-        maxFontSizeMultiplier={BRAND_MAX_FONT_SCALE}
-        className="font-t3-medium text-foreground"
-        style={{ fontSize: 21 * scale, letterSpacing: -0.5 * scale }}
-      >
-        {APP_NAME}
-      </Text>
+      <Wordmark height={Math.round(15 * scale)} />
     </View>
   );
 

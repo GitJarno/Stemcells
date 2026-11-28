@@ -1,17 +1,19 @@
-import { APP_NAME } from "./name";
+import { WORDMARK, WORDMARK_VIEW_BOX } from "../../../../../stemcells/brand/mark.ts";
 
-// The app's name set in type, where upstream draws the T3 logo beside
-// "Code", in the size and weight upstream gives that pair. No logo: the mark,
-// SC█, is the app's icon and the chat's small glyph. The colour is the
-// place's own.
+// The wordmark, `stemcells`, where upstream draws the T3 logo beside "Code".
+// Outfit's outlines from `stemcells/brand`, in the place's own colour; the
+// link around it carries the name for assistive tech.
 
 /** The sidebar's top-left. */
 export function SidebarWordmark() {
   return (
-    <span className="inline-flex min-w-0 items-baseline text-sm font-medium tracking-tight">
-      <span className="truncate [text-box:trim-both_cap_alphabetic] supports-[text-box:trim-both_cap_alphabetic]:py-1">
-        {APP_NAME}
-      </span>
-    </span>
+    <svg
+      aria-hidden
+      className="block h-[13px] w-auto shrink-0"
+      viewBox={WORDMARK_VIEW_BOX}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path d={WORDMARK} fill="currentColor" />
+    </svg>
   );
 }
