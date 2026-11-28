@@ -4,15 +4,18 @@ import { planOf, proposedPlan, type Answer } from "./check.ts";
 import { wantsCompiler } from "./gate.ts";
 import { clampEffort, saysExactly } from "./names.ts";
 import { piecesOf } from "./pieces.ts";
+import { rowSays, showsUnder } from "./rows.ts";
 import { DICTATED_NOTE, type CompileContext, type Plan, type StartAct } from "./plan.ts";
 import {
   begun,
   callable,
+  calledBack,
   confirm,
   confirmAll,
   counts,
   done,
   drop,
+  failed,
   learnedOf,
   outcomeOf,
   setPlace,
@@ -802,6 +805,30 @@ describe("a Cell that comes after another", () => {
     });
     expect(risky.acts[1]!.status).toBe("waiting");
     expect(confirm(risky, 1).acts[1]!.status).toBe("queued");
+  });
+
+  it("says on its row whom it waits for, and why it won't start by itself", () => {
+    const tray = started(trayOf(chain()), 0, 1_000);
+    const queued = tray.acts[1]!;
+    const first = starts(tray.plan)[0]!.threadId;
+    const seen =
+      (stage: "working" | "done", short = false) =>
+      (threadId: string) =>
+        threadId === first ? { stage, line: "Importer fixed.", short } : null;
+    expect(rowSays(tray, queued, seen("working"))).toMatchObject({ stuck: null });
+    expect(rowSays(tray, queued, seen("working")).word).toMatch(/^After \S+$/);
+    expect(rowSays(tray, queued, seen("done", true)).stuck).toMatch(/stopped short$/);
+    expect(rowSays(failed(trayOf(chain()), 0, "no model"), queued, () => null).stuck).toMatch(
+      /never started$/,
+    );
+    expect(rowSays(tray, tray.acts[0]!, seen("done"))).toEqual({
+      word: "Landed",
+      line: "Importer fixed.",
+      stuck: null,
+    });
+    expect(showsUnder(tray)).toBe(true);
+    // Called back and dropped: nothing of the plan is left to stand under its message.
+    expect(showsUnder(drop(calledBack(tray, 0), 1))).toBe(false);
   });
 
   it("stands as the server last knew it after a reload", () => {
