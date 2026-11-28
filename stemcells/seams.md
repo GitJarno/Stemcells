@@ -708,14 +708,20 @@ library's dependency (above); the rest are substitutes:
 
 Upstream's chat in no project, in its scratch folder, is a casual chat in
 the words a person reads: a one-off chat with nothing to build in mind.
-Only the words change. It stays upstream's scratch chat, a Cell like any
-other, on the composer's provider and model.
+Only the words and the offer's look change. It stays upstream's scratch
+chat, a Cell like any other, on the composer's provider and model.
 
-- `stemcells/words/casualChat.ts` holds the words: "or let's just have a
-  casual chat" under a new chat's headline, "What's on your mind?" over
-  one already casual, "Have a casual chat" on a button, "New casual chat"
-  in the command palette, and the phone's row, "Casual chat" over "Ask
-  anything, no project needed".
+- `stemcells/words/casualChat.ts` holds the words: "Have a casual chat" on
+  the button under a new chat's headline and on the hero with no projects,
+  "What's on your mind?" over one already casual, "New casual chat" in the
+  command palette, and the phone's row, "Casual chat" over "Ask anything,
+  no project needed".
+- The offer under a new chat's headline is a button on every device, a
+  speech bubble and the words in a soft capsule (2026-11-28, the person's
+  call: a muted line didn't read as something to tap): the Mac's
+  `stemcells/casual/CasualButton.tsx` stands in for upstream's muted link
+  (a seam in `DraftHeroHeadline.tsx`), the phone's `CasualOffer.tsx` draws
+  the same.
 - The builds say its words where upstream's views say their own, from the
   word table (below): the offer under a new chat's headline and the
   headline of one already casual (`DraftHeroHeadline.tsx`), the no-projects
@@ -723,8 +729,8 @@ other, on the composer's provider and model.
   and iOS and the buttons with no projects (`NewTaskRouteScreen.tsx`) and
   the casual draft's headline (`NewTaskDraftScreen.tsx`). Those files are
   upstream's text.
-- The phone's draft offers one too, in the Mac's words under its machine
-  line (the one seam, in `NewTaskDraftScreen.tsx`): `stemcells/casual/CasualOffer.tsx`
+- The phone's draft offers one too, under its machine line (a seam in
+  `NewTaskDraftScreen.tsx`): `stemcells/casual/CasualOffer.tsx`
   opens the scratch project and points the draft at it with the flow's
   `setProject`, the path the project list's row takes. Once casual, the
   hero's "No project" opens the project list, the way back, as the Mac's

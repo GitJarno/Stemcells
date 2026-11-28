@@ -5,11 +5,9 @@
  * (`stemcells/seams.md`, A casual chat).
  */
 export const CASUAL_CHAT = {
-  /** Under a new chat's headline, beside its project picker. */
-  offer: "or let's just have a casual chat",
   /** The headline of a new chat that is already a casual chat. */
   headline: "What's on your mind?",
-  /** A button that starts one. */
+  /** A button that starts one: under a new chat's headline, and with no projects. */
   start: "Have a casual chat",
   /** The command palette's action, and more words it is found by. */
   action: "New casual chat",

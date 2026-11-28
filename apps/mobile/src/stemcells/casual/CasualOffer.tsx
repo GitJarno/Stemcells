@@ -1,6 +1,7 @@
-// The Mac's "or let's just have a casual chat" under a new chat's headline, on the phone
-// (`stemcells/seams.md`, A casual chat): it turns this draft into upstream's chat in no
-// project, as the project list's row does, and the hero's "No project" picker leads back.
+// "Have a casual chat" under a new chat's headline, the button the Mac has too
+// (`apps/web/src/stemcells/casual/CasualButton.tsx`, `stemcells/seams.md`, A casual chat): it
+// turns this draft into upstream's chat in no project, as the project list's row does, and the
+// hero's "No project" picker leads back.
 
 import { useState } from "react";
 import { Pressable } from "react-native";
@@ -15,6 +16,7 @@ import {
   projectEnvironment,
   readNewTaskFlowState,
   squashAtomCommandFailure,
+  SymbolView,
   useAtomCommand,
   useIncomingShare,
   useNewTaskFlow,
@@ -83,13 +85,16 @@ export function CasualOffer(props: {
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={CASUAL_CHAT.offer}
+      accessibilityLabel={CASUAL_CHAT.start}
       accessibilityHint="Makes this a chat in no project"
       disabled={props.disabled || starting}
       onPress={() => void start()}
-      className="-mt-6 rounded-xl px-3 py-2 active:opacity-65"
+      className="h-9 flex-row items-center gap-2 rounded-full bg-grouped-card px-4 active:opacity-65"
     >
-      <AppText className="text-center text-sm text-foreground-muted">{CASUAL_CHAT.offer}</AppText>
+      <SymbolView name="bubble.left" size={14} tintColorClassName="accent-icon-muted" />
+      <AppText className="text-sm font-t3-medium text-foreground-secondary">
+        {CASUAL_CHAT.start}
+      </AppText>
     </Pressable>
   );
 }

@@ -199,7 +199,7 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
   ),
   ...inFile(
     `${CHAT}/DraftHeroHeadline.tsx`,
-    whole("or start without a project", CASUAL_CHAT.offer),
+    whole("or start without a project", CASUAL_CHAT.start),
     whole("What should we work on?", CASUAL_CHAT.headline),
   ),
   ...inFile(
