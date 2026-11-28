@@ -598,7 +598,7 @@ and 8 stand alone.
         and the checks, with corpus cases; the queue on the server and the
         start from there; queued rows, Start now and Drop on both clients
         (decisions 16 and 17).
-12. [ ] **A plan waits for Send.** Every act waits; rows of tasks with
+12. [x] **A plan waits for Send.** Every act waits; rows of tasks with
         the project, model and effort on the row, the exact words behind
         a chevron, off and on, Send at the foot; the Send moment's motion
         on the Mac, a phone and the Duo; the cap and "Check every plan"
@@ -673,6 +673,21 @@ and 8 stand alone.
   message opening "In Harbor fix …" never reached the compiler.
 - Not seen: Aski's note and report with a real model, the stalled line on
   a queued row, a predecessor that stops short.
+- Slice 12, seen on the same lab in the Mac app and on a phone
+  simulator: a three-task plan that started nothing; the project and the
+  composer's own model control on each row; the chevron's exact words; a
+  task switched off and on (a left swipe on the phone, the row's end on
+  the Mac) with Send counting what is left; Send by its button and by
+  Enter, the Cells forming in their rows a beat apart and at the top of
+  Awake after Aski's throw; a task queued behind another staying dim
+  with "Then"; a plan restored by a reload sent by its button alone.
+- That pass found: the card grew at Send, as Call back, Start now and
+  Drop appeared under rows (they stand with a row's words now, behind its
+  chevron); in a narrow pane the title lost its room to the project's
+  name and the model (the mark alone stays there).
+- Not seen for slice 12: the Duo, folded or open (its simulator neither
+  folds nor shows its screen to the device tools), haptics, Aski's
+  reworded note with a real model, and a risky row opened from the start.
 
 ## Open
 
@@ -714,4 +729,9 @@ and 8 stand alone.
   we read reports overwritten edits and conflicting choices from writers
   side by side, and measures none of it for one laptop.
 - A private corpus of real messages, and a harvest of corrected plans.
+- A plan no one sends or cancels stays on the composer until it is.
+- A row's model control sets the model and its effort only: a model's
+  other options, and a Cell's access, stay the project's defaults.
+- A sent card's close mark stands for the ten seconds a Cell can be
+  called back, on the Mac; on the phone it shows for a moment at Send.
 - The cap of twelve is a guess until someone hits it.

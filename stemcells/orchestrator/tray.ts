@@ -329,11 +329,3 @@ export const counts = (tray: Tray) => {
     queued: cells.filter((one) => one.status === "queued").length,
   };
 };
-
-/** The field of a waiting Cell its row in Awake marks as unsure. */
-export const unsureField = (act: StartAct): "place" | "model" | "words" =>
-  act.why.some((one) => one.startsWith("place-") || one === "new-project")
-    ? "place"
-    : act.model?.how === "near"
-      ? "model"
-      : "words";

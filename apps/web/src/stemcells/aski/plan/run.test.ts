@@ -175,10 +175,7 @@ describe("carrying a plan out", () => {
       "dropped",
       "started",
     ]);
-    expect(plannedRows().map((row) => [row.threadId, row.tier])).toEqual([
-      ["thread-0", "start"],
-      ["thread-2", "start"],
-    ]);
+    expect(plannedRows().map((row) => row.threadId)).toEqual(["thread-0", "thread-2"]);
     stop();
   });
 

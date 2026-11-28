@@ -329,14 +329,13 @@ const available: DesktopUpdateState = {
 };
 
 /** A row of Aski's plan, as the plan tray sets it. */
-const planned = (threadId: string, tier: PlannedRow["tier"]): PlannedRow => ({
+const planned = (threadId: string): PlannedRow => ({
   threadId,
   projectId: "project-shop",
   projectName: "Shop",
   title: "Rework the film page",
   modelName: "Fable 5.2",
   effort: "high",
-  tier,
   born: NOW,
 });
 
@@ -782,7 +781,7 @@ describe("a Cell moving along the line", () => {
       ...document.querySelectorAll<HTMLElement>('[aria-label="Awake"] [data-cells-row]'),
     ];
     await expect.element(screen.getByRole("button", { name: /Awake\s*5/ })).toBeVisible();
-    await act(() => setPlannedRows("plan", [planned("thread-new", "start")]));
+    await act(() => setPlannedRows("plan", [planned("thread-new")]));
     await vi.waitFor(() =>
       expect(
         rows()

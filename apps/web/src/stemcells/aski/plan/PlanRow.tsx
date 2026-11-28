@@ -206,11 +206,6 @@ export function PlanRow(props: {
             {[model || (waiting ? DEFAULT_MODEL : ""), effort].filter(Boolean).join(" · ")}
           </span>
         )}
-        {one.status === "started" && one.startedAt !== undefined ? (
-          <Own>
-            <CallBack planId={planId} i={i} startedAt={one.startedAt} />
-          </Own>
-        ) : null}
         <RowEnd
           lit={lit}
           status={state === null ? null : rowStatusOf(state, shell?.hasPendingApprovals === true)}
@@ -239,22 +234,6 @@ export function PlanRow(props: {
           <ChevronDownIcon aria-hidden />
         </button>
       </div>
-      {one.status === "queued" ? (
-        // Waiting its turn is the plan as said: starting now is the quieter choice.
-        <div data-plan-queued="">
-          <Button
-            size="compact"
-            variant="outline"
-            disabled={props.holding}
-            onClick={() => runner.startNow(planId, i)}
-          >
-            {START_NOW}
-          </Button>
-          <Button size="compact" variant="ghost-muted" onClick={() => runner.drop(planId, i)}>
-            {DROP}
-          </Button>
-        </div>
-      ) : null}
       {says.line === null ? null : <p data-plan-said="">{says.line}</p>}
       {says.stuck === null ? null : <p data-plan-stuck="">{says.stuck}</p>}
       {one.status === "failed" ? (
@@ -264,6 +243,26 @@ export function PlanRow(props: {
         <div data-plan-told="">
           <p data-plan-told-head="">{TOLD}</p>
           <Words words={messageOf(act)} risks={act.risks} />
+          {/* Opened, with its words: a row keeps its height as the plan is sent. */}
+          {one.status === "queued" ? (
+            <div data-plan-queued="">
+              <Button
+                size="compact"
+                variant="outline"
+                disabled={props.holding}
+                onClick={() => runner.startNow(planId, i)}
+              >
+                {START_NOW}
+              </Button>
+              <Button size="compact" variant="ghost-muted" onClick={() => runner.drop(planId, i)}>
+                {DROP}
+              </Button>
+            </div>
+          ) : one.status === "started" && one.startedAt !== undefined ? (
+            <div data-plan-queued="">
+              <CallBack planId={planId} i={i} startedAt={one.startedAt} />
+            </div>
+          ) : null}
         </div>
       ) : null}
     </li>

@@ -97,7 +97,6 @@
     "../../stemcells/words/feats.ts",
     "../../stemcells/words/inbox.ts",
     "../../stemcells/words/marks.ts",
-    "../../stemcells/words/planned.ts",
     "../../stemcells/words/plans.ts",
     "../../stemcells/words/prose.ts",
     "../../stemcells/words/subcells.ts"

@@ -150,6 +150,13 @@ describe("a plan's card", () => {
     await expect.element(rowOf("Fix the importer").getByTestId("creature")).toBeInTheDocument();
     expect(document.querySelectorAll('[data-testid="creature"]')).toHaveLength(1);
     await expect.element(page.getByRole("button", { name: /^Send/ })).not.toBeInTheDocument();
+    // The queued Cell's choices stand with its words, so the card keeps its height at Send.
+    await expect
+      .element(rowOf("Write its changelog").getByRole("button", { name: "Start now" }))
+      .not.toBeInTheDocument();
+    await userEvent.click(
+      rowOf("Write its changelog").getByRole("button", { name: "What it's told" }),
+    );
     await expect
       .element(rowOf("Write its changelog").getByRole("button", { name: "Start now" }))
       .toBeVisible();

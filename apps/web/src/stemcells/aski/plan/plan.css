@@ -24,6 +24,7 @@
   padding: var(--sc-space-sm);
   font-size: var(--sc-body);
   color: var(--foreground);
+  container: aski-plan / inline-size;
   /* It unfolds from the composer it stands on. */
   transform-origin: 50% 100%;
   animation: aski-plan-unfold var(--sc-motion-settle-duration) var(--sc-motion-settle-easing) both;
@@ -112,6 +113,13 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+/* In a narrow pane the project's mark says where, and the title keeps the room. */
+@container aski-plan (max-width: 30rem) {
+  [data-plan-place-name],
+  [data-plan-line] > [data-plan-meta] {
+    display: none;
+  }
 }
 [data-plan-pick] {
   margin-inline: calc(-1 * var(--sc-space-xs));

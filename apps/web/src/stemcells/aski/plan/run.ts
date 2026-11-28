@@ -205,7 +205,6 @@ export function createRunner(hands: () => RunnerHands | null) {
           title: act.title,
           modelName: facts.modelName,
           effort: facts.effort,
-          tier: "start",
           born: live.at,
           driver: facts.driver,
         },

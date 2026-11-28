@@ -4,7 +4,12 @@
  * and in the same polarity. Typed words that reach a Cell as typed pass: the Cell's permission
  * mode guards there. With no dictation yet, a sentence heard by the ear isn't asked about.
  */
-import { type RiskFinding, type RiskKind, type RiskSpan, riskFindings } from "../../../../../stemcells/risk/floor.ts";
+import {
+  type RiskFinding,
+  type RiskKind,
+  type RiskSpan,
+  riskFindings,
+} from "../../../../../stemcells/risk/floor.ts";
 
 /** A risky sentence as a Cell would read it, its trigger marked. */
 export interface HoldLine {

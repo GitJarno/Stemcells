@@ -61,7 +61,6 @@ const arrivals = createArrivals<ThrowFrom, Box>(plannedRows, {
   playThrow: (from, to) => void playThrow(from, to),
   // Its box is the glyphs' until they have condensed; then the Cell's blocks, or its outline.
   forms: (threadId, at) => formAt(threadId, at + GLYPHS.length * timing("formStep")),
-  fills: formAt,
 });
 subscribePlannedRows(arrivals.sync);
 

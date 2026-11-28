@@ -45,7 +45,6 @@ export function plannedRowsOf(entry: PlanEntry, born: number, factsOf: FactsOf):
         projectName: place.name,
         title: act.title,
         ...factsOf(entry.environmentId, act, projectId),
-        tier: "start",
         born,
       },
     ];

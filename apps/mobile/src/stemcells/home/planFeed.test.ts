@@ -57,9 +57,9 @@ describe("the phone's plans in its Awake list", () => {
     expect(thrown).toEqual([]);
     trays.change("plan-1", (tray) => send(toggle(tray, 2)));
     feed([...trays.read().values()]);
-    expect(plannedRows().map((row) => [row.threadId, row.projectId, row.tier])).toEqual([
-      ["thread-0", "p-harbor", "start"],
-      ["thread-1", "p-harbor", "start"],
+    expect(plannedRows().map((row) => [row.threadId, row.projectId])).toEqual([
+      ["thread-0", "p-harbor"],
+      ["thread-1", "p-harbor"],
     ]);
     trays.change("plan-1", (tray) => started(started(tray, 0, 9), 1, 9));
     feed([...trays.read().values()]);

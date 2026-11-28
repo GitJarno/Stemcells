@@ -45,7 +45,6 @@ const row = (threadId: string): PlannedRow => ({
   projectName: "Harbor",
   title: "Rework the film page",
   modelName: "Fable 5.2",
-  tier: "start",
   born: 0,
 });
 

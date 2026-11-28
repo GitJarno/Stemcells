@@ -144,10 +144,8 @@ export interface ArrivalDeps<From, Slot> {
   readonly slot: () => Slot | null;
   readonly ready: (from: From) => void;
   readonly playThrow: (from: From, to: Slot, threadId: string) => void;
-  /** The Cell of a row that landed at `at` forms from then: its glyphs, then its blocks, or its outline. */
+  /** The Cell of a row that landed at `at` forms from then: its glyphs, then its blocks. */
   readonly forms: (threadId: string, at: number) => void;
-  /** A confirmed check's Cell fills in from its outline, from `at`. */
-  readonly fills: (threadId: string, at: number) => void;
   /** How long a listed row's birth words take to go, ms, where it isn't the lists' leave. */
   readonly fade?: number;
 }
@@ -201,10 +199,10 @@ export function createArrivals<From, Slot>(
     publish();
   };
 
-  /** A started row gives up when the machine never lists it; a check waits for the person. */
+  /** A row gives up when the machine never lists it. */
   const expire = (threadId: string) => {
     const arrival = arrivals.get(threadId);
-    if (arrival === undefined || arrival.state !== "here" || arrival.row.tier === "check") return;
+    if (arrival === undefined || arrival.state !== "here") return;
     const since = listed.get(threadId);
     if (since === undefined) later(threadId, () => leave(threadId), ARRIVALS.giveUp);
     else {
@@ -274,11 +272,6 @@ export function createArrivals<From, Slot>(
         if (row === arrival.row || arrival.state !== "here") continue;
         arrivals.set(threadId, { ...arrival, row });
         changed = true;
-        if (arrival.row.tier === "check" && row.tier === "start") {
-          // Confirmed: it forms on from its outline.
-          if (!deps.reduced()) deps.fills(threadId, deps.now());
-          expire(threadId);
-        }
       }
       for (const threadId of planned.keys()) {
         if (arrivals.has(threadId) || waiting.has(threadId) || over.has(threadId)) continue;

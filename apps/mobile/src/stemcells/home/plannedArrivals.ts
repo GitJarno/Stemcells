@@ -13,7 +13,7 @@ import {
   subscribePlannedRows,
 } from "../../../../../stemcells/aski/planned.ts";
 import { formAt, LEAD } from "../cell/forming";
-import { BEAT, clockSeconds, GLYPHS } from "../cell/kit";
+import { clockSeconds } from "../cell/kit";
 import { askiInSight, sendCopy } from "./copies";
 
 export type { Arrival } from "../../../../../stemcells/aski/arrivals.ts";
@@ -69,7 +69,6 @@ const arrivals = createArrivals<true, ViewInstance>(plannedRows, {
     }),
   forms: (threadId, at) => formAt(threadId, at / 1000),
   // From its outline's blocks on: the glyphs are behind it.
-  fills: (threadId, at) => formAt(threadId, at / 1000 - GLYPHS.length / BEAT),
   // Its words go, then its title takes their place, before its birth is over.
   fade: ARRIVALS.fade + ARRIVALS.fold,
 });
