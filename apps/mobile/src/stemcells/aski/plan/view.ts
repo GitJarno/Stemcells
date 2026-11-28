@@ -157,13 +157,3 @@ export function headOf(
       cells === 0 ? null : headline(cells, flyingOf(tray, seenOf), off, false, counts(tray).queued),
   };
 }
-
-/** A waiting deletion the person drops from its own card: the plan's other Cells stay. */
-export const dropHold = (tray: Tray, i: number): Tray => ({
-  ...tray,
-  acts: tray.acts.map((one) =>
-    one.act.i === i && one.act.kind === "destroy" && one.status === "waiting"
-      ? { ...one, status: "dropped" as const }
-      : one,
-  ),
-});

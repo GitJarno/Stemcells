@@ -21,6 +21,7 @@ import {
   callable,
   comesAfter,
   counts,
+  drop,
   dropAll,
   held,
   onOf,
@@ -47,7 +48,7 @@ import { type CellAct, PlanRow } from "./PlanRow";
 import { planCarrier, trays } from "./run";
 import { sentNow, staggerOf } from "./sent";
 import type { PlanEntry } from "./trays";
-import { CLOSE_PLAN, dropHold, getsWorktree, headOf, seenIn } from "./view";
+import { CLOSE_PLAN, getsWorktree, headOf, seenIn } from "./view";
 
 /** From this width, points, a card sets a task on one line; under it the pickers stand under the title. */
 const ONE_LINE = 520;
@@ -240,7 +241,7 @@ export function PlanPanel(props: {
               status={one.status === "done" || one.status === "dropped" ? one.status : "waiting"}
               refused={entry.refused.get(one.act.i) ?? null}
               onHeld={() => void planCarrier().destroy(entry.id, one.act.i)}
-              onDrop={() => trays.change(entry.id, (next) => dropHold(next, one.act.i))}
+              onDrop={() => trays.change(entry.id, (next) => drop(next, one.act.i))}
             />
           ) : null}
         </Animated.View>

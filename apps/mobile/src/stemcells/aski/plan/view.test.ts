@@ -7,7 +7,7 @@ import {
 } from "../../../../../../stemcells/orchestrator/plan.ts";
 import { done, held, send, toggle, trayOf } from "../../../../../../stemcells/orchestrator/tray.ts";
 import { proposed } from "./proposed.fixture";
-import { dropHold, getsWorktree, headOf, messageSpans, modelLine, whyLines } from "./view";
+import { getsWorktree, headOf, messageSpans, modelLine, whyLines } from "./view";
 
 describe("what a plan's rows say", () => {
   it("shows every word of a Cell's message, the risky phrase apart and the note plain", () => {
@@ -99,11 +99,6 @@ describe("what a plan's rows say", () => {
     };
     const tray = trayOf({ ...plan, acts: [cell, deletion] });
     expect(headOf(tray).line).toBe("1 Cell");
-    // The deletion's own Drop takes the deletion alone: the Cell beside it still waits for Send.
-    expect(dropHold(dropHold(tray, 0), 1).acts.map((one) => one.status)).toEqual([
-      "waiting",
-      "dropped",
-    ]);
     expect(whyLines(cell, held(tray))).toHaveLength(1);
     expect(whyLines(cell, held(done(tray, 1)))).toEqual([]);
   });
