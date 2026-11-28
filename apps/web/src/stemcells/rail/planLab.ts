@@ -4,9 +4,7 @@
  */
 import {
   clearPlannedRows,
-  confirmPlannedRow,
   dropPlannedRow,
-  onPlannedRowOpened,
   type PlannedRow,
   setPlannedRows,
 } from "../../../../../stemcells/aski/planned.ts";
@@ -23,12 +21,8 @@ const lab = {
     setPlannedRows(planId, rows);
   },
   clear: clearPlannedRows,
-  confirm: confirmPlannedRow,
   drop: dropPlannedRow,
-  /** The check rows opened since the page loaded. */
-  opened: [] as string[],
 };
-onPlannedRowOpened((row) => void lab.opened.push(row.threadId));
 
 declare global {
   interface Window {

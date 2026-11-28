@@ -14,8 +14,7 @@ import { type BeforeSend, WordsSendSlot } from "../../words/send";
 import { useAskiPlans } from "../planning";
 import { runner } from "./PlanRunner";
 import { chatKeyOf, PlanRoom } from "./room";
-import { readCheckAlways, readPlanCap } from "./settings";
-import { beginPlan, closePlan, planRead } from "./store";
+import { beginPlan, closePlan, leavePlan, planRead } from "./store";
 
 export function AskiPlans(props: { readonly anchor: string }) {
   const aski = use(PlanRoom);
@@ -59,15 +58,7 @@ function Planning(props: { readonly anchor: string; readonly aski: CellRef }) {
           // Unheard, the server can't hold Aski's turn for the plan: the message is the chat's alone.
           if (!heard) return null;
           beginPlan(id, chat, Date.now(), text);
-          const plan = compilePlan({
-            ...request,
-            context: {
-              ...now.context,
-              cap: readPlanCap(),
-              always: readCheckAlways(),
-            },
-            think,
-          });
+          const plan = compilePlan({ ...request, context: now.context, think });
           return (sent: unknown) => {
             void Promise.resolve(sent)
               .catch(() => undefined)
@@ -87,10 +78,11 @@ function Planning(props: { readonly anchor: string; readonly aski: CellRef }) {
     return sendSlot("plan", beforeSend);
   });
 
-  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Listen for Enter on an empty composer while a plan waits, and stop listening on unmount.
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Listen for Enter and Esc on an empty composer while a plan waits, and stop listening on unmount.
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.key !== "Enter" || event.shiftKey || event.metaKey || event.ctrlKey) return;
+      if (event.key !== "Enter" && event.key !== "Escape") return;
+      if (event.shiftKey || event.metaKey || event.ctrlKey) return;
       if (event.altKey || event.isComposing) return;
       const editor = editorOf(anchor);
       if (editor === null || !(event.target instanceof Node)) return;
@@ -98,10 +90,13 @@ function Planning(props: { readonly anchor: string; readonly aski: CellRef }) {
       if (promptOf(editor.state.doc).trim().length > 0) return;
       const waiting = runner.waitingIn(chatKeyOf(aski));
       if (waiting === null) return;
-      // Enter on an empty composer says yes to the Cells that wait; a deletion never hears it.
+      // Enter on an empty composer is the plan's Send, which a held deletion or a Cell with no
+      // project still holds; Esc is its Cancel. Either way the key is the plan's.
       event.preventDefault();
       event.stopPropagation();
-      runner.confirmAll(waiting);
+      if (event.key === "Enter") return runner.send(waiting);
+      runner.dropAll(waiting);
+      leavePlan(waiting);
     };
     document.addEventListener("keydown", onKey, true);
     return () => document.removeEventListener("keydown", onKey, true);

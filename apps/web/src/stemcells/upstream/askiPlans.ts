@@ -58,6 +58,7 @@ import { conciseModelName } from "../models/names";
 import type { CellRef } from "../tabs/layout";
 import { projectRefOf, projectRefOfKey, startingModel } from "./draftWords";
 import { type CellStart, type DraftSetup, useStartCells } from "./launch";
+import type { PlanModel } from "./planPick";
 import { fromPrimary } from "./planner";
 import { useRailProjects } from "./rail";
 import { useWordsCatalog, useWordsPlaces, wordsCatalogOf } from "./words";
@@ -445,6 +446,85 @@ export function useOwnWorktree(aski: CellRef | null): (act: StartAct) => boolean
   };
 }
 
+/** What a row says of a Cell before it exists (`StartFacts`). */
+function startFacts(
+  home: string,
+  projectKeyOf: PlanHands["projectKeyOf"],
+  act: StartAct,
+): StartFacts {
+  const projectKey = projectKeyOf(act.place);
+  const environmentId = projectKey?.slice(0, projectKey.indexOf(":")) ?? home;
+  const projectId = projectKey?.slice(projectKey.indexOf(":") + 1) ?? "";
+  const models = modelsOf(environmentId);
+  const instanceId = act.selection?.instanceId ?? act.model?.instanceId;
+  const slug = act.selection?.model ?? act.model?.id;
+  const named =
+    slug === undefined
+      ? projectKey === null
+        ? null
+        : defaultWith(environmentId, projectKey, act.effort).entry
+      : (models.find((model) => model.instanceId === instanceId && model.id === slug) ?? null);
+  const driver = readEnvironmentProviders(environmentId as EnvironmentId)?.find(
+    (provider) => provider.instanceId === (named?.instanceId ?? instanceId),
+  )?.driver;
+  const said =
+    act.model?.effort?.level ??
+    act.selection?.options?.find((option) => /effort/iu.test(option.id))?.value ??
+    act.effort;
+  return {
+    projectId,
+    modelName: named?.name ?? act.model?.name ?? (slug ? conciseModelName(slug) : ""),
+    effort: typeof said === "string" ? said : undefined,
+    driver,
+  };
+}
+
+/**
+ * What a plan's row reads of each Cell on Aski's server `aski`: where its project is, what it
+ * says of the Cell before it exists, and the model it starts on as its picker shows it (its own,
+ * else its project's default with the effort the person said).
+ */
+export function usePlanRows(aski: CellRef | null): {
+  readonly projectOf: (
+    act: StartAct,
+  ) => { readonly environmentId: string; readonly projectId: string } | null;
+  readonly factsOf: (act: StartAct) => StartFacts;
+  readonly modelOf: (act: StartAct) => PlanModel | null;
+} {
+  const home = aski?.environmentId ?? "";
+  const projectKeyOf = useProjectKeyOf(home);
+  // Read here so a provider coming ready draws the rows again.
+  useWordsCatalog(aski?.environmentId ?? null);
+  return {
+    projectOf: (act) => {
+      const projectKey = projectKeyOf(act.place);
+      if (projectKey === null) return null;
+      const ref = projectRefOfKey(projectKey);
+      return { environmentId: ref.environmentId, projectId: ref.projectId };
+    },
+    factsOf: (act) => startFacts(home, projectKeyOf, act),
+    modelOf: (act) => {
+      if (act.model !== null)
+        return { instanceId: act.model.instanceId, id: act.model.id, effort: act.model.effort };
+      const projectKey = projectKeyOf(act.place);
+      // As a launch reads it (`launchOf`): the project's own machine names its default.
+      const { selection, entry } =
+        projectKey === null
+          ? { selection: firstReadyModel(home), entry: null }
+          : defaultWith(projectRefOfKey(projectKey).environmentId, projectKey, act.effort);
+      if (selection === null) return null;
+      const level = selection.options?.find(
+        (option) => option.id === entry?.effortOption && typeof option.value === "string",
+      );
+      return {
+        instanceId: selection.instanceId,
+        id: selection.model,
+        effort: level === undefined ? null : { option: level.id, level: String(level.value) },
+      };
+    },
+  };
+}
+
 /**
  * Which of `threadIds` the app lists, as one word that changes when one of them appears: the
  * runner looks again then (a queued Cell the server started). Follows nothing for none.
@@ -508,33 +588,7 @@ export function usePlanHands(aski: CellRef | null): PlanHands {
           : [],
       );
     },
-    factsOf: (act) => {
-      const projectKey = projectKeyOf(act.place);
-      const environmentId = projectKey?.slice(0, projectKey.indexOf(":")) ?? home;
-      const projectId = projectKey?.slice(projectKey.indexOf(":") + 1) ?? "";
-      const models = modelsOf(environmentId);
-      const instanceId = act.selection?.instanceId ?? act.model?.instanceId;
-      const slug = act.selection?.model ?? act.model?.id;
-      const named =
-        slug === undefined
-          ? projectKey === null
-            ? null
-            : defaultWith(environmentId, projectKey, act.effort).entry
-          : (models.find((model) => model.instanceId === instanceId && model.id === slug) ?? null);
-      const driver = readEnvironmentProviders(environmentId as EnvironmentId)?.find(
-        (provider) => provider.instanceId === (named?.instanceId ?? instanceId),
-      )?.driver;
-      const said =
-        act.model?.effort?.level ??
-        act.selection?.options?.find((option) => /effort/iu.test(option.id))?.value ??
-        act.effort;
-      return {
-        projectId,
-        modelName: named?.name ?? act.model?.name ?? (slug ? conciseModelName(slug) : ""),
-        effort: typeof said === "string" ? said : undefined,
-        driver,
-      };
-    },
+    factsOf: (act) => startFacts(home, projectKeyOf, act),
     start: async (act, projectKey) => {
       const launch = launchOf(act, projectKey);
       if (launch === null) return { ok: false, error: "That project's machine isn't connected." };

@@ -17,7 +17,6 @@ import {
   useRef,
   useState,
   useSyncExternalStore,
-  type CSSProperties,
   type ReactNode,
 } from "react";
 
@@ -35,10 +34,8 @@ import { drawnMoonPhase } from "../motion/moon";
 import { type Sight, watchSight } from "../motion/sight";
 import { skyAtStage } from "../motion/sky";
 import { ProjectMark } from "../project/ProjectMark";
-import { askiCellOf } from "../tabs/askiTab";
 import { CellMark } from "../tabs/CellMark";
 import { openNewCellPane } from "../tabs/commands";
-import { readWorkspace } from "../tabs/store";
 import { reducedMotion } from "../tokens/motion";
 import {
   CellAge,
@@ -82,33 +79,32 @@ import {
   EMPTY_WORDS,
   SLEEP,
   STAGE_WORDS,
-  STATUS_WORDS,
   WAKE,
   wakesWords,
 } from "../../../../../stemcells/words/awake.ts";
 import { clearedWords, STEM_CELL_FACTS } from "../../../../../stemcells/words/inbox.ts";
-import { CHECK_ROW_WORDS } from "../../../../../stemcells/words/planned.ts";
-import { awakeWithPlanned, openPlannedRow } from "../../../../../stemcells/aski/planned.ts";
+import { awakeWithPlanned } from "../../../../../stemcells/aski/planned.ts";
 import { type Arrival, cellsListed, useArrivals, useArrivalsComing } from "./arrivals";
-import {
-  byRecent,
-  type Launchable,
-  rowStateOf,
-  type RowState,
-  type RowStatus,
-  rowStatusOf,
-} from "./awake";
+import { byRecent, type Launchable, rowStateOf, rowStatusOf } from "./awake";
 import { COLUMN_STAGES, useColumnStore, type ColumnStage } from "./column";
 import { shows } from "./filter";
-import { STATUS_ICON } from "./StatusIcon";
 import { Hops } from "./Hops";
 import { standingsOf, type Standings } from "./moves";
 import { DiskPlate } from "./DiskPlate";
 import { useLaunchesArrive } from "./launched";
 import { litFor } from "./lit";
-import { BirthWords, Unsure, useArrivalPlays, useTitleGlide } from "./Planned";
+import { BirthWords, useArrivalPlays, useTitleGlide } from "./Planned";
 import { PlanRing } from "./PlanRing";
 import { RailButton } from "./RailParts";
+import {
+  type RowAct,
+  RowCell,
+  RowEnd,
+  RowField,
+  type RowLight,
+  rowPlateProps,
+  RowTitle,
+} from "./RowParts";
 import { ProxyTrack } from "../tabs/ProxyTrack";
 import { useRowMotion } from "./rowMotion";
 import { ColumnSky } from "./Sky";
@@ -698,18 +694,19 @@ function AsleepCellRow(props: { cell: AsleepCell; now: number }) {
 
 /**
  * One Cell's line: opens its chat, shows the thread's card on hover, and its act (Sleep or
- * Wake) takes the time's place while pointed at. Leaving, it folds away.
+ * Wake) takes the time's place while pointed at. Leaving, it folds away. Its pieces are the
+ * rows' own (`RowParts.tsx`), which the rows of Aski's plan are drawn from too.
  */
 function CellLine(props: {
   cell: Ref;
   title: string;
   line: string | null;
   leaving: boolean;
-  light: { readonly state: RowState; readonly tone: string } | null;
+  light: RowLight | null;
   /** How long it has been like this; upstream's age while the stream doesn't say. */
   when: string | null;
   /** None for a planned row whose Cell hasn't started. */
-  act: { readonly label: string; readonly icon: ReactNode; readonly run: () => void } | null;
+  act: RowAct | null;
   onOpened?: ((threadId: string) => void) | undefined;
   /** Its arrival from Aski's plan, while its line says its birth (`Planned.tsx`). */
   birth?: Arrival | null;
@@ -720,8 +717,6 @@ function CellLine(props: {
   const shell = useCellShell(ref);
   const birth = props.birth ?? null;
   const born = birth?.row ?? null;
-  // A check row waits for the person's tap in Aski's chat: it is an outline until then.
-  const outline = born?.tier === "check";
   // Once its birth words have gone, its time comes in after the title has taken their place (cells.css).
   const [wasBorn, setWasBorn] = useState(born !== null);
   if (born !== null && !wasBorn) setWasBorn(true);
@@ -730,13 +725,6 @@ function CellLine(props: {
   useArrivalPlays(row, birth);
   useTitleGlide(titled, born !== null);
   const onOpen = () => {
-    if (born !== null && outline) {
-      // Whoever holds the plan shows it; Aski's chat, where it stands, comes forward.
-      openPlannedRow(born);
-      const aski = askiCellOf(readWorkspace());
-      if (aski) open(aski);
-      return;
-    }
     // A planned Cell opens once its chat is known here.
     if (shell === null && born !== null) return;
     open(props.cell);
@@ -754,43 +742,22 @@ function CellLine(props: {
       data-pinned={props.pinned ? "" : undefined}
       data-born={born === null ? undefined : ""}
       data-was-born={wasBorn && born === null ? "" : undefined}
-      data-outline={outline ? "" : undefined}
       inert={props.leaving}
     >
       <div data-cells-row-fold="">
         <CellCard
           shell={shell}
           line={props.line}
-          note={outline ? CHECK_ROW_WORDS : null}
-          trigger={
-            <div
-              role="button"
-              tabIndex={0}
-              data-cells-open=""
-              data-light={light?.state}
-              style={
-                light === null
-                  ? undefined
-                  : ({ "--cells-row-tone": `var(${light.tone})` } as CSSProperties)
-              }
-              onClick={onOpen}
-              onKeyDown={(event) => {
-                if (event.target !== event.currentTarget) return;
-                if (event.key !== "Enter" && event.key !== " ") return;
-                event.preventDefault();
-                onOpen();
-              }}
-            />
-          }
+          trigger={<div {...rowPlateProps({ light, onOpen })} />}
         >
           {light === null ? null : (
-            <span data-cells-light="" aria-hidden>
+            <RowField>
               <RowBand on={light.state === "flying"} />
-            </span>
+            </RowField>
           )}
-          <span data-cells-row-cell="">
-            <CellMark cell={ref} forms={born !== null} outline={outline} driver={born?.driver} />
-          </span>
+          <RowCell>
+            <CellMark cell={ref} forms={born !== null} driver={born?.driver} />
+          </RowCell>
           {shell !== null ? (
             <CellProjectMark shell={shell} settles={born !== null} />
           ) : born !== null ? (
@@ -800,52 +767,22 @@ function CellLine(props: {
               settles
             />
           ) : null}
-          {born === null ? null : <Unsure row={born} field="place" />}
           {birth === null ? null : <BirthWords arrival={birth} />}
-          <span ref={titled} data-cells-row-title="" data-settle={born === null ? undefined : ""}>
+          <RowTitle ref={titled} settles={born !== null}>
             {props.title}
-          </span>
-          {born === null ? null : <Unsure row={born} field="words" />}
-          <span data-cells-row-end="">
-            <span
-              data-cells-row-age=""
-              className={status === null ? undefined : STATUS_ICON[status].className}
-            >
-              {light === null ? null : <RowStatusIcon status={status} />}
-              <span data-cells-row-time="">
-                {props.when ??
-                  (shell === null ? null : <CellAge shell={shell} settled={light === null} />)}
-              </span>
-            </span>
-            {props.act === null ? null : (
-              <button
-                type="button"
-                aria-label={props.act.label}
-                data-cells-act=""
-                onPointerDown={(event) => event.stopPropagation()}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  props.act?.run();
-                }}
-              >
-                {props.act.icon}
-              </button>
-            )}
-          </span>
+          </RowTitle>
+          <RowEnd
+            lit={light !== null}
+            status={status}
+            when={
+              props.when ??
+              (shell === null ? null : <CellAge shell={shell} settled={light === null} />)
+            }
+            act={props.act}
+          />
         </CellCard>
       </div>
     </li>
-  );
-}
-
-/** The icon's place before the time, kept when there is none, so every row's time lines up. */
-function RowStatusIcon(props: { status: RowStatus | null }) {
-  if (props.status === null) return <span data-cells-row-status="" aria-hidden />;
-  const { Icon } = STATUS_ICON[props.status];
-  return (
-    <span data-cells-row-status="" role="img" aria-label={STATUS_WORDS[props.status]}>
-      <Icon aria-hidden />
-    </span>
   );
 }
 

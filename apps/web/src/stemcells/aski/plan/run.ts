@@ -1,8 +1,7 @@
 /**
- * Carries the window's plans out (aski-orchestrator.md, decisions 5, 16 and 17): each Cell on its
- * way is started once with the person's own commands, or handed to the server when it comes after
- * others or gets a worktree, and the server and the Awake list hear of it. A deletion is carried
- * out only from `destroy`, which only a held hand calls (`PlanCard.tsx`).
+ * Carries the window's plans out (aski-orchestrator.md, decisions 5, 16, 17 and 18). Nothing
+ * starts before the person's Send; then each Cell is started once, by the person's own command
+ * or by the server (it comes after others, or gets a worktree). Only `destroy` deletes.
  */
 import {
   clearPlannedRows,
@@ -16,23 +15,23 @@ import {
   CALL_BACK_MS,
   calledBack,
   comesAfter,
-  confirm,
-  confirmAll,
   done,
   drop,
   dropAll,
   failed,
-  held,
   learnedOf,
   outcomeOf,
+  send,
   settled,
   started,
   startNow,
+  toggle,
   type Tray,
   unqueued,
-  unsureField,
+  unsendable,
 } from "../../../../../../stemcells/orchestrator/tray.ts";
 import { placeLabel } from "../../../../../../stemcells/words/plans.ts";
+import { markSent } from "./sent";
 import { changePlan, leavePlan, type LivePlan, planOf, readPlans } from "./store";
 
 /** A Cell, as the workspace names one. */
@@ -185,9 +184,8 @@ export function createRunner(hands: () => RunnerHands | null) {
     tray.acts.flatMap((one): PlannedRow[] => {
       const { act, status } = one;
       if (act.kind !== "start") return [];
-      if (status !== "starting" && status !== "started" && status !== "waiting") return [];
-      // What waits in Aski's reply or under a message waits on its card: Awake holds no outline for it.
-      if (status === "waiting" && live.source !== "message") return [];
+      // A Cell has a row in Awake only once it is sent: what waits, waits on its plan's card.
+      if (status !== "starting" && status !== "started") return [];
       // Under its message a plan forms rows only for what this window starts, until Awake's own take over.
       if (
         live.source === "kept" &&
@@ -207,8 +205,7 @@ export function createRunner(hands: () => RunnerHands | null) {
           title: act.title,
           modelName: facts.modelName,
           effort: facts.effort,
-          tier: status === "waiting" ? "check" : "start",
-          unsure: status === "waiting" ? unsureField(act) : undefined,
+          tier: "start",
           born: live.at,
           driver: facts.driver,
         },
@@ -318,17 +315,47 @@ export function createRunner(hands: () => RunnerHands | null) {
 
   return {
     sync,
-    /** The person's yes to one waiting Cell. */
-    confirm: (planId: string, i: number) => changePlan(planId, (tray) => confirm(tray, i)),
-    confirmAll: (planId: string) => changePlan(planId, confirmAll),
-    /** A waiting Cell, or a queued one, goes. */
-    drop: (planId: string, i: number) => changePlan(planId, (tray) => drop(tray, i)),
+    /**
+     * The person's one yes: every Cell left on starts or is queued, all or nothing. Each Cell on
+     * its way forms on its card's row a stagger after the one before (`sent.ts`).
+     */
+    send: (planId: string) => {
+      const before = planOf(planId)?.tray ?? null;
+      if (before === null || unsendable(before) !== null) return;
+      const after = send(before);
+      markSent(
+        planId,
+        after.acts.flatMap((one) => (one.status === "starting" ? [one.act.i] : [])),
+      );
+      changePlan(planId, () => after);
+    },
+    /** A waiting Cell is switched off, or back on. */
+    toggle: (planId: string, i: number) => changePlan(planId, (tray) => toggle(tray, i)),
+    /** A queued Cell goes, or a deletion the person no longer wants: nothing else drops alone. */
+    drop: (planId: string, i: number) =>
+      changePlan(planId, (tray) => {
+        const one = tray.acts.find((each) => each.act.i === i);
+        if (one?.act.kind !== "destroy" || one.status !== "waiting") return drop(tray, i);
+        return {
+          ...tray,
+          acts: tray.acts.map((each) => (each === one ? { ...one, status: "dropped" } : each)),
+        };
+      }),
     /** The person won't wait for the Cells a queued one comes after. */
-    startNow: (planId: string, i: number) => changePlan(planId, (tray) => startNow(tray, i)),
+    startNow: (planId: string, i: number) => {
+      const before = planOf(planId)?.tray ?? null;
+      if (before === null) return;
+      const after = startNow(before, i);
+      if (after.acts.find((one) => one.act.i === i)?.status !== "starting") return;
+      markSent(planId, [i]);
+      changePlan(planId, () => after);
+    },
+    /** Cancel, or Esc: everything still waiting goes. */
     dropAll: (planId: string) => changePlan(planId, dropAll),
     /**
-     * The plan of `chat` with a Cell waiting that Enter could start. Only a message's own plan:
-     * a proposed one holds words Aski wrote, and starts by a tap on its card.
+     * The plan of `chat` that waits on the person over the composer, where Enter sends it and Esc
+     * drops it. Only a message's own plan: a proposed one holds words Aski wrote, and is sent by
+     * the button on its card.
      */
     waitingIn: (chat: string): string | null =>
       readPlans().find(
@@ -336,10 +363,7 @@ export function createRunner(hands: () => RunnerHands | null) {
           plan.chat === chat &&
           plan.source === "message" &&
           plan.tray !== null &&
-          !held(plan.tray) &&
-          plan.tray.acts.some(
-            (one) => one.status === "waiting" && one.act.kind === "start" && one.act.place !== null,
-          ),
+          plan.tray.acts.some((one) => one.status === "waiting"),
       )?.id ?? null,
     /** A Cell just started is stopped and archived. */
     callBack: async (planId: string, i: number) => {
