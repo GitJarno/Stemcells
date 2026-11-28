@@ -171,6 +171,11 @@ export const WORD_TABLE: ReadonlyArray<Swap> = [
     "packages/client-runtime/src/state/threadActivityAnnouncement.ts",
     within('working: msg("Working"),', "Working", FLYING),
   ),
+  // A chat's work log: "Thought ×3", the count without brackets.
+  ...inFile(
+    "packages/client-runtime/src/work-log/presentation.ts",
+    within('msg("Thought (×{count})"', "(×{count})", "×{count}"),
+  ),
   // The web.
   ...inFile(
     "apps/web/src/components/ChatView.tsx",

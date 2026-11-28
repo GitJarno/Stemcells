@@ -493,7 +493,9 @@ export function tableFaults(table: ReadonlyArray<Swap> = WORD_TABLE): string[] {
     if (swap.theirs === "" || swap.words.split(swap.theirs).length !== 2) {
       faults.push(`${entry}: its words must say "${swap.theirs}" once`);
     }
-    if (CODE.test(swap.ours)) faults.push(`${entry}: "${swap.ours}" is code, not words`);
+    // A message's own argument ("{count}") may stay in ours, where upstream's part says it too.
+    const said = swap.ours.replace(/\{\w+\}/g, (arg) => (swap.theirs.includes(arg) ? "" : arg));
+    if (CODE.test(said)) faults.push(`${entry}: "${swap.ours}" is code, not words`);
     if (!Number.isInteger(swap.times) || swap.times < 1) {
       faults.push(`${entry}: must be said at least once`);
     }
