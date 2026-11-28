@@ -409,6 +409,85 @@ lists them and removes them.
 - The compiler's instructions are text a model reads: `evals/README.md`
   applies.
 
+### 15. A plan lives on under its message
+
+A plan used to end where its Cells started: its card left the composer
+after ten seconds, the server forgot it in two hours, and a reload forgot
+what still waited. Now the server keeps each plan and what came of it
+(`stemcells/aski/plans.json`, the newest two hundred), and the plan's
+card stands under the message it was made from, in Aski's chat, on the
+Mac and the phone, for as long as the chat does.
+
+- The card over the composer is for the moment of deciding: what starts,
+  what waits for a tap, Call back. Once nothing of it waits on the
+  person's hand there, it leaves, and the card under the message is the
+  plan.
+- A row reads the Cell as the Awake list does: Flying, Landed, Input, and
+  under a landed Cell its own line and how it landed. No model writes it:
+  it is the standing the server already keeps for every Cell
+  (`needs/stage.ts`), which also asks for the person when a Cell is quiet
+  too long. Nothing new watches for a stall.
+- A Cell that still waits can be started or dropped from that card, on
+  any device, after any reload.
+- Aski hears it the same way. `stemcells_plan` answers with each Cell's
+  standing beside what started, and a message the person sends Aski's
+  chat carries one note when a Cell of that chat's plans landed or asked
+  since Aski was last told. No turn of Aski's is spent to tell it.
+
+### 16. After: one Cell waits for another
+
+"Fix the importer in Harbor, and once that's done write its changelog"
+is two Cells, and the second is worth nothing started now. An act may
+name the acts it comes after.
+
+- The compiler answers `after` (earlier acts of its own answer) with
+  `afterHeard`, the person's words for it. Code keeps it only when those
+  words are in the message and say an order ("after", "once", "when",
+  "then"), and only toward an earlier Cell, so nothing can wait in a
+  ring. A list said in order ("first … second …") is not an order to
+  wait.
+- Such a Cell is queued: it starts nothing, its row says whom it waits
+  for, and Start now and Drop are one tap. A wrong `after` costs a wait
+  the person sees; a missed one is today's behaviour.
+- The server holds a queued Cell and starts it itself (`aski/line.ts`),
+  so a chain goes on with the phone in a pocket. The client hands over
+  what it would have started with: the project, the model, the modes. The
+  words are the server's own copy of the plan's, the person's verbatim.
+- It starts when every Cell before it has landed with nothing left for
+  the person: done, and not stopped, failed, rolled back or left waiting.
+  Anything else and it stays queued, saying why. A queued Cell that
+  waited a day is dropped.
+- It works where the Cell before it worked, in the same project: that
+  Cell's worktree, else the project's folder. In another project it
+  starts as any Cell of that project.
+- It is told one line more: whom it came after, by name and thread. It
+  is handed nothing that Cell wrote; `stemcells_recall` reads that, and
+  only inside its own repository (decision 10).
+- A deletion is never queued and nothing queues behind one: the hold
+  stays a hand's own.
+
+### 17. Where a plan's Cells work
+
+Two Cells writing in one folder can trip each other; a worktree each
+ends that, and costs an install and a build each, which on a large
+project is minutes and gigabytes. So a worktree is never Aski's own idea.
+
+- A plan's Cell starts where a new Cell of the person's would: the
+  project's own default (`defaultThreadEnvMode`), which plans ignored
+  before.
+- The person's word changes it for a message: "each in its own worktree"
+  (or copy, or branch), or "in the project's folder". The compiler
+  answers `apart` with `apartHeard`; code keeps it only when those words
+  are in the message and say so, and they are not passed on to the Cell.
+- A Cell that gets a worktree is started by the server, the way a queued
+  one is: it knows whether the folder is a repository (a plain folder
+  has no worktree to give, and the Cell starts in it) and where a new
+  worktree starts from, as a scheduled task's does. The row says "own
+  worktree" before it starts.
+- Cells that share a folder already know of each other: every Cell is
+  told who else is at work in its repository (`peers/roster.ts`). Taking
+  turns is decision 16.
+
 ## What changes in what's built
 
 - **The reader** (`words/`) and its planner stay the new chat's
@@ -467,6 +546,15 @@ Each lands on the Mac and the phone together where a person sees it.
 
 Slices 2 to 4 are the core and ship in that order. 5 makes it a joy. 7
 and 8 stand alone.
+
+10. [ ] **A plan under its message.** The server keeps plans; the card
+        under the message on Mac and phone, with each Cell's standing; a
+        waiting Cell starts from it after a reload; Aski's tool and note say
+        how the Cells stand (decision 15).
+11. [ ] **After, and own worktrees.** `after` and `apart` in the compiler
+        and the checks, with corpus cases; the queue on the server and the
+        start from there; queued rows, Start now and Drop on both clients
+        (decisions 16 and 17).
 
 ## Review
 

@@ -1,6 +1,7 @@
 // What a client and the server say to each other about plans
 // (`apps/server/src/stemcells/aski/compileHttp.ts`). Both clients speak it the same way.
 
+import { flat } from "./names.ts";
 import type { CompileContext, Plan, Selection } from "./plan.ts";
 
 export const ASKI_PATH = "/api/stemcells/aski";
@@ -10,6 +11,8 @@ export const EXPECT_PATH = `${ASKI_PATH}/expect`;
 export const COMPILE_PATH = `${ASKI_PATH}/compile`;
 /** GET ?id=: a plan and what came of it (a plan Aski's chat proposed is read this way). */
 export const PLAN_PATH = `${ASKI_PATH}/plan`;
+/** GET ?thread=: the plans made in one of Aski's chats, newest first, each with what came of it. */
+export const PLANS_PATH = `${ASKI_PATH}/plans`;
 /** POST: what came of a plan's acts, and the names the person confirmed. */
 export const OUTCOME_PATH = `${ASKI_PATH}/outcome`;
 /** GET, DELETE: the names Aski has learned. */
@@ -63,7 +66,12 @@ export function planIdOfFence(body: string): string | null {
  * told by their family; another provider's default serves for both.
  */
 export function thinkWith(
-  models: ReadonlyArray<{ readonly instanceId: string; readonly id: string; readonly effortOption?: string; readonly efforts: readonly string[] }>,
+  models: ReadonlyArray<{
+    readonly instanceId: string;
+    readonly id: string;
+    readonly effortOption?: string;
+    readonly efforts: readonly string[];
+  }>,
   instanceId: string,
 ): { fast: Selection; strong?: Selection } | null {
   const own = models.filter((model) => model.instanceId === instanceId);
@@ -82,4 +90,56 @@ export function thinkWith(
     fast: selectionOf(fast),
     ...(strong !== undefined && strong !== fast ? { strong: selectionOf(strong) } : {}),
   };
+}
+
+/** A plan as the server keeps it, for the card under the message it was made from. */
+export interface KeptPlan {
+  readonly id: string;
+  /** When it was made, in epoch milliseconds. */
+  readonly at: number;
+  /** The message it was made from, once that message's turn began; null until then. */
+  readonly messageId: string | null;
+  /** That message's words, as `planWords` reads them. */
+  readonly words: string;
+  readonly plan: Plan;
+  readonly outcome: ReadonlyArray<{
+    readonly i: number;
+    readonly status: OutcomeRequest["acts"][number]["status"];
+    readonly reason?: string | undefined;
+  }> | null;
+}
+
+export interface PlansReply {
+  readonly plans: ReadonlyArray<KeptPlan>;
+}
+
+// A Cell's chip in a message (upstream's thread context link) says what Aski should look at;
+// it is no part of the words a plan was made from. The server's `askiPlans.contract.test.ts`
+// pins its form.
+const CHIP = /\[[^[\]\n]*\]\(t3-context:\/\/v1\/thread\/[^\s)]+\)/gu;
+
+/** A message's words as a plan is matched to it: no chip, one case, single spaces. */
+export const planWords = (text: string): string => flat(text.replace(CHIP, " "));
+
+/** How long after a plan a message with its words still counts as that plan's message. */
+export const PLAN_NOTE_MS = 2 * 60_000;
+
+/**
+ * The plan a message in Aski's chat was made into: the one the server tied to it, else the
+ * latest untied one made from the same words within `PLAN_NOTE_MS` of it.
+ */
+export function planOfMessage(
+  plans: ReadonlyArray<KeptPlan>,
+  message: { readonly id: string; readonly text: string; readonly at: number },
+): KeptPlan | null {
+  const tied = plans.find((plan) => plan.messageId === message.id);
+  if (tied !== undefined) return tied;
+  const words = planWords(message.text);
+  let found: KeptPlan | null = null;
+  for (const plan of plans) {
+    if (plan.messageId !== null || plan.words !== words) continue;
+    if (Math.abs(plan.at - message.at) > PLAN_NOTE_MS) continue;
+    if (found === null || plan.at > found.at) found = plan;
+  }
+  return found;
 }

@@ -11,7 +11,7 @@ import { appendPlan } from "../planner/history.ts";
 import * as UpstreamDisk from "../upstream/disk.ts";
 import * as Upstream from "../upstream/planner.ts";
 import { ModelSelection } from "../upstream/planner.ts";
-import { expectPlan, planOfId, putPlan, settlePlan, unexpectPlan } from "./book.ts";
+import { expectPlan, planOfId, plansOf, putPlan, settlePlan, unexpectPlan } from "./book.ts";
 import { compile, FIRST_CALL, SECOND_CALL } from "./compile.ts";
 import { forget, learn, Learned, readLearned, withNames } from "./learned.ts";
 
@@ -163,6 +163,17 @@ const planRoute = Effect.gen(function* () {
     : json({ plan: entry.plan, outcome: entry.outcome });
 });
 
+const plansRoute = Effect.gen(function* () {
+  const request = yield* HttpServerRequest.HttpServerRequest;
+  const thread = Option.match(HttpServerRequest.toURL(request), {
+    onNone: () => null,
+    onSome: (url) => url.searchParams.get("thread"),
+  });
+  return thread === null || thread.length === 0 || thread.length > NAME_MOST
+    ? json({ error: "Name the chat." }, 400)
+    : json({ plans: plansOf(thread) });
+});
+
 const outcomeRoute = Effect.gen(function* () {
   const request = yield* HttpServerRequest.HttpServerRequest;
   const text = yield* boundedText(request, OUTCOME_BODY_MOST);
@@ -202,6 +213,7 @@ export const makeLayer = (
       yield* router.add("POST", `${ASKI_PATH}/expect`, operate(expectRoute));
       yield* router.add("POST", `${ASKI_PATH}/compile`, operate(compileRoute(times)));
       yield* router.add("GET", `${ASKI_PATH}/plan`, UpstreamDisk.withReadAccess(planRoute));
+      yield* router.add("GET", `${ASKI_PATH}/plans`, UpstreamDisk.withReadAccess(plansRoute));
       yield* router.add("POST", `${ASKI_PATH}/outcome`, operate(outcomeRoute));
       yield* router.add("GET", `${ASKI_PATH}/learned`, UpstreamDisk.withReadAccess(learnedRoute));
       yield* router.add("DELETE", `${ASKI_PATH}/learned`, operate(forgetRoute));

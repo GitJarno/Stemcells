@@ -18,7 +18,7 @@ import type { toolkitRegistration } from "../../mcp/McpHttpServer.ts";
 import * as McpInvocationContext from "../../mcp/McpInvocationContext.ts";
 import * as McpToolAccess from "../../mcp/McpToolAccess.ts";
 import * as ProjectStore from "../../orchestration-v2/ProjectStore.ts";
-import { outcomeOf, planOfId, putPlan } from "../aski/book.ts";
+import { markTold, outcomeOf, planOfId, putPlan, standingOf } from "../aski/book.ts";
 import { ASKI_INSTANCE_ID } from "../aski/instanceId.ts";
 import { planReport } from "../aski/note.ts";
 import { ModelSelection } from "./planner.ts";
@@ -100,7 +100,9 @@ const handlers = McpToolAccess.toLayer(
           if (entry === null)
             return yield* failure("invalid_request", `No plan ${id}. It may be too old to read.`);
           const outcome = yield* Effect.promise(() => outcomeOf(id, OUTCOME_WAIT_MS));
-          return { report: planReport(entry.plan, outcome) };
+          // Read again: the outcome just told says which Cells started.
+          markTold(planOfId(id) ?? entry);
+          return { report: planReport(entry.plan, outcome, standingOf) };
         }),
       ),
       stemcells_propose: McpToolAccess.readsAsCaller(

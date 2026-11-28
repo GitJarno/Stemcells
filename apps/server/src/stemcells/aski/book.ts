@@ -2,11 +2,15 @@
 // The plans Aski has made lately, on this server (stemcells/tasks/aski-orchestrator.md,
 // decisions 1 and 5). A client asks for a plan, carries it out with the person's own access and
 // says what came of it; Aski's chat reads that through `stemcells_plan`, so its one line names
-// what really started. Kept in memory: a plan is minutes of work, and the plan history has the
-// record.
+// what really started. The book is read from memory and kept on disk (`Keeper.ts`), so a plan
+// outlives a restart and stands under its message (decision 15).
 
-import { flat } from "../../../../../stemcells/orchestrator/names.ts";
-import type { Plan } from "../../../../../stemcells/orchestrator/plan.ts";
+import type { Plan, StartAct } from "../../../../../stemcells/orchestrator/plan.ts";
+import {
+  type KeptPlan,
+  PLAN_NOTE_MS,
+  planWords,
+} from "../../../../../stemcells/orchestrator/wire.ts";
 
 /** What became of one act. `waiting` is a check or a hold the person hasn't answered. */
 export interface ActOutcome {
@@ -24,13 +28,30 @@ export interface BookEntry {
   readonly threadId: string | null;
   readonly at: number;
   readonly outcome: ReadonlyArray<ActOutcome> | null;
+  /** The message in Aski's chat it was made from, once that message's turn began. */
+  readonly messageId: string | null;
+}
+
+/** How a Cell stands, as the needs list has it (`needs/stage.ts`). */
+export interface Standing {
+  readonly stage: "working" | "needs-you" | "done";
+  /** Its own word: what it delivered, or what is left. */
+  readonly line: string | null;
+  readonly landing: {
+    readonly verdict: "shown" | "claimed" | "short";
+    readonly proof: string;
+  } | null;
 }
 
 /** How long a plan stays readable. */
-const KEPT_MS = 2 * 60 * 60_000;
-/** How long after a plan a message with its words still counts as that plan's message. */
-const NOTE_MS = 2 * 60_000;
+const KEPT_MS = 30 * 24 * 60 * 60_000;
+const NOTE_MS = PLAN_NOTE_MS;
 const MOST = 200;
+/** How long a plan's Cells are still news to Aski's chat. */
+const NEWS_MS = 7 * 24 * 60 * 60_000;
+/** The most Cells one note tells of. */
+const NEWS_MOST = 8;
+const TOLD_MOST = 2_000;
 
 const entries = new Map<string, BookEntry>();
 /** Plans a client said are coming: asked for, not yet made. */
@@ -47,21 +68,128 @@ const expected = new Map<
 const MAKING_MS = 40_000;
 const waiting = new Map<string, Array<(outcome: ReadonlyArray<ActOutcome>) => void>>();
 
-// A Cell's chip in a message (upstream's thread context link) says what Aski should look at;
-// it is no part of the words a plan was made from. `askiPlans.contract.test.ts` pins its form.
-const CHIP = /\[[^[\]\n]*\]\(t3-context:\/\/v1\/thread\/[^\s)]+\)/gu;
-const wordsOf = (text: string): string => flat(text.replace(CHIP, " "));
+const wordsOf = planWords;
+/** Called on every change worth keeping. */
+const changed = new Set<() => void>();
+const touch = () => {
+  for (const tell of changed) tell();
+};
+let standings: ReadonlyMap<string, Standing> = new Map();
+/** What Aski's chat was last told of a Cell, as `chat\tcell`. */
+const told = new Map<string, string>();
 
 function prune(now: number) {
   for (const [id, entry] of entries) if (now - entry.at > KEPT_MS) entries.delete(id);
   while (entries.size > MOST) entries.delete(entries.keys().next().value!);
 }
 
-export function putPlan(entry: Omit<BookEntry, "outcome">): void {
+export function putPlan(entry: Omit<BookEntry, "outcome" | "messageId">): void {
   prune(entry.at);
-  entries.set(entry.plan.id, { ...entry, outcome: null });
+  entries.set(entry.plan.id, { ...entry, outcome: null, messageId: null });
   for (const tell of expected.get(entry.plan.id)?.made ?? []) tell();
   expected.delete(entry.plan.id);
+  touch();
+}
+
+/** The book as it is kept on disk. */
+export const keptBook = (): ReadonlyArray<BookEntry> => [...entries.values()];
+
+/** The book as it was kept, read once when the server starts: a plan made since stays as it is. */
+export function hydrateBook(kept: ReadonlyArray<BookEntry>, now: number): void {
+  const fresh = [...entries.values()];
+  entries.clear();
+  for (const entry of [...kept].sort((a, b) => a.at - b.at)) entries.set(entry.plan.id, entry);
+  for (const entry of fresh) entries.set(entry.plan.id, entry);
+  prune(now);
+}
+
+/** Runs `tell` each time the book changes; returns its stop. */
+export function onBookChange(tell: () => void): () => void {
+  changed.add(tell);
+  return () => void changed.delete(tell);
+}
+
+/** The message a plan was made from, as its turn names it. The first to be tied stays. */
+export function tieMessage(id: string, messageId: string): void {
+  const entry = entries.get(id);
+  if (entry === undefined || entry.messageId !== null) return;
+  entries.set(id, { ...entry, messageId });
+  touch();
+}
+
+/** The plans made in one of Aski's chats, newest first. */
+export function plansOf(threadId: string, most = 40): KeptPlan[] {
+  return [...entries.values()]
+    .filter((entry) => entry.threadId === threadId && entry.plan.acts.length > 0)
+    .sort((a, b) => b.at - a.at)
+    .slice(0, most)
+    .map((entry) => ({
+      id: entry.plan.id,
+      at: entry.at,
+      messageId: entry.messageId,
+      words: wordsOf(entry.text),
+      plan: entry.plan,
+      outcome: entry.outcome,
+    }));
+}
+
+/** Every Cell's standing, as the needs list last had it. */
+export function setStandings(cells: ReadonlyArray<{ readonly threadId: string } & Standing>): void {
+  standings = new Map(
+    cells.map((cell) => [
+      cell.threadId,
+      { stage: cell.stage, line: cell.line, landing: cell.landing },
+    ]),
+  );
+}
+
+export const standingOf = (threadId: string): Standing | null => standings.get(threadId) ?? null;
+
+const signatureOf = (standing: Standing) =>
+  `${standing.stage}\t${standing.landing?.verdict ?? ""}\t${standing.line ?? ""}`;
+
+/** The Cells of `entry` that started, each with its standing when it has one. */
+const startedOf = (entry: BookEntry): Array<{ act: StartAct; standing: Standing | null }> =>
+  entry.plan.acts.flatMap((act) =>
+    act.kind === "start" && entry.outcome?.find((one) => one.i === act.i)?.status === "started"
+      ? [{ act, standing: standingOf(act.threadId) }]
+      : [],
+  );
+
+/** Aski's chat has now read how this plan's Cells stand: none of it is news again. */
+export function markTold(entry: BookEntry): void {
+  if (entry.threadId === null) return;
+  for (const { act, standing } of startedOf(entry)) {
+    if (standing === null) continue;
+    const key = `${entry.threadId}\t${act.threadId}`;
+    told.delete(key);
+    told.set(key, signatureOf(standing));
+  }
+  while (told.size > TOLD_MOST) told.delete(told.keys().next().value!);
+}
+
+/**
+ * The Cells Aski's chat `threadId` started that landed or asked since it was last told, each
+ * told once. A Cell at work is no news.
+ */
+export function newsFor(
+  threadId: string,
+  now: number,
+): Array<{ act: StartAct; standing: Standing }> {
+  const news: Array<{ act: StartAct; standing: Standing }> = [];
+  for (const entry of entries.values()) {
+    if (entry.threadId !== threadId || now - entry.at > NEWS_MS) continue;
+    for (const { act, standing } of startedOf(entry)) {
+      if (standing === null || standing.stage === "working") continue;
+      const key = `${threadId}\t${act.threadId}`;
+      if (told.get(key) === signatureOf(standing) || news.length >= NEWS_MOST) continue;
+      told.delete(key);
+      told.set(key, signatureOf(standing));
+      news.push({ act, standing });
+    }
+  }
+  while (told.size > TOLD_MOST) told.delete(told.keys().next().value!);
+  return news;
 }
 
 /**
@@ -95,6 +223,7 @@ export function settlePlan(id: string, acts: ReadonlyArray<ActOutcome>): boolean
   for (const act of acts) if (known.has(act.i)) merged.set(act.i, act);
   const outcome = [...merged.values()].sort((a, b) => a.i - b.i);
   entries.set(id, { ...entry, outcome });
+  touch();
   for (const tell of waiting.get(id) ?? []) tell(outcome);
   waiting.delete(id);
   return true;
@@ -167,4 +296,6 @@ export function clearBook(): void {
   entries.clear();
   waiting.clear();
   expected.clear();
+  told.clear();
+  standings = new Map();
 }
