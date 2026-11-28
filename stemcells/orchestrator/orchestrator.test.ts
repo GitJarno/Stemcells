@@ -736,6 +736,9 @@ describe("a plan as a client carries it out", () => {
     );
     expect(unsendable(tray)).toBe("held");
     expect(send(tray)).toEqual(tray);
+    // Dropped from its own card, the deletion holds nothing; a waiting Cell isn't dropped that way.
+    expect(drop(tray, 0).acts[0]!.status).toBe("dropped");
+    expect(drop(tray, 1)).toEqual(tray);
     // The deletion done, the Cell with no project still holds the whole Send: all or nothing.
     const after = done(tray, 0);
     expect(unsendable(after)).toEqual({ place: 2 });

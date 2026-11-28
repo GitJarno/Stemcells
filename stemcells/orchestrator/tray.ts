@@ -138,7 +138,10 @@ export function send(tray: Tray): Tray {
       const after = (before ?? []).filter((i) => sent.has(i));
       return {
         ...rest,
-        act: after.length > 0 && afterHeard !== undefined ? { ...act, after, afterHeard } : act,
+        act:
+          after.length === 0
+            ? act
+            : { ...act, after, ...(afterHeard === undefined ? {} : { afterHeard }) },
         status: after.length > 0 ? "queued" : "starting",
         // Their yes to a name heard near teaches it.
         learned: one.act.place?.how === "near" || one.act.model?.how === "near",
@@ -147,9 +150,13 @@ export function send(tray: Tray): Tray {
   };
 }
 
-/** A queued Cell the person no longer wants. */
+/** A queued Cell the person no longer wants, or a deletion they drop from its own card. */
 export const drop = (tray: Tray, i: number): Tray =>
-  at(tray, i, (one) => (one.status === "queued" ? { ...one, status: "dropped" } : one));
+  at(tray, i, (one) =>
+    one.status === "queued" || (one.act.kind === "destroy" && one.status === "waiting")
+      ? { ...one, status: "dropped" }
+      : one,
+  );
 
 /** The person won't wait: a queued Cell starts now. Not while a deletion is held. */
 export const startNow = (tray: Tray, i: number): Tray =>
