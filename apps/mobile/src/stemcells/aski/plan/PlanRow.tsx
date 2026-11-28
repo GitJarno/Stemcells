@@ -549,7 +549,7 @@ function Sent(props: RowProps) {
         <AppText className="text-xs text-foreground-muted" numberOfLines={2}>
           {line !== ""
             ? line
-            : `${placeLabel(act)} · ${modelLine(act, props.models, props.apart).text}`}
+            : `${project === null ? `${placeLabel(act)} · ` : ""}${modelLine(act, props.models, props.apart).text}`}
         </AppText>
       ) : null}
       {one.status === "failed" && one.reason !== undefined ? (
@@ -559,7 +559,8 @@ function Sent(props: RowProps) {
         <AppText className="text-xs text-warning-foreground">{props.says.stuck}</AppText>
       ) : null}
       {props.children}
-      {one.status === "queued" ? (
+      {/* Opened, with its words: the row keeps its height as the plan is sent. */}
+      {!open ? null : one.status === "queued" ? (
         <View className="flex-row justify-end gap-2 pt-1">
           <Pill
             filled={false}
