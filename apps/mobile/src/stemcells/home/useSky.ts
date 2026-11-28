@@ -1,4 +1,4 @@
-// How far night has fallen over the home's header, 0 day to 1 night, kept here so every mount of
+// How far night has fallen over the home's header, 0 none to 1 night, kept here so every mount of
 // the home turns the one sky from wherever it stands, on the UI thread (`motion/sky.ts`).
 
 import { Easing, makeMutable, withTiming } from "react-native-reanimated";

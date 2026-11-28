@@ -1,8 +1,8 @@
 /**
- * The sky behind the phone's header and the column's head (stemcells/tasks/day-night.md): day
- * over Input and Awake, night over Asleep, and nothing between. Plain numbers and colours, so the
- * phone reads them too (`line/kit.ts`). One progress, 0 day to 1 night, drives every layer. The
- * phone runs these on its UI thread, hence the worklets.
+ * The sky behind the phone's header and the column's head (stemcells/tasks/day-night.md): night
+ * over Asleep, and none over Input and Awake. Plain numbers and colours, so the phone reads them
+ * too (`line/kit.ts`). One progress, 0 none to 1 night, drives every layer. The phone runs these
+ * on its UI thread, hence the worklets.
  */
 
 import type { Bezier } from "./listMotion";
@@ -10,20 +10,20 @@ import type { Bezier } from "./listMotion";
 export type Span = readonly [from: number, to: number];
 export type Scheme = "light" | "dark";
 
-export const SKY_AT = { day: 0, night: 1 } as const;
+export const SKY_AT = { none: 0, night: 1 } as const;
 
-/** The sky a stage stands under: Asleep's night, and day over the rest. */
+/** The sky a stage stands under: Asleep's night, and none over the rest. */
 export function skyAtStage(stage: string): number {
-  return stage === "asleep" ? SKY_AT.night : SKY_AT.day;
+  return stage === "asleep" ? SKY_AT.night : SKY_AT.none;
 }
 
 /**
- * How long a turn takes for the whole way, day to night or back (a partial one takes its share),
+ * How long a turn takes for the whole way, into night or out of it (a partial one takes its share),
  * and its one curve: it decelerates, so the sky answers in the switch's own frame and settles.
  */
 export const SKY_TURN = {
-  nightfall: 520,
-  daybreak: 420,
+  falls: 520,
+  lifts: 420,
   /** Reduce Motion's crossfade, from anywhere to anywhere. */
   crossfade: 160,
   /** The shortest turn: a nudge still eases. */
@@ -32,16 +32,11 @@ export const SKY_TURN = {
 } as const;
 
 /**
- * Each layer's span of the progress, played forward into night and back into day. The night
- * comes in before the day lifts, so the ground never shows between them, and the sun is gone
- * before the moon comes: one body at a time.
+ * Each layer's span of the progress, played forward into night and back out of it: the sky first,
+ * then the moon rising into it and the stars coming out, brightest first.
  */
 export const SKY_SPANS = {
-  sunGoes: [0, 0.4],
-  sunSinks: [0, 0.45],
-  cloudsGo: [0, 0.5],
   nightDeepens: [0, 0.6],
-  dayLifts: [0.35, 1],
   moonComes: [0.5, 0.9],
   moonRises: [0.5, 1],
   stars: [
@@ -77,7 +72,7 @@ export function skyTurn(
   const way = Math.abs(to - at);
   if (way === 0) return null;
   if (reduced) return { to, ms: SKY_TURN.crossfade, eased: false };
-  const whole = to > at ? SKY_TURN.nightfall : SKY_TURN.daybreak;
+  const whole = to > at ? SKY_TURN.falls : SKY_TURN.lifts;
   return { to, ms: Math.max(SKY_TURN.least, whole * way), eased: true };
 }
 
@@ -87,69 +82,39 @@ interface Gradient {
 }
 
 export interface SkyPalette {
-  readonly day: Gradient;
   readonly night: Gradient;
-  readonly sun: string;
   readonly moon: string;
   /** The moon's unlit part, a little lighter than the sky it crosses. */
   readonly moonShadow: string;
-  /** How strong the sun's and the moon's halo are at their heart. */
+  /** How strong the moon's halo is at its heart. */
   readonly halo: number;
-  /** The sunlit haze round the sun by day, wide and faint. */
-  readonly haze: Tint;
-  readonly cloud: Tint;
   readonly star: string;
   /** The stars' alphas are scaled by this: a light night needs them brighter. */
   readonly starLight: number;
-  /** What crosses the day now and then (`SKY_VISITS`): a seed's down, and birds far off. */
-  readonly seed: Tint;
-  readonly birds: Tint;
   /** The header's ink and the ground under the sky, as the app's theme sets them. */
   readonly ink: string;
   readonly ground: string;
 }
 
-interface Tint {
-  readonly colour: string;
-  readonly alpha: number;
-}
-
-/**
- * Day is a clear sky dimmed to sit at the edge of the eye beside the list all day: in the dark
- * appearance a deep, quiet blue, paler toward the horizon, never a dusk's plum; in the light one a
- * pale morning blue fading into the white screen. A warm-white sun in a wide faint haze, and two
- * soft clouds. Night keeps its deep indigo, the moon and the stars.
- */
+/** Night: a deep indigo, the moon at tonight's phase and the stars. */
 export const SKY: Readonly<Record<Scheme, SkyPalette>> = {
   dark: {
-    day: { zenith: "#132440", horizon: "#2A4161" },
     night: { zenith: "#04050D", horizon: "#141938" },
-    sun: "#F6EDDD",
     moon: "#F2EFE6",
     moonShadow: "#1A1D3A",
     halo: 0.14,
-    haze: { colour: "#EADFC8", alpha: 0.14 },
-    cloud: { colour: "#FFFFFF", alpha: 0.07 },
     star: "#FFFFFF",
     starLight: 1,
-    seed: { colour: "#EFEBE2", alpha: 0.55 },
-    birds: { colour: "#0A1222", alpha: 0.75 },
     ink: "#F5F5F5",
     ground: "#0D0D0D",
   },
   light: {
-    day: { zenith: "#BED4EC", horizon: "#E4EDF7" },
     night: { zenith: "#7F89BB", horizon: "#B9BFDF" },
-    sun: "#FFFAF0",
     moon: "#FFFFFF",
     moonShadow: "#6E78AA",
     halo: 0.5,
-    haze: { colour: "#FFF4DC", alpha: 0.55 },
-    cloud: { colour: "#FFFFFF", alpha: 0.6 },
     star: "#FFFFFF",
     starLight: 2,
-    seed: { colour: "#FFFFFF", alpha: 0.95 },
-    birds: { colour: "#4B5B78", alpha: 0.55 },
     ink: "#27272A",
     ground: "#FCFCFC",
   },
@@ -159,8 +124,8 @@ export const SKY: Readonly<Record<Scheme, SkyPalette>> = {
 export const SKY_SHAPE = {
   /** How far past the first row's top the sky fades out. */
   tail: 20,
-  /** The sun and the moon: their radius, how far the sun sinks and the moon rises, the halo's reach in radii. */
-  body: { r: 10, sinks: 6, rises: 6, halo: 2.6 },
+  /** The moon: its radius, how far it rises, its halo's reach in radii. */
+  body: { r: 10, rises: 6, halo: 2.6 },
 } as const;
 
 /** One stop of a sky's gradient, top to bottom. */
@@ -268,81 +233,41 @@ export function starGroups(clearOf: number): Star[][] {
   return SKY_SPANS.stars.map((_, n) => brightest.slice(n * size, (n + 1) * size));
 }
 
-/** Two soft clouds, each a few lobes: centre across and down the sky's reach, as shares; lobes in points. */
-export const CLOUDS = [
-  {
-    x: 0.22,
-    y: 0.34,
-    lobes: [
-      { dx: 0, dy: 0, rx: 58, ry: 7 },
-      { dx: -16, dy: -4, rx: 24, ry: 6 },
-      { dx: 14, dy: -6, rx: 30, ry: 8 },
-    ],
-  },
-  {
-    x: 0.6,
-    y: 0.66,
-    lobes: [
-      { dx: 0, dy: 0, rx: 44, ry: 5 },
-      { dx: 9, dy: -4, rx: 20, ry: 5 },
-    ],
-  },
-] as const;
-
 /**
- * Now and then something crosses the sky, and between visits nothing moves: by night a shooting
- * star, by day a dandelion's seed drifting on the air or a few birds far off. Seldom, small and
- * soft at both ends, so it rewards a glance without drawing one; never under Reduce Motion, and
- * only while the sky is on screen.
+ * Now and then a shooting star crosses the night, and between them nothing moves. Seldom, small
+ * and soft at both ends, so it rewards a glance without drawing one; never under Reduce Motion,
+ * and only while the night is on screen.
  */
-export type SkyVisitor = "shootingStar" | "seed" | "birds";
-
 export const SKY_VISITS = {
-  /** The wait between visits, least to most, in ms. */
-  night: [14_000, 34_000],
-  day: [30_000, 75_000],
-  /** The first comes sooner once the sky has turned: this share of a wait. */
+  /** The wait between shooting stars, least to most, in ms. */
+  wait: [14_000, 34_000],
+  /** The first comes sooner once night has fallen: this share of a wait. */
   first: 0.3,
-  /** How long each takes to cross, in ms. */
-  ms: { shootingStar: 900, seed: 14_000, birds: 9_000 },
-  /** The share of day's visits that are birds; the rest are seeds. */
-  birds: 0.3,
+  /** How long one takes to cross, in ms. */
+  ms: 900,
 } as const;
 
 export interface SkyVisit {
-  readonly kind: SkyVisitor;
   readonly wait: number;
   /** Where it sets off, across the sky and down the stars' reach, as shares. */
   readonly x: number;
   readonly y: number;
 }
 
-/** The next visit to a day or night sky; `first`, the first since it turned. */
-export function nextVisit(night: boolean, first: boolean, random: () => number): SkyVisit {
-  const [least, most] = night ? SKY_VISITS.night : SKY_VISITS.day;
+/** The next shooting star; `first`, the first since night fell. */
+export function nextVisit(first: boolean, random: () => number): SkyVisit {
+  const [least, most] = SKY_VISITS.wait;
   const wait = (least + random() * (most - least)) * (first ? SKY_VISITS.first : 1);
-  if (night) return { kind: "shootingStar", wait, x: random() * 0.35, y: 0.04 + random() * 0.26 };
-  if (random() < SKY_VISITS.birds)
-    return { kind: "birds", wait, x: 0.02 + random() * 0.18, y: 0.15 + random() * 0.25 };
-  return { kind: "seed", wait, x: 0.04 + random() * 0.3, y: 0.2 + random() * 0.25 };
+  return { wait, x: random() * 0.35, y: 0.04 + random() * 0.26 };
 }
 
-/** Where a visitor is, `t` of the way through its crossing: points from where it set off. */
+/** Where a shooting star is, `t` of the way through its crossing: points from where it set off. */
 export interface Pose {
   readonly x: number;
   readonly y: number;
   /** Degrees. */
   readonly rotate: number;
   readonly opacity: number;
-}
-
-/** In over the first `rise` of the way and out from `fall`, with no edge to either. */
-function softly(t: number, rise: number, fall: number): number {
-  "worklet";
-  const up = Math.min(1, t / rise);
-  const down = Math.min(1, Math.max(0, (1 - t) / (1 - fall)));
-  const s = Math.min(up, down);
-  return s * s * (3 - 2 * s);
 }
 
 /**
@@ -362,57 +287,3 @@ export function shootingStarAt(t: number, width: number, reach: number): Pose {
     opacity: t <= 0 ? 0 : Math.sin(Math.PI * t),
   };
 }
-
-/** A seed on the air: drifting across and a little up, rocking under its down, `width` the sky's. */
-export function seedAt(t: number, width: number): Pose {
-  "worklet";
-  const sway = Math.PI * 2 * 1.3 * t;
-  return {
-    x: t * Math.min(240, width * 0.55),
-    y: -t * 16 + Math.sin(sway) * 4,
-    rotate: Math.sin(sway - 0.8) * 14,
-    opacity: softly(t, 0.15, 0.7),
-  };
-}
-
-/** Birds far off: gliding across on a gentle swell, `width` the sky's. */
-export function birdsAt(t: number, width: number): Pose {
-  "worklet";
-  return {
-    x: t * Math.min(320, width * 0.8),
-    y: -t * 8 + Math.sin(Math.PI * 2 * 0.9 * t) * 2.5,
-    rotate: 0,
-    opacity: softly(t, 0.12, 0.8),
-  };
-}
-
-/**
- * The `n`th bird's wings at `t` of a crossing of `ms`, as a vertical scale: a few beats, then a
- * glide with them held, and again; each bird a little out of step.
- */
-export function wingAt(t: number, n: number, ms: number): number {
-  "worklet";
-  const s = (t * ms) / 1000 + n * 0.41;
-  const beats = Math.sin((Math.PI * s) / 3.4) ** 2;
-  return 0.6 - beats * 0.75 * Math.sin(Math.PI * 2 * 2.6 * s);
-}
-
-/** Three birds: from the leader, in points, and their size. Each is a 10 by 4 stroke. */
-export const BIRDS = [
-  { dx: 0, dy: 0, size: 1 },
-  { dx: -13, dy: 5, size: 0.85 },
-  { dx: -24, dy: 1, size: 0.72 },
-] as const;
-export const BIRD_PATH = "M0 4 Q2.6 0.6 5 3.4 Q7.4 0.6 10 4";
-
-/** A seed in a 16 by 22 box: its down's filaments from (8, 8), its stalk, and the seed below. */
-export const SEED = {
-  heart: { x: 8, y: 8 },
-  filaments: Array.from({ length: 9 }, (_, n) => {
-    const angle = ((-72 + n * 18) * Math.PI) / 180;
-    const reach = 6.4 - Math.abs(n - 4) * 0.25;
-    return { x: 8 + Math.sin(angle) * reach, y: 8 - Math.cos(angle) * reach };
-  }),
-  stalk: { from: 8, to: 17 },
-  seed: { y: 19, rx: 0.9, ry: 2 },
-} as const;

@@ -51,14 +51,8 @@ export {
 } from "../../../../web/src/stemcells/motion/listMotion.ts";
 export { drawnMoonPhase, litPath } from "../../../../web/src/stemcells/motion/moon.ts";
 export {
-  BIRD_PATH,
-  BIRDS,
-  birdsAt,
-  CLOUDS,
   nextVisit,
   type Pose as SkyPose,
-  SEED,
-  seedAt,
   shootingStarAt,
   shown,
   SKY,
@@ -74,7 +68,6 @@ export {
   type SkyVisit,
   type Span as SkySpan,
   starGroups,
-  wingAt,
 } from "../../../../web/src/stemcells/motion/sky.ts";
 export {
   EMPTY_WORDS,
