@@ -18,6 +18,7 @@ import { codeMenu } from "../../chat/code";
 import { ChatHeaderContext, setColumnWidth, titleRowWidth } from "../../chat/header";
 import { NO_HEADER_BAND } from "../../edge/headerEdge";
 import { PlanRing } from "../../limits/PlanRing";
+import { holdRingBeside } from "../../limits/ringBeside";
 import { useHasLimits } from "../limits";
 
 export * from "../../../components/ui/AppBar";
@@ -58,6 +59,9 @@ function ChatBar(
     setColumnWidth(threadId, width);
     return () => setColumnWidth(threadId, null);
   }, [threadId, width]);
+  const ringBeside = besideHome && hasLimits;
+  // oxlint-disable-next-line t3code/no-unreasoned-state-sync -- Tells the home's header, a separate native bar, that this one shows the ring.
+  useLayoutEffect(() => (ringBeside ? holdRingBeside() : undefined), [ringBeside]);
   const code = codeMenu(bar.actions ?? [], bar.menus ?? []);
   const ring = hasLimits ? (
     <Toolbar.Custom key="plan">
