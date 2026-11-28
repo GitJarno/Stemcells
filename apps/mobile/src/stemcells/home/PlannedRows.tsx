@@ -23,29 +23,14 @@ import {
   type DecodedPart,
   decodeAt,
 } from "../../../../../stemcells/aski/arrivals.ts";
-import { openPlannedRow, type Planned } from "../../../../../stemcells/aski/planned.ts";
-import { CHECK_ROW_WORDS, UNSURE_WORDS } from "../../../../../stemcells/words/planned.ts";
-import { useAskiChat } from "../aski/useAskiChat";
-import { CellFigure } from "../cell/CellFigure";
+import type { Planned } from "../../../../../stemcells/aski/planned.ts";
 import { formingFrom } from "../cell/forming";
 import { cellNameOf, clockSeconds } from "../cell/kit";
-import { type Face, faceOf } from "../cell/mood";
-import { useCellLook } from "../cell/roster";
-import { instanceOf } from "../cell/ThreadCell";
 import { RowLight } from "../glow/RowLight";
 import { rowStateOf, rowStatusOf } from "../line/kit";
 import { cellKey } from "../line/line";
-import { ProjectMark } from "../project/ProjectMark";
-import { titleMarkLayout } from "../project/titleMark";
 import { CODE_FONT } from "../tokens";
-import {
-  AppText,
-  type EnvironmentThreadShell,
-  resolveThreadListV2Status,
-  threadHasUnseenCompletion,
-  useEnvironmentProviders,
-  useThemeAppearance,
-} from "../upstream/cells";
+import { AppText, type EnvironmentThreadShell, threadHasUnseenCompletion } from "../upstream/cells";
 import { useHomeSidebar, useProjects } from "../upstream/home";
 import { THREAD_LIST_V2_ROW_CONTENT_CLASS_NAME } from "../upstream/substitutes/thread-list-v2-row-appearance";
 import { glideBy } from "./awakeGlide";
@@ -64,13 +49,13 @@ import {
   useKept,
 } from "./plannedArrivals";
 import { Since } from "./RowCell";
+import { CELL, ROW_TITLE, RowCreature, RowMark, RowShell } from "./RowShell";
 import {
   CellStates,
   HomeCellsHeld,
   HomeInFront,
   HomeStageContext,
   StagePageContext,
-  useMinute,
 } from "./state";
 
 // A dev build's hands on the planned rows (`planLab.ts`).
@@ -106,8 +91,6 @@ function usePad(sidebar: boolean): Pad {
     gap: points(card.gap, 8),
   };
 }
-/** A Cell's box at two points a cell (`cell/look.ts`, `BOX`). */
-const CELL = { width: 26, height: 28 };
 /** The narrowest line, points, that still says the Cell's name, and its effort: the title keeps the rest. */
 const FITS = { name: 300, effort: 400, chip: 220 };
 const CHIP_SIZE = 11;
@@ -328,20 +311,6 @@ function Words(props: {
   );
 }
 
-/** The mark of the field a check row is unsure of. */
-function Unsure(props: { readonly row: Planned; readonly field: NonNullable<Planned["unsure"]> }) {
-  if (props.row.tier !== "check" || props.row.unsure !== props.field) return null;
-  return (
-    <AppText
-      className="text-xs font-semibold text-primary-text"
-      style={{ fontFamily: CODE_FONT }}
-      accessibilityLabel={UNSURE_WORDS[props.field]}
-    >
-      ?
-    </AppText>
-  );
-}
-
 function PlannedRow(props: {
   readonly row: Planned;
   /** Its arrival; null once its birth is over and it only keeps its place (`plannedArrivals.ts`, kept). */
@@ -386,22 +355,9 @@ function PlannedRow(props: {
   }, [hands, row.threadId, shape]);
   const home = use(PlannedHome);
   const held = use(HomeCellsHeld);
-  const aski = useAskiChat(null);
   const projects = useProjects();
   const project = projects.find((each) => String(each.id) === row.projectId) ?? null;
   const reduced = useReducedMotion();
-  const outline = row.tier === "check";
-  const look = useCellLook(row.threadId);
-  const ground = useThemeAppearance() === "light" ? "light" : "black";
-  const providers = useEnvironmentProviders();
-  const driver =
-    (thread === null
-      ? undefined
-      : providers
-          .get(thread.environmentId)
-          ?.find((provider) => provider.instanceId === instanceOf(thread))?.driver) ??
-    row.driver ??
-    null;
   // It plays only as it lands in sight: seen later, or again in another list, it stands.
   const [plays] = useState(
     () =>
@@ -418,11 +374,6 @@ function PlannedRow(props: {
   const rowState =
     thread === null ? null : rowStateOf(state?.stage, threadHasUnseenCompletion(thread));
   const flying = rowState === "flying";
-  const minute = useMinute();
-  const face: Face =
-    thread === null
-      ? { mood: "awake" }
-      : faceOf(thread, resolveThreadListV2Status(thread), { now: Date.parse(minute), driver });
   const leaving = arrival?.state === "gone";
   const dims = useSharedValue(1);
   const went = useRef(false);
@@ -487,13 +438,7 @@ function PlannedRow(props: {
   );
   const [marked, named, modelled, efforted, titled] = settling ?? [];
 
-  const { fontScale } = useWindowDimensions();
-  const base = useResolveClassNames("text-base").fontSize;
-  const family = useResolveClassNames("font-sans").fontFamily;
-  const mark = titleMarkLayout((typeof base === "number" ? base : 16) * fontScale, family);
   const { pad } = props;
-  // An outline's hairline takes its room from the padding, so the row stands as tall filled in.
-  const edge = outline ? 1 : 0;
   const moved = useAnimatedStyle(() => ({
     opacity: dims.get(),
     transform: [{ translateY: own.get() }],
@@ -502,11 +447,7 @@ function PlannedRow(props: {
   const titleStyle = useAnimatedStyle(() => ({ transform: [{ translateX: titleShift.get() }] }));
   const forms = formingFrom(row.threadId, new Date(row.born).toISOString());
   const onPress = () => {
-    if (outline) {
-      // Whoever holds the plan shows it; Aski's chat, where it stands, comes forward.
-      openPlannedRow(row);
-      if (aski !== null) home?.open(aski);
-    } else if (thread !== null) home?.open(thread);
+    if (thread !== null) home?.open(thread);
   };
   return (
     <Animated.View
@@ -522,13 +463,7 @@ function PlannedRow(props: {
               stood[shape] = event.nativeEvent.layout.height + SHAPE[shape].marginBottom;
             }
       }
-      className={
-        outline
-          ? "border border-dashed border-border"
-          : shape === "card"
-            ? "bg-grouped-card"
-            : undefined
-      }
+      className={shape === "card" ? "bg-grouped-card" : undefined}
       style={[
         {
           marginHorizontal: copy ? 0 : SHAPE[shape].marginHorizontal,
@@ -542,49 +477,51 @@ function PlannedRow(props: {
     >
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={outline ? `${row.title}. ${CHECK_ROW_WORDS}` : row.title}
-        disabled={leaving || (!outline && thread === null)}
-        onPressIn={thread === null || outline ? undefined : () => openOnPressIn(thread)}
+        accessibilityLabel={row.title}
+        disabled={leaving || thread === null}
+        onPressIn={thread === null ? undefined : () => openOnPressIn(thread)}
         onPress={onPress}
         style={({ pressed }) => ({
-          paddingTop: pad.top - edge,
-          paddingRight: pad.right - edge,
-          paddingBottom: pad.bottom - edge,
-          paddingLeft: pad.left - edge,
+          paddingTop: pad.top,
+          paddingRight: pad.right,
+          paddingBottom: pad.bottom,
+          paddingLeft: pad.left,
           opacity: pressed ? 0.7 : 1,
         })}
       >
-        <View
-          className="flex-row items-center"
-          style={{ gap: pad.gap, minHeight: CELL.height, opacity: outline ? 0.55 : 1 }}
+        <RowShell
+          style={{ gap: pad.gap, minHeight: CELL.height }}
+          lined
+          under={flying && thread !== null ? <RowLight thread={thread} band fill={FILL} /> : null}
+          // One figure from its first glyph to its first work: T3's row draws it from there.
+          creature={
+            <RowCreature
+              threadId={row.threadId}
+              thread={thread}
+              driver={row.driver}
+              formingFrom={forms}
+              held={held}
+            />
+          }
+          // Its birth over, it says how long it has been like this, as every Awake row does.
+          trailing={
+            timed && thread !== null && rowState !== null && state?.since ? (
+              <Animated.View entering={arrival === null ? undefined : entering()}>
+                <Since
+                  since={state.since}
+                  status={rowStatusOf(rowState, thread.hasPendingApprovals)}
+                />
+              </Animated.View>
+            ) : null
+          }
         >
-          {flying && thread !== null ? <RowLight thread={thread} band fill={FILL} /> : null}
-          {/* One figure from its outline to its first work: T3's row draws it from there. */}
-          <CellFigure
-            name={row.threadId}
-            mood={face.mood}
-            activity={face.activity}
-            provider={driver}
-            look={look}
-            points={2}
-            plays={face.activity !== undefined || face.mood === "pleased"}
-            ground={ground}
-            formingFrom={outline ? undefined : forms}
-            outline={outline}
-            held={held}
-          />
-          <View className="min-w-0 flex-1 flex-row items-center">
+          <>
             {project === null ? null : (
-              <View
-                style={{
-                  width: mark.width,
-                  opacity: marked !== undefined && marked.settled === 0 ? 0 : 0.4,
-                }}
-              >
-                <ProjectMark project={project} size={mark.size} />
-              </View>
+              <RowMark
+                project={project}
+                opacity={marked !== undefined && marked.settled === 0 ? 0 : 0.4}
+              />
             )}
-            <Unsure row={row} field="place" />
             {bare || !(fits.name || fits.chip) ? null : (
               <Animated.View
                 className="flex-row items-center"
@@ -610,33 +547,20 @@ function PlannedRow(props: {
                     {effort === "" ? null : (
                       <Words words={effort} now={efforted} className="text-foreground-muted" code />
                     )}
-                    <Unsure row={row} field="model" />
                   </View>
                 ) : null}
               </Animated.View>
             )}
             <Animated.View style={[{ flexShrink: 1, flexGrow: 1, minWidth: 0 }, titleStyle]}>
-              <View className="flex-row items-center" style={{ gap: 4 }}>
-                <Words
-                  words={row.title}
-                  now={titled}
-                  className={`text-base font-t3-medium ${shape === "sidebar" ? "text-drawer-foreground" : "text-foreground"}`}
-                  shrinks
-                />
-                {settling === null ? <Unsure row={row} field="words" /> : null}
-              </View>
-            </Animated.View>
-          </View>
-          {/* Its birth over, it says how long it has been like this, as every Awake row does. */}
-          {timed && thread !== null && rowState !== null && state?.since ? (
-            <Animated.View entering={arrival === null ? undefined : entering()}>
-              <Since
-                since={state.since}
-                status={rowStatusOf(rowState, thread.hasPendingApprovals)}
+              <Words
+                words={row.title}
+                now={titled}
+                className={`${ROW_TITLE} ${shape === "sidebar" ? "text-drawer-foreground" : "text-foreground"}`}
+                shrinks
               />
             </Animated.View>
-          ) : null}
-        </View>
+          </>
+        </RowShell>
       </Pressable>
     </Animated.View>
   );

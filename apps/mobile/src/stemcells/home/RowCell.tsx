@@ -4,7 +4,7 @@
 // T3's row hands control here (`features/threads/thread-list-v2-items.tsx`).
 
 import { type ReactNode, use, useEffect, useLayoutEffect } from "react";
-import { Pressable, useWindowDimensions, View, type ViewStyle } from "react-native";
+import { Pressable, View, type ViewStyle } from "react-native";
 import { useAnimatedRef, useReducedMotion } from "react-native-reanimated";
 import { useResolveClassNames } from "uniwind";
 
@@ -18,7 +18,6 @@ import { rowStateOf, type RowStatus, rowStatusOf, STATUS_WORDS } from "../line/k
 import { cellKey } from "../line/line";
 import { STATUS_SYMBOL } from "../line/StatusSymbol";
 import { ProjectMark } from "../project/ProjectMark";
-import { titleMarkLayout } from "../project/titleMark";
 import { CODE_FONT } from "../tokens";
 import {
   AppText,
@@ -40,6 +39,7 @@ import { Arrival } from "./Arrival";
 import { sendCopy } from "./copies";
 import { handedLanded, useIsHanded } from "./plannedArrivals";
 import { useLifted } from "./hops";
+import { RowShell, useTitleMarkLayout } from "./RowShell";
 import {
   awakeRows,
   CellStates,
@@ -217,16 +217,18 @@ function AwakeRow(props: {
     if (covered) handedLanded(thread.id);
   }, [covered, thread.id]);
   return (
-    <View
+    <RowShell
       className="flex-row items-center gap-2"
       style={{ minHeight: ROW_HEIGHT - PADDED.card, opacity: covered ? 0 : 1 }}
+      under={
+        rowState === "flying" ? <RowLight key={key} thread={thread} band fill={field} /> : null
+      }
+      creature={<Figure thread={thread} points={2} />}
+      trailing={state?.since ? <Since since={state.since} status={status} /> : null}
+      over={<Arrival thread={thread} fill={field} />}
     >
-      {rowState === "flying" ? <RowLight key={key} thread={thread} band fill={field} /> : null}
-      <Figure thread={thread} points={2} />
-      <View className="min-w-0 flex-1">{props.children}</View>
-      {state?.since ? <Since since={state.since} status={status} /> : null}
-      <Arrival thread={thread} fill={field} />
-    </View>
+      {props.children}
+    </RowShell>
   );
 }
 
@@ -264,13 +266,6 @@ export function Since(props: { readonly since: string; readonly status: RowStatu
 
 const MARK = 12;
 const MARK_GAP = 6;
-
-function useTitleMarkLayout() {
-  const { fontScale } = useWindowDimensions();
-  const base = useResolveClassNames("text-base").fontSize;
-  const family = useResolveClassNames("font-sans").fontFamily;
-  return titleMarkLayout((typeof base === "number" ? base : 16) * fontScale, family);
-}
 
 /**
  * The room for the project's mark on a title's first line, inside its text: a second line runs

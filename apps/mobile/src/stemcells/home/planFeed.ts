@@ -1,6 +1,7 @@
 // The Cells a plan is starting, for the home's list before the machine lists them
-// (stemcells/tasks/aski-orchestrator.md, decision 12): the plan gives each row its thread id,
-// so it forms at the top of Awake while its Cell comes up, and Aski throws a copy to it.
+// (stemcells/tasks/aski-orchestrator.md, decisions 12 and 18): the plan gives each row its
+// thread id, so it forms at the top of Awake while its Cell comes up, and Aski throws a copy to
+// it. A Cell has no row there before the person sends it.
 
 import {
   clearPlannedRows,
@@ -8,7 +9,6 @@ import {
   setPlannedRows,
 } from "../../../../../stemcells/aski/planned.ts";
 import type { StartAct } from "../../../../../stemcells/orchestrator/plan.ts";
-import { unsureField } from "../../../../../stemcells/orchestrator/tray.ts";
 import type { PlanEntry } from "../aski/plan/trays";
 import { placeOfKey } from "../aski/plan/world";
 
@@ -25,17 +25,15 @@ export type FactsOf = (environmentId: string, act: StartAct, projectId: string) 
 const ROWS_KEPT_MS = 90_000;
 
 /**
- * The rows one plan stands for now: every Cell on its way, just started here, or waiting. A
- * Cell with no project yet waits in the plan, and one started long ago is the list's own row.
+ * The rows one plan stands for now: every Cell on its way or just started here. One that waits
+ * for Send or was switched off has none, and one started long ago is the list's own row.
  */
 export function plannedRowsOf(entry: PlanEntry, born: number, factsOf: FactsOf): PlannedRow[] {
   return (entry.tray?.acts ?? []).flatMap((one): PlannedRow[] => {
     const { act, status } = one;
     if (act.kind !== "start" || act.place === null) return [];
     const fresh = status === "started" && one.startedAt !== undefined;
-    if (status !== "starting" && status !== "waiting" && !fresh) return [];
-    // What Aski proposed waits in its reply, on its card: Awake holds no outline for it.
-    if (status === "waiting" && entry.door === "fence") return [];
+    if (status !== "starting" && !fresh) return [];
     const { place } = act;
     const projectId =
       place.projectId ?? (place.id === null ? undefined : placeOfKey(place.id)?.projectId);
@@ -47,8 +45,7 @@ export function plannedRowsOf(entry: PlanEntry, born: number, factsOf: FactsOf):
         projectName: place.name,
         title: act.title,
         ...factsOf(entry.environmentId, act, projectId),
-        tier: status === "waiting" ? "check" : "start",
-        unsure: status === "waiting" ? unsureField(act) : undefined,
+        tier: "start",
         born,
       },
     ];
@@ -75,9 +72,7 @@ export function plannedRowsFeed(hands: {
       const key = JSON.stringify(rows);
       if (drawn.get(entry.id) === key) continue;
       drawn.set(entry.id, key);
-      const starting = rows
-        .filter((row) => row.tier === "start" && !thrown.has(row.threadId))
-        .map((row) => row.threadId);
+      const starting = rows.filter((row) => !thrown.has(row.threadId)).map((row) => row.threadId);
       for (const threadId of starting) thrown.add(threadId);
       if (starting.length > 0) hands.throwTo(starting);
       setPlannedRows(entry.id, rows);

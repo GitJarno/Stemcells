@@ -1,68 +1,63 @@
-// A plan's rows (stemcells/tasks/aski-orchestrator.md, decisions 4, 5, 12, 15, 16), the same over
-// Aski's composer and in a ```plan fence. A Cell that waits says why and marks the field Aski
-// was unsure of; one that started reads as its Cell stands; a queued one says whom it comes
-// after. Each opens to the words its Cell is told. A deletion is a card of its own (`HoldCard.tsx`).
+// A plan's card (stemcells/tasks/aski-orchestrator.md, decisions 4, 5, 12, 15, 16 and 18), the
+// same over Aski's composer and in a ```plan fence: its headline, a row a Cell (`PlanRow.tsx`),
+// and while Cells wait its foot, Cancel and the one Send. Nothing starts before that Send. A
+// deletion is a card of its own (`HoldCard.tsx`).
 
-import { useEffect, useState, useSyncExternalStore } from "react";
-import { Pressable, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Pressable, useWindowDimensions, View } from "react-native";
+import Animated, {
+  FadeIn,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
+import { useResolveClassNames } from "uniwind";
 
 import type { ModelEntry, PlaceEntry } from "../../../../../../stemcells/orchestrator/plan.ts";
-import { type RowSays, rowSays } from "../../../../../../stemcells/orchestrator/rows.ts";
+import { rowSays } from "../../../../../../stemcells/orchestrator/rows.ts";
 import {
   CALL_BACK_MS,
   callable,
-  canStart,
   comesAfter,
-  confirm,
-  confirmAll,
-  drop,
+  counts,
   dropAll,
   held,
-  setModel,
-  setNewName,
-  setPlace,
+  onOf,
+  send,
+  type Tray,
   type TrayAct,
+  unsendable,
 } from "../../../../../../stemcells/orchestrator/tray.ts";
-import { cellNameOf } from "../../../../../../stemcells/words/cellNames.ts";
 import {
-  CALL_BACK,
-  DEFAULT_MODEL,
+  CANCEL,
   DICTATED,
-  DROP,
   LEFT_OVER,
-  OWN_WORKTREE,
-  placeLabel,
-  START,
-  START_ALL,
-  START_NOW,
+  SEND,
+  SEND_WAITS,
 } from "../../../../../../stemcells/words/plans.ts";
+import { ENTER, LEAVE } from "../../home/listMotion";
 import { Pill } from "../../line/Ask";
 import { readSoon, useReadings } from "../../line/readings";
 import { useThreadShellsSelected } from "../../upstream/cells";
-import { AppText, Dialog, Menu, SymbolView, useStartsApart } from "../../upstream/plans";
+import { AppText, SymbolView, useStartsApart } from "../../upstream/plans";
 import { HoldCard } from "./HoldCard";
+import { projectIdOf } from "./pick";
+import { type CellAct, PlanRow } from "./PlanRow";
 import { planCarrier, trays } from "./run";
+import { beatsOf, sentNow } from "./sent";
 import type { PlanEntry } from "./trays";
-import {
-  CLOSE_PLAN,
-  getsWorktree,
-  headOf,
-  HIDE_MESSAGE,
-  messageSpans,
-  modelLine,
-  NEW_PROJECT_NAME,
-  seenIn,
-  SHOW_MESSAGE,
-  STATUS_WORDS,
-  unsureOf,
-  whyLines,
-} from "./view";
-import { placeOfKey } from "./world";
+import { CLOSE_PLAN, dropHold, getsWorktree, headOf, seenIn } from "./view";
 
-/** The plans the phone holds; a view draws again when any of them changes. */
-export function usePlans(): ReadonlyMap<string, PlanEntry> {
-  return useSyncExternalStore(trays.subscribe, trays.read, trays.read);
-}
+/** From this width, points, a card sets a task on one line; under it the pickers stand under the title. */
+const ONE_LINE = 520;
+/** Under this width the window is a phone's, or the folded Duo's: Awake is not in sight beside the chat. */
+const NARROW = 600;
+/** A plan first drawn this long ago, ms, has arrived: its rows stand when they are drawn again. */
+const ARRIVED = 400;
+
+/** When each plan was first drawn, ms: its rows arrive once, however often their views are rebuilt. */
+const drawn = new Map<string, number>();
 
 /** The clock, read again once the last Cell that can be called back no longer can. */
 function useCallBackClock(entry: PlanEntry): number {
@@ -80,6 +75,8 @@ function useCallBackClock(entry: PlanEntry): number {
   }, [latest]);
   return Math.max(now, latest);
 }
+
+const isCell = (one: TrayAct): one is CellAct => one.act.kind === "start";
 
 export function PlanPanel(props: {
   readonly entry: PlanEntry;
@@ -113,38 +110,70 @@ export function PlanPanel(props: {
   useEffect(() => {
     if (flying > 0) readSoon(entry.environmentId);
   }, [flying, entry.environmentId]);
+  const window = useWindowDimensions();
+  const [width, setWidth] = useState(0);
+  const ground = useResolveClassNames("bg-card-alt").backgroundColor;
+  // Its rows arrive a stagger apart as the plan does, and stand when their views are rebuilt.
+  const [arrives] = useState(() => {
+    const first = drawn.get(entry.id) ?? Date.now();
+    drawn.set(entry.id, first);
+    return entry.door === "composer" && Date.now() - first < ARRIVED;
+  });
+  /** The Cells a Send just took, while the foot folds away under them. */
+  const [folding, setFolding] = useState<number | null>(null);
+  const foot = useSharedValue(1);
+  const folds = useAnimatedStyle(() => ({
+    opacity: foot.get(),
+    transform: [{ scaleY: 0.9 + 0.1 * foot.get() }],
+  }));
   if (tray === null) return null;
+  const narrow = window.width < NARROW;
   const exists = new Set(here === "" ? [] : here.split(",").map(Number));
   const seenOf = seenIn(
     reading === undefined || reading.state === "none" ? undefined : reading.list?.cells,
   );
   /** A row as it reads: one whose Cell is in the app started, whoever started it. */
-  const shownOf = (one: TrayAct): TrayAct =>
+  const shownOf = <One extends TrayAct>(one: One): One =>
     exists.has(one.act.i) && (one.status === "waiting" || one.status === "queued")
       ? { ...one, status: "started" }
       : one;
-  const apartOf = (one: TrayAct): boolean => {
-    if (one.act.kind !== "start") return false;
+  const apartOf = (one: CellAct): boolean => {
     if (one.status !== "waiting" && one.status !== "queued" && one.status !== "starting")
       return false;
     // Start now on a Cell that came after others is the phone's own start, in the project's folder.
     if (one.status === "starting" && comesAfter(one.act)) return false;
-    const place = one.act.place;
-    const projectId =
-      place === null
-        ? null
-        : (place.projectId ?? (place.id === null ? null : placeOfKey(place.id)?.projectId));
-    return getsWorktree(tray, one.act, projectId == null ? false : startsApart(projectId));
+    const projectId = projectIdOf(one.act);
+    return getsWorktree(tray, one.act, projectId === null ? false : startsApart(projectId));
   };
   const head = headOf(tray, seenOf);
   const back = new Set(callable(tray, now).map((one) => one.act.i));
   const blocked = held(tray);
+  const waits = counts(tray).waiting > 0;
+  const stagger = arrives ? beatsOf([0, 1], narrow).get(1)! : 0;
   const leftOver = tray.plan.leftOver
     .map((n) => tray.plan.pieces.find((piece) => piece.n === n)?.text ?? "")
     .filter((text) => text.length > 0)
     .join(" ");
+  const sendIt = () => {
+    const on = onOf(tray).map((one) => one.act.i);
+    if (unsendable(tray) !== null) return;
+    // The moment first: each row asks when its Cell forms as the tray changes.
+    sentNow(entry.id, on, narrow);
+    setFolding(on.length);
+    foot.set(
+      withTiming(0, LEAVE, (finished) => {
+        if (finished) runOnJS(setFolding)(null);
+      }),
+    );
+    planCarrier();
+    trays.change(entry.id, send);
+  };
+  const cancel = () => {
+    trays.change(entry.id, dropAll);
+    if (entry.door === "composer") trays.leave(entry.id);
+  };
   return (
-    <View>
+    <View onLayout={(event) => setWidth(event.nativeEvent.layout.width)}>
       {head.line !== null ? (
         <View className="min-h-11 flex-row items-center gap-2 px-4 pt-1">
           <AppText
@@ -156,18 +185,13 @@ export function PlanPanel(props: {
           {tray.plan.dictated ? (
             <AppText className="text-xs text-foreground-tertiary">{DICTATED}</AppText>
           ) : null}
-          {head.startAll ? (
-            <Pill filled title={START_ALL} onPress={() => trays.change(entry.id, confirmAll)} />
-          ) : null}
-          {entry.door === "composer" ? (
+          {/* While Cells wait, Cancel in the foot closes it. */}
+          {entry.door === "composer" && !waits && folding === null ? (
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={CLOSE_PLAN}
               hitSlop={12}
-              onPress={() => {
-                trays.change(entry.id, dropAll);
-                trays.leave(entry.id);
-              }}
+              onPress={cancel}
               className="size-7 items-center justify-center active:opacity-70"
             >
               <SymbolView
@@ -181,21 +205,21 @@ export function PlanPanel(props: {
         </View>
       ) : null}
       {tray.acts.map((one, index) => (
-        <View
+        <Animated.View
           key={one.act.i}
+          entering={
+            arrives
+              ? FadeIn.duration(ENTER.duration)
+                  .easing(ENTER.easing)
+                  .delay(index * stagger)
+              : undefined
+          }
           className={index > 0 || head.line !== null ? "border-t border-border-subtle" : undefined}
         >
-          {one.act.kind === "destroy" ? (
-            <HoldCard
-              act={one.act}
-              status={one.status === "done" || one.status === "dropped" ? one.status : "waiting"}
-              refused={entry.refused.get(one.act.i) ?? null}
-              onHeld={() => void planCarrier().destroy(entry.id, one.act.i)}
-              onDrop={() => trays.change(entry.id, (next) => drop(next, one.act.i))}
-            />
-          ) : (
-            <CellRow
+          {isCell(one) ? (
+            <PlanRow
               id={entry.id}
+              environmentId={entry.environmentId}
               one={shownOf(one)}
               says={rowSays(tray, shownOf(one), seenOf)}
               apart={apartOf(shownOf(one))}
@@ -204,337 +228,79 @@ export function PlanPanel(props: {
               places={props.places}
               models={props.models}
               open={props.open}
+              wide={width >= ONE_LINE}
+              width={width}
+              ground={typeof ground === "string" ? ground : "transparent"}
             />
-          )}
-        </View>
+          ) : one.act.kind === "destroy" ? (
+            <HoldCard
+              act={one.act}
+              status={one.status === "done" || one.status === "dropped" ? one.status : "waiting"}
+              refused={entry.refused.get(one.act.i) ?? null}
+              onHeld={() => void planCarrier().destroy(entry.id, one.act.i)}
+              onDrop={() => trays.change(entry.id, (next) => dropHold(next, one.act.i))}
+            />
+          ) : null}
+        </Animated.View>
       ))}
       {leftOver.length > 0 ? (
         <AppText className="border-t border-border-subtle px-4 py-2 text-xs text-foreground-muted">
           {LEFT_OVER(leftOver)}
         </AppText>
       ) : null}
+      {waits ? (
+        <Foot tray={tray} onCancel={cancel} onSend={sendIt} />
+      ) : folding !== null ? (
+        // The Send it carried, fading where it stood; then its room is given back.
+        <Animated.View style={[{ transformOrigin: "top" }, folds]} pointerEvents="none">
+          <FootLine reason="" sends={folding} able />
+        </Animated.View>
+      ) : null}
     </View>
   );
 }
 
-/** The model menu's entry for a project's own default. */
-const DEFAULT_KEY = "default";
-const modelKey = (model: { readonly instanceId: string; readonly id: string }) =>
-  `${model.instanceId}\u0000${model.id}`;
-
-function CellRow(props: {
-  readonly id: string;
-  /** The act as it reads: started once its Cell is in the app. */
-  readonly one: TrayAct;
-  /** Its Cell's standing, or whom it comes after. */
-  readonly says: RowSays;
-  /** It isn't a Cell yet, and will work in a worktree of its own. */
-  readonly apart: boolean;
-  /** A deletion is held: nothing starts before it. */
-  readonly blocked: boolean;
-  /** It started within the last ten seconds: one tap stops and archives it. */
-  readonly back: boolean;
-  readonly places: ReadonlyArray<PlaceEntry>;
-  readonly models: ReadonlyArray<ModelEntry>;
-  readonly open: boolean;
+/** The plan's one yes, and its no: all or nothing, and why it waits when it does. */
+function Foot(props: {
+  readonly tray: Tray;
+  readonly onCancel: () => void;
+  readonly onSend: () => void;
 }) {
-  const { one, id } = props;
-  const act = one.act;
-  const risky = act.kind === "start" && act.risks.length > 0;
-  const [open, setOpen] = useState(props.open || risky);
-  if (act.kind !== "start") return null;
-  const waiting = one.status === "waiting";
-  const queued = one.status === "queued";
-  // A Cell just started here is flying before its machine's next reading says so.
-  const word =
-    props.says.word !== ""
-      ? props.says.word
-      : one.status === "started" && props.back
-        ? STATUS_WORDS.started
-        : "";
-  const model = modelLine(act, props.models);
-  const unsure = waiting ? unsureOf(act) : { place: false, model: false };
-  const place = placeLabel(act);
-  const picked = act.selection ?? act.model;
-  const chosen =
-    picked == null
-      ? DEFAULT_KEY
-      : modelKey({
-          instanceId: picked.instanceId,
-          id: "model" in picked ? picked.model : picked.id,
-        });
-  const renames = waiting && act.place?.how === "new";
-  const rename = () =>
-    Dialog.prompt({
-      title: NEW_PROJECT_NAME,
-      confirmText: "OK",
-      initialValue: act.place?.name ?? "",
-      onConfirm: (name) => trays.change(id, (tray) => setNewName(tray, act.i, name)),
-    });
-  const placeWords = (
-    <AppText
-      className={
-        unsure.place
-          ? "font-t3-medium text-sm text-foreground underline decoration-dotted"
-          : "text-sm text-foreground-secondary"
-      }
-      numberOfLines={1}
-    >
-      {place}
-    </AppText>
-  );
+  const why = unsendable(props.tray);
   return (
-    <View className="gap-1 px-4 py-2.5">
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={open ? HIDE_MESSAGE : SHOW_MESSAGE}
-        accessibilityState={{ expanded: open }}
-        onPress={() => setOpen(!open)}
-        className="gap-0.5 active:opacity-70"
-      >
-        <View className="flex-row items-center gap-2">
-          <AppText className="font-t3-bold text-sm text-foreground">
-            {cellNameOf(act.threadId)}
-          </AppText>
-          {/* A waiting Cell's model is a choice, on the line below. */}
-          <AppText
-            className={
-              model.dim
-                ? "flex-1 text-xs text-foreground-tertiary"
-                : "flex-1 text-xs text-foreground-muted"
-            }
-            numberOfLines={1}
-          >
-            {waiting
-              ? props.apart
-                ? OWN_WORKTREE
-                : ""
-              : modelLine(act, props.models, props.apart).text}
-          </AppText>
-          {waiting || word === "" ? null : (
-            <AppText
-              className={
-                one.status === "failed"
-                  ? "text-xs text-danger-foreground"
-                  : "text-xs text-foreground-muted"
-              }
-            >
-              {word}
-            </AppText>
-          )}
-          <SymbolView
-            name={open ? "chevron.up" : "chevron.down"}
-            size={10}
-            tintColorClassName="accent-foreground-muted"
-            type="monochrome"
-          />
-        </View>
-        <AppText
-          className={
-            waiting ? "text-sm text-foreground-secondary" : "text-sm text-foreground-muted"
-          }
-          numberOfLines={open ? undefined : 1}
-        >
-          {act.title}
-        </AppText>
-        {props.says.line !== null && props.says.line !== "" ? (
-          <AppText className="text-xs text-foreground-muted" numberOfLines={2}>
-            {props.says.line}
-          </AppText>
-        ) : null}
-      </Pressable>
-      <View className="flex-row items-center gap-1.5">
-        <AppText className="text-xs text-foreground-muted">in</AppText>
-        {waiting && !renames ? (
-          <Menu
-            title="Project"
-            actions={props.places.map((each) => ({
-              id: each.id,
-              title: each.name,
-              state: each.id === act.place?.id ? ("on" as const) : ("off" as const),
-            }))}
-            onPressAction={({ nativeEvent }) => {
-              const picked = props.places.find((each) => each.id === nativeEvent.event);
-              if (picked !== undefined)
-                trays.change(id, (tray) =>
-                  setPlace(tray, act.i, { id: picked.id, name: picked.name }),
-                );
-            }}
-            accessibilityLabel={`Project: ${place}`}
-            accessibilityRole="button"
-          >
-            <Pressable hitSlop={10} className="flex-row items-center gap-1 active:opacity-70">
-              {placeWords}
-              <SymbolView
-                name="chevron.down"
-                size={10}
-                tintColorClassName="accent-foreground-muted"
-                type="monochrome"
-              />
-            </Pressable>
-          </Menu>
-        ) : renames ? (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={`${NEW_PROJECT_NAME}: ${place}`}
-            hitSlop={10}
-            onPress={rename}
-            className="flex-row items-center gap-1 active:opacity-70"
-          >
-            {placeWords}
-            <SymbolView
-              name="pencil"
-              size={11}
-              tintColorClassName="accent-foreground-muted"
-              type="monochrome"
-            />
-          </Pressable>
-        ) : (
-          placeWords
-        )}
-        {waiting ? (
-          <>
-            <AppText className="text-xs text-foreground-muted">on</AppText>
-            <Menu
-              title="Model"
-              actions={[
-                {
-                  id: DEFAULT_KEY,
-                  title: DEFAULT_MODEL,
-                  state: chosen === DEFAULT_KEY ? "on" : "off",
-                },
-                ...props.models.map((each) => ({
-                  id: modelKey(each),
-                  title: each.name,
-                  state: modelKey(each) === chosen ? ("on" as const) : ("off" as const),
-                })),
-              ]}
-              onPressAction={({ nativeEvent }) => {
-                const picked = props.models.find((each) => modelKey(each) === nativeEvent.event);
-                if (picked === undefined && nativeEvent.event !== DEFAULT_KEY) return;
-                trays.change(id, (tray) =>
-                  setModel(
-                    tray,
-                    act.i,
-                    picked === undefined
-                      ? null
-                      : {
-                          instanceId: picked.instanceId,
-                          id: picked.id,
-                          name: picked.name,
-                          effort: null,
-                        },
-                  ),
-                );
-              }}
-              accessibilityLabel={`Model: ${model.text}`}
-              accessibilityRole="button"
-            >
-              <Pressable
-                hitSlop={10}
-                className="flex-1 flex-row items-center gap-1 active:opacity-70"
-              >
-                <AppText
-                  className={
-                    unsure.model
-                      ? "shrink font-t3-medium text-sm text-foreground underline decoration-dotted"
-                      : "shrink text-sm text-foreground-secondary"
-                  }
-                  numberOfLines={1}
-                >
-                  {model.text}
-                </AppText>
-                <SymbolView
-                  name="chevron.down"
-                  size={10}
-                  tintColorClassName="accent-foreground-muted"
-                  type="monochrome"
-                />
-              </Pressable>
-            </Menu>
-          </>
-        ) : null}
-      </View>
-      {one.status === "failed" && one.reason !== undefined ? (
-        <AppText className="text-xs text-danger-foreground">{one.reason}</AppText>
-      ) : null}
-      {props.says.stuck !== null ? (
-        <AppText className="text-xs text-warning-foreground">{props.says.stuck}</AppText>
-      ) : null}
-      {open ? (
-        <View className="mt-1 rounded-xl bg-subtle px-3 py-2">
-          <AppText className="text-sm text-foreground-secondary" selectable>
-            {messageSpans(act).map((span, index) =>
-              span.risky ? (
-                // oxlint-disable-next-line react/no-array-index-key -- spans have no identity but their place
-                <AppText key={index} className="font-t3-medium text-sm text-warning-foreground">
-                  {span.text}
-                </AppText>
-              ) : (
-                span.text
-              ),
-            )}
-          </AppText>
-        </View>
-      ) : null}
-      {waiting ? (
-        <View className="flex-row items-end gap-2 pt-1">
-          <View className="flex-1 gap-0.5">
-            {whyLines(act, props.blocked).map((line) => (
-              <View key={line} className="flex-row items-center gap-1.5">
-                <View className="size-1.5 rounded-full bg-stage-input" />
-                <AppText className="flex-1 text-xs text-foreground-secondary">{line}</AppText>
-              </View>
-            ))}
-          </View>
-          <Pill
-            filled={false}
-            title={DROP}
-            onPress={() => trays.change(id, (tray) => drop(tray, act.i))}
-          />
-          <StartPill
-            enabled={canStart(act) && !props.blocked}
-            onPress={() => trays.change(id, (tray) => confirm(tray, act.i))}
-          />
-        </View>
-      ) : queued ? (
-        <View className="flex-row justify-end gap-2 pt-1">
-          <Pill
-            filled={false}
-            title={DROP}
-            onPress={() => trays.change(id, (tray) => drop(tray, act.i))}
-          />
-          {props.blocked ? null : (
-            <Pill
-              filled={false}
-              title={START_NOW}
-              onPress={() => planCarrier().startNow(id, act.i)}
-            />
-          )}
-        </View>
-      ) : props.back ? (
-        // Where Start was: the hand that started it is still there to take it back.
-        <View className="flex-row justify-end pt-1">
-          <Pill
-            filled={false}
-            title={CALL_BACK}
-            onPress={() => void planCarrier().callBack(id, act.i)}
-          />
-        </View>
-      ) : null}
-    </View>
+    <FootLine
+      reason={
+        why === "held" ? SEND_WAITS.held : why === null || why === "nothing" ? "" : SEND_WAITS.place
+      }
+      sends={onOf(props.tray).length}
+      able={why === null}
+      onCancel={props.onCancel}
+      onSend={props.onSend}
+    />
   );
 }
 
-/** Start, dim while the Cell has nowhere to start or a deletion is held. */
-function StartPill(props: { readonly enabled: boolean; readonly onPress: () => void }) {
+function FootLine(props: {
+  readonly reason: string;
+  readonly sends: number;
+  readonly able: boolean;
+  readonly onCancel?: () => void;
+  readonly onSend?: () => void;
+}) {
   return (
-    <View
-      className={props.enabled ? undefined : "opacity-40"}
-      pointerEvents={props.enabled ? "auto" : "none"}
-      accessibilityState={{ disabled: !props.enabled }}
-    >
-      <Pill filled title={START} onPress={props.onPress} />
+    <View className="flex-row items-center justify-end gap-2 border-t border-border-subtle px-4 py-2.5">
+      <AppText className="flex-1 text-right text-xs text-foreground-muted" numberOfLines={2}>
+        {props.reason}
+      </AppText>
+      <Pill filled={false} title={CANCEL} onPress={props.onCancel ?? (() => undefined)} />
+      <View
+        className={props.able ? undefined : "opacity-40"}
+        pointerEvents={props.able ? "auto" : "none"}
+        accessibilityState={{ disabled: !props.able }}
+        accessibilityHint={props.reason === "" ? undefined : props.reason}
+      >
+        <Pill filled title={SEND(props.sends)} onPress={props.onSend ?? (() => undefined)} />
+      </View>
     </View>
   );
 }

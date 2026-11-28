@@ -1,7 +1,7 @@
-// The plans the phone holds, by plan id, from a message's send on
-// (stemcells/tasks/aski-orchestrator.md, decisions 4, 5, 12 and 15). One store, so the tray, a
-// ```plan fence, the card under a message and the home's rows read the same plan and each act
-// is carried out once (`carry.ts`). It holds state alone: no timer and no request starts here.
+// The plans the phone holds, by plan id (stemcells/tasks/aski-orchestrator.md, decisions 4, 5,
+// 12, 15 and 18). One store, so the tray, a ```plan fence, the card under a message and the
+// home's rows read the same plan and each act is carried out once (`carry.ts`). A plan arrives
+// with every Cell waiting for Send. It holds state alone: no timer and no request starts here.
 
 import type { Plan } from "../../../../../../stemcells/orchestrator/plan.ts";
 import { showsUnder } from "../../../../../../stemcells/orchestrator/rows.ts";
@@ -90,13 +90,6 @@ export function toldOver(tray: Tray, outcome: ReadonlyArray<ToldOutcome> | null)
   return changed ? { ...tray, acts } : tray;
 }
 
-const unstarted = (tray: Tray): Tray => ({
-  ...tray,
-  acts: tray.acts.map((one) =>
-    one.status === "starting" ? { ...one, status: "waiting" as const } : one,
-  ),
-});
-
 export function makeTrays(): Trays {
   let entries: ReadonlyMap<string, PlanEntry> = new Map();
   const listeners = new Set<() => void>();
@@ -140,8 +133,8 @@ export function makeTrays(): Trays {
         chatId,
         door: "fence",
         state: "tray",
-        // Reading a plan starts nothing: a Cell the server wasn't told of waits for a hand.
-        tray: unstarted(trayWith(plan, outcome)),
+        // Reading a plan starts nothing: a Cell the server wasn't told of waits for the person's Send.
+        tray: trayWith(plan, outcome),
         refused: NONE,
       });
     },

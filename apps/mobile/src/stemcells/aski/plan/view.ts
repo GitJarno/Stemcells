@@ -9,13 +9,7 @@ import {
   type Why,
 } from "../../../../../../stemcells/orchestrator/plan.ts";
 import { type CellSeen, flyingOf } from "../../../../../../stemcells/orchestrator/rows.ts";
-import {
-  beforeOf,
-  canStart,
-  counts,
-  held,
-  type Tray,
-} from "../../../../../../stemcells/orchestrator/tray.ts";
+import { beforeOf, counts, type Tray } from "../../../../../../stemcells/orchestrator/tray.ts";
 import { DEFAULT_MODEL, headline, OWN_WORKTREE } from "../../../../../../stemcells/words/plans.ts";
 import { conciseModelName } from "../../../../../../stemcells/models/names.ts";
 
@@ -31,6 +25,10 @@ export const NEW_PROJECT_NAME = "Name the new project";
 export const CLOSE_PLAN = "Close the plan";
 export const HIDE_MESSAGE = "Hide the message";
 export const SHOW_MESSAGE = "Show the message";
+/** How a waiting task is switched off and back on, to one who can't see the row move. */
+export const SWITCH_HINT = "Swipe left to switch it off or back on";
+export const switchLabel = (title: string, off: boolean): string =>
+  `Switch ${title} ${off ? "on" : "off"}`;
 
 /**
  * The model and effort a Cell starts on: "Fable 5.1 · high", or the default, dim. `apart` adds
@@ -139,7 +137,7 @@ export function messageSpans(act: Pick<StartAct, "words" | "note" | "risks">): M
   return spans;
 }
 
-/** A plan's headline and what its header offers. */
+/** A plan's headline: its Cells, those switched off before it is sent, what flies and is queued after. */
 export function headOf(
   tray: Tray,
   /** Each Cell as the machine reads it, so a Cell that landed or asks no longer counts as flying. */
@@ -147,21 +145,25 @@ export function headOf(
 ): {
   /** Null for a plan with no Cell: a deletion alone says what it is. */
   readonly line: string | null;
-  /** Several Cells wait and can start: one tap starts them. */
-  readonly startAll: boolean;
 } {
   // A deletion waits on its own card: the headline counts Cells alone.
   const starts = tray.acts.filter((one) => one.act.kind === "start");
   const cells = starts.filter(
     (one) => one.status !== "dropped" && one.status !== "called-back",
   ).length;
-  const { waiting, queued } = counts(tray);
-  const flying = flyingOf(tray, seenOf);
-  const startable = starts.filter(
-    (one) => one.act.kind === "start" && one.status === "waiting" && canStart(one.act),
-  ).length;
+  const off = starts.filter((one) => one.status === "waiting" && one.off === true).length;
   return {
-    line: cells === 0 ? null : headline(cells, flying, waiting, false, queued),
-    startAll: startable > 1 && !held(tray),
+    line:
+      cells === 0 ? null : headline(cells, flyingOf(tray, seenOf), off, false, counts(tray).queued),
   };
 }
+
+/** A waiting deletion the person drops from its own card: the plan's other Cells stay. */
+export const dropHold = (tray: Tray, i: number): Tray => ({
+  ...tray,
+  acts: tray.acts.map((one) =>
+    one.act.i === i && one.act.kind === "destroy" && one.status === "waiting"
+      ? { ...one, status: "dropped" as const }
+      : one,
+  ),
+});
