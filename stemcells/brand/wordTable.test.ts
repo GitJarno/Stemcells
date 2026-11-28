@@ -53,6 +53,11 @@ describe("the word table", () => {
       [swap({ words: "thread by thread" }), /must say "thread" once/],
       [swap({ ours: 'Cell" + secret + "' }), /is code, not words/],
       [swap({ ours: "${secret}" }), /is code, not words/],
+      // A message's argument only where upstream's own part says it.
+      [
+        swap({ words: 'msg("{count} threads")', theirs: "threads", ours: "{count} Cells" }),
+        /is code/,
+      ],
       [swap({ times: 0 }), /at least once/],
     ] as const) {
       const faults = tableFaults([entry]);
@@ -60,7 +65,13 @@ describe("the word table", () => {
       expect(faults[0]).toMatch(why);
       expect(faults[0]).toContain(entry.file);
     }
-    expect(tableFaults([swap({}), swap({ ours: "What's on your mind?" })])).toEqual([]);
+    expect(
+      tableFaults([
+        swap({}),
+        swap({ ours: "What's on your mind?" }),
+        swap({ words: 'msg("Thought (×{count})"', theirs: "(×{count})", ours: "×{count}" }),
+      ]),
+    ).toEqual([]);
   });
 });
 
